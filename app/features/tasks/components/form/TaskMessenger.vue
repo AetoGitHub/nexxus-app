@@ -14,6 +14,8 @@ const {
   isPending,
   isError,
   errorMessage,
+  isFetching,
+  refetch,
 } = useTaskMessages(() => props.taskId)
 
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
@@ -79,6 +81,11 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
+async function refreshMessages() {
+  await refetch()
+  await scrollToBottom()
+}
+
 watch(
   messages,
   () => {
@@ -101,10 +108,22 @@ watch(
   >
     <template #header>
       <div class="flex items-center justify-between gap-3">
-        <h2 class="font-semibold">
-          {{ t('tasks.messenger.title') }}
-        </h2>
-        <span class="text-xs text-muted-foreground">
+        <div class="flex min-w-0 items-center gap-1.5">
+          <h2 class="font-semibold truncate">
+            {{ t('tasks.messenger.title') }}
+          </h2>
+          <UButton
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            square
+            :loading="isFetching && !isPending"
+            :aria-label="t('tasks.messenger.refresh')"
+            @click="refreshMessages"
+          />
+        </div>
+        <span class="text-xs text-muted-foreground shrink-0">
           {{ countLabel }}
         </span>
       </div>
@@ -155,7 +174,7 @@ watch(
         >
           <div
             v-if="isSystemMessage(message.type)"
-            class="flex w-full max-w-[90%] flex-col items-center gap-2"
+            class="mb-5 flex w-full max-w-[90%] flex-col items-center gap-2"
           >
             <p class="px-2 py-1 text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
               {{ message.content }}

@@ -280,6 +280,7 @@
       "messageCount": "{n} messages",
       "placeholder": "Write a message",
       "send": "Send message",
+      "refresh": "Refresh messages",
       "empty": "No messages yet. Be the first to write.",
       "loadError": "Could not load messages",
       "sendSuccessTitle": "Message sent",
