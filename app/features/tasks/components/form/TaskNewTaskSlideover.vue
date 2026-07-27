@@ -587,12 +587,12 @@ const slideoverUi = computed(() => {
                   state.type === option.value
                     ? 'border-aeto-teal bg-aeto-teal-light'
                     : 'border-border bg-card',
-                  isReadOnly
+                  isDetailView
                     ? 'cursor-default opacity-90'
                     : 'hover:border-muted-foreground/40',
                 ]"
-                :disabled="isReadOnly"
-                @click="!isReadOnly && (state.type = option.value)"
+                :disabled="isDetailView"
+                @click="!isDetailView && (state.type = option.value)"
               >
                 <UIcon
                   :name="option.icon"
