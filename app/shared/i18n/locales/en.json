@@ -79,6 +79,11 @@
         "successTitle": "Task authorized",
         "successDescription": "Your authorization was recorded successfully.",
         "errorTitle": "Could not authorize"
+      },
+      "kanban": {
+        "moveNotAllowedTitle": "Move not allowed",
+        "moveNotAllowedDescription": "You can only move one step forward: Pending → Urgent → Delayed → Critical → Accepted.",
+        "noPendingApproval": "There is no pending approval for your user on this task."
       }
     },
     "comingSoon": "Coming soon",

@@ -79,6 +79,11 @@
         "successTitle": "Tarea autorizada",
         "successDescription": "Tu autorización se registró correctamente.",
         "errorTitle": "No se pudo autorizar"
+      },
+      "kanban": {
+        "moveNotAllowedTitle": "Movimiento no permitido",
+        "moveNotAllowedDescription": "Solo puedes avanzar un paso: Pendiente → Urgente → Retraso → Crítico → Aceptadas.",
+        "noPendingApproval": "No hay una aprobación pendiente para tu usuario en esta tarea."
       }
     },
     "comingSoon": "Próximamente",
