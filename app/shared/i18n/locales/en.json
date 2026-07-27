@@ -405,12 +405,14 @@
       "membersCount": "{count} members",
       "soloYou": "Only you",
       "options": "Options",
+      "edit": "Edit topic",
       "empty": "No topics yet",
       "loadError": "Could not load topics",
       "archived": "Archived ({count})"
     },
     "themeModal": {
       "title": "New topic",
+      "editTitle": "Edit topic",
       "name": "Topic name",
       "namePlaceholder": "E.g. Operations, Legal, Commercial",
       "color": "Identifier color",
@@ -420,9 +422,13 @@
       "privacyNote": "The topic will be private until you assign it to a task or invite someone.",
       "cancel": "Cancel",
       "create": "Create topic",
+      "save": "Save changes",
       "createdTitle": "Topic created",
       "createdDescription": "The topic was created successfully.",
-      "createErrorTitle": "Could not create topic"
+      "createErrorTitle": "Could not create topic",
+      "updatedTitle": "Topic updated",
+      "updatedDescription": "The topic was updated successfully.",
+      "updateErrorTitle": "Could not update topic"
     },
     "groups": {
       "title": "Groups",

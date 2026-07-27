@@ -10,7 +10,10 @@ import type {
   TaskSettingsSectionId,
   ThemeFormState,
 } from '~/features/task-settings/types/task-settings.types'
-import { createEmptyThemeForm } from '~/features/task-settings/types/task-settings.types'
+import {
+  createEmptyThemeForm,
+  createThemeFormFromProject,
+} from '~/features/task-settings/types/task-settings.types'
 import type {
   CatalogueGroup,
   CatalogueGroupDetail,
@@ -21,7 +24,9 @@ import {
   createGroupFormFromCatalogue,
   createGroupFormFromDetail,
 } from '~/features/task-settings/types/group.types'
+import type { EnterpriseProject } from '~/features/projects/types/project.types'
 import { useEnterpriseProjects } from '~/features/projects/composables/useEnterpriseProjects'
+import { useUpdateEnterpriseProject } from '~/features/projects/composables/useUpdateEnterpriseProject'
 import { useCatalogueGroups } from '~/features/task-settings/composables/groups/useCatalogueGroups'
 import { useCreateGroup } from '~/features/task-settings/composables/groups/useCreateGroup'
 import { useUpdateGroup } from '~/features/task-settings/composables/groups/useUpdateGroup'
@@ -38,10 +43,12 @@ const queryClient = useQueryClient()
 const activeSection = ref<TaskSettingsSectionId>('themes')
 const themeModalOpen = ref(false)
 const themeForm = ref<ThemeFormState>(createEmptyThemeForm())
+const editingThemeId = ref<number | null>(null)
 const groupModalOpen = ref(false)
 const groupForm = ref<GroupFormState>(createEmptyGroupForm())
 const editingGroupId = ref<number | null>(null)
 
+const isEditingTheme = computed(() => editingThemeId.value != null)
 const isEditingGroup = computed(() => editingGroupId.value != null)
 
 const navItems: TaskSettingsNavItem[] = [
@@ -54,16 +61,28 @@ const navItems: TaskSettingsNavItem[] = [
 ]
 
 const { projects, projectsQuery, createProject, companyId } = useEnterpriseProjects()
+const updateProject = useUpdateEnterpriseProject()
 const { groups, groupsQuery } = useCatalogueGroups()
 const createGroup = useCreateGroup()
 const updateGroup = useUpdateGroup()
+
+const isThemeMutating = computed(
+  () => createProject.isPending.value || updateProject.isPending.value,
+)
 
 const isGroupMutating = computed(
   () => createGroup.isPending.value || updateGroup.isPending.value,
 )
 
 function openNewThemeModal() {
+  editingThemeId.value = null
   themeForm.value = createEmptyThemeForm()
+  themeModalOpen.value = true
+}
+
+function openEditThemeModal(project: EnterpriseProject) {
+  editingThemeId.value = project.id
+  themeForm.value = createThemeFormFromProject(project)
   themeModalOpen.value = true
 }
 
@@ -90,27 +109,42 @@ async function openEditGroupModal(group: CatalogueGroup) {
   }
 }
 
-async function onCreateTheme() {
+async function onSubmitTheme() {
   const name = themeForm.value.name.trim()
   if (!name || !themeForm.value.color) {
     return
   }
 
+  const payload = {
+    name,
+    company: companyId,
+    color: themeForm.value.color,
+    members: themeForm.value.members,
+  }
+
   try {
-    await createProject.mutateAsync({
-      name,
-      company: companyId,
-      color: themeForm.value.color,
-      members: themeForm.value.members,
-    })
+    if (editingThemeId.value != null) {
+      await updateProject.mutateAsync({
+        id: editingThemeId.value,
+        payload,
+      })
+    }
+    else {
+      await createProject.mutateAsync(payload)
+      toast.add({
+        title: t('taskSettings.themeModal.createdTitle'),
+        description: t('taskSettings.themeModal.createdDescription'),
+        color: 'success',
+      })
+    }
     themeModalOpen.value = false
-    toast.add({
-      title: t('taskSettings.themeModal.createdTitle'),
-      description: t('taskSettings.themeModal.createdDescription'),
-      color: 'success',
-    })
+    editingThemeId.value = null
   }
   catch (error) {
+    // En update el toast de error lo maneja useUpdateEnterpriseProject
+    if (editingThemeId.value != null) {
+      return
+    }
     toast.add({
       title: t('taskSettings.themeModal.createErrorTitle'),
       description: parseFetchError(error),
@@ -172,6 +206,7 @@ useSeoMeta({
           :loading="projectsQuery.isPending.value"
           :error="projectsQuery.isError.value"
           @new-theme="openNewThemeModal"
+          @edit="openEditThemeModal"
         />
 
         <TaskSettingsGroupsPanel
@@ -194,8 +229,9 @@ useSeoMeta({
     <TaskSettingsThemeModal
       v-model:open="themeModalOpen"
       v-model:form="themeForm"
-      :loading="createProject.isPending.value"
-      @submit="onCreateTheme"
+      :is-edit="isEditingTheme"
+      :loading="isThemeMutating"
+      @submit="onSubmitTheme"
     />
 
     <TaskSettingsGroupModal

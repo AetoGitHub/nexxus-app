@@ -405,12 +405,14 @@
       "membersCount": "{count} miembros",
       "soloYou": "Solo tú",
       "options": "Opciones",
+      "edit": "Editar tema",
       "empty": "No hay temas todavía",
       "loadError": "No se pudieron cargar los temas",
       "archived": "Archivados ({count})"
     },
     "themeModal": {
       "title": "Nuevo tema",
+      "editTitle": "Editar tema",
       "name": "Nombre del tema",
       "namePlaceholder": "Ej. Operaciones, Legal, Comercial",
       "color": "Color identificador",
@@ -420,9 +422,13 @@
       "privacyNote": "El tema será privado hasta que lo asignes a una tarea o invites a alguien.",
       "cancel": "Cancelar",
       "create": "Crear tema",
+      "save": "Guardar cambios",
       "createdTitle": "Tema creado",
       "createdDescription": "El tema se creó correctamente.",
-      "createErrorTitle": "No se pudo crear el tema"
+      "createErrorTitle": "No se pudo crear el tema",
+      "updatedTitle": "Tema actualizado",
+      "updatedDescription": "El tema se actualizó correctamente.",
+      "updateErrorTitle": "No se pudo actualizar el tema"
     },
     "groups": {
       "title": "Grupos",

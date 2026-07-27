@@ -25,6 +25,13 @@ export interface CreateEnterpriseProjectPayload {
   members: number[]
 }
 
+export interface UpdateEnterpriseProjectPayload {
+  name: string
+  company: number
+  color: string
+  members: number[]
+}
+
 export interface ThemeColorOption {
   name: string
   hex: string

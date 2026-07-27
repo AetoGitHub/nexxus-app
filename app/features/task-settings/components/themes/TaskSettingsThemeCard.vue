@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { EnterpriseProject } from '~/features/projects/types/project.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 
 const props = defineProps<{
   project: EnterpriseProject
+}>()
+
+const emit = defineEmits<{
+  edit: [project: EnterpriseProject]
 }>()
 
 const { t } = useI18n()
@@ -22,6 +27,16 @@ const membersLabel = computed(() => {
 const tasksLabel = computed(() =>
   t('taskSettings.themes.activeTasks', { count: props.project.task_count }),
 )
+
+const menuItems = computed<DropdownMenuItem[][]>(() => [
+  [
+    {
+      label: t('taskSettings.themes.edit'),
+      icon: 'i-lucide-pencil',
+      onSelect: () => emit('edit', props.project),
+    },
+  ],
+])
 </script>
 
 <template>
@@ -68,16 +83,20 @@ const tasksLabel = computed(() =>
         </div>
       </div>
 
-      <button
-        type="button"
-        class="p-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
-        :aria-label="t('taskSettings.themes.options')"
+      <UDropdownMenu
+        :items="menuItems"
+        :content="{ align: 'end', sideOffset: 4 }"
       >
-        <UIcon
-          name="i-lucide-ellipsis"
-          class="h-4 w-4"
+        <UButton
+          icon="i-lucide-ellipsis"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          class="shrink-0"
+          :aria-label="t('taskSettings.themes.options')"
+          @click.stop
         />
-      </button>
+      </UDropdownMenu>
     </div>
   </div>
 </template>

@@ -6,8 +6,10 @@ import { useProfiles } from '~/features/auth/composables/useProfiles'
 const open = defineModel<boolean>('open', { required: true })
 const form = defineModel<ThemeFormState>('form', { required: true })
 
-defineProps<{
+const props = defineProps<{
   loading?: boolean
+  /** true = edición; false = alta */
+  isEdit?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -20,6 +22,18 @@ const { t } = useI18n()
 const { items: profileItems, profilesQuery } = useProfiles(() => open.value)
 
 const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring'
+
+const modalTitle = computed(() =>
+  props.isEdit
+    ? t('taskSettings.themeModal.editTitle')
+    : t('taskSettings.themeModal.title'),
+)
+
+const submitLabel = computed(() =>
+  props.isEdit
+    ? t('taskSettings.themeModal.save')
+    : t('taskSettings.themeModal.create'),
+)
 
 const canSubmit = computed(() => form.value.name.trim().length > 0 && !!form.value.color)
 
@@ -43,7 +57,7 @@ function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('taskSettings.themeModal.title')"
+    :title="modalTitle"
     :ui="{ content: 'sm:max-w-md' }"
   >
     <template #body>
@@ -122,7 +136,7 @@ function onSubmit() {
           @click="onCancel"
         />
         <UButton
-          :label="t('taskSettings.themeModal.create')"
+          :label="submitLabel"
           color="primary"
           :disabled="!canSubmit"
           :loading="loading"

@@ -11,6 +11,7 @@ defineProps<{
 
 const emit = defineEmits<{
   newTheme: []
+  edit: [project: EnterpriseProject]
 }>()
 
 const { t } = useI18n()
@@ -104,6 +105,7 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
         v-for="project in projects"
         :key="project.id"
         :project="project"
+        @edit="emit('edit', $event)"
       />
     </div>
 
