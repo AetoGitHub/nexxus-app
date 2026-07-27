@@ -35,6 +35,10 @@ function isOwnMessage(profileId: number, username: string) {
   return current.id === profileId || current.username === username
 }
 
+function isSystemMessage(type: string | undefined) {
+  return type != null && type !== 'user'
+}
+
 function formatTime(iso: string) {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) {
@@ -143,9 +147,21 @@ watch(
           v-for="message in messages"
           :key="message.id"
           class="flex"
-          :class="isOwnMessage(message.profile, message.profile_username) ? 'justify-end' : 'justify-start'"
+          :class="isSystemMessage(message.type)
+            ? 'justify-center'
+            : isOwnMessage(message.profile, message.profile_username)
+              ? 'justify-end'
+              : 'justify-start'"
         >
+          <p
+            v-if="isSystemMessage(message.type)"
+            class="max-w-[90%] px-2 py-1 text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word"
+          >
+            {{ message.content }}
+          </p>
+
           <div
+            v-else
             class="max-w-[85%] rounded-2xl px-3 py-2 text-sm"
             :class="isOwnMessage(message.profile, message.profile_username)
               ? 'rounded-br-md bg-primary/70 text-white'

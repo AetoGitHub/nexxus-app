@@ -236,6 +236,9 @@ export interface KanbanTaskMove {
   toColumnId: string | number
 }
 
+/** Origen del mensaje en el chat de una tarea. */
+export type TaskMessageType = 'user' | 'system'
+
 /** Mensaje del chat de una tarea. */
 export interface TaskMessage {
   id: number
@@ -243,6 +246,7 @@ export interface TaskMessage {
   profile: number
   profile_username: string
   content: string
+  type: TaskMessageType
   read: boolean
   created_at: string
 }
