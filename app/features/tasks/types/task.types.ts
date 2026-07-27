@@ -31,6 +31,20 @@ export interface CreateTaskPayload {
   task_reviewer?: number[]
 }
 
+/** Payload de PATCH /api/tasks/:id/update/. */
+export interface UpdateTaskPayload {
+  short_description: string
+  long_description: string
+  type: NewTaskFormType
+  priority: ApiTaskPriority
+  start_date: string
+  limit_date: string
+  group: number | null
+  project: number
+  assigned_to: number[]
+  task_reviewer?: number[]
+}
+
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
 export type TaskGroupBy = 'all' | 'due' | 'topic' | 'group'

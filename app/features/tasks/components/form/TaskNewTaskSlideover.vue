@@ -14,6 +14,7 @@ import type {
   UserDropdown,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
+import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useGroupsDropdown } from '~/features/tasks/composables/shared/useGroupsDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
@@ -24,6 +25,7 @@ import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartPro
 import { extractResults } from '~/shared/utils/paginated.util'
 import {
   buildCreateTaskPayload,
+  buildUpdateTaskPayload,
   defaultTaskReviewers,
   findPendingCloseApproval,
   taskDetailToFormInput,
@@ -69,8 +71,11 @@ const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const authorizeModalOpen = ref(false)
-/** Con taskId el slideover es detalle view-only (sin submit ni edición). */
+/** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
+const isEditing = ref(false)
+/** Campos bloqueados: detalle sin edición activa. */
+const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
 
 /** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
 const minDueDate = computed(() => {
@@ -82,7 +87,10 @@ const minDueDate = computed(() => {
 })
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
+const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
+
+const isSaving = computed(() => isPending.value || isUpdating.value)
 
 /** Aprobación pendiente del usuario logueado en close_approvals. */
 const pendingApprovalForUser = computed(() =>
@@ -95,12 +103,14 @@ const pendingApprovalForUser = computed(() =>
 const showAuthorize = computed(() =>
   props.authorizeMode
   && isDetailView.value
+  && !isEditing.value
   && pendingApprovalForUser.value != null,
 )
 
 /** Detalle con acciones de proceso (List/Kanban All o Calendario). */
 const showProcessActions = computed(() =>
   isDetailView.value
+  && !isEditing.value
   && (
     (props.view === 'kanban' && props.groupBy === 'all')
     || (props.view === 'list' && props.groupBy === 'all')
@@ -256,7 +266,22 @@ function ensureCurrentUserInReviewers() {
 }
 
 function close() {
+  isEditing.value = false
   open.value = false
+}
+
+function startEditing() {
+  submitError.value = ''
+  isEditing.value = true
+}
+
+function cancelEditing() {
+  submitError.value = ''
+  isEditing.value = false
+  const detail = taskDetailQuery.data.value
+  if (detail) {
+    applyFormInput(taskDetailToFormInput(detail))
+  }
 }
 
 function openStartProcessModal() {
@@ -310,13 +335,24 @@ function validationMessage(code: string): string {
 }
 
 async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
-  if (isDetailView.value) {
+  if (isDetailView.value && !isEditing.value) {
     return
   }
 
   submitError.value = ''
 
   try {
+    if (isEditing.value && taskId.value != null) {
+      const payload = buildUpdateTaskPayload(
+        state,
+        taskDetailQuery.data.value?.start_date,
+        user.value?.id,
+      )
+      await updateTask({ taskId: taskId.value, payload })
+      isEditing.value = false
+      return
+    }
+
     const payload = buildCreateTaskPayload(state, user.value?.id)
     await createTask(payload)
     close()
@@ -326,12 +362,13 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       submitError.value = validationMessage(error.message)
       return
     }
-    submitError.value = parseFetchError(error) || t('tasks.form.createError')
+    submitError.value = parseFetchError(error)
+      || (isEditing.value ? t('tasks.form.updateErrorTitle') : t('tasks.form.createError'))
   }
 }
 
 watch(() => state.taskReviewer, (reviewers) => {
-  if (isDetailView.value || state.type !== 'multiple_close') {
+  if (isReadOnly.value || state.type !== 'multiple_close') {
     return
   }
   const currentUserId = user.value?.id
@@ -341,7 +378,7 @@ watch(() => state.taskReviewer, (reviewers) => {
 }, { deep: true })
 
 watch(() => state.type, (type) => {
-  if (isDetailView.value) {
+  if (isReadOnly.value) {
     return
   }
   if (type === 'multiple_close') {
@@ -350,7 +387,7 @@ watch(() => state.type, (type) => {
 })
 
 watch(() => state.urgent, (isUrgent) => {
-  if (isDetailView.value) {
+  if (isReadOnly.value) {
     return
   }
   if (isUrgent) {
@@ -363,6 +400,7 @@ watch(open, (isOpen) => {
     resetForm()
     submitError.value = ''
     startProcessModalOpen.value = false
+    isEditing.value = false
     taskId.value = null
   }
 })
@@ -370,7 +408,7 @@ watch(open, (isOpen) => {
 watch(
   () => taskDetailQuery.data.value,
   (detail) => {
-    if (!open.value || !detail || taskId.value == null) {
+    if (!open.value || !detail || taskId.value == null || isEditing.value) {
       return
     }
     applyFormInput(taskDetailToFormInput(detail))
@@ -465,15 +503,40 @@ const slideoverUi = computed(() => {
                 class="uppercase tracking-wide shrink-0"
               />
             </div>
-            <UButton
-              icon="i-lucide-x"
-              color="neutral"
-              variant="ghost"
-              size="md"
-              square
-              :aria-label="t('tasks.form.close')"
-              @click="close"
-            />
+            <div class="flex items-center gap-1 shrink-0">
+              <UButton
+                v-if="!isEditing"
+                icon="i-lucide-pencil"
+                color="neutral"
+                variant="ghost"
+                size="md"
+                square
+                :aria-label="t('tasks.form.edit')"
+                :disabled="taskDetailQuery.isPending.value || taskDetailQuery.isError.value"
+                @click="startEditing"
+              />
+              <UButton
+                v-else
+                icon="i-lucide-x"
+                color="neutral"
+                variant="ghost"
+                size="md"
+                square
+                :aria-label="t('tasks.form.cancelEdit')"
+                :disabled="isSaving"
+                @click="cancelEditing"
+              />
+              <UButton
+                v-if="!isEditing"
+                icon="i-lucide-x"
+                color="neutral"
+                variant="ghost"
+                size="md"
+                square
+                :aria-label="t('tasks.form.close')"
+                @click="close"
+              />
+            </div>
           </div>
 
           <UForm
@@ -524,12 +587,12 @@ const slideoverUi = computed(() => {
                   state.type === option.value
                     ? 'border-aeto-teal bg-aeto-teal-light'
                     : 'border-border bg-card',
-                  isDetailView
+                  isReadOnly
                     ? 'cursor-default opacity-90'
                     : 'hover:border-muted-foreground/40',
                 ]"
-                :disabled="isDetailView"
-                @click="!isDetailView && (state.type = option.value)"
+                :disabled="isReadOnly"
+                @click="!isReadOnly && (state.type = option.value)"
               >
                 <UIcon
                   :name="option.icon"
@@ -553,12 +616,12 @@ const slideoverUi = computed(() => {
             <UFormField
               :label="t('tasks.form.volume.countWhat')"
               name="volumeCountWhat"
-              :required="!isDetailView"
+              :required="!isReadOnly"
             >
               <UInput
                 v-model="state.volumeCountWhat"
                 :placeholder="t('tasks.form.volume.countWhatPlaceholder')"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
                 class="w-full"
               />
             </UFormField>
@@ -567,14 +630,14 @@ const slideoverUi = computed(() => {
               <UFormField
                 :label="t('tasks.form.volume.periodGoal')"
                 name="volumePeriodGoal"
-                :required="!isDetailView"
+                :required="!isReadOnly"
               >
                 <UInput
                   v-model="state.volumePeriodGoal"
                   type="number"
                   min="0"
                   :placeholder="t('tasks.form.volume.periodGoalPlaceholder')"
-                  :disabled="isDetailView"
+                  :disabled="isReadOnly"
                   class="w-full"
                 />
               </UFormField>
@@ -582,7 +645,7 @@ const slideoverUi = computed(() => {
               <UFormField
                 :label="t('tasks.form.volume.pointsPerUnit')"
                 name="volumePointsPerUnit"
-                :required="!isDetailView"
+                :required="!isReadOnly"
                 :help="t('tasks.form.volume.pointsPerUnitHelp')"
               >
                 <UInput
@@ -590,7 +653,7 @@ const slideoverUi = computed(() => {
                   type="number"
                   min="0"
                   :placeholder="t('tasks.form.volume.pointsPerUnitPlaceholder')"
-                  :disabled="isDetailView"
+                  :disabled="isReadOnly"
                   class="w-full"
                 />
               </UFormField>
@@ -600,17 +663,17 @@ const slideoverUi = computed(() => {
               <USwitch
                 v-model="state.volumeVerifyDates"
                 :label="t('tasks.form.volume.verifyDates')"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
               />
               <USwitch
                 v-model="state.volumeRejectDuplicates"
                 :label="t('tasks.form.volume.rejectDuplicates')"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
               />
               <USwitch
                 v-model="state.volumeNexxaAiAnalysis"
                 :label="t('tasks.form.volume.nexxaAiAnalysis')"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
               />
             </div>
           </div>
@@ -623,7 +686,7 @@ const slideoverUi = computed(() => {
               <p class="text-sm font-medium text-foreground">
                 {{ t('tasks.form.multipleClose.title') }}
                 <span
-                  v-if="!isDetailView"
+                  v-if="!isReadOnly"
                   class="text-error"
                 >*</span>
               </p>
@@ -637,7 +700,7 @@ const slideoverUi = computed(() => {
               :items="userItems"
               :placeholder="t('tasks.form.multipleClose.searchPlaceholder')"
               :loading="usersQuery.isPending.value"
-              :disabled="isDetailView"
+              :disabled="isReadOnly"
               icon="i-lucide-search"
               class="w-full"
             />
@@ -646,12 +709,12 @@ const slideoverUi = computed(() => {
           <UFormField
             :label="t('tasks.form.name')"
             name="name"
-            :required="!isDetailView"
+            :required="!isReadOnly"
           >
             <UInput
               v-model="state.name"
               :placeholder="t('tasks.form.namePlaceholder')"
-              :disabled="isDetailView"
+              :disabled="isReadOnly"
               class="w-full"
             />
           </UFormField>
@@ -661,7 +724,7 @@ const slideoverUi = computed(() => {
               v-model="state.description"
               :placeholder="t('tasks.form.descriptionPlaceholder')"
               :rows="3"
-              :disabled="isDetailView"
+              :disabled="isReadOnly"
               class="w-full"
             />
           </UFormField>
@@ -670,14 +733,14 @@ const slideoverUi = computed(() => {
             <UFormField
               :label="t('tasks.form.topic')"
               name="project"
-              :required="!isDetailView"
+              :required="!isReadOnly"
             >
               <USelect
                 v-model="state.project"
                 :items="projectItems"
                 :placeholder="t('tasks.form.topicPlaceholder')"
                 :loading="projectsQuery.isPending.value"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
                 class="w-full"
               />
             </UFormField>
@@ -692,7 +755,7 @@ const slideoverUi = computed(() => {
                 :items="groupItems"
                 :placeholder="t('tasks.form.groupPlaceholder')"
                 :loading="groupsQuery.isPending.value"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
                 class="w-full"
               />
             </UFormField>
@@ -702,7 +765,7 @@ const slideoverUi = computed(() => {
             <UFormField
               :label="t('tasks.form.assignedTo')"
               name="assignedTo"
-              :required="!isDetailView"
+              :required="!isReadOnly"
             >
               <USelect
                 v-model="state.assignedTo"
@@ -710,7 +773,7 @@ const slideoverUi = computed(() => {
                 :items="userItems"
                 :placeholder="t('tasks.form.assignedToPlaceholder')"
                 :loading="usersQuery.isPending.value"
-                :disabled="isDetailView"
+                :disabled="isReadOnly"
                 icon="i-lucide-user-search"
                 class="w-full"
               />
@@ -719,14 +782,14 @@ const slideoverUi = computed(() => {
             <UFormField
               :label="t('tasks.form.dueDate')"
               name="dueDate"
-              :required="!isDetailView"
+              :required="!isReadOnly"
             >
               <UInput
                 v-model="state.dueDate"
                 type="date"
                 icon="i-lucide-calendar"
-                :min="isDetailView ? undefined : minDueDate"
-                :disabled="isDetailView"
+                :min="isReadOnly ? undefined : minDueDate"
+                :disabled="isReadOnly"
                 class="w-full"
               />
             </UFormField>
@@ -736,13 +799,13 @@ const slideoverUi = computed(() => {
             <USwitch
               v-model="state.urgent"
               :label="t('tasks.form.markUrgent')"
-              :disabled="isDetailView"
+              :disabled="isReadOnly"
             />
           </UFormField>
 
           <div
             class="space-y-2"
-            :class="!isDetailView && state.urgent ? 'opacity-50 pointer-events-none' : ''"
+            :class="!isReadOnly && state.urgent ? 'opacity-50 pointer-events-none' : ''"
           >
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.effort') }}
@@ -753,12 +816,12 @@ const slideoverUi = computed(() => {
                 v-for="option in effortOptions"
                 :key="option.value"
                 type="button"
-                :disabled="state.urgent || isDetailView"
+                :disabled="state.urgent || isReadOnly"
                 class="rounded-lg border p-3 text-left transition-colors disabled:cursor-not-allowed"
                 :class="state.effort === option.value
                   ? 'border-aeto-teal bg-aeto-teal-light'
                   : 'border-border bg-card hover:border-muted-foreground/40'"
-                @click="!isDetailView && (state.effort = state.effort === option.value ? undefined : option.value)"
+                @click="!isReadOnly && (state.effort = state.effort === option.value ? undefined : option.value)"
               >
                 <UIcon
                   :name="option.icon"
@@ -831,52 +894,64 @@ const slideoverUi = computed(() => {
             v-if="isDetailView"
             class="flex shrink-0 items-center justify-end gap-2 border-t border-border px-4 py-3"
           >
-            <UButton
-              :label="t('tasks.form.close')"
-              color="neutral"
-              variant="ghost"
-              :disabled="isPending"
-              @click="close"
-            />
-            <UButton
-              v-if="showAuthorize"
-              :label="t('tasks.toUpdate.authorize.submit')"
-              color="warning"
-              @click="onAuthorize"
-            />
-            <UButton
-              v-else-if="showStartProcess"
-              :label="t('tasks.processStart.submit')"
-              color="primary"
-              @click="openStartProcessModal"
-            />
-            <template v-else-if="showCloseProcess">
+            <template v-if="isEditing">
               <UButton
-                :label="t('tasks.processClose.inReview')"
-                color="neutral"
-                variant="outline"
-                @click="openCloseProcessModal('in_review')"
-              />
-              <UButton
-                v-if="showCompleteAction"
-                :label="t('tasks.processClose.complete')"
+                :label="t('tasks.form.save')"
                 color="primary"
-                @click="openCloseProcessModal('complete')"
+                type="submit"
+                :form="formId"
+                :loading="isSaving"
+                :disabled="isSaving"
               />
             </template>
-            <template v-else-if="showReviewDecision">
+            <template v-else>
               <UButton
-                :label="t('tasks.processReview.rejected')"
-                color="error"
-                variant="solid"
-                @click="openReviewDecisionModal('rejected')"
+                :label="t('tasks.form.close')"
+                color="neutral"
+                variant="ghost"
+                :disabled="isSaving"
+                @click="close"
               />
               <UButton
-                v-if="showReviewCompleteAction"
-                :label="t('tasks.processReview.complete')"
+                v-if="showAuthorize"
+                :label="t('tasks.toUpdate.authorize.submit')"
+                color="warning"
+                @click="onAuthorize"
+              />
+              <UButton
+                v-else-if="showStartProcess"
+                :label="t('tasks.processStart.submit')"
                 color="primary"
-                @click="openReviewDecisionModal('complete')"
+                @click="openStartProcessModal"
               />
+              <template v-else-if="showCloseProcess">
+                <UButton
+                  :label="t('tasks.processClose.inReview')"
+                  color="neutral"
+                  variant="outline"
+                  @click="openCloseProcessModal('in_review')"
+                />
+                <UButton
+                  v-if="showCompleteAction"
+                  :label="t('tasks.processClose.complete')"
+                  color="primary"
+                  @click="openCloseProcessModal('complete')"
+                />
+              </template>
+              <template v-else-if="showReviewDecision">
+                <UButton
+                  :label="t('tasks.processReview.rejected')"
+                  color="error"
+                  variant="solid"
+                  @click="openReviewDecisionModal('rejected')"
+                />
+                <UButton
+                  v-if="showReviewCompleteAction"
+                  :label="t('tasks.processReview.complete')"
+                  color="primary"
+                  @click="openReviewDecisionModal('complete')"
+                />
+              </template>
             </template>
           </div>
         </div>

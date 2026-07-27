@@ -5,6 +5,7 @@ import type {
   TaskCloseApproval,
   TaskDetail,
   TaskEffort,
+  UpdateTaskPayload,
 } from '~/features/tasks/types/task.types'
 
 export interface NewTaskFormInput {
@@ -137,6 +138,58 @@ export function buildCreateTaskPayload(
     }
 
     payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
+  }
+
+  return payload
+}
+
+/**
+ * Payload de PATCH /api/tasks/:id/update/.
+ * Conserva `start_date` original; `group` puede ser null.
+ */
+export function buildUpdateTaskPayload(
+  form: NewTaskFormInput,
+  startDate: string | null | undefined,
+  currentUserId?: number,
+): UpdateTaskPayload {
+  if (!form.name.trim()) {
+    throw new Error('name_required')
+  }
+  if (form.project == null) {
+    throw new Error('project_required')
+  }
+  if (!form.assignedTo.length) {
+    throw new Error('assigned_to_required')
+  }
+  if (!form.dueDate) {
+    throw new Error('due_date_required')
+  }
+
+  const payload: UpdateTaskPayload = {
+    short_description: form.name.trim(),
+    long_description: form.description.trim(),
+    type: form.type,
+    priority: resolveTaskPriority(form.urgent, form.effort),
+    start_date: startDate || new Date().toISOString(),
+    limit_date: dateInputToLimitISO(form.dueDate),
+    project: form.project,
+    group: form.group ?? null,
+    assigned_to: form.assignedTo,
+  }
+
+  if (form.type === 'multiple_close') {
+    const reviewers = form.taskReviewer.length
+      ? form.taskReviewer
+      : (currentUserId != null ? [currentUserId] : [])
+
+    if (!reviewers.length) {
+      throw new Error('task_reviewer_required')
+    }
+
+    payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
+  }
+  else if (form.taskReviewer.length) {
+    payload.task_reviewer = form.taskReviewer
   }
 
   return payload
