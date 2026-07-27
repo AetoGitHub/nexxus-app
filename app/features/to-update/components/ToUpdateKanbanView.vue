@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import { useToUpdateKanbanMove } from '~/features/to-update/composables/useToUpdateKanbanMove'
 import type { KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
@@ -18,10 +19,15 @@ const emit = defineEmits<{
 }>()
 
 const { columns } = useToUpdateKanban(() => props.filters)
-const { requestMove, isPending } = useToUpdateKanbanMove()
+const {
+  pendingApprovalId,
+  authorizeModalOpen,
+  requestMove,
+  onAuthorizeSuccess,
+} = useToUpdateKanbanMove()
 
-async function onMove(payload: KanbanTaskMove) {
-  if (isPending.value) {
+function onMove(payload: KanbanTaskMove) {
+  if (authorizeModalOpen.value) {
     return
   }
 
@@ -33,7 +39,7 @@ async function onMove(payload: KanbanTaskMove) {
     return
   }
 
-  await requestMove({ ...payload, task })
+  requestMove({ ...payload, task })
 }
 </script>
 
@@ -45,5 +51,12 @@ async function onMove(payload: KanbanTaskMove) {
     confirm-before-move
     @select="emit('select', $event)"
     @move="onMove"
+  />
+
+  <TaskAuthorizeCloseModal
+    v-if="pendingApprovalId != null"
+    v-model:open="authorizeModalOpen"
+    :approval-id="pendingApprovalId"
+    @success="onAuthorizeSuccess"
   />
 </template>

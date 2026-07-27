@@ -76,10 +76,13 @@
       "authorize": {
         "label": "Authorize task",
         "submit": "Authorize",
+        "modalTitle": "Authorize task",
+        "modalDescription": "Confirm that you want to record your authorization for this task.",
         "successTitle": "Task authorized",
         "successDescription": "Your authorization was recorded successfully.",
         "errorTitle": "Could not authorize"
       },
+      "closeApprovalsProgress": "{closed}/{total} authorizations",
       "kanban": {
         "moveNotAllowedTitle": "Move not allowed",
         "moveNotAllowedDescription": "You can only move one step forward: Pending → Urgent → Delayed → Critical → Accepted.",

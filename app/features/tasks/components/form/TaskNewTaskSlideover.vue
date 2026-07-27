@@ -13,10 +13,10 @@ import type {
   TaskView,
   UserDropdown,
 } from '~/features/tasks/types/task.types'
-import { useAuthorizeCloseApproval } from '~/features/tasks/composables/form/useAuthorizeCloseApproval'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useGroupsDropdown } from '~/features/tasks/composables/shared/useGroupsDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
@@ -68,6 +68,7 @@ const closeProcessModalOpen = ref(false)
 const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
+const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle view-only (sin submit ni edición). */
 const isDetailView = computed(() => taskId.value != null)
 
@@ -81,10 +82,6 @@ const minDueDate = computed(() => {
 })
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
-const {
-  mutateAsync: authorizeCloseApproval,
-  isPending: isAuthorizePending,
-} = useAuthorizeCloseApproval()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
 /** Aprobación pendiente del usuario logueado en close_approvals. */
@@ -288,18 +285,16 @@ function onReviewDecision() {
   close()
 }
 
-async function onAuthorize() {
-  const approval = pendingApprovalForUser.value
-  if (!approval) {
+function onAuthorize() {
+  if (!pendingApprovalForUser.value) {
     return
   }
-  try {
-    await authorizeCloseApproval(approval.id)
-    close()
-  }
-  catch {
-    // Toast de error lo maneja useAuthorizeCloseApproval.
-  }
+  authorizeModalOpen.value = true
+}
+
+function onAuthorizeSuccess() {
+  authorizeModalOpen.value = false
+  close()
 }
 
 function validationMessage(code: string): string {
@@ -840,15 +835,13 @@ const slideoverUi = computed(() => {
               :label="t('tasks.form.close')"
               color="neutral"
               variant="ghost"
-              :disabled="isPending || isAuthorizePending"
+              :disabled="isPending"
               @click="close"
             />
             <UButton
               v-if="showAuthorize"
               :label="t('tasks.toUpdate.authorize.submit')"
               color="warning"
-              :loading="isAuthorizePending"
-              :disabled="isAuthorizePending"
               @click="onAuthorize"
             />
             <UButton
@@ -935,5 +928,12 @@ const slideoverUi = computed(() => {
     :task-id="taskId"
     :target-status="reviewDecisionStatus"
     @success="onReviewDecision"
+  />
+
+  <TaskAuthorizeCloseModal
+    v-if="pendingApprovalForUser != null"
+    v-model:open="authorizeModalOpen"
+    :approval-id="pendingApprovalForUser.id"
+    @success="onAuthorizeSuccess"
   />
 </template>

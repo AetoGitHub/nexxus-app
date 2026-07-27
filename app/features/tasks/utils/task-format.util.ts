@@ -1,4 +1,4 @@
-import type { Task, TaskAssignee } from '~/features/tasks/types/task.types'
+import type { Task, TaskAssignee, TaskCloseApproval } from '~/features/tasks/types/task.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 
 const ASSIGNEE_AVATAR_COLORS = [
@@ -18,7 +18,14 @@ export function taskAssigneeInitial(username: string): string {
   return source ? source.slice(0, 2).toUpperCase() : '?'
 }
 
+/**
+ * Color del avatar: prioriza group_color del asignado; si no, paleta por id.
+ */
 export function taskAssigneeColor(assignee: TaskAssignee): string {
+  const fromGroup = assignee.group_color?.trim()
+  if (fromGroup) {
+    return resolveThemeColor(fromGroup)
+  }
   return ASSIGNEE_AVATAR_COLORS[Math.abs(assignee.id) % ASSIGNEE_AVATAR_COLORS.length]!
 }
 
@@ -95,4 +102,17 @@ export function taskBarColor(task: Task): string {
 /** Requiere atención cuando hay aprobaciones de cierre pendientes. */
 export function taskRequiresAttention(task: Task): boolean {
   return task.close_approvals.some(approval => !approval.closed)
+}
+
+/** Progreso de close_approvals: closed / total (null si no hay registros). */
+export function taskCloseApprovalsProgress(
+  approvals: TaskCloseApproval[] | undefined,
+): { closed: number, total: number } | null {
+  if (!approvals?.length) {
+    return null
+  }
+  return {
+    closed: approvals.filter(approval => approval.closed).length,
+    total: approvals.length,
+  }
 }

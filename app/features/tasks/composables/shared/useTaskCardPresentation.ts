@@ -15,6 +15,9 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
   const statusMeta = computed(() => taskStatusMeta(current.value.status))
   const barColor = computed(() => taskBarColor(current.value))
   const requiresAttention = computed(() => taskRequiresAttention(current.value))
+  const closeApprovalsProgress = computed(() =>
+    taskCloseApprovalsProgress(current.value.close_approvals),
+  )
   const assignees = computed(() => current.value.assigned_to ?? [])
 
   const dueDiff = computed(() => diffInDays(current.value.limit_date))
@@ -46,6 +49,7 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
     statusMeta,
     barColor,
     requiresAttention,
+    closeApprovalsProgress,
     assignees,
     dueDiff,
     isOverdue,

@@ -76,10 +76,13 @@
       "authorize": {
         "label": "Autorizar tarea",
         "submit": "Autorizar",
+        "modalTitle": "Autorizar tarea",
+        "modalDescription": "Confirma que deseas registrar tu autorización para esta tarea.",
         "successTitle": "Tarea autorizada",
         "successDescription": "Tu autorización se registró correctamente.",
         "errorTitle": "No se pudo autorizar"
       },
+      "closeApprovalsProgress": "{closed}/{total} autorizaciones",
       "kanban": {
         "moveNotAllowedTitle": "Movimiento no permitido",
         "moveNotAllowedDescription": "Solo puedes avanzar un paso: Pendiente → Urgente → Retraso → Crítico → Aceptadas.",

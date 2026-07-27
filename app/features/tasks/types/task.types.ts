@@ -77,6 +77,8 @@ export interface TaskProcessEntry {
 export interface TaskAssignee {
   id: number
   username: string
+  /** Color hex del grupo del asignado. */
+  group_color?: string
 }
 
 export interface Task {
@@ -88,6 +90,7 @@ export interface Task {
   project: number
   project_color?: string
   group?: number | null
+  group_name?: string
   multiple_close: boolean
   start_date: string | null
   limit_date: string | null

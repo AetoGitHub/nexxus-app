@@ -26,6 +26,7 @@ const {
   statusMeta,
   barColor,
   requiresAttention,
+  closeApprovalsProgress,
   assignees,
   isOverdue,
   dueLabel,
@@ -98,6 +99,17 @@ function onSelect() {
           :color="priorityMeta.color"
           variant="soft"
           size="sm"
+        />
+        <UBadge
+          v-if="closeApprovalsProgress"
+          :label="`${closeApprovalsProgress.closed}/${closeApprovalsProgress.total}`"
+          color="warning"
+          variant="soft"
+          size="sm"
+          :aria-label="t('tasks.toUpdate.closeApprovalsProgress', {
+            closed: closeApprovalsProgress.closed,
+            total: closeApprovalsProgress.total,
+          })"
         />
         <UBadge
           v-if="requiresAttention"
