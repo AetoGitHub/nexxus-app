@@ -3,13 +3,29 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { AuthProfile } from '~/features/auth/types/profile.types'
 
-/** Catálogo de perfiles para selectores (miembros de tema, etc.). */
-export function useProfiles(enabled: MaybeRefOrGetter<boolean> = true) {
+export interface UseProfilesParams {
+  /** Solo perfiles sin grupo asignado. */
+  no_group?: boolean
+}
+
+/** Catálogo de perfiles para selectores (miembros de tema, grupos, etc.). */
+export function useProfiles(
+  enabled: MaybeRefOrGetter<boolean> = true,
+  params: MaybeRefOrGetter<UseProfilesParams> = {},
+) {
   const { $api } = useNuxtApp()
 
+  const queryParams = computed(() => {
+    const value = toValue(params)
+    return value.no_group ? { no_group: true } : undefined
+  })
+
   const profilesQuery = useQuery({
-    queryKey: ['auth', 'profiles'],
-    queryFn: () => $api<PaginatedResponse<AuthProfile>>('/api/auth/profiles/'),
+    queryKey: computed(() => ['auth', 'profiles', queryParams.value ?? {}]),
+    queryFn: () =>
+      $api<PaginatedResponse<AuthProfile>>('/api/auth/profiles/', {
+        query: queryParams.value,
+      }),
     enabled: computed(() => toValue(enabled)),
   })
 

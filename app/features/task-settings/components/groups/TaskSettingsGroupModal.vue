@@ -19,11 +19,22 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const { items: profileItems, profilesQuery } = useProfiles(() => open.value)
+const { items: profileItems, profilesQuery } = useProfiles(
+  () => open.value,
+  { no_group: true },
+)
 
 const memberItems = computed(() =>
   profileItems.value.filter(item => item.value !== form.value.manager),
 )
+
+/** USelect tipa el model como `number | undefined`; el form usa `null`. */
+const managerModel = computed({
+  get: () => form.value.manager ?? undefined,
+  set: (value: number | undefined) => {
+    form.value.manager = value ?? null
+  },
+})
 
 watch(
   () => form.value.manager,
@@ -130,7 +141,7 @@ function onSubmit() {
           required
         >
           <USelect
-            v-model="form.manager"
+            v-model="managerModel"
             :items="profileItems"
             :loading="profilesQuery.isPending.value"
             :placeholder="t('taskSettings.groupModal.managerPlaceholder')"
