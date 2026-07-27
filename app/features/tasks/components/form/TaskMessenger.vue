@@ -153,12 +153,15 @@ watch(
               ? 'justify-end'
               : 'justify-start'"
         >
-          <p
+          <div
             v-if="isSystemMessage(message.type)"
-            class="max-w-[90%] px-2 py-1 text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word"
+            class="flex w-full max-w-[90%] flex-col items-center gap-2"
           >
-            {{ message.content }}
-          </p>
+            <p class="px-2 py-1 text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
+              {{ message.content }}
+            </p>
+            <USeparator class="w-full" />
+          </div>
 
           <div
             v-else
