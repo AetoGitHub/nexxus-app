@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
+import type { TaskMessage } from '~/features/tasks/types/task.types'
+import { getInitials } from '~/shared/utils/initials'
+
+const AVATAR_COLORS = [
+  '#f59e0b',
+  '#28ceab',
+  '#0ea5e9',
+  '#f97316',
+  '#8b5cf6',
+  '#ef4444',
+  '#22c55e',
+  '#ec4899',
+] as const
 
 const props = defineProps<{
   taskId: number
@@ -39,6 +52,29 @@ function isOwnMessage(profileId: number, username: string) {
 
 function isSystemMessage(type: string | undefined) {
   return type != null && type !== 'user'
+}
+
+function resolveAvatarColor(userId: number) {
+  const index = Math.abs(userId) % AVATAR_COLORS.length
+  return AVATAR_COLORS[index]!
+}
+
+/** Primer mensaje de un bloque consecutivo del mismo remitente (no propio). */
+function isFirstIncomingInGroup(message: TaskMessage, index: number) {
+  if (isSystemMessage(message.type) || isOwnMessage(message.profile, message.profile_username)) {
+    return false
+  }
+
+  if (index === 0) {
+    return true
+  }
+
+  const previous = messages.value[index - 1]
+  if (!previous || isSystemMessage(previous.type)) {
+    return true
+  }
+
+  return previous.profile !== message.profile
 }
 
 function formatTime(iso: string) {
@@ -160,10 +196,10 @@ watch(
 
       <ul
         v-else
-        class="flex flex-col gap-2"
+        class="flex flex-col gap-1.5"
       >
         <li
-          v-for="message in messages"
+          v-for="(message, index) in messages"
           :key="message.id"
           class="flex"
           :class="isSystemMessage(message.type)
@@ -183,29 +219,50 @@ watch(
           </div>
 
           <div
-            v-else
-            class="max-w-[85%] rounded-2xl px-3 py-2 text-sm"
-            :class="isOwnMessage(message.profile, message.profile_username)
-              ? 'rounded-br-md bg-primary/70 text-white'
-              : 'rounded-bl-md border border-border bg-muted/40 text-foreground'"
+            v-else-if="isOwnMessage(message.profile, message.profile_username)"
+            class="max-w-[85%] rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white"
           >
-            <p
-              v-if="!isOwnMessage(message.profile, message.profile_username)"
-              class="mb-0.5 text-[11px] font-semibold text-muted-foreground"
-            >
-              {{ message.profile_username }}
-            </p>
             <p class="whitespace-pre-wrap wrap-break-word">
               {{ message.content }}
             </p>
-            <p
-              class="mt-1 text-[10px]"
-              :class="isOwnMessage(message.profile, message.profile_username)
-                ? 'text-right text-white/80'
-                : 'text-muted-foreground'"
-            >
+            <p class="mt-1 text-right text-[10px] text-white/80">
               {{ formatTime(message.created_at) }}
             </p>
+          </div>
+
+          <div
+            v-else
+            class="flex max-w-[85%] items-end gap-2"
+          >
+            <!-- Avatar nativo: círculo de iniciales (mismo patrón que grupos). -->
+            <span
+              v-if="isFirstIncomingInGroup(message, index)"
+              class="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white select-none"
+              :style="{ backgroundColor: resolveAvatarColor(message.profile) }"
+              :title="message.profile_username"
+            >
+              {{ getInitials(message.profile_username) }}
+            </span>
+            <span
+              v-else
+              class="size-7 shrink-0"
+              aria-hidden="true"
+            />
+
+            <div class="min-w-0 rounded-2xl rounded-bl-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">
+              <p
+                v-if="isFirstIncomingInGroup(message, index)"
+                class="mb-0.5 text-[12px] font-semibold text-teal-500 dark:text-teal-400"
+              >
+                {{ message.profile_username }}
+              </p>
+              <p class="whitespace-pre-wrap wrap-break-word">
+                {{ message.content }}
+              </p>
+              <p class="mt-1 text-right text-[10px] text-muted-foreground">
+                {{ formatTime(message.created_at) }}
+              </p>
+            </div>
           </div>
         </li>
       </ul>
