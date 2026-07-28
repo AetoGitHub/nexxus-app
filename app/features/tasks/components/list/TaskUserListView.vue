@@ -17,16 +17,16 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { groups, sections } = useGroupTasks(() => props.filters)
+const { users, sections } = useAssignedTasks(() => props.filters)
 </script>
 
 <template>
   <div>
-    <div v-if="groups.isPending.value && !sections.length" class="px-4 py-3 space-y-2">
+    <div v-if="users.isPending.value && !sections.length" class="px-4 py-3 space-y-2">
       <USkeleton v-for="n in 3" :key="n" class="h-10 w-full" />
     </div>
 
-    <p v-else-if="groups.isError.value" class="px-4 py-4 text-sm text-error">
+    <p v-else-if="users.isError.value" class="px-4 py-4 text-sm text-error">
       {{ t('tasks.loadError') }}
     </p>
 

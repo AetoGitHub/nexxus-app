@@ -47,7 +47,7 @@ export interface UpdateTaskPayload {
 
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
-export type TaskGroupBy = 'all' | 'due' | 'topic' | 'group'
+export type TaskGroupBy = 'all' | 'due' | 'topic' | 'user' | 'group'
 
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'
@@ -185,6 +185,20 @@ export interface UserDropdown {
 export interface AssignedTaskCount {
   id: number
   username: string
+  total: number
+}
+
+/** Grupo en GET /api/tasks/company/:id/groups/ */
+export interface TaskGroupListItem {
+  id: number
+  name: string
+  color: string
+}
+
+/** Contador en GET /api/tasks/company/:id/group/counts/ */
+export interface TaskGroupCount {
+  id: number
+  name: string
   total: number
 }
 

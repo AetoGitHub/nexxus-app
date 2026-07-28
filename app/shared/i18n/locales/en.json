@@ -104,7 +104,8 @@
       "all": "All",
       "due": "Due date",
       "topic": "Topic",
-      "group": "Group"
+      "user": "Users",
+      "group": "Groups"
     },
     "overdueSections": {
       "today": "Today",

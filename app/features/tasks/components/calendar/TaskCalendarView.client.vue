@@ -39,7 +39,7 @@ const phase = computed(() => props.phase ?? 'start')
 /** Modo "por tema": tareas coloreadas por proyecto. */
 const projectMode = computed(() => props.groupBy === 'topic')
 /** Modo "por grupo": tareas coloreadas por usuario asignado. */
-const groupMode = computed(() => props.groupBy === 'group')
+const groupMode = computed(() => props.groupBy === 'user')
 /** Algún modo con leyenda de chips (tema o grupo). */
 const legendMode = computed(() => projectMode.value || groupMode.value)
 /** Fuentes ocultas desde la leyenda (proyectos o usuarios). */

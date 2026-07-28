@@ -104,7 +104,8 @@
       "all": "Todas",
       "due": "Vencimiento",
       "topic": "Proyectos",
-      "group": "Grupo"
+      "user": "Usuarios",
+      "group": "Grupos"
     },
     "overdueSections": {
       "today": "Hoy",

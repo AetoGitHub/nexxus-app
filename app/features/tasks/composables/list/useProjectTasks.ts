@@ -50,13 +50,18 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
   const projectIds = computed(() => projectList.value.map(p => p.id))
 
   const taskQueries = useQueries({
-    queries: computed(() =>
-      projectIds.value.map(id => ({
-        queryKey: ['tasks', companyId, 'project', id, query.value],
-        queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
-        enabled: projectIds.value.length > 0,
-      })),
-    ),
+    queries: computed(() => {
+      const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
+
+      return projectIds.value.map(id => {
+        const total = countsMap.get(id) ?? 0
+        return {
+          queryKey: ['tasks', companyId, 'project', id, query.value],
+          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
+          enabled: total > 0,
+        }
+      })
+    }),
   })
 
   const sections = computed<ProjectTaskSection[]>(() => {
@@ -64,17 +69,18 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
 
     return projectList.value.map((project, index) => {
       const queryResult = taskQueries.value[index]
-      const tasks = extractResults(queryResult?.data)
+      const total = countsMap.get(project.id) ?? 0
+      const tasks = total > 0 ? extractResults(queryResult?.data) : []
 
       return {
         id: project.id,
         name: project.name,
-        count: countsMap.get(project.id),
+        count: total,
         dotColor: tasks[0]?.project_color?.trim()
           ? resolveThemeColor(tasks[0].project_color)
-          : PROJECT_SECTION_COLORS[index % PROJECT_SECTION_COLORS.length],
+          : PROJECT_SECTION_COLORS[index % PROJECT_SECTION_COLORS.length]!,
         tasks,
-        loading: queryResult?.isPending ?? false,
+        loading: total > 0 && (queryResult?.isLoading ?? false),
         error: queryResult?.isError ?? false,
       }
     })
