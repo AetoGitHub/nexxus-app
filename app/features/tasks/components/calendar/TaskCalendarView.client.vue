@@ -17,6 +17,7 @@ import type {
 import { useCalendarTasks } from '~/features/tasks/composables/calendar/useCalendarTasks'
 import { useCalendarProjectTasks } from '~/features/tasks/composables/calendar/useCalendarProjectTasks'
 import { useCalendarAssignedTasks } from '~/features/tasks/composables/calendar/useCalendarAssignedTasks'
+import { useCalendarGroupTasks } from '~/features/tasks/composables/calendar/useCalendarGroupTasks'
 import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { coloredTasksToCalendarEvents, tasksToCalendarEvents } from '~/features/tasks/utils/calendar/task-calendar.util'
@@ -38,11 +39,13 @@ const emit = defineEmits<{
 const phase = computed(() => props.phase ?? 'start')
 /** Modo "por tema": tareas coloreadas por proyecto. */
 const projectMode = computed(() => props.groupBy === 'topic')
-/** Modo "por grupo": tareas coloreadas por usuario asignado. */
-const groupMode = computed(() => props.groupBy === 'user')
-/** Algún modo con leyenda de chips (tema o grupo). */
-const legendMode = computed(() => projectMode.value || groupMode.value)
-/** Fuentes ocultas desde la leyenda (proyectos o usuarios). */
+/** Modo "por usuario": tareas coloreadas por usuario asignado. */
+const userMode = computed(() => props.groupBy === 'user')
+/** Modo "por grupos": tareas coloreadas por grupo. */
+const groupsMode = computed(() => props.groupBy === 'group')
+/** Algún modo con leyenda de chips (tema, usuario o grupos). */
+const legendMode = computed(() => projectMode.value || userMode.value || groupsMode.value)
+/** Fuentes ocultas desde la leyenda (proyectos, usuarios o grupos). */
 const hiddenSourceIds = ref(new Set<number>())
 
 const now = new Date()
@@ -68,15 +71,26 @@ const {
   assignees: calendarAssignees,
   isPending: assigneesPending,
   isError: assigneesError,
-} = useCalendarAssignedTasks(() => props.filters, () => groupMode.value)
+} = useCalendarAssignedTasks(() => props.filters, () => userMode.value)
 
-const legendItems = computed(() =>
-  projectMode.value
-    ? calendarProjects.value
-    : groupMode.value
-      ? calendarAssignees.value
-      : [],
-)
+const {
+  groups: calendarGroups,
+  isPending: groupsPending,
+  isError: groupsError,
+} = useCalendarGroupTasks(() => props.filters, () => groupsMode.value)
+
+const legendItems = computed(() => {
+  if (projectMode.value) {
+    return calendarProjects.value
+  }
+  if (userMode.value) {
+    return calendarAssignees.value
+  }
+  if (groupsMode.value) {
+    return calendarGroups.value
+  }
+  return []
+})
 
 const visibleSources = computed(() =>
   legendItems.value.filter(item => !hiddenSourceIds.value.has(item.id)),
@@ -93,8 +107,11 @@ const isPending = computed(() => {
   if (projectMode.value) {
     return projectsPending.value
   }
-  if (groupMode.value) {
+  if (userMode.value) {
     return assigneesPending.value
+  }
+  if (groupsMode.value) {
+    return groupsPending.value
   }
   return tasks.isPending.value
 })
@@ -103,8 +120,11 @@ const isError = computed(() => {
   if (projectMode.value) {
     return projectsError.value
   }
-  if (groupMode.value) {
+  if (userMode.value) {
     return assigneesError.value
+  }
+  if (groupsMode.value) {
+    return groupsError.value
   }
   return tasks.isError.value
 })
