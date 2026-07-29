@@ -60,10 +60,23 @@ function selectAllTypes() {
   }
 }
 
-function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value: boolean) {
+type BooleanFilterKey = 'overdue' | 'completed' | 'multiple_close'
+
+const BOOLEAN_FILTERS: { key: BooleanFilterKey, labelKey: string }[] = [
+  { key: 'overdue', labelKey: 'tasks.filterOverdue' },
+  { key: 'completed', labelKey: 'tasks.filterCompleted' },
+  { key: 'multiple_close', labelKey: 'tasks.filterMultipleClose' },
+]
+
+function isBooleanFilterActive(key: BooleanFilterKey) {
+  return filters.value[key] === true
+}
+
+/** Se conserva `false` para que el query lo envíe explícitamente. */
+function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
   filters.value = {
     ...filters.value,
-    [key]: value || undefined,
+    [key]: value,
   }
 }
 </script>
@@ -138,32 +151,15 @@ function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value
     <span class="hidden sm:block h-8 w-px bg-border self-end" aria-hidden="true" />
 
     <div class="flex items-center gap-4 flex-wrap h-8 self-end">
-      <label class="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-        <USwitch
-          size="sm"
-          :model-value="!!filters.overdue"
-          @update:model-value="setBooleanFilter('overdue', $event)"
-        />
-        {{ t('tasks.filterOverdue') }}
-      </label>
-
-      <label class="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-        <USwitch
-          size="sm"
-          :model-value="!!filters.completed"
-          @update:model-value="setBooleanFilter('completed', $event)"
-        />
-        {{ t('tasks.filterCompleted') }}
-      </label>
-
-      <label class="inline-flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-        <USwitch
-          size="sm"
-          :model-value="!!filters.multiple_close"
-          @update:model-value="setBooleanFilter('multiple_close', $event)"
-        />
-        {{ t('tasks.filterMultipleClose') }}
-      </label>
+      <USwitch
+        v-for="booleanFilter in BOOLEAN_FILTERS"
+        :key="booleanFilter.key"
+        size="sm"
+        :label="t(booleanFilter.labelKey)"
+        :model-value="isBooleanFilterActive(booleanFilter.key)"
+        :ui="{ label: 'text-xs text-muted-foreground' }"
+        @update:model-value="setBooleanFilter(booleanFilter.key, $event === true)"
+      />
     </div>
 
     <div class="flex-1 min-w-2" />
