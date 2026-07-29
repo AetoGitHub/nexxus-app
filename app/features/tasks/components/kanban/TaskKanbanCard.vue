@@ -82,7 +82,7 @@ function onDragEnd() {
         <UBadge
           :icon="typeMeta.icon"
           :label="t(typeMeta.labelKey)"
-          color="neutral"
+          :color="typeMeta.color"
           variant="soft"
           size="sm"
         />

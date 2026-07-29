@@ -29,11 +29,19 @@ export function taskAssigneeColor(assignee: TaskAssignee): string {
   return ASSIGNEE_AVATAR_COLORS[Math.abs(assignee.id) % ASSIGNEE_AVATAR_COLORS.length]!
 }
 
-type BadgeColor = 'error' | 'warning' | 'neutral' | 'primary' | 'success'
+type BadgeColor =
+  | 'error'
+  | 'warning'
+  | 'neutral'
+  | 'primary'
+  | 'secondary'
+  | 'info'
+  | 'success'
 
 interface TaskTypeMeta {
   labelKey: string
   icon: string
+  color: BadgeColor
 }
 
 interface TaskPriorityMeta {
@@ -47,13 +55,17 @@ interface TaskStatusMeta {
 }
 
 const TYPE_META: Record<string, TaskTypeMeta> = {
-  manual: { labelKey: 'tasks.types.manual', icon: 'i-lucide-hand' },
-  trigger: { labelKey: 'tasks.types.trigger', icon: 'i-lucide-zap' },
-  repeat: { labelKey: 'tasks.types.repeat', icon: 'i-lucide-repeat' },
-  volume: { labelKey: 'tasks.types.volume', icon: 'i-lucide-layers' },
-  multiple_close: { labelKey: 'tasks.types.multiple_close', icon: 'i-lucide-check-check' },
-  puesto: { labelKey: 'tasks.types.puesto', icon: 'i-lucide-briefcase' },
-  bug: { labelKey: 'tasks.types.bug', icon: 'i-lucide-bug' },
+  manual: { labelKey: 'tasks.types.manual', icon: 'i-lucide-hand', color: 'primary' },
+  trigger: { labelKey: 'tasks.types.trigger', icon: 'i-lucide-zap', color: 'warning' },
+  repeat: { labelKey: 'tasks.types.repeat', icon: 'i-lucide-repeat', color: 'success' },
+  volume: { labelKey: 'tasks.types.volume', icon: 'i-lucide-layers', color: 'info' },
+  multiple_close: {
+    labelKey: 'tasks.types.multiple_close',
+    icon: 'i-lucide-check-check',
+    color: 'warning',
+  },
+  puesto: { labelKey: 'tasks.types.puesto', icon: 'i-lucide-briefcase', color: 'secondary' },
+  bug: { labelKey: 'tasks.types.bug', icon: 'i-lucide-bug', color: 'error' },
 }
 
 const PRIORITY_META: Record<string, TaskPriorityMeta> = {
@@ -71,7 +83,11 @@ const PRIORITY_BAR_COLOR: Record<string, string> = {
 }
 
 export function taskTypeMeta(type: string): TaskTypeMeta {
-  return TYPE_META[type] ?? { labelKey: 'tasks.types.unknown', icon: 'i-lucide-tag' }
+  return TYPE_META[type] ?? {
+    labelKey: 'tasks.types.unknown',
+    icon: 'i-lucide-tag',
+    color: 'neutral',
+  }
 }
 
 /** Devuelve la meta de prioridad, o `null` cuando no debe mostrarse chip (normal). */
@@ -80,7 +96,7 @@ export function taskPriorityMeta(priority: string): TaskPriorityMeta | null {
 }
 
 const STATUS_META: Record<string, TaskStatusMeta> = {
-  pending: { labelKey: 'tasks.kanban.columns.pending', color: 'neutral' },
+  pending: { labelKey: 'tasks.kanban.columns.pending', color: 'warning' },
   wip: { labelKey: 'tasks.kanban.columns.wip', color: 'primary' },
   in_review: { labelKey: 'tasks.kanban.columns.inReview', color: 'warning' },
   rejected: { labelKey: 'tasks.kanban.columns.rejected', color: 'error' },
