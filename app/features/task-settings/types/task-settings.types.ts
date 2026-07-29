@@ -1,12 +1,12 @@
 export type TaskSettingsSectionId =
-  | 'themes'
+  | 'projects'
   | 'groups'
   | 'nexxtep'
   | 'videoCalls'
   | 'notifications'
   | 'general'
 
-export type TaskSettingsThemeTab = 'all' | 'mine'
+export type TaskSettingsProjectTab = 'all' | 'mine'
 
 export interface TaskSettingsNavItem {
   id: TaskSettingsSectionId
@@ -14,13 +14,13 @@ export interface TaskSettingsNavItem {
   icon: string
 }
 
-export interface ThemeFormState {
+export interface ProjectFormState {
   name: string
   color: string
   members: number[]
 }
 
-export function createEmptyThemeForm(): ThemeFormState {
+export function createEmptyProjectForm(): ProjectFormState {
   return {
     name: '',
     color: 'red',
@@ -28,12 +28,12 @@ export function createEmptyThemeForm(): ThemeFormState {
   }
 }
 
-/** Prefill del formulario de tema desde el listado de proyectos. */
-export function createThemeFormFromProject(project: {
+/** Prefill del formulario de proyecto desde el listado de empresa. */
+export function createProjectFormFromEnterprise(project: {
   name: string
   color: string
   members: { id: number }[]
-}): ThemeFormState {
+}): ProjectFormState {
   return {
     name: project.name,
     color: project.color,

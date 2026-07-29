@@ -47,7 +47,7 @@ export interface UpdateTaskPayload {
 
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
-export type TaskGroupBy = 'all' | 'due' | 'topic' | 'user' | 'group'
+export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
 
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'

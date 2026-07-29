@@ -37,13 +37,13 @@ const emit = defineEmits<{
 }>()
 
 const phase = computed(() => props.phase ?? 'start')
-/** Modo "por tema": tareas coloreadas por proyecto. */
-const projectMode = computed(() => props.groupBy === 'topic')
+/** Modo "por proyecto": tareas coloreadas por proyecto. */
+const projectMode = computed(() => props.groupBy === 'project')
 /** Modo "por usuario": tareas coloreadas por usuario asignado. */
 const userMode = computed(() => props.groupBy === 'user')
 /** Modo "por grupos": tareas coloreadas por grupo. */
 const groupsMode = computed(() => props.groupBy === 'group')
-/** Algún modo con leyenda de chips (tema, usuario o grupos). */
+/** Algún modo con leyenda de chips (proyecto, usuario o grupos). */
 const legendMode = computed(() => projectMode.value || userMode.value || groupsMode.value)
 /** Fuentes ocultas desde la leyenda (proyectos, usuarios o grupos). */
 const hiddenSourceIds = ref(new Set<number>())
@@ -399,7 +399,7 @@ watch([phase, legendMode], () => {
   applyDayMaxEventRows()
 })
 
-// Fuente única de eventos: calendario global o agrupado (tema/grupo).
+// Fuente única de eventos: calendario global o agrupado (proyecto/grupo).
 watch(
   sourceEvents,
   (events) => {

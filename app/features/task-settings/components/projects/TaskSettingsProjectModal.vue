@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { ThemeFormState } from '~/features/task-settings/types/task-settings.types'
+import type { ProjectFormState } from '~/features/task-settings/types/task-settings.types'
 import { THEME_COLORS } from '~/features/projects/types/project.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 
 const open = defineModel<boolean>('open', { required: true })
-const form = defineModel<ThemeFormState>('form', { required: true })
+const form = defineModel<ProjectFormState>('form', { required: true })
 
 const props = defineProps<{
   loading?: boolean
@@ -25,14 +25,14 @@ const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-b
 
 const modalTitle = computed(() =>
   props.isEdit
-    ? t('taskSettings.themeModal.editTitle')
-    : t('taskSettings.themeModal.title'),
+    ? t('taskSettings.projectModal.editTitle')
+    : t('taskSettings.projectModal.title'),
 )
 
 const submitLabel = computed(() =>
   props.isEdit
-    ? t('taskSettings.themeModal.save')
-    : t('taskSettings.themeModal.create'),
+    ? t('taskSettings.projectModal.save')
+    : t('taskSettings.projectModal.create'),
 )
 
 const canSubmit = computed(() => form.value.name.trim().length > 0 && !!form.value.color)
@@ -64,19 +64,19 @@ function onSubmit() {
       <div class="space-y-5">
         <div>
           <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
-            {{ t('taskSettings.themeModal.name') }} <span class="text-error">*</span>
+            {{ t('taskSettings.projectModal.name') }} <span class="text-error">*</span>
           </label>
           <input
             v-model="form.name"
             type="text"
-            :placeholder="t('taskSettings.themeModal.namePlaceholder')"
+            :placeholder="t('taskSettings.projectModal.namePlaceholder')"
             :class="inputClass"
           >
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
-            {{ t('taskSettings.themeModal.color') }} <span class="text-error">*</span>
+            {{ t('taskSettings.projectModal.color') }} <span class="text-error">*</span>
           </label>
           <div class="flex items-center gap-2 flex-wrap">
             <button
@@ -91,7 +91,7 @@ function onSubmit() {
             />
             <span
               class="w-7 h-7 rounded-full border border-dashed border-border flex items-center justify-center text-muted-foreground/50"
-              :title="t('taskSettings.themeModal.moreColorsSoon')"
+              :title="t('taskSettings.projectModal.moreColorsSoon')"
             >
               <UIcon
                 name="i-lucide-plus"
@@ -103,14 +103,14 @@ function onSubmit() {
 
         <div>
           <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
-            {{ t('taskSettings.themeModal.members') }}
+            {{ t('taskSettings.projectModal.members') }}
           </label>
           <USelect
             v-model="form.members"
             multiple
             :items="profileItems"
             :loading="profilesQuery.isPending.value"
-            :placeholder="t('taskSettings.themeModal.membersPlaceholder')"
+            :placeholder="t('taskSettings.projectModal.membersPlaceholder')"
             class="w-full"
           />
         </div>
@@ -121,7 +121,7 @@ function onSubmit() {
             class="h-4 w-4 shrink-0 text-muted-foreground mt-0.5"
           />
           <p class="text-[12px] text-muted-foreground leading-relaxed">
-            {{ t('taskSettings.themeModal.privacyNote') }}
+            {{ t('taskSettings.projectModal.privacyNote') }}
           </p>
         </div>
       </div>
@@ -132,7 +132,7 @@ function onSubmit() {
         <UButton
           color="neutral"
           variant="ghost"
-          :label="t('taskSettings.themeModal.cancel')"
+          :label="t('taskSettings.projectModal.cancel')"
           @click="onCancel"
         />
         <UButton

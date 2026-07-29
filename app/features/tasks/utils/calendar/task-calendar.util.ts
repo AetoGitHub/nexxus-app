@@ -21,7 +21,7 @@ function nextDay(dateOnly: string): string {
   return `${year}-${month}-${day}`
 }
 
-/** `color` fuerza el color (modo por tema); si no, usa el de la tarea. */
+/** `color` fuerza el color (modo por proyecto); si no, usa el de la tarea. */
 function eventColors(task: Task, color?: string) {
   const resolved = color ?? taskBarColor(task)
   return {
@@ -175,7 +175,7 @@ export function coloredTasksToCalendarEvents(
   return sortEvents(events)
 }
 
-/** Alias: modo "por tema". */
+/** Alias: modo "por proyecto". */
 export function projectTasksToCalendarEvents(
   projects: CalendarColoredSource[],
   phase: TaskCalendarPhase = 'start',

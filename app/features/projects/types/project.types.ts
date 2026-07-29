@@ -8,7 +8,7 @@ export interface ProjectMember {
   username: string
 }
 
-/** Proyecto/tema de empresa (GET /api/enterprise/projects/). */
+/** Proyecto de empresa (GET /api/enterprise/projects/). */
 export interface EnterpriseProject {
   id: number
   name: string

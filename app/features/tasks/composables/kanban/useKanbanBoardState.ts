@@ -10,7 +10,7 @@ function cloneColumns(columns: KanbanColumn[]): KanbanColumn[] {
 
 /**
  * Estado local del tablero Kanban para drag & drop cosmético
- * (Due / Topic / Group). En All el move lo confirma el modal de proceso.
+ * (Due / Project / Group). En All el move lo confirma el modal de proceso.
  */
 export function useKanbanBoardState(columns: MaybeRefOrGetter<KanbanColumn[]>) {
   const localColumns = ref<KanbanColumn[]>([])

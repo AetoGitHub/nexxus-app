@@ -19,19 +19,19 @@ const isShared = computed(() => memberCount.value > 1)
 
 const membersLabel = computed(() => {
   if (memberCount.value <= 1) {
-    return t('taskSettings.themes.soloYou')
+    return t('taskSettings.projects.soloYou')
   }
-  return t('taskSettings.themes.membersCount', { count: memberCount.value })
+  return t('taskSettings.projects.membersCount', { count: memberCount.value })
 })
 
 const tasksLabel = computed(() =>
-  t('taskSettings.themes.activeTasks', { count: props.project.task_count }),
+  t('taskSettings.projects.activeTasks', { count: props.project.task_count }),
 )
 
 const menuItems = computed<DropdownMenuItem[][]>(() => [
   [
     {
-      label: t('taskSettings.themes.edit'),
+      label: t('taskSettings.projects.edit'),
       icon: 'i-lucide-pencil',
       onSelect: () => emit('edit', props.project),
     },
@@ -93,7 +93,7 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
           variant="ghost"
           size="xs"
           class="shrink-0"
-          :aria-label="t('taskSettings.themes.options')"
+          :aria-label="t('taskSettings.projects.options')"
           @click.stop
         />
       </UDropdownMenu>
