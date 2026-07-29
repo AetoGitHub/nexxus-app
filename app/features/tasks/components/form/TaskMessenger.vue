@@ -2,6 +2,7 @@
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
+import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
 const AVATAR_COLORS = [
@@ -19,7 +20,7 @@ const props = defineProps<{
   taskId: number
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { user } = useAuth()
 
 const {
@@ -212,9 +213,14 @@ watch(
             v-if="isSystemMessage(message.type)"
             class="mb-5 flex w-full max-w-[90%] flex-col items-center gap-2"
           >
-            <p class="px-2 py-1 text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
-              {{ message.content }}
-            </p>
+            <div class="flex flex-col items-center gap-0.5 px-2 py-1">
+              <p class="text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
+                {{ message.content }}
+              </p>
+              <p class="text-center text-[10px] text-muted-foreground/80">
+                {{ formatDateTime(message.created_at, locale) }}
+              </p>
+            </div>
             <USeparator class="w-full" />
           </div>
 
