@@ -26,7 +26,7 @@ const {
   typeMeta,
   priorityMeta,
   barColor,
-  requiresAttention,
+  // requiresAttention, // oculto de momento: genera confusión
   closeApprovalsProgress,
   assignees,
   isOverdue,
@@ -104,6 +104,7 @@ function onDragEnd() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <!-- Oculto de momento: genera confusión
         <UBadge
           v-if="requiresAttention"
           icon="i-lucide-triangle-alert"
@@ -112,6 +113,7 @@ function onDragEnd() {
           variant="soft"
           size="sm"
         />
+        -->
       </div>
 
       <div

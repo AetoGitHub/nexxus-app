@@ -25,7 +25,7 @@ const {
   priorityMeta,
   statusMeta,
   barColor,
-  requiresAttention,
+  // requiresAttention, // oculto de momento: genera confusión
   closeApprovalsProgress,
   assignees,
   isOverdue,
@@ -111,6 +111,7 @@ function onSelect() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <!-- Oculto de momento: genera confusión
         <UBadge
           v-if="requiresAttention"
           icon="i-lucide-triangle-alert"
@@ -120,6 +121,7 @@ function onSelect() {
           size="sm"
           class="hidden lg:inline-flex"
         />
+        -->
       </div>
     </div>
 
