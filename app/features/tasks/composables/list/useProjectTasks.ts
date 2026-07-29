@@ -40,11 +40,11 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
 
   const projectList = computed(() => {
     const list = extractResults(projects.data.value)
-    const projectId = toValue(filters).project
-    if (projectId == null) {
+    const selected = toValue(filters).project
+    if (!selected?.length) {
       return list
     }
-    return list.filter(project => project.id === projectId)
+    return list.filter(project => selected.includes(project.id))
   })
 
   const projectIds = computed(() => projectList.value.map(p => p.id))

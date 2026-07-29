@@ -13,8 +13,8 @@ export function toTaskListQuery(
   if (filters.type) {
     query.type = filters.type
   }
-  if (filters.project != null) {
-    query.project = filters.project
+  if (filters.project?.length) {
+    query.project = filters.project.join(',')
   }
   if (filters.overdue) {
     query.overdue = true

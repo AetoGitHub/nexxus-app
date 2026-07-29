@@ -66,7 +66,7 @@ export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
 export interface TaskListFilters {
   short_description?: string
   type?: TaskType
-  project?: number
+  project?: number[]
   overdue?: boolean
   completed?: boolean
   multiple_close?: boolean

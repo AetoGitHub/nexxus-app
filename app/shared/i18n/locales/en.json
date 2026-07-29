@@ -53,6 +53,7 @@
     "filters": "Filters",
     "viewBy": "View by:",
     "filterAll": "All",
+    "filterSearch": "Search",
     "filterType": "Type",
     "filterTypePlaceholder": "Filter by type",
     "filterProject": "Project",

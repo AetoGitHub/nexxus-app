@@ -80,8 +80,11 @@ const {
           <div class="min-w-0 flex-1">
             <TaskListFilters
               v-model="listFilters"
+              v-model:search="search"
               class="mb-0! h-full"
-            />
+            >
+              <TaskViewSwitcher v-model="view" :exclude="excludeViews" />
+            </TaskListFilters>
           </div>
           <Transition name="calendar-phase">
             <div
@@ -94,18 +97,6 @@ const {
               />
             </div>
           </Transition>
-        </div>
-
-        <div class="rounded-lg border border-border bg-card px-3 py-2 flex items-center gap-2 flex-wrap">
-          <UInput
-            v-model="search"
-            icon="i-lucide-search"
-            size="sm"
-            class="w-52"
-            :placeholder="$t('toolbar.searchPlaceholder')"
-          />
-          <div class="flex-1 min-w-2" />
-          <TaskViewSwitcher v-model="view" :exclude="excludeViews" />
         </div>
       </div>
     </div>

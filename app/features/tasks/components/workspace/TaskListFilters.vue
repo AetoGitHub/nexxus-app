@@ -2,6 +2,7 @@
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 
 const filters = defineModel<TaskListFilters>({ required: true })
+const search = defineModel<string>('search', { required: true })
 
 const { t } = useI18n()
 const { projects, items: projectItems } = useProjectsDropdown()
@@ -15,17 +16,14 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
   { value: 'trigger', dotClass: 'bg-warning' },
 ]
 
-const projectSelectItems = computed(() => [
-  { label: t('tasks.filterAll'), value: 'all' },
-  ...projectItems.value,
-])
+const projectSelectItems = computed(() => projectItems.value)
 
-const selectedProject = computed({
-  get: () => filters.value.project ?? 'all',
-  set: (value: number | 'all') => {
+const selectedProjects = computed({
+  get: () => filters.value.project ?? [],
+  set: (value: number[]) => {
     filters.value = {
       ...filters.value,
-      project: value === 'all' ? undefined : value,
+      project: value.length ? value : undefined,
     }
   },
 })
@@ -47,6 +45,18 @@ function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value
 
 <template>
   <div class="mb-2 rounded-lg border border-border bg-card px-3 py-2 flex items-start gap-3 flex-wrap h-full box-border">
+    <UFormField :label="t('tasks.filterSearch')">
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        size="sm"
+        class="w-52"
+        :placeholder="t('toolbar.searchPlaceholder')"
+      />
+    </UFormField>
+
+    <span class="hidden sm:block h-8 w-px bg-border self-end" aria-hidden="true" />
+
     <UFormField :label="t('tasks.filterType')">
       <div class="flex h-8 items-center gap-2 flex-wrap">
         <UButton
@@ -76,7 +86,8 @@ function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value
 
     <UFormField :label="t('tasks.filterProject')" class="min-w-36">
       <USelect
-        v-model="selectedProject"
+        v-model="selectedProjects"
+        multiple
         :items="projectSelectItems"
         :placeholder="t('tasks.filterProjectPlaceholder')"
         :loading="projects.isPending.value"
@@ -114,6 +125,12 @@ function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value
         />
         {{ t('tasks.filterMultipleClose') }}
       </label>
+    </div>
+
+    <div class="flex-1 min-w-2" />
+
+    <div class="self-end">
+      <slot />
     </div>
   </div>
 </template>
