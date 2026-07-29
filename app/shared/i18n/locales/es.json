@@ -135,7 +135,25 @@
       "dropHere": "Suelta aquí",
       "dropHint": "Puedes soltar tareas aquí",
       "moveNotAllowedTitle": "Movimiento no permitido",
-      "moveNotAllowedDescription": "Esa transición de estado no está disponible para esta tarea."
+      "moveNotAllowedDescription": "Esa transición de estado no está disponible para esta tarea.",
+      "dueMove": {
+        "confirmTodayTitle": "Mover a hoy",
+        "confirmTodayDescription": "Vas a mover esta tarea para que venza hoy.",
+        "confirmTomorrowTitle": "Mover a mañana",
+        "confirmTomorrowDescription": "Vas a mover esta tarea al día de mañana.",
+        "pickDateWeekTitle": "Mover a esta semana",
+        "pickDateWeekDescription": "Elige una fecha entre mañana y el séptimo día para el vencimiento.",
+        "pickDateMonthTitle": "Mover a este mes",
+        "pickDateMonthDescription": "Elige una fecha entre mañana y los próximos 30 días para el vencimiento.",
+        "dateLabel": "Fecha de vencimiento",
+        "confirm": "Confirmar",
+        "noDateBlockedTitle": "Movimiento no disponible",
+        "noDateBlockedDescription": "Por ahora no se pueden mover tareas a Sin fecha.",
+        "moveNotAllowedDescription": "Ese movimiento de vencimiento no está disponible.",
+        "successTitle": "Vencimiento actualizado",
+        "successDescription": "La fecha de vencimiento de la tarea se actualizó correctamente.",
+        "errorTitle": "No se pudo actualizar el vencimiento"
+      }
     },
     "processStart": {
       "submit": "En Proceso",

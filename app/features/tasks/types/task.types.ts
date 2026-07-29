@@ -45,6 +45,14 @@ export interface UpdateTaskPayload {
   task_reviewer?: number[]
 }
 
+/** PATCH parcial para mover vencimiento en Kanban Due. */
+export interface UpdateTaskLimitDatePayload {
+  limit_date: string
+}
+
+/** Columnas del Kanban agrupado por vencimiento. */
+export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'no_date'
+
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
 export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
@@ -261,6 +269,7 @@ export interface RejectTaskProcessPayload {
 
 /** Payload de drop entre columnas Kanban.
  * En groupBy=all dispara el flujo de proceso (modal + start/close/reject).
+ * En groupBy=due dispara el flujo de cambio de limit_date.
  * En otras vistas solo mueve en cliente.
  */
 export interface KanbanTaskMove {

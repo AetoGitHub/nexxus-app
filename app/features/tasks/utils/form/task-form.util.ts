@@ -78,7 +78,7 @@ export function resolveTaskPriority(urgent: boolean, effort?: TaskEffort): ApiTa
  * Convierte YYYY-MM-DD a ISO fin de ese día en UTC.
  * Evita el desfase +1 día de `toISOString()` sobre hora local (p. ej. UTC-4).
  */
-function dateInputToLimitISO(date: string): string {
+export function dateInputToLimitISO(date: string): string {
   const [year, month, day] = date.split('-').map(Number)
   if (!year || !month || !day) {
     throw new Error('due_date_required')

@@ -135,7 +135,25 @@
       "dropHere": "Drop here",
       "dropHint": "You can drop tasks here",
       "moveNotAllowedTitle": "Move not allowed",
-      "moveNotAllowedDescription": "That status transition is not available for this task."
+      "moveNotAllowedDescription": "That status transition is not available for this task.",
+      "dueMove": {
+        "confirmTodayTitle": "Move to today",
+        "confirmTodayDescription": "You are about to move this task so it is due today.",
+        "confirmTomorrowTitle": "Move to tomorrow",
+        "confirmTomorrowDescription": "You are about to move this task to tomorrow.",
+        "pickDateWeekTitle": "Move to this week",
+        "pickDateWeekDescription": "Pick a due date between tomorrow and the 7th day from today.",
+        "pickDateMonthTitle": "Move to this month",
+        "pickDateMonthDescription": "Pick a due date between tomorrow and the next 30 days.",
+        "dateLabel": "Due date",
+        "confirm": "Confirm",
+        "noDateBlockedTitle": "Move unavailable",
+        "noDateBlockedDescription": "Tasks cannot be moved to No date for now.",
+        "moveNotAllowedDescription": "That due-date move is not available.",
+        "successTitle": "Due date updated",
+        "successDescription": "The task due date was updated successfully.",
+        "errorTitle": "Could not update the due date"
+      }
     },
     "processStart": {
       "submit": "In Progress",

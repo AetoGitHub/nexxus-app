@@ -9,8 +9,8 @@ const props = withDefaults(
     loading?: boolean
     error?: boolean
     /**
-     * Kanban All: no mueve en cliente; emite `move` para abrir el modal de proceso.
-     * Otras vistas: move local cosmético.
+     * true: no mueve en cliente; emite `move` para abrir modal (All/Due).
+     * false: move local cosmético (otras vistas).
      */
     confirmBeforeMove?: boolean
   }>(),
@@ -24,7 +24,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  /** Drop entre columnas; en All dispara el flujo de proceso. */
+  /** Drop entre columnas; en All/Due dispara el flujo de confirmación. */
   move: [payload: KanbanTaskMove]
 }>()
 
