@@ -43,9 +43,12 @@ function toggleType(type: VisibleTaskType) {
     ? current.filter(value => value !== type)
     : [...current, type]
 
+  // Si quedaron todos los tipos → equivalente a "All" (sin param type)
+  const allSelected = TYPE_OPTIONS.every(option => next.includes(option.value))
+
   filters.value = {
     ...filters.value,
-    type: next.length ? next : undefined,
+    type: !next.length || allSelected ? undefined : next,
   }
 }
 
