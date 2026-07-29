@@ -50,6 +50,11 @@ export interface UpdateTaskLimitDatePayload {
   limit_date: string
 }
 
+/** PATCH parcial para mover proyecto en Kanban Proyectos. */
+export interface UpdateTaskProjectPayload {
+  project: number
+}
+
 /** Columnas del Kanban agrupado por vencimiento. */
 export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'no_date'
 
@@ -270,6 +275,7 @@ export interface RejectTaskProcessPayload {
 /** Payload de drop entre columnas Kanban.
  * En groupBy=all dispara el flujo de proceso (modal + start/close/reject).
  * En groupBy=due dispara el flujo de cambio de limit_date.
+ * En groupBy=project dispara el flujo de cambio de project.
  * En otras vistas solo mueve en cliente.
  */
 export interface KanbanTaskMove {

@@ -154,6 +154,15 @@
         "successTitle": "Vencimiento actualizado",
         "successDescription": "La fecha de vencimiento de la tarea se actualizó correctamente.",
         "errorTitle": "No se pudo actualizar el vencimiento"
+      },
+      "projectMove": {
+        "confirmTitle": "Mover de proyecto",
+        "confirmDescription": "Vas a mover esta tarea de {from} a {to}.",
+        "confirm": "Confirmar",
+        "moveNotAllowedDescription": "Ese movimiento de proyecto no está disponible.",
+        "successTitle": "Proyecto actualizado",
+        "successDescription": "La tarea se movió al proyecto correctamente.",
+        "errorTitle": "No se pudo mover la tarea de proyecto"
       }
     },
     "processStart": {

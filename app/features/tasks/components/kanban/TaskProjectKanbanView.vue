@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
-import type { TaskListFilters } from '~/features/tasks/types/task.types'
+import TaskProjectMoveConfirmModal from '~/features/tasks/components/form/TaskProjectMoveConfirmModal.vue'
+import type { KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
 import { sectionsToKanbanColumns } from '~/features/tasks/utils/kanban/kanban.util'
 
 const props = withDefaults(
@@ -18,8 +19,30 @@ const emit = defineEmits<{
 }>()
 
 const { projects, sections } = useProjectTasks(() => props.filters)
-
 const columns = computed(() => sectionsToKanbanColumns(sections.value))
+
+const {
+  pendingTaskId,
+  confirmModalOpen,
+  targetProjectId,
+  fromProjectName,
+  toProjectName,
+  requestMove,
+  onMoveSuccess,
+} = useKanbanProjectMove()
+
+function columnTitle(columnId: string | number): string {
+  const column = columns.value.find(item => item.id === columnId)
+  return column?.title?.trim() || String(columnId)
+}
+
+function onMove(payload: KanbanTaskMove) {
+  requestMove({
+    ...payload,
+    fromProjectName: columnTitle(payload.fromColumnId),
+    toProjectName: columnTitle(payload.toColumnId),
+  })
+}
 </script>
 
 <template>
@@ -29,6 +52,18 @@ const columns = computed(() => sectionsToKanbanColumns(sections.value))
     :selected-task-id="selectedTaskId"
     :loading="projects.isPending.value"
     :error="projects.isError.value"
+    confirm-before-move
     @select="emit('select', $event)"
+    @move="onMove"
+  />
+
+  <TaskProjectMoveConfirmModal
+    v-if="pendingTaskId != null && targetProjectId != null"
+    v-model:open="confirmModalOpen"
+    :task-id="pendingTaskId"
+    :project-id="targetProjectId"
+    :from-project-name="fromProjectName"
+    :to-project-name="toProjectName"
+    @success="onMoveSuccess"
   />
 </template>

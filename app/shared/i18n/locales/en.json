@@ -154,6 +154,15 @@
         "successTitle": "Due date updated",
         "successDescription": "The task due date was updated successfully.",
         "errorTitle": "Could not update the due date"
+      },
+      "projectMove": {
+        "confirmTitle": "Move project",
+        "confirmDescription": "You are about to move this task from {from} to {to}.",
+        "confirm": "Confirm",
+        "moveNotAllowedDescription": "That project move is not available.",
+        "successTitle": "Project updated",
+        "successDescription": "The task was moved to the project successfully.",
+        "errorTitle": "Could not move the task to another project"
       }
     },
     "processStart": {

@@ -9,7 +9,7 @@ const props = withDefaults(
     loading?: boolean
     error?: boolean
     /**
-     * true: no mueve en cliente; emite `move` para abrir modal (All/Due).
+     * true: no mueve en cliente; emite `move` para abrir modal (All/Due/Project).
      * false: move local cosmético (otras vistas).
      */
     confirmBeforeMove?: boolean
@@ -24,7 +24,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  /** Drop entre columnas; en All/Due dispara el flujo de confirmación. */
+  /** Drop entre columnas; en All/Due/Project dispara el flujo de confirmación. */
   move: [payload: KanbanTaskMove]
 }>()
 
