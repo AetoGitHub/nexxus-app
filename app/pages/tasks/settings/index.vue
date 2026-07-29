@@ -3,16 +3,17 @@ import TaskSettingsGroupModal from '~/features/task-settings/components/groups/T
 import TaskSettingsGroupsPanel from '~/features/task-settings/components/groups/TaskSettingsGroupsPanel.vue'
 import TaskSettingsNavSidebar from '~/features/task-settings/components/shared/TaskSettingsNavSidebar.vue'
 import TaskSettingsPlaceholderPanel from '~/features/task-settings/components/shared/TaskSettingsPlaceholderPanel.vue'
-import TaskSettingsThemeModal from '~/features/task-settings/components/themes/TaskSettingsThemeModal.vue'
-import TaskSettingsThemesPanel from '~/features/task-settings/components/themes/TaskSettingsThemesPanel.vue'
+import TaskSettingsProjectModal from '~/features/task-settings/components/projects/TaskSettingsProjectModal.vue'
+import TaskSettingsProjectsPanel from '~/features/task-settings/components/projects/TaskSettingsProjectsPanel.vue'
 import type {
   TaskSettingsNavItem,
+  TaskSettingsProjectTab,
   TaskSettingsSectionId,
-  ThemeFormState,
+  ProjectFormState,
 } from '~/features/task-settings/types/task-settings.types'
 import {
-  createEmptyThemeForm,
-  createThemeFormFromProject,
+  createEmptyProjectForm,
+  createProjectFormFromEnterprise,
 } from '~/features/task-settings/types/task-settings.types'
 import type {
   CatalogueGroup,
@@ -40,19 +41,20 @@ const toast = useToast()
 const { $api } = useNuxtApp()
 const queryClient = useQueryClient()
 
-const activeSection = ref<TaskSettingsSectionId>('themes')
-const themeModalOpen = ref(false)
-const themeForm = ref<ThemeFormState>(createEmptyThemeForm())
-const editingThemeId = ref<number | null>(null)
+const activeSection = ref<TaskSettingsSectionId>('projects')
+const projectsTab = ref<TaskSettingsProjectTab>('all')
+const projectModalOpen = ref(false)
+const projectForm = ref<ProjectFormState>(createEmptyProjectForm())
+const editingProjectId = ref<number | null>(null)
 const groupModalOpen = ref(false)
 const groupForm = ref<GroupFormState>(createEmptyGroupForm())
 const editingGroupId = ref<number | null>(null)
 
-const isEditingTheme = computed(() => editingThemeId.value != null)
+const isEditingProject = computed(() => editingProjectId.value != null)
 const isEditingGroup = computed(() => editingGroupId.value != null)
 
 const navItems: TaskSettingsNavItem[] = [
-  { id: 'themes', labelKey: 'taskSettings.nav.themes', icon: 'i-lucide-palette' },
+  { id: 'projects', labelKey: 'taskSettings.nav.projects', icon: 'i-lucide-folder-kanban' },
   { id: 'groups', labelKey: 'taskSettings.nav.groups', icon: 'i-lucide-users' },
   { id: 'nexxtep', labelKey: 'taskSettings.nav.nexxtep', icon: 'i-lucide-workflow' },
   { id: 'videoCalls', labelKey: 'taskSettings.nav.videoCalls', icon: 'i-lucide-video' },
@@ -60,13 +62,20 @@ const navItems: TaskSettingsNavItem[] = [
   { id: 'general', labelKey: 'taskSettings.nav.general', icon: 'i-lucide-settings' },
 ]
 
-const { projects, projectsQuery, createProject, companyId } = useEnterpriseProjects()
+const { projects, projectsQuery, createProject, companyId } = useEnterpriseProjects(
+  () => projectsTab.value === 'mine',
+)
 const updateProject = useUpdateEnterpriseProject()
 const { groups, groupsQuery } = useCatalogueGroups()
 const createGroup = useCreateGroup()
 const updateGroup = useUpdateGroup()
 
-const isThemeMutating = computed(
+/** Skeleton mientras no hay datos de la query activa (all / mine). */
+const isProjectsLoading = computed(
+  () => projectsQuery.isFetching.value && projectsQuery.data.value == null,
+)
+
+const isProjectMutating = computed(
   () => createProject.isPending.value || updateProject.isPending.value,
 )
 
@@ -74,16 +83,16 @@ const isGroupMutating = computed(
   () => createGroup.isPending.value || updateGroup.isPending.value,
 )
 
-function openNewThemeModal() {
-  editingThemeId.value = null
-  themeForm.value = createEmptyThemeForm()
-  themeModalOpen.value = true
+function openNewProjectModal() {
+  editingProjectId.value = null
+  projectForm.value = createEmptyProjectForm()
+  projectModalOpen.value = true
 }
 
-function openEditThemeModal(project: EnterpriseProject) {
-  editingThemeId.value = project.id
-  themeForm.value = createThemeFormFromProject(project)
-  themeModalOpen.value = true
+function openEditProjectModal(project: EnterpriseProject) {
+  editingProjectId.value = project.id
+  projectForm.value = createProjectFormFromEnterprise(project)
+  projectModalOpen.value = true
 }
 
 function openNewGroupModal() {
@@ -109,44 +118,44 @@ async function openEditGroupModal(group: CatalogueGroup) {
   }
 }
 
-async function onSubmitTheme() {
-  const name = themeForm.value.name.trim()
-  if (!name || !themeForm.value.color) {
+async function onSubmitProject() {
+  const name = projectForm.value.name.trim()
+  if (!name || !projectForm.value.color) {
     return
   }
 
   const payload = {
     name,
     company: companyId,
-    color: themeForm.value.color,
-    members: themeForm.value.members,
+    color: projectForm.value.color,
+    members: projectForm.value.members,
   }
 
   try {
-    if (editingThemeId.value != null) {
+    if (editingProjectId.value != null) {
       await updateProject.mutateAsync({
-        id: editingThemeId.value,
+        id: editingProjectId.value,
         payload,
       })
     }
     else {
       await createProject.mutateAsync(payload)
       toast.add({
-        title: t('taskSettings.themeModal.createdTitle'),
-        description: t('taskSettings.themeModal.createdDescription'),
+        title: t('taskSettings.projectModal.createdTitle'),
+        description: t('taskSettings.projectModal.createdDescription'),
         color: 'success',
       })
     }
-    themeModalOpen.value = false
-    editingThemeId.value = null
+    projectModalOpen.value = false
+    editingProjectId.value = null
   }
   catch (error) {
     // En update el toast de error lo maneja useUpdateEnterpriseProject
-    if (editingThemeId.value != null) {
+    if (editingProjectId.value != null) {
       return
     }
     toast.add({
-      title: t('taskSettings.themeModal.createErrorTitle'),
+      title: t('taskSettings.projectModal.createErrorTitle'),
       description: parseFetchError(error),
       color: 'error',
     })
@@ -200,13 +209,14 @@ useSeoMeta({
 
     <div class="flex-1 overflow-y-auto">
       <div class="max-w-[720px] mx-auto px-8 py-8">
-        <TaskSettingsThemesPanel
-          v-if="activeSection === 'themes'"
+        <TaskSettingsProjectsPanel
+          v-if="activeSection === 'projects'"
+          v-model:tab="projectsTab"
           :projects="projects"
-          :loading="projectsQuery.isPending.value"
+          :loading="isProjectsLoading"
           :error="projectsQuery.isError.value"
-          @new-theme="openNewThemeModal"
-          @edit="openEditThemeModal"
+          @new-project="openNewProjectModal"
+          @edit="openEditProjectModal"
         />
 
         <TaskSettingsGroupsPanel
@@ -226,12 +236,12 @@ useSeoMeta({
       </div>
     </div>
 
-    <TaskSettingsThemeModal
-      v-model:open="themeModalOpen"
-      v-model:form="themeForm"
-      :is-edit="isEditingTheme"
-      :loading="isThemeMutating"
-      @submit="onSubmitTheme"
+    <TaskSettingsProjectModal
+      v-model:open="projectModalOpen"
+      v-model:form="projectForm"
+      :is-edit="isEditingProject"
+      :loading="isProjectMutating"
+      @submit="onSubmitProject"
     />
 
     <TaskSettingsGroupModal

@@ -3,7 +3,7 @@ import type { UpdateEnterpriseProjectPayload } from '~/features/projects/types/p
 import { parseFetchError } from '~/shared/utils/error-message.util'
 
 /**
- * Actualiza un tema (proyecto de empresa) vía PATCH
+ * Actualiza un proyecto de empresa vía PATCH
  * /api/enterprise/projects/:id/update/.
  */
 export function useUpdateEnterpriseProject() {
@@ -28,14 +28,14 @@ export function useUpdateEnterpriseProject() {
       await queryClient.invalidateQueries({ queryKey: ['enterprise-projects'] })
       await queryClient.invalidateQueries({ queryKey: ['tasks'] })
       toast.add({
-        title: t('taskSettings.themeModal.updatedTitle'),
-        description: t('taskSettings.themeModal.updatedDescription'),
+        title: t('taskSettings.projectModal.updatedTitle'),
+        description: t('taskSettings.projectModal.updatedDescription'),
         color: 'success',
       })
     },
     onError: (error) => {
       toast.add({
-        title: t('taskSettings.themeModal.updateErrorTitle'),
+        title: t('taskSettings.projectModal.updateErrorTitle'),
         description: parseFetchError(error),
         color: 'error',
       })

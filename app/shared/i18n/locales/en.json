@@ -103,9 +103,9 @@
     "groupBy": {
       "all": "All",
       "due": "Due date",
-      "topic": "Topic",
       "user": "Users",
-      "group": "Groups"
+      "group": "Groups",
+      "project": "Projects"
     },
     "overdueSections": {
       "today": "Today",
@@ -218,8 +218,6 @@
       "namePlaceholder": "What needs to be done?",
       "description": "Description",
       "descriptionPlaceholder": "Optional additional context...",
-      "topic": "Topic",
-      "topicPlaceholder": "Select a topic...",
       "group": "Group",
       "groupPlaceholder": "Select a group...",
       "assignedTo": "Assigned to",
@@ -251,7 +249,7 @@
       "updateErrorTitle": "Could not update the task",
       "validation": {
         "nameRequired": "Name is required",
-        "projectRequired": "Select a topic",
+        "projectRequired": "Select a project",
         "groupRequired": "Select a group",
         "assignedToRequired": "Select at least one assigned user",
         "dueDateRequired": "Select a due date",
@@ -283,7 +281,9 @@
         "contact": "Contact with external supplier",
         "schedule": "Schedule appointment and confirm attendance",
         "evidence": "Request photographic evidence"
-      }
+      },
+      "project": "Project",
+      "projectPlaceholder": "Select a project..."
     },
     "messenger": {
       "title": "Activity and chat",
@@ -386,50 +386,12 @@
     "comingSoon": "Coming soon",
     "placeholderDescription": "This section will be enabled when the backend is ready.",
     "nav": {
-      "themes": "Topics",
       "groups": "Groups",
       "nexxtep": "Nexxtep",
       "videoCalls": "Video calls",
       "notifications": "Notifications",
-      "general": "General"
-    },
-    "themes": {
-      "title": "Topics",
-      "subtitle": "Organize your tasks by topic. Create your own topics and invite other users when you need to.",
-      "newTheme": "New topic",
-      "infoBanner": "Topics are private until you assign a task to that topic or invite someone. Once shared, any member can invite others.",
-      "tabs": {
-        "all": "All",
-        "mine": "My topics"
-      },
-      "activeTasks": "{count} active tasks",
-      "membersCount": "{count} members",
-      "soloYou": "Only you",
-      "options": "Options",
-      "edit": "Edit topic",
-      "empty": "No topics yet",
-      "loadError": "Could not load topics",
-      "archived": "Archived ({count})"
-    },
-    "themeModal": {
-      "title": "New topic",
-      "editTitle": "Edit topic",
-      "name": "Topic name",
-      "namePlaceholder": "E.g. Operations, Legal, Commercial",
-      "color": "Identifier color",
-      "moreColorsSoon": "More colors coming soon",
-      "members": "Members",
-      "membersPlaceholder": "Select members",
-      "privacyNote": "The topic will be private until you assign it to a task or invite someone.",
-      "cancel": "Cancel",
-      "create": "Create topic",
-      "save": "Save changes",
-      "createdTitle": "Topic created",
-      "createdDescription": "The topic was created successfully.",
-      "createErrorTitle": "Could not create topic",
-      "updatedTitle": "Topic updated",
-      "updatedDescription": "The topic was updated successfully.",
-      "updateErrorTitle": "Could not update topic"
+      "general": "General",
+      "projects": "Projects"
     },
     "groups": {
       "title": "Groups",
@@ -471,6 +433,44 @@
       "updatedTitle": "Group updated",
       "updatedDescription": "The group was updated successfully.",
       "updateErrorTitle": "Could not update group"
+    },
+    "projectModal": {
+      "title": "New project",
+      "editTitle": "Edit project",
+      "name": "Project name",
+      "namePlaceholder": "E.g. Operations, Legal, Commercial",
+      "color": "Identifier color",
+      "moreColorsSoon": "More colors coming soon",
+      "members": "Members",
+      "membersPlaceholder": "Select members",
+      "privacyNote": "The project will be private until you assign it to a task or invite someone.",
+      "cancel": "Cancel",
+      "create": "Create project",
+      "save": "Save changes",
+      "createdTitle": "Project created",
+      "createdDescription": "The project was created successfully.",
+      "createErrorTitle": "Could not create project",
+      "updatedTitle": "Project updated",
+      "updatedDescription": "The project was updated successfully.",
+      "updateErrorTitle": "Could not update project"
+    },
+    "projects": {
+      "title": "Projects",
+      "subtitle": "Organize your tasks by project. Create your own projects and invite other users when you need to.",
+      "newProject": "New project",
+      "infoBanner": "Projects are private until you assign a task to that project or invite someone. Once shared, any member can invite others.",
+      "tabs": {
+        "all": "All",
+        "mine": "My projects"
+      },
+      "activeTasks": "{count} active tasks",
+      "membersCount": "{count} members",
+      "soloYou": "Only you",
+      "options": "Options",
+      "edit": "Edit project",
+      "empty": "No projects yet",
+      "loadError": "Could not load projects",
+      "archived": "Archived ({count})"
     }
   }
 }

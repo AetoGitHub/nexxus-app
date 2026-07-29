@@ -11,11 +11,11 @@ import type {
   TaskEffort,
   TaskGroupBy,
   TaskView,
-  UserDropdown,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useGroupsDropdown } from '~/features/tasks/composables/shared/useGroupsDropdown'
+import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
@@ -195,13 +195,11 @@ const projectsQuery = useQuery({
   enabled: computed(() => open.value),
 })
 
-const usersQuery = useQuery({
-  queryKey: ['tasks', 'users', 'dropdown', 'new-task'],
-  queryFn: () => $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/'),
-  enabled: computed(() => open.value),
-})
-
 const { groups: groupsQuery, items: groupItems } = useGroupsDropdown(() => open.value)
+const { users: usersQuery, items: userItems } = useUsersDropdown(
+  () => state.group,
+  () => open.value,
+)
 
 const projectItems = computed<SelectItem[]>(() =>
   extractResults(projectsQuery.data.value).map(project => ({
@@ -210,12 +208,10 @@ const projectItems = computed<SelectItem[]>(() =>
   })),
 )
 
-const userItems = computed<SelectItem[]>(() =>
-  extractResults(usersQuery.data.value).map(user => ({
-    label: user.username,
-    value: user.id,
-  })),
-)
+/** Al cambiar grupo, limpia asignados (la lista de usuarios se refiltra). */
+function onGroupChange() {
+  state.assignedTo = []
+}
 
 function resetForm() {
   state.type = 'manual'
@@ -727,14 +723,14 @@ const slideoverUi = computed(() => {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormField
-              :label="t('tasks.form.topic')"
+              :label="t('tasks.form.project')"
               name="project"
               :required="!isReadOnly"
             >
               <USelect
                 v-model="state.project"
                 :items="projectItems"
-                :placeholder="t('tasks.form.topicPlaceholder')"
+                :placeholder="t('tasks.form.projectPlaceholder')"
                 :loading="projectsQuery.isPending.value"
                 :disabled="isReadOnly"
                 class="w-full"
@@ -753,6 +749,7 @@ const slideoverUi = computed(() => {
                 :loading="groupsQuery.isPending.value"
                 :disabled="isReadOnly"
                 class="w-full"
+                @update:model-value="onGroupChange"
               />
             </UFormField>
           </div>

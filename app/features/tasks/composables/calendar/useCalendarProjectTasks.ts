@@ -35,7 +35,7 @@ export interface CalendarProject {
 }
 
 /**
- * Modo "por tema" del calendario: lista todos los proyectos de la empresa y
+ * Modo "por proyecto" del calendario: lista todos los proyectos de la empresa y
  * las tareas de cada uno, asignando un color distinto por proyecto.
  *
  * - Proyectos → GET /api/tools/dropdown/projects/company/:id/

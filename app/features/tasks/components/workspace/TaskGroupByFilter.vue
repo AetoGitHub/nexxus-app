@@ -8,7 +8,7 @@ const { t } = useI18n()
 const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
   { value: 'all', icon: 'i-lucide-layers', labelKey: 'tasks.groupBy.all' },
   { value: 'due', icon: 'i-lucide-calendar-days', labelKey: 'tasks.groupBy.due' },
-  { value: 'topic', icon: 'i-lucide-tag', labelKey: 'tasks.groupBy.topic' },
+  { value: 'project', icon: 'i-lucide-folder-kanban', labelKey: 'tasks.groupBy.project' },
   { value: 'user', icon: 'i-lucide-user', labelKey: 'tasks.groupBy.user' },
   { value: 'group', icon: 'i-lucide-users', labelKey: 'tasks.groupBy.group' },
 ]

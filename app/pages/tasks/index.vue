@@ -7,8 +7,8 @@ const TaskListView = defineAsyncComponent(
 const TaskDueListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskDueListView.vue'),
 )
-const TaskTopicListView = defineAsyncComponent(
-  () => import('~/features/tasks/components/list/TaskTopicListView.vue'),
+const TaskProjectListView = defineAsyncComponent(
+  () => import('~/features/tasks/components/list/TaskProjectListView.vue'),
 )
 const TaskUserListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskUserListView.vue'),
@@ -22,8 +22,8 @@ const TaskKanbanView = defineAsyncComponent(
 const TaskDueKanbanView = defineAsyncComponent(
   () => import('~/features/tasks/components/kanban/TaskDueKanbanView.vue'),
 )
-const TaskTopicKanbanView = defineAsyncComponent(
-  () => import('~/features/tasks/components/kanban/TaskTopicKanbanView.vue'),
+const TaskProjectKanbanView = defineAsyncComponent(
+  () => import('~/features/tasks/components/kanban/TaskProjectKanbanView.vue'),
 )
 const TaskUserKanbanView = defineAsyncComponent(
   () => import('~/features/tasks/components/kanban/TaskUserKanbanView.vue'),
@@ -59,8 +59,8 @@ useSeoMeta({
         :selected-task-id="selectedTaskId"
         @select="openTask"
       />
-      <TaskTopicListView
-        v-else-if="view === 'list' && groupBy === 'topic'"
+      <TaskProjectListView
+        v-else-if="view === 'list' && groupBy === 'project'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
@@ -91,8 +91,8 @@ useSeoMeta({
         :selected-task-id="selectedTaskId"
         @select="openTask"
       />
-      <TaskTopicKanbanView
-        v-else-if="view === 'kanban' && groupBy === 'topic'"
+      <TaskProjectKanbanView
+        v-else-if="view === 'kanban' && groupBy === 'project'"
         class="h-full"
         :filters="filters"
         :selected-task-id="selectedTaskId"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EnterpriseProject } from '~/features/projects/types/project.types'
-import type { TaskSettingsThemeTab } from '~/features/task-settings/types/task-settings.types'
-import TaskSettingsThemeCard from '~/features/task-settings/components/themes/TaskSettingsThemeCard.vue'
+import type { TaskSettingsProjectTab } from '~/features/task-settings/types/task-settings.types'
+import TaskSettingsProjectCard from '~/features/task-settings/components/projects/TaskSettingsProjectCard.vue'
 
 defineProps<{
   projects: EnterpriseProject[]
@@ -9,19 +9,20 @@ defineProps<{
   error?: boolean
 }>()
 
+const activeTab = defineModel<TaskSettingsProjectTab>('tab', { default: 'all' })
+
 const emit = defineEmits<{
-  newTheme: []
+  newProject: []
   edit: [project: EnterpriseProject]
 }>()
 
 const { t } = useI18n()
 
-const activeTab = ref<TaskSettingsThemeTab>('all')
 const archivedOpen = ref(false)
 
-const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
-  { id: 'all', labelKey: 'taskSettings.themes.tabs.all' },
-  { id: 'mine', labelKey: 'taskSettings.themes.tabs.mine' },
+const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
+  { id: 'all', labelKey: 'taskSettings.projects.tabs.all' },
+  { id: 'mine', labelKey: 'taskSettings.projects.tabs.mine' },
 ]
 </script>
 
@@ -30,17 +31,17 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
     <div class="flex items-start justify-between gap-4">
       <div class="min-w-0">
         <h2 class="text-xl font-bold text-foreground">
-          {{ t('taskSettings.themes.title') }}
+          {{ t('taskSettings.projects.title') }}
         </h2>
         <p class="text-sm text-muted-foreground mt-1">
-          {{ t('taskSettings.themes.subtitle') }}
+          {{ t('taskSettings.projects.subtitle') }}
         </p>
       </div>
       <UButton
         icon="i-lucide-plus"
-        :label="t('taskSettings.themes.newTheme')"
+        :label="t('taskSettings.projects.newProject')"
         class="bg-aeto-teal hover:opacity-90 text-white shrink-0"
-        @click="emit('newTheme')"
+        @click="emit('newProject')"
       />
     </div>
 
@@ -50,7 +51,7 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
         class="h-4 w-4 shrink-0 text-muted-foreground mt-0.5"
       />
       <p class="text-[13px] text-muted-foreground leading-relaxed">
-        {{ t('taskSettings.themes.infoBanner') }}
+        {{ t('taskSettings.projects.infoBanner') }}
       </p>
     </div>
 
@@ -79,7 +80,7 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
       <USkeleton
         v-for="n in 3"
         :key="n"
-        class="h-16 w-full rounded-lg"
+        class="h-16 w-full rounded-lg bg-muted border border-border dark:bg-white/15"
       />
     </div>
 
@@ -87,21 +88,21 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
       v-else-if="error"
       class="text-sm text-error py-4"
     >
-      {{ t('taskSettings.themes.loadError') }}
+      {{ t('taskSettings.projects.loadError') }}
     </p>
 
     <p
       v-else-if="!projects.length"
       class="text-sm text-muted-foreground py-4"
     >
-      {{ t('taskSettings.themes.empty') }}
+      {{ t('taskSettings.projects.empty') }}
     </p>
 
     <div
       v-else
       class="space-y-2"
     >
-      <TaskSettingsThemeCard
+      <TaskSettingsProjectCard
         v-for="project in projects"
         :key="project.id"
         :project="project"
@@ -121,7 +122,7 @@ const tabs: { id: TaskSettingsThemeTab, labelKey: string }[] = [
           class="h-4 w-4 transition-transform"
           :class="{ 'rotate-90': archivedOpen }"
         />
-        {{ t('taskSettings.themes.archived', { count: 0 }) }}
+        {{ t('taskSettings.projects.archived', { count: 0 }) }}
       </button>
     </div>
   </div>
