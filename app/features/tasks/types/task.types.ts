@@ -70,7 +70,7 @@ export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
 /** Filtros de query compartidos por listas y Kanban. */
 export interface TaskListFilters {
   short_description?: string
-  type?: TaskType
+  type?: TaskType[]
   project?: number[]
   overdue?: boolean
   completed?: boolean

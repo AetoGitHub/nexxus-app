@@ -1,17 +1,19 @@
 import type { TaskListFilters } from '~/features/tasks/types/task.types'
 
+export type TaskListQueryValue = string | number | boolean | string[]
+
 /** Convierte filtros de UI en query params omitiendo valores vacíos. */
 export function toTaskListQuery(
   filters: TaskListFilters = {},
-): Record<string, string | number | boolean> {
-  const query: Record<string, string | number | boolean> = {}
+): Record<string, TaskListQueryValue> {
+  const query: Record<string, TaskListQueryValue> = {}
   const shortDescription = filters.short_description?.trim()
 
   if (shortDescription) {
     query.short_description = shortDescription
   }
-  if (filters.type) {
-    query.type = filters.type
+  if (filters.type?.length) {
+    query.type = [...filters.type]
   }
   if (filters.project?.length) {
     query.project = filters.project.join(',')

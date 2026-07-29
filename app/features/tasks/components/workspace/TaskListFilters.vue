@@ -18,6 +18,11 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
 
 const projectSelectItems = computed(() => projectItems.value)
 
+const selectedTypes = computed(() => filters.value.type ?? [])
+
+/** Sin tipos filtrados = "Todos" activo. */
+const isAllTypesActive = computed(() => !selectedTypes.value.length)
+
 const selectedProjects = computed({
   get: () => filters.value.project ?? [],
   set: (value: number[]) => {
@@ -28,10 +33,27 @@ const selectedProjects = computed({
   },
 })
 
+function isTypeActive(type: VisibleTaskType) {
+  return selectedTypes.value.includes(type)
+}
+
 function toggleType(type: VisibleTaskType) {
+  const current = selectedTypes.value
+  const next = current.includes(type)
+    ? current.filter(value => value !== type)
+    : [...current, type]
+
   filters.value = {
     ...filters.value,
-    type: filters.value.type === type ? undefined : type,
+    type: next.length ? next : undefined,
+  }
+}
+
+/** Selecciona "Todos" → limpia tipos (query sin `type`). */
+function selectAllTypes() {
+  filters.value = {
+    ...filters.value,
+    type: undefined,
   }
 }
 
@@ -60,16 +82,30 @@ function setBooleanFilter(key: 'overdue' | 'completed' | 'multiple_close', value
     <UFormField :label="t('tasks.filterType')">
       <div class="flex h-8 items-center gap-2 flex-wrap">
         <UButton
+          color="neutral"
+          variant="outline"
+          size="sm"
+          class="h-8 rounded-full px-3 transition-colors"
+          :class="isAllTypesActive
+            ? 'bg-muted ring-1 ring-primary'
+            : 'bg-card'"
+          :aria-pressed="isAllTypesActive"
+          @click="selectAllTypes"
+        >
+          {{ t('tasks.filterAll') }}
+        </UButton>
+
+        <UButton
           v-for="option in TYPE_OPTIONS"
           :key="option.value"
           color="neutral"
           variant="outline"
           size="sm"
           class="h-8 rounded-full px-3 transition-colors"
-          :class="filters.type === option.value
+          :class="isTypeActive(option.value)
             ? 'bg-muted ring-1 ring-primary'
             : 'bg-card'"
-          :aria-pressed="filters.type === option.value"
+          :aria-pressed="isTypeActive(option.value)"
           @click="toggleType(option.value)"
         >
           <span
