@@ -219,7 +219,7 @@
       "description": "Descripción",
       "descriptionPlaceholder": "Contexto adicional opcional...",
       "group": "Grupo",
-      "groupPlaceholder": "Selecciona un grupo...",
+      "groupPlaceholder": "Se asigna según el usuario seleccionado",
       "assignedTo": "Asignado a",
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
       "dueDate": "Fecha Límite",

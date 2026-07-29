@@ -6,36 +6,26 @@ import { extractResults } from '~/shared/utils/paginated.util'
 
 /**
  * Dropdown de usuarios vía GET /api/tools/dropdown/users/.
- * Si hay groupId, filtra con ?group={id}.
+ * Cada usuario puede traer group_id / group_name.
  */
-export function useUsersDropdown(
-  groupId: MaybeRefOrGetter<number | null | undefined> = null,
-  enabled: MaybeRefOrGetter<boolean> = true,
-) {
+export function useUsersDropdown(enabled: MaybeRefOrGetter<boolean> = true) {
   const { $api } = useNuxtApp()
 
   const users = useQuery({
-    queryKey: computed(() => [
-      'tasks',
-      'users',
-      'dropdown',
-      toValue(groupId) ?? null,
-    ]),
-    queryFn: () => {
-      const group = toValue(groupId)
-      return $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/', {
-        query: group != null ? { group } : undefined,
-      })
-    },
+    queryKey: ['tasks', 'users', 'dropdown'],
+    queryFn: () =>
+      $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/'),
     enabled: computed(() => toValue(enabled)),
   })
 
+  const list = computed(() => extractResults(users.data.value))
+
   const items = computed(() =>
-    extractResults(users.data.value).map(user => ({
+    list.value.map(user => ({
       label: user.username,
       value: user.id,
     })),
   )
 
-  return { users, items }
+  return { users, list, items }
 }

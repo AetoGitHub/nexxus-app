@@ -180,6 +180,8 @@ export interface TaskBoardSection {
 export interface UserDropdown {
   id: number
   username: string
+  group_id?: number | null
+  group_name?: string | null
 }
 
 export interface AssignedTaskCount {

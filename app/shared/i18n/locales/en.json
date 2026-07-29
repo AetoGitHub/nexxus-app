@@ -219,7 +219,7 @@
       "description": "Description",
       "descriptionPlaceholder": "Optional additional context...",
       "group": "Group",
-      "groupPlaceholder": "Select a group...",
+      "groupPlaceholder": "Assigned from the selected user",
       "assignedTo": "Assigned to",
       "assignedToPlaceholder": "Select one or more users...",
       "dueDate": "Due date",

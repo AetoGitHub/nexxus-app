@@ -14,7 +14,6 @@ import type {
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
-import { useGroupsDropdown } from '~/features/tasks/composables/shared/useGroupsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
@@ -91,6 +90,29 @@ const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
 const isSaving = computed(() => isPending.value || isUpdating.value)
+
+/** Campos obligatorios listos para crear/guardar. */
+const canSubmit = computed(() => {
+  if (!state.name.trim()) {
+    return false
+  }
+  if (state.project == null) {
+    return false
+  }
+  if (!state.assignedTo.length) {
+    return false
+  }
+  if (!state.dueDate) {
+    return false
+  }
+  if (!isDetailView.value && state.group == null) {
+    return false
+  }
+  if (state.type === 'multiple_close' && !state.taskReviewer.length && user.value?.id == null) {
+    return false
+  }
+  return true
+})
 
 /** Aprobación pendiente del usuario logueado en close_approvals. */
 const pendingApprovalForUser = computed(() =>
@@ -195,9 +217,7 @@ const projectsQuery = useQuery({
   enabled: computed(() => open.value),
 })
 
-const { groups: groupsQuery, items: groupItems } = useGroupsDropdown(() => open.value)
-const { users: usersQuery, items: userItems } = useUsersDropdown(
-  () => state.group,
+const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
   () => open.value,
 )
 
@@ -208,10 +228,29 @@ const projectItems = computed<SelectItem[]>(() =>
   })),
 )
 
-/** Al cambiar grupo, limpia asignados (la lista de usuarios se refiltra). */
-function onGroupChange() {
-  state.assignedTo = []
-}
+/** Grupo derivado del primer asignado con group_id. */
+const selectedGroupLabel = computed(() => {
+  for (const id of state.assignedTo) {
+    const match = usersList.value.find(user => user.id === id)
+    if (match?.group_name) {
+      return match.group_name
+    }
+  }
+  return taskDetailQuery.data.value?.group_name ?? ''
+})
+
+watch(
+  [() => [...state.assignedTo], usersList],
+  ([ids]) => {
+    if (isReadOnly.value) {
+      return
+    }
+    const match = ids
+      .map(id => usersList.value.find(user => user.id === id))
+      .find(user => user?.group_id != null)
+    state.group = match?.group_id ?? undefined
+  },
+)
 
 function resetForm() {
   state.type = 'manual'
@@ -738,18 +777,17 @@ const slideoverUi = computed(() => {
             </UFormField>
 
             <UFormField
-              :label="t('tasks.form.group')"
-              name="group"
-              :required="!isDetailView"
+              :label="t('tasks.form.dueDate')"
+              name="dueDate"
+              :required="!isReadOnly"
             >
-              <USelect
-                v-model="state.group"
-                :items="groupItems"
-                :placeholder="t('tasks.form.groupPlaceholder')"
-                :loading="groupsQuery.isPending.value"
+              <UInput
+                v-model="state.dueDate"
+                type="date"
+                icon="i-lucide-calendar"
+                :min="isReadOnly ? undefined : minDueDate"
                 :disabled="isReadOnly"
                 class="w-full"
-                @update:model-value="onGroupChange"
               />
             </UFormField>
           </div>
@@ -773,16 +811,13 @@ const slideoverUi = computed(() => {
             </UFormField>
 
             <UFormField
-              :label="t('tasks.form.dueDate')"
-              name="dueDate"
-              :required="!isReadOnly"
+              :label="t('tasks.form.group')"
+              name="group"
             >
               <UInput
-                v-model="state.dueDate"
-                type="date"
-                icon="i-lucide-calendar"
-                :min="isReadOnly ? undefined : minDueDate"
-                :disabled="isReadOnly"
+                :model-value="selectedGroupLabel"
+                :placeholder="t('tasks.form.groupPlaceholder')"
+                disabled
                 class="w-full"
               />
             </UFormField>
@@ -890,11 +925,12 @@ const slideoverUi = computed(() => {
             <template v-if="isEditing">
               <UButton
                 :label="t('tasks.form.save')"
-                color="primary"
+                :color="canSubmit ? 'primary' : 'neutral'"
                 type="submit"
                 :form="formId"
                 :loading="isSaving"
-                :disabled="isSaving"
+                :disabled="isSaving || !canSubmit"
+                class="disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </template>
             <template v-else>
@@ -965,11 +1001,12 @@ const slideoverUi = computed(() => {
         />
         <UButton
           :label="t('tasks.form.create')"
-          color="primary"
+          :color="canSubmit ? 'primary' : 'neutral'"
           type="submit"
           :form="formId"
           :loading="isPending"
-          :disabled="isPending"
+          :disabled="isPending || !canSubmit"
+          class="disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
     </template>
