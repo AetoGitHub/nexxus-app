@@ -26,6 +26,7 @@ import {
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
   defaultTaskReviewers,
+  findCloseApprovalForUser,
   findPendingCloseApproval,
   taskDetailToFormInput,
   type NewTaskFormInput,
@@ -125,6 +126,14 @@ const canSubmit = computed(() => {
   return true
 })
 
+/** Registro de close_approvals del usuario logueado (si existe). */
+const userCloseApproval = computed(() =>
+  findCloseApprovalForUser(
+    taskDetailQuery.data.value?.close_approvals,
+    user.value?.id,
+  ),
+)
+
 /** Aprobación pendiente del usuario logueado en close_approvals. */
 const pendingApprovalForUser = computed(() =>
   findPendingCloseApproval(
@@ -132,6 +141,9 @@ const pendingApprovalForUser = computed(() =>
     user.value?.id,
   ),
 )
+
+/** El usuario ya registró su autorización (closed: true). */
+const hasUserAlreadyAuthorized = computed(() => userCloseApproval.value?.closed === true)
 
 /** En accepted solo se muestra Close; en el resto Rejected + Authorize. */
 const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'accepted')
@@ -179,17 +191,28 @@ const showCompleteAction = computed(() =>
 )
 
 /**
- * In review: rechazar o completar.
- * multiple_close solo permite rechazar (no complete).
+ * In review: rechazar / completar / autorizar.
+ * Si el usuario ya autorizó en close_approvals, no se muestran acciones.
  */
 const showReviewDecision = computed(() =>
   showProcessActions.value
-  && taskDetailQuery.data.value?.status === 'in_review',
+  && taskDetailQuery.data.value?.status === 'in_review'
+  && !hasUserAlreadyAuthorized.value,
+)
+
+/**
+ * En in_review con close_approval pendiente: Rejected + Autorizar
+ * (misma base que el contador closed/total de All List/Kanban).
+ */
+const showReviewAuthorizeActions = computed(() =>
+  showReviewDecision.value
+  && pendingApprovalForUser.value != null,
 )
 
 const showReviewCompleteAction = computed(() =>
   showReviewDecision.value
-  && !isMultipleCloseTask.value,
+  && !isMultipleCloseTask.value
+  && !showReviewAuthorizeActions.value,
 )
 
 const state = reactive<NewTaskFormState>({
@@ -1006,7 +1029,14 @@ const slideoverUi = computed(() => {
                   @click="openReviewDecisionModal('rejected')"
                 />
                 <UButton
-                  v-if="showReviewCompleteAction"
+                  v-if="showReviewAuthorizeActions"
+                  :label="t('tasks.toUpdate.authorize.submit')"
+                  color="warning"
+                  :disabled="!canAuthorize"
+                  @click="onAuthorize"
+                />
+                <UButton
+                  v-else-if="showReviewCompleteAction"
                   :label="t('tasks.processReview.complete')"
                   color="primary"
                   @click="openReviewDecisionModal('complete')"

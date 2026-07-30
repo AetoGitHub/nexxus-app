@@ -199,13 +199,22 @@ export function defaultTaskReviewers(currentUserId?: number): number[] {
   return currentUserId != null ? [currentUserId] : []
 }
 
-/** Close approval pendiente del usuario logueado (profile match y aún no cerrado). */
-export function findPendingCloseApproval(
+/** Close approval del usuario logueado (match por profile), sin importar si ya cerró. */
+export function findCloseApprovalForUser(
   approvals: TaskCloseApproval[] | undefined,
   userId: number | undefined,
 ): TaskCloseApproval | undefined {
   if (userId == null || !approvals?.length) {
     return undefined
   }
-  return approvals.find(approval => approval.profile === userId && !approval.closed)
+  return approvals.find(approval => approval.profile === userId)
+}
+
+/** Close approval pendiente del usuario logueado (profile match y aún no cerrado). */
+export function findPendingCloseApproval(
+  approvals: TaskCloseApproval[] | undefined,
+  userId: number | undefined,
+): TaskCloseApproval | undefined {
+  const approval = findCloseApprovalForUser(approvals, userId)
+  return approval && !approval.closed ? approval : undefined
 }
