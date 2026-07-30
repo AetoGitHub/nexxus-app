@@ -252,6 +252,7 @@
       "assignedTo": "Assigned to",
       "assignedToPlaceholder": "Select one or more users...",
       "dueDate": "Due date",
+      "datePlaceholder": "Select a date",
       "markUrgent": "Mark as urgent",
       "effort": "Effort",
       "effortOptional": "optional",

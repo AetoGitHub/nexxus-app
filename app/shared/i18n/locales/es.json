@@ -252,6 +252,7 @@
       "assignedTo": "Asignado a",
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
       "dueDate": "Fecha Límite",
+      "datePlaceholder": "Selecciona una fecha",
       "markUrgent": "Marcar como urgente",
       "effort": "Esfuerzo",
       "effortOptional": "opcional",

@@ -21,6 +21,7 @@ import TaskCloseProcessModal from '~/features/tasks/components/form/TaskClosePro
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
+import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import { extractResults } from '~/shared/utils/paginated.util'
 import {
   buildCreateTaskPayload,
@@ -827,13 +828,10 @@ const slideoverUi = computed(() => {
               name="dueDate"
               :required="!isReadOnly"
             >
-              <UInput
+              <TaskDatePicker
                 v-model="state.dueDate"
-                type="date"
-                icon="i-lucide-calendar"
                 :min="isReadOnly ? undefined : minDueDate"
                 :disabled="isReadOnly"
-                class="w-full"
               />
             </UFormField>
           </div>

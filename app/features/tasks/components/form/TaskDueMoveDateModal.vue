@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import { useUpdateTaskLimitDate } from '~/features/tasks/composables/form/useUpdateTaskLimitDate'
 import { dueDateInputToLimitISO } from '~/features/tasks/utils/kanban/kanban-due-move.util'
 
@@ -88,13 +89,10 @@ async function onConfirm() {
         name="limitDate"
         required
       >
-        <UInput
+        <TaskDatePicker
           v-model="selectedDate"
-          type="date"
-          icon="i-lucide-calendar"
           :min="minDate"
           :max="maxDate"
-          class="w-full"
         />
       </UFormField>
     </template>
