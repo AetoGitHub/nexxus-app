@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
-import type { TaskListFilters } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, TaskListFilters } from '~/features/tasks/types/task.types'
 import { sectionsToKanbanColumns } from '~/features/tasks/utils/kanban/kanban.util'
 
 const props = withDefaults(
@@ -15,7 +15,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  create: [columnId: string | number]
+  create: [column: KanbanCreateColumn]
 }>()
 
 const { groups, sections } = useGroupTasks(() => props.filters)

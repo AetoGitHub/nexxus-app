@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { KanbanColumn } from '~/features/tasks/types/task.types'
+import type { KanbanColumn, KanbanCreateColumn } from '~/features/tasks/types/task.types'
 import TaskKanbanCard from '~/features/tasks/components/kanban/TaskKanbanCard.vue'
 import TaskSectionBadgeFallback from '~/features/tasks/components/shared/TaskSectionBadgeFallback.vue'
 
@@ -21,7 +21,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  create: [columnId: string | number]
+  create: [column: KanbanCreateColumn]
   dragStart: [payload: { taskId: number, columnId: string | number }]
   dragEnd: []
   dragOverColumn: [columnId: string | number]
@@ -144,7 +144,7 @@ function onDrop(event: DragEvent) {
           block
           size="sm"
           class="justify-start text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
-          @click="emit('create', column.id)"
+          @click="emit('create', { id: column.id, title: column.title })"
         />
       </div>
     </div>

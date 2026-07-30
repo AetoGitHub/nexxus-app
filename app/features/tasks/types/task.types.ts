@@ -244,6 +244,12 @@ export interface KanbanColumn {
   comingSoon?: boolean
 }
 
+/** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */
+export interface KanbanCreateColumn {
+  id: string | number
+  title?: string
+}
+
 /** Payload de POST /api/tasks/process/start/ */
 export interface StartTaskProcessPayload {
   task: number

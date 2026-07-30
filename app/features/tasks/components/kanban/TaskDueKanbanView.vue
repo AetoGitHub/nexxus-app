@@ -2,7 +2,7 @@
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import TaskDueMoveConfirmModal from '~/features/tasks/components/form/TaskDueMoveConfirmModal.vue'
 import TaskDueMoveDateModal from '~/features/tasks/components/form/TaskDueMoveDateModal.vue'
-import type { KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
 import { sectionsToKanbanColumns } from '~/features/tasks/utils/kanban/kanban.util'
 
 const props = withDefaults(
@@ -17,7 +17,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  create: [columnId: string | number]
+  create: [column: KanbanCreateColumn]
 }>()
 
 const { sections } = useOverdueTasks(() => props.filters)

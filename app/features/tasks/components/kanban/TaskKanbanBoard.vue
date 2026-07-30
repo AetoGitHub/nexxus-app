@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { KanbanColumn, KanbanTaskMove } from '~/features/tasks/types/task.types'
+import type { KanbanColumn, KanbanCreateColumn, KanbanTaskMove } from '~/features/tasks/types/task.types'
 import TaskKanbanColumn from '~/features/tasks/components/kanban/TaskKanbanColumn.vue'
 
 const props = withDefaults(
@@ -27,7 +27,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  create: [columnId: string | number]
+  create: [column: KanbanCreateColumn]
   /** Drop entre columnas; en All/Due/Project dispara el flujo de confirmación. */
   move: [payload: KanbanTaskMove]
 }>()

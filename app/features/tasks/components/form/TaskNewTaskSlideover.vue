@@ -54,7 +54,7 @@ const props = withDefaults(
   defineProps<{
     view?: TaskView
     groupBy?: TaskGroupBy
-    /** Prefills al crear (p. ej. proyecto desde columna Kanban). */
+    /** Prefills al crear (proyecto / usuario / grupo desde columna Kanban). */
     initialDefaults?: NewTaskFormDefaults | null
     /** Modo autorización desde pending-approval. */
     authorizeMode?: boolean
@@ -270,7 +270,7 @@ const projectItems = computed<SelectItem[]>(() =>
   })),
 )
 
-/** Grupo derivado del primer asignado con group_id. */
+/** Grupo: del asignado, del detalle, o prefill Kanban (group-id + group-name). */
 const selectedGroupLabel = computed(() => {
   for (const id of state.assignedTo) {
     const match = usersList.value.find(user => user.id === id)
@@ -278,7 +278,9 @@ const selectedGroupLabel = computed(() => {
       return match.group_name
     }
   }
-  return taskDetailQuery.data.value?.group_name ?? ''
+  return taskDetailQuery.data.value?.group_name
+    ?? props.initialDefaults?.groupName
+    ?? ''
 })
 
 watch(
@@ -290,7 +292,8 @@ watch(
     const match = ids
       .map(id => usersList.value.find(user => user.id === id))
       .find(user => user?.group_id != null)
-    state.group = match?.group_id ?? undefined
+    // Prioriza el grupo del asignado; si no hay, conserva el prefill de Kanban
+    state.group = match?.group_id ?? props.initialDefaults?.group ?? undefined
   },
 )
 

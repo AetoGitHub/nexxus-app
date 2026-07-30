@@ -3,7 +3,7 @@ import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
-import type { KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
   defineProps<{
@@ -17,7 +17,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
-  create: [columnId: string | number]
+  create: [column: KanbanCreateColumn]
 }>()
 
 const { columns } = useKanbanTasks(() => props.filters)

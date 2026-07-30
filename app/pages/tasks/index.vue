@@ -2,7 +2,7 @@
 import TaskWorkspaceShell from '~/features/tasks/components/workspace/TaskWorkspaceShell.vue'
 import { buildNewTaskDefaultsFromKanbanColumn } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
-import type { TaskGroupBy } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, TaskGroupBy } from '~/features/tasks/types/task.types'
 
 const TaskListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskListView.vue'),
@@ -48,10 +48,10 @@ useSeoMeta({
 
 function onKanbanCreate(
   groupBy: TaskGroupBy,
-  columnId: string | number,
+  column: KanbanCreateColumn,
   openNewTask: (defaults?: NewTaskFormDefaults | null) => void,
 ) {
-  openNewTask(buildNewTaskDefaultsFromKanbanColumn(groupBy, columnId))
+  openNewTask(buildNewTaskDefaultsFromKanbanColumn(groupBy, column.id, column.title))
 }
 </script>
 
