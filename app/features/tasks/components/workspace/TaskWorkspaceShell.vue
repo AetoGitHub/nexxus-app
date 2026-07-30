@@ -28,6 +28,7 @@ const {
   newTaskOpen,
   selectedTaskId,
   newTaskDefaults,
+  toUpdateSection,
   listFilters,
   activeGroupByLabel,
   openNewTask,
@@ -124,6 +125,7 @@ const {
       :group-by="groupBy"
       :initial-defaults="newTaskDefaults"
       :authorize-mode="props.authorizeMode"
+      :to-update-section="toUpdateSection"
     />
   </div>
 </template>

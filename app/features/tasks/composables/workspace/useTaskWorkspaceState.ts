@@ -1,5 +1,6 @@
 import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters, TaskView } from '~/features/tasks/types/task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
+import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 /** Estado compartido del workspace de tareas (filtros, vista, slideover). */
 export function useTaskWorkspaceState() {
@@ -14,6 +15,8 @@ export function useTaskWorkspaceState() {
   const selectedTaskId = ref<number | null>(null)
   /** Prefills al abrir el slideover en modo creación (p. ej. proyecto desde Kanban). */
   const newTaskDefaults = ref<NewTaskFormDefaults | null>(null)
+  /** Sección de pending-approval desde la que se abrió el detalle. */
+  const toUpdateSection = ref<ToUpdateSectionId | null>(null)
 
   const debouncedSearch = refDebounced(search, 300)
   const listFilters = ref<TaskListFilters>({})
@@ -28,6 +31,7 @@ export function useTaskWorkspaceState() {
   watch(newTaskOpen, (isOpen) => {
     if (!isOpen) {
       newTaskDefaults.value = null
+      toUpdateSection.value = null
     }
   })
 
@@ -35,12 +39,14 @@ export function useTaskWorkspaceState() {
 
   function openNewTask(defaults?: NewTaskFormDefaults | null) {
     selectedTaskId.value = null
+    toUpdateSection.value = null
     newTaskDefaults.value = defaults ?? null
     newTaskOpen.value = true
   }
 
-  function openTask(taskId: number) {
+  function openTask(taskId: number, section?: ToUpdateSectionId | null) {
     selectedTaskId.value = taskId
+    toUpdateSection.value = section ?? null
     newTaskDefaults.value = null
     newTaskOpen.value = true
   }
@@ -54,6 +60,7 @@ export function useTaskWorkspaceState() {
     newTaskOpen,
     selectedTaskId,
     newTaskDefaults,
+    toUpdateSection,
     listFilters,
     activeGroupByLabel,
     openNewTask,

@@ -3,6 +3,7 @@ import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthor
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import { useToUpdateKanbanMove } from '~/features/to-update/composables/useToUpdateKanbanMove'
 import type { KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
+import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 const props = withDefaults(
   defineProps<{
@@ -15,7 +16,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  select: [taskId: number]
+  select: [taskId: number, sectionId: ToUpdateSectionId]
 }>()
 
 const { columns } = useToUpdateKanban(() => props.filters)
@@ -25,6 +26,15 @@ const {
   requestMove,
   onAuthorizeSuccess,
 } = useToUpdateKanbanMove()
+
+function onSelect(taskId: number) {
+  const column = columns.value.find(item => item.tasks.some(task => task.id === taskId))
+  const sectionId = column?.id
+  if (sectionId == null) {
+    return
+  }
+  emit('select', taskId, sectionId as ToUpdateSectionId)
+}
 
 function onMove(payload: KanbanTaskMove) {
   if (authorizeModalOpen.value) {
@@ -50,7 +60,7 @@ function onMove(payload: KanbanTaskMove) {
     :selected-task-id="selectedTaskId"
     confirm-before-move
     :show-create="false"
-    @select="emit('select', $event)"
+    @select="onSelect"
     @move="onMove"
   />
 

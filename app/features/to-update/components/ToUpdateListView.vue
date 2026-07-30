@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskSection from '~/features/tasks/components/list/TaskSection.vue'
 import type { TaskListFilters } from '~/features/tasks/types/task.types'
+import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 const props = withDefaults(
   defineProps<{
@@ -12,8 +13,8 @@ const props = withDefaults(
   },
 )
 
-defineEmits<{
-  select: [taskId: number]
+const emit = defineEmits<{
+  select: [taskId: number, sectionId: ToUpdateSectionId]
 }>()
 
 const { t } = useI18n()
@@ -32,7 +33,7 @@ const { sections } = useToUpdateTasks(() => props.filters)
       :loading="section.loading"
       :error="section.error"
       :selected-task-id="selectedTaskId"
-      @select="$emit('select', $event)"
+      @select="emit('select', $event, section.id)"
     />
   </div>
 </template>

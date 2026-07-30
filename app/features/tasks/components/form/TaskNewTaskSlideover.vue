@@ -34,6 +34,7 @@ import {
   applyNewTaskFormDefaults,
   type NewTaskFormDefaults,
 } from '~/features/tasks/utils/form/new-task-defaults.util'
+import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 interface NewTaskFormState extends NewTaskFormInput {
   volumeCountWhat: string
@@ -55,12 +56,15 @@ const props = withDefaults(
     initialDefaults?: NewTaskFormDefaults | null
     /** Modo autorización desde pending-approval. */
     authorizeMode?: boolean
+    /** Sección de pending-approval desde la que se abrió el detalle. */
+    toUpdateSection?: ToUpdateSectionId | null
   }>(),
   {
     view: 'list',
     groupBy: 'all',
     initialDefaults: null,
     authorizeMode: false,
+    toUpdateSection: null,
   },
 )
 
@@ -129,17 +133,24 @@ const pendingApprovalForUser = computed(() =>
   ),
 )
 
-const showAuthorize = computed(() =>
+/** En accepted solo se muestra Close; en el resto Rejected + Authorize. */
+const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'accepted')
+
+/** Acciones Rejected/Authorize en pending-approval (todas las secciones menos accepted). */
+const showAuthorizeActions = computed(() =>
   props.authorizeMode
   && isDetailView.value
   && !isEditing.value
-  && pendingApprovalForUser.value != null,
+  && !isAcceptedToUpdateSection.value,
 )
 
-/** Detalle con acciones de proceso (lista, kanban o calendario; cualquier agrupación). */
+const canAuthorize = computed(() => pendingApprovalForUser.value != null)
+
+/** Detalle con acciones de proceso (fuera de pending-approval). */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
+  && !props.authorizeMode
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -953,12 +964,20 @@ const slideoverUi = computed(() => {
                 :disabled="isSaving"
                 @click="close"
               />
-              <UButton
-                v-if="showAuthorize"
-                :label="t('tasks.toUpdate.authorize.submit')"
-                color="warning"
-                @click="onAuthorize"
-              />
+              <template v-if="showAuthorizeActions">
+                <UButton
+                  :label="t('tasks.processReview.rejected')"
+                  color="error"
+                  variant="solid"
+                  @click="openReviewDecisionModal('rejected')"
+                />
+                <UButton
+                  :label="t('tasks.toUpdate.authorize.submit')"
+                  color="warning"
+                  :disabled="!canAuthorize"
+                  @click="onAuthorize"
+                />
+              </template>
               <UButton
                 v-else-if="showStartProcess"
                 :label="t('tasks.processStart.submit')"
