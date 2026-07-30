@@ -13,17 +13,21 @@ const props = withDefaults(
      * false: move local cosmético (otras vistas).
      */
     confirmBeforeMove?: boolean
+    /** Botón crear tarea al pie de cada columna. */
+    showCreate?: boolean
   }>(),
   {
     selectedTaskId: null,
     loading: false,
     error: false,
     confirmBeforeMove: false,
+    showCreate: true,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: [columnId: string | number]
   /** Drop entre columnas; en All/Due/Project dispara el flujo de confirmación. */
   move: [payload: KanbanTaskMove]
 }>()
@@ -92,7 +96,9 @@ function onDropTask(payload: KanbanTaskMove) {
         :selected-task-id="selectedTaskId"
         :dragging-task-id="draggingTaskId"
         :drop-target-id="dropTargetId"
+        :show-create="showCreate"
         @select="emit('select', $event)"
+        @create="emit('create', $event)"
         @drag-start="onDragStart"
         @drag-end="onDragEnd"
         @drag-over-column="onDragOverColumn"

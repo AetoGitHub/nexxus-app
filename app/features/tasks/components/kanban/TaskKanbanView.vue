@@ -17,6 +17,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: [columnId: string | number]
 }>()
 
 const { columns } = useKanbanTasks(() => props.filters)
@@ -51,6 +52,7 @@ function onMove(payload: KanbanTaskMove) {
     :selected-task-id="selectedTaskId"
     confirm-before-move
     @select="emit('select', $event)"
+    @create="emit('create', $event)"
     @move="onMove"
   />
 

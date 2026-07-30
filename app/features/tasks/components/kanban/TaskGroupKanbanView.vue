@@ -15,6 +15,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: [columnId: string | number]
 }>()
 
 const { groups, sections } = useGroupTasks(() => props.filters)
@@ -30,5 +31,6 @@ const columns = computed(() => sectionsToKanbanColumns(sections.value))
     :loading="groups.isPending.value"
     :error="groups.isError.value"
     @select="emit('select', $event)"
+    @create="emit('create', $event)"
   />
 </template>

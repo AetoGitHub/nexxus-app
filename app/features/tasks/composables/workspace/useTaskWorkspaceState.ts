@@ -1,4 +1,5 @@
 import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters, TaskView } from '~/features/tasks/types/task.types'
+import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 
 /** Estado compartido del workspace de tareas (filtros, vista, slideover). */
 export function useTaskWorkspaceState() {
@@ -11,6 +12,8 @@ export function useTaskWorkspaceState() {
   const filtersOpen = ref(false)
   const newTaskOpen = ref(false)
   const selectedTaskId = ref<number | null>(null)
+  /** Prefills al abrir el slideover en modo creación (p. ej. proyecto desde Kanban). */
+  const newTaskDefaults = ref<NewTaskFormDefaults | null>(null)
 
   const debouncedSearch = refDebounced(search, 300)
   const listFilters = ref<TaskListFilters>({})
@@ -22,15 +25,23 @@ export function useTaskWorkspaceState() {
     }
   })
 
+  watch(newTaskOpen, (isOpen) => {
+    if (!isOpen) {
+      newTaskDefaults.value = null
+    }
+  })
+
   const activeGroupByLabel = computed(() => t(`tasks.groupBy.${groupBy.value}`))
 
-  function openNewTask() {
+  function openNewTask(defaults?: NewTaskFormDefaults | null) {
     selectedTaskId.value = null
+    newTaskDefaults.value = defaults ?? null
     newTaskOpen.value = true
   }
 
   function openTask(taskId: number) {
     selectedTaskId.value = taskId
+    newTaskDefaults.value = null
     newTaskOpen.value = true
   }
 
@@ -42,6 +53,7 @@ export function useTaskWorkspaceState() {
     filtersOpen,
     newTaskOpen,
     selectedTaskId,
+    newTaskDefaults,
     listFilters,
     activeGroupByLabel,
     openNewTask,

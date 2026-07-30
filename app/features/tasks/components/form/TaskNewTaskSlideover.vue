@@ -30,6 +30,10 @@ import {
   taskDetailToFormInput,
   type NewTaskFormInput,
 } from '~/features/tasks/utils/form/task-form.util'
+import {
+  applyNewTaskFormDefaults,
+  type NewTaskFormDefaults,
+} from '~/features/tasks/utils/form/new-task-defaults.util'
 
 interface NewTaskFormState extends NewTaskFormInput {
   volumeCountWhat: string
@@ -47,12 +51,15 @@ const props = withDefaults(
   defineProps<{
     view?: TaskView
     groupBy?: TaskGroupBy
+    /** Prefills al crear (p. ej. proyecto desde columna Kanban). */
+    initialDefaults?: NewTaskFormDefaults | null
     /** Modo autorización desde pending-approval. */
     authorizeMode?: boolean
   }>(),
   {
     view: 'list',
     groupBy: 'all',
+    initialDefaults: null,
     authorizeMode: false,
   },
 )
@@ -433,6 +440,11 @@ watch(open, (isOpen) => {
     startProcessModalOpen.value = false
     isEditing.value = false
     taskId.value = null
+    return
+  }
+
+  if (taskId.value == null) {
+    applyNewTaskFormDefaults(state, props.initialDefaults)
   }
 })
 

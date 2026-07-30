@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import TaskWorkspaceShell from '~/features/tasks/components/workspace/TaskWorkspaceShell.vue'
+import { buildNewTaskDefaultsFromKanbanColumn } from '~/features/tasks/utils/form/new-task-defaults.util'
+import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
+import type { TaskGroupBy } from '~/features/tasks/types/task.types'
 
 const TaskListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskListView.vue'),
@@ -42,11 +45,19 @@ const { t } = useI18n()
 useSeoMeta({
   title: () => t('toolbar.moduleName'),
 })
+
+function onKanbanCreate(
+  groupBy: TaskGroupBy,
+  columnId: string | number,
+  openNewTask: (defaults?: NewTaskFormDefaults | null) => void,
+) {
+  openNewTask(buildNewTaskDefaultsFromKanbanColumn(groupBy, columnId))
+}
 </script>
 
 <template>
   <TaskWorkspaceShell :title="t('toolbar.moduleName')">
-    <template #default="{ view, groupBy, filters, calendarPhase, selectedTaskId, openTask }">
+    <template #default="{ view, groupBy, filters, calendarPhase, selectedTaskId, openTask, openNewTask }">
       <TaskListView
         v-if="view === 'list' && groupBy === 'all'"
         :filters="filters"
@@ -83,6 +94,7 @@ useSeoMeta({
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onKanbanCreate(groupBy, $event, openNewTask)"
       />
       <TaskDueKanbanView
         v-else-if="view === 'kanban' && groupBy === 'due'"
@@ -90,6 +102,7 @@ useSeoMeta({
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onKanbanCreate(groupBy, $event, openNewTask)"
       />
       <TaskProjectKanbanView
         v-else-if="view === 'kanban' && groupBy === 'project'"
@@ -97,6 +110,7 @@ useSeoMeta({
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onKanbanCreate(groupBy, $event, openNewTask)"
       />
       <TaskUserKanbanView
         v-else-if="view === 'kanban' && groupBy === 'user'"
@@ -104,6 +118,7 @@ useSeoMeta({
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onKanbanCreate(groupBy, $event, openNewTask)"
       />
       <TaskGroupKanbanView
         v-else-if="view === 'kanban' && groupBy === 'group'"
@@ -111,6 +126,7 @@ useSeoMeta({
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onKanbanCreate(groupBy, $event, openNewTask)"
       />
       <TaskCalendarView
         v-else-if="view === 'calendar'"

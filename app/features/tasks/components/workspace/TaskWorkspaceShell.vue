@@ -27,6 +27,7 @@ const {
   filtersOpen,
   newTaskOpen,
   selectedTaskId,
+  newTaskDefaults,
   listFilters,
   activeGroupByLabel,
   openNewTask,
@@ -69,7 +70,7 @@ const {
           size="sm"
           class="h-8 font-semibold shrink-0"
           :label="$t('tasks.newTask')"
-          @click="openNewTask"
+          @click="openNewTask()"
         />
       </div>
 
@@ -112,6 +113,7 @@ const {
         :calendar-phase="calendarPhase"
         :selected-task-id="selectedTaskId"
         :open-task="openTask"
+        :open-new-task="openNewTask"
       />
     </div>
 
@@ -120,6 +122,7 @@ const {
       v-model:task-id="selectedTaskId"
       :view="view"
       :group-by="groupBy"
+      :initial-defaults="newTaskDefaults"
       :authorize-mode="props.authorizeMode"
     />
   </div>

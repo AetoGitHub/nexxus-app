@@ -133,6 +133,7 @@
         "rejected": "Rechazada",
         "complete": "Completado"
       },
+      "createTask": "Crear tarea",
       "dropHere": "Suelta aquí",
       "dropHint": "Puedes soltar tareas aquí",
       "moveNotAllowedTitle": "Movimiento no permitido",

@@ -15,6 +15,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: [columnId: string | number]
 }>()
 
 const { users, sections } = useAssignedTasks(() => props.filters)
@@ -30,5 +31,6 @@ const columns = computed(() => sectionsToKanbanColumns(sections.value))
     :loading="users.isPending.value"
     :error="users.isError.value"
     @select="emit('select', $event)"
+    @create="emit('create', $event)"
   />
 </template>

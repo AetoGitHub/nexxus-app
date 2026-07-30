@@ -49,6 +49,7 @@ function onMove(payload: KanbanTaskMove) {
     :columns="columns"
     :selected-task-id="selectedTaskId"
     confirm-before-move
+    :show-create="false"
     @select="emit('select', $event)"
     @move="onMove"
   />

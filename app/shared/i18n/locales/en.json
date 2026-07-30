@@ -133,6 +133,7 @@
         "rejected": "Rejected",
         "complete": "Complete"
       },
+      "createTask": "Create task",
       "dropHere": "Drop here",
       "dropHint": "You can drop tasks here",
       "moveNotAllowedTitle": "Move not allowed",

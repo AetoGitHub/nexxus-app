@@ -3,15 +3,25 @@ import type { KanbanColumn } from '~/features/tasks/types/task.types'
 import TaskKanbanCard from '~/features/tasks/components/kanban/TaskKanbanCard.vue'
 import TaskSectionBadgeFallback from '~/features/tasks/components/shared/TaskSectionBadgeFallback.vue'
 
-const props = defineProps<{
-  column: KanbanColumn
-  selectedTaskId?: number | null
-  draggingTaskId?: number | null
-  dropTargetId?: string | number | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    column: KanbanColumn
+    selectedTaskId?: number | null
+    draggingTaskId?: number | null
+    dropTargetId?: string | number | null
+    showCreate?: boolean
+  }>(),
+  {
+    selectedTaskId: null,
+    draggingTaskId: null,
+    dropTargetId: null,
+    showCreate: true,
+  },
+)
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: [columnId: string | number]
   dragStart: [payload: { taskId: number, columnId: string | number }]
   dragEnd: []
   dragOverColumn: [columnId: string | number]
@@ -75,50 +85,68 @@ function onDrop(event: DragEvent) {
     </header>
 
     <div
-      class="flex-1 min-h-0 overflow-y-auto rounded-xl bg-kanban-column p-2 space-y-2 transition-colors"
+      class="flex flex-1 min-h-0 flex-col rounded-xl bg-kanban-column transition-colors"
       :class="isDropTarget
         ? 'ring-2 ring-aeto-teal/40'
         : ''"
       @dragover="onDragOver"
       @drop="onDrop"
     >
-      <div v-if="column.loading" class="space-y-2">
-        <USkeleton v-for="n in 3" :key="n" class="h-20 w-full rounded-lg" />
-      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto p-2 space-y-2">
+        <div v-if="column.loading" class="space-y-2">
+          <USkeleton v-for="n in 3" :key="n" class="h-20 w-full rounded-lg" />
+        </div>
 
-      <p v-else-if="column.error" class="px-2 py-6 text-center text-sm text-error">
-        {{ t('tasks.loadError') }}
-      </p>
+        <p v-else-if="column.error" class="px-2 py-6 text-center text-sm text-error">
+          {{ t('tasks.loadError') }}
+        </p>
+
+        <div
+          v-else-if="column.comingSoon && !column.tasks.length"
+          class="px-2 py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground"
+        >
+          <UIcon name="i-lucide-construction" class="h-6 w-6" />
+          <p class="text-sm text-center">{{ t('tasks.comingSoon') }}</p>
+          <p class="text-xs text-center">{{ t('tasks.kanban.dropHint') }}</p>
+        </div>
+
+        <p
+          v-else-if="!column.tasks.length"
+          class="px-2 py-6 text-center text-sm text-muted-foreground"
+        >
+          {{ isDropTarget ? t('tasks.kanban.dropHere') : t('tasks.empty') }}
+        </p>
+
+        <template v-else>
+          <TaskKanbanCard
+            v-for="task in column.tasks"
+            :key="task.id"
+            :task="task"
+            :column-id="column.id"
+            :selected="selectedTaskId === task.id"
+            :dragging="draggingTaskId === task.id"
+            @select="emit('select', $event)"
+            @drag-start="emit('dragStart', $event)"
+            @drag-end="emit('dragEnd')"
+          />
+        </template>
+      </div>
 
       <div
-        v-else-if="column.comingSoon && !column.tasks.length"
-        class="px-2 py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground"
+        v-if="showCreate && !column.loading && !column.error"
+        class="shrink-0 border-t border-black/5 p-1.5 dark:border-white/5"
       >
-        <UIcon name="i-lucide-construction" class="h-6 w-6" />
-        <p class="text-sm text-center">{{ t('tasks.comingSoon') }}</p>
-        <p class="text-xs text-center">{{ t('tasks.kanban.dropHint') }}</p>
-      </div>
-
-      <p
-        v-else-if="!column.tasks.length"
-        class="px-2 py-6 text-center text-sm text-muted-foreground"
-      >
-        {{ isDropTarget ? t('tasks.kanban.dropHere') : t('tasks.empty') }}
-      </p>
-
-      <template v-else>
-        <TaskKanbanCard
-          v-for="task in column.tasks"
-          :key="task.id"
-          :task="task"
-          :column-id="column.id"
-          :selected="selectedTaskId === task.id"
-          :dragging="draggingTaskId === task.id"
-          @select="emit('select', $event)"
-          @drag-start="emit('dragStart', $event)"
-          @drag-end="emit('dragEnd')"
+        <UButton
+          icon="i-lucide-plus"
+          :label="t('tasks.kanban.createTask')"
+          color="neutral"
+          variant="ghost"
+          block
+          size="sm"
+          class="justify-start text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+          @click="emit('create', column.id)"
         />
-      </template>
+      </div>
     </div>
   </section>
 </template>
