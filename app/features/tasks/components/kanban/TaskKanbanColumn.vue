@@ -133,7 +133,7 @@ function onDrop(event: DragEvent) {
       </div>
 
       <div
-        v-if="showCreate && !column.loading && !column.error"
+        v-if="showCreate && column.id !== 'complete' && !column.loading && !column.error"
         class="shrink-0 border-t border-black/5 p-1.5 dark:border-white/5"
       >
         <UButton
