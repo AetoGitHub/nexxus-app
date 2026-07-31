@@ -126,6 +126,11 @@
       "process": "Proceso",
       "close": "Cierre"
     },
+    "calendarLegend": {
+      "all": "Todos",
+      "placeholder": "Filtrar",
+      "searchPlaceholder": "Buscar..."
+    },
     "kanban": {
       "columns": {
         "pending": "Pendiente",

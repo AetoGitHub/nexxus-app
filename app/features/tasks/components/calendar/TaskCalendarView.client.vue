@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
+import type { SelectMenuItem } from '@nuxt/ui'
 import type {
   CalendarApi,
   CalendarOptions,
@@ -24,6 +25,10 @@ import { coloredTasksToCalendarEvents, tasksToCalendarEvents } from '~/features/
 
 const COLLAPSED_EVENT_ROWS = 3
 const PHASE_TRANSITION_MS = 180
+/** Valor especial del USelectMenu para marcar/desmarcar todas las fuentes. */
+const LEGEND_ALL_VALUE = '__all__' as const
+
+type LegendSelectValue = typeof LEGEND_ALL_VALUE | number
 
 const props = defineProps<{
   filters: TaskListFilters
@@ -36,6 +41,8 @@ const emit = defineEmits<{
   select: [taskId: number]
 }>()
 
+const { t } = useI18n()
+
 const phase = computed(() => props.phase ?? 'start')
 /** Modo "por proyecto": tareas coloreadas por proyecto. */
 const projectMode = computed(() => props.groupBy === 'project')
@@ -45,8 +52,11 @@ const userMode = computed(() => props.groupBy === 'user')
 const groupsMode = computed(() => props.groupBy === 'group')
 /** Algún modo con leyenda de chips (proyecto, usuario o grupos). */
 const legendMode = computed(() => projectMode.value || userMode.value || groupsMode.value)
-/** Fuentes ocultas desde la leyenda (proyectos, usuarios o grupos). */
-const hiddenSourceIds = ref(new Set<number>())
+/**
+ * Fuentes seleccionadas en el filtro de leyenda.
+ * Incluye `LEGEND_ALL_VALUE` cuando todas están visibles.
+ */
+const selectedLegendValues = ref<LegendSelectValue[]>([])
 
 const now = new Date()
 const visibleMonth = ref({
@@ -92,8 +102,42 @@ const legendItems = computed(() => {
   return []
 })
 
+const legendItemIds = computed(() => legendItems.value.map(item => item.id))
+
+const legendSelectItems = computed<SelectMenuItem[]>(() => [
+  {
+    label: t('tasks.calendarLegend.all'),
+    value: LEGEND_ALL_VALUE,
+  },
+  { type: 'separator' },
+  ...legendItems.value.map(item => ({
+    label: item.name,
+    value: item.id,
+    /** Hex del calendario; se pinta en `#item-leading` (Chip solo admite colores semánticos). */
+    color: item.color,
+  })),
+])
+
+const selectedSourceIds = computed(() =>
+  selectedLegendValues.value.filter((value): value is number => typeof value === 'number'),
+)
+
+const isAllLegendSelected = computed(() =>
+  selectedLegendValues.value.includes(LEGEND_ALL_VALUE),
+)
+
+const legendDisplayLabel = computed(() => {
+  if (isAllLegendSelected.value) {
+    return t('tasks.calendarLegend.all')
+  }
+  return legendItems.value
+    .filter(item => selectedSourceIds.value.includes(item.id))
+    .map(item => item.name)
+    .join(', ')
+})
+
 const visibleSources = computed(() =>
-  legendItems.value.filter(item => !hiddenSourceIds.value.has(item.id)),
+  legendItems.value.filter(item => selectedSourceIds.value.includes(item.id)),
 )
 
 const sourceEvents = computed<EventInput[]>(() => {
@@ -129,15 +173,37 @@ const isError = computed(() => {
   return tasks.isError.value
 })
 
-function toggleSource(id: number) {
-  const next = new Set(hiddenSourceIds.value)
-  if (next.has(id)) {
-    next.delete(id)
+function selectAllLegendSources(ids: number[]) {
+  selectedLegendValues.value = ids.length > 0 ? [LEGEND_ALL_VALUE, ...ids] : []
+}
+
+/** Sincroniza "Todos" con la selección individual sin romper el filtrado del calendario. */
+function onLegendSelectUpdate(values: Array<string | number> | null | undefined) {
+  const ids = legendItemIds.value
+  const nextValues = (values ?? []).filter(
+    (value): value is LegendSelectValue =>
+      value === LEGEND_ALL_VALUE || (typeof value === 'number' && ids.includes(value)),
+  )
+  const prevHadAll = selectedLegendValues.value.includes(LEGEND_ALL_VALUE)
+  const nextHasAll = nextValues.includes(LEGEND_ALL_VALUE)
+  const nextIds = nextValues.filter((value): value is number => typeof value === 'number')
+
+  if (!prevHadAll && nextHasAll) {
+    selectAllLegendSources(ids)
+    return
   }
-  else {
-    next.add(id)
+
+  if (prevHadAll && !nextHasAll) {
+    selectedLegendValues.value = []
+    return
   }
-  hiddenSourceIds.value = next
+
+  if (nextIds.length === ids.length && ids.length > 0) {
+    selectAllLegendSources(ids)
+    return
+  }
+
+  selectedLegendValues.value = nextIds
 }
 
 const calendarRef = ref<{ getApi: () => CalendarApi } | null>(null)
@@ -388,10 +454,35 @@ async function applyCalendarEvents(events: EventInput[], animate: boolean) {
   syncWeekToggleButtons()
 }
 
-// Al cambiar el agrupador, reiniciamos chips ocultos.
+// Al cambiar el agrupador, reiniciamos la selección de la leyenda.
 watch(() => props.groupBy, () => {
-  hiddenSourceIds.value = new Set()
+  selectedLegendValues.value = []
 })
+
+// Al cargar o cambiar fuentes, mantenemos "Todos" o la selección parcial válida.
+watch(legendItems, (items, previousItems) => {
+  const ids = items.map(item => item.id)
+  const previousIds = new Set((previousItems ?? []).map(item => item.id))
+  const idsChanged = ids.length !== previousIds.size || ids.some(id => !previousIds.has(id))
+  const isInitial = selectedLegendValues.value.length === 0
+
+  if (isInitial || (idsChanged && selectedLegendValues.value.includes(LEGEND_ALL_VALUE))) {
+    selectAllLegendSources(ids)
+    return
+  }
+
+  if (!idsChanged) {
+    return
+  }
+
+  const nextIds = selectedSourceIds.value.filter(id => ids.includes(id))
+  if (nextIds.length === ids.length && ids.length > 0) {
+    selectAllLegendSources(ids)
+    return
+  }
+
+  selectedLegendValues.value = nextIds
+}, { immediate: true })
 
 // Al cambiar fase o modo reiniciamos semanas expandidas y recalculamos filas.
 watch([phase, legendMode], () => {
@@ -441,23 +532,45 @@ watch(
       <Transition name="calendar-legend">
         <div
           v-if="legendMode && legendItems.length > 0"
-          class="flex flex-wrap items-center gap-2 px-4 pt-3 pb-1"
+          class="flex items-center px-4 pt-3 pb-1"
         >
-          <UBadge
-            v-for="item in legendItems"
-            :key="item.id"
-            as="button"
-            type="button"
-            variant="solid"
-            size="md"
-            class="cursor-pointer border-0 font-medium text-white transition-opacity hover:opacity-90"
-            :class="hiddenSourceIds.has(item.id) ? 'opacity-40 line-through' : ''"
-            :style="{ backgroundColor: item.color }"
-            :aria-pressed="!hiddenSourceIds.has(item.id)"
-            @click="toggleSource(item.id)"
+          <USelectMenu
+            :model-value="selectedLegendValues"
+            multiple
+            value-key="value"
+            :items="legendSelectItems"
+            :placeholder="t('tasks.calendarLegend.placeholder')"
+            size="sm"
+            class="w-56"
+            :search-input="{ placeholder: t('tasks.calendarLegend.searchPlaceholder') }"
+            @update:model-value="onLegendSelectUpdate"
           >
-            {{ item.name }}
-          </UBadge>
+            <template #default="{ modelValue, ui }">
+              <span
+                v-if="Array.isArray(modelValue) && modelValue.length > 0"
+                data-slot="value"
+                :class="ui.value()"
+              >
+                {{ legendDisplayLabel }}
+              </span>
+              <span
+                v-else
+                data-slot="placeholder"
+                :class="ui.placeholder()"
+              >
+                {{ t('tasks.calendarLegend.placeholder') }}
+              </span>
+            </template>
+
+            <template #item-leading="{ item }">
+              <span
+                v-if="'color' in item && item.color"
+                class="size-2 shrink-0 rounded-full ring ring-bg"
+                :style="{ backgroundColor: String(item.color) }"
+                aria-hidden="true"
+              />
+            </template>
+          </USelectMenu>
         </div>
       </Transition>
 
