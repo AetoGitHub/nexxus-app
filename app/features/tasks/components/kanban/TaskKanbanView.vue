@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
+import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import type { KanbanCreateColumn, KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
@@ -28,6 +29,7 @@ const {
   closeProcessStatus,
   reviewDecisionModalOpen,
   reviewDecisionStatus,
+  reopenProcessModalOpen,
   requestMove,
   onProcessSuccess,
 } = useKanbanProcessMove()
@@ -76,6 +78,13 @@ function onMove(payload: KanbanTaskMove) {
     v-model:open="reviewDecisionModalOpen"
     :task-id="pendingTaskId"
     :target-status="reviewDecisionStatus"
+    @success="onProcessSuccess"
+  />
+
+  <TaskReopenProcessModal
+    v-if="pendingTaskId != null"
+    v-model:open="reopenProcessModalOpen"
+    :task-id="pendingTaskId"
     @success="onProcessSuccess"
   />
 </template>

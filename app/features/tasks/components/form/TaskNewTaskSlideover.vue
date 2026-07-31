@@ -19,6 +19,7 @@ import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
+import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
@@ -82,6 +83,7 @@ const closeProcessModalOpen = ref(false)
 const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
+const reopenProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
@@ -214,6 +216,12 @@ const showReviewCompleteAction = computed(() =>
   showReviewDecision.value
   && !isMultipleCloseTask.value
   && !showReviewAuthorizeActions.value,
+)
+
+/** Complete: reabrir hacia En progreso. */
+const showReopenProcess = computed(() =>
+  showProcessActions.value
+  && taskDetailQuery.data.value?.status === 'complete',
 )
 
 const state = reactive<NewTaskFormState>({
@@ -374,6 +382,10 @@ function openReviewDecisionModal(status: ReviewDecisionStatus) {
   reviewDecisionModalOpen.value = true
 }
 
+function openReopenProcessModal() {
+  reopenProcessModalOpen.value = true
+}
+
 function onProcessStarted() {
   close()
 }
@@ -383,6 +395,10 @@ function onProcessClosed() {
 }
 
 function onReviewDecision() {
+  close()
+}
+
+function onProcessReopened() {
   close()
 }
 
@@ -476,6 +492,10 @@ watch(open, (isOpen) => {
     resetForm()
     submitError.value = ''
     startProcessModalOpen.value = false
+    closeProcessModalOpen.value = false
+    reviewDecisionModalOpen.value = false
+    reopenProcessModalOpen.value = false
+    authorizeModalOpen.value = false
     isEditing.value = false
     taskId.value = null
     return
@@ -1043,6 +1063,12 @@ const slideoverUi = computed(() => {
                   @click="openReviewDecisionModal('complete')"
                 />
               </template>
+              <UButton
+                v-else-if="showReopenProcess"
+                :label="t('tasks.processReopen.submit')"
+                color="primary"
+                @click="openReopenProcessModal"
+              />
             </template>
           </div>
         </div>
@@ -1095,6 +1121,13 @@ const slideoverUi = computed(() => {
     :task-id="taskId"
     :target-status="reviewDecisionStatus"
     @success="onReviewDecision"
+  />
+
+  <TaskReopenProcessModal
+    v-if="taskId != null"
+    v-model:open="reopenProcessModalOpen"
+    :task-id="taskId"
+    @success="onProcessReopened"
   />
 
   <TaskAuthorizeCloseModal

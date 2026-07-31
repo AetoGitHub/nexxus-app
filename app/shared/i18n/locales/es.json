@@ -224,6 +224,21 @@
       "rejectSuccessDescription": "La tarea pasó a Rechazada.",
       "rejectErrorTitle": "No se pudo rechazar la tarea"
     },
+    "processReopen": {
+      "submit": "Reabrir",
+      "modalTitle": "Reabrir tarea",
+      "modalDescription": "Puedes agregar un comentario de forma opcional.",
+      "comment": "Comentario",
+      "commentPlaceholder": "Motivo de la reapertura",
+      "optional": "Opcional",
+      "images": "Imágenes",
+      "dropLabel": "Suelta tu imagen aquí",
+      "dropDescription": "SVG, PNG o JPG",
+      "confirm": "Reabrir",
+      "successTitle": "Tarea reabierta",
+      "successDescription": "La tarea volvió a En progreso.",
+      "errorTitle": "No se pudo reabrir la tarea"
+    },
     "due": {
       "today": "Hoy",
       "tomorrow": "Mañana",

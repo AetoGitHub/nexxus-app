@@ -224,6 +224,21 @@
       "rejectSuccessDescription": "The task moved to Rejected.",
       "rejectErrorTitle": "Could not reject the task"
     },
+    "processReopen": {
+      "submit": "Re-open",
+      "modalTitle": "Reopen task",
+      "modalDescription": "You can optionally add a comment.",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for reopening",
+      "optional": "Optional",
+      "images": "Images",
+      "dropLabel": "Drop your image here",
+      "dropDescription": "SVG, PNG or JPG",
+      "confirm": "Re-open",
+      "successTitle": "Task reopened",
+      "successDescription": "The task moved back to In progress.",
+      "errorTitle": "Could not reopen the task"
+    },
     "due": {
       "today": "Today",
       "tomorrow": "Tomorrow",

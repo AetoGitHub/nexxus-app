@@ -19,12 +19,14 @@ export function useKanbanProcessMove() {
   const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
   const reviewDecisionModalOpen = ref(false)
   const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
+  const reopenProcessModalOpen = ref(false)
 
   function resetModals() {
     pendingTaskId.value = null
     startProcessModalOpen.value = false
     closeProcessModalOpen.value = false
     reviewDecisionModalOpen.value = false
+    reopenProcessModalOpen.value = false
   }
 
   function requestMove(payload: KanbanTaskMove & { task: Task }) {
@@ -56,6 +58,11 @@ export function useKanbanProcessMove() {
       return true
     }
 
+    if (transition.kind === 'reopen') {
+      reopenProcessModalOpen.value = true
+      return true
+    }
+
     reviewDecisionStatus.value = transition.status
     reviewDecisionModalOpen.value = true
     return true
@@ -72,6 +79,7 @@ export function useKanbanProcessMove() {
     closeProcessStatus,
     reviewDecisionModalOpen,
     reviewDecisionStatus,
+    reopenProcessModalOpen,
     requestMove,
     onProcessSuccess,
   }

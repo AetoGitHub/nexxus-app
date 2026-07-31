@@ -10,6 +10,7 @@ export type KanbanProcessMove =
   | { kind: 'start' }
   | { kind: 'close', status: CloseTaskProcessStatus }
   | { kind: 'review', status: ReviewDecisionStatus }
+  | { kind: 'reopen' }
 
 const STATUS_COLUMNS = new Set<string>([
   'pending',
@@ -63,6 +64,10 @@ export function resolveKanbanProcessMove(
 
   if (fromColumnId === 'in_review' && toColumnId === 'complete') {
     return blockComplete ? null : { kind: 'review', status: 'complete' }
+  }
+
+  if (fromColumnId === 'complete' && toColumnId === 'wip') {
+    return { kind: 'reopen' }
   }
 
   return null
