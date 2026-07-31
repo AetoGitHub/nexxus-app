@@ -1,7 +1,7 @@
 import type { TaskGroupBy } from '~/features/tasks/types/task.types'
 import type { NewTaskFormInput } from '~/features/tasks/utils/form/task-form.util'
 
-/** Campos del formulario de creación que se pueden preseleccionar desde Kanban. */
+/** Campos del formulario de creación que se pueden preseleccionar desde Kanban/List. */
 export type NewTaskFormDefaults = Partial<
   Pick<NewTaskFormInput, 'project' | 'group' | 'assignedTo' | 'dueDate'>
 > & {
@@ -14,8 +14,29 @@ function toPositiveId(columnId: string | number): number | null {
   return Number.isFinite(id) && id > 0 ? id : null
 }
 
+/** Fecha local YYYY-MM-DD. */
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/** Prefill de vencimiento según sección Due (today / tomorrow; resto libre). */
+function dueDateForSection(sectionId: string | number): string | undefined {
+  if (sectionId === 'today') {
+    return formatLocalDate(new Date())
+  }
+  if (sectionId === 'tomorrow') {
+    const date = new Date()
+    date.setDate(date.getDate() + 1)
+    return formatLocalDate(date)
+  }
+  return undefined
+}
+
 /**
- * Prefills al crear tarea desde una columna Kanban según el groupBy activo.
+ * Prefills al crear tarea desde una columna/sección según el groupBy activo.
  */
 export function buildNewTaskDefaultsFromKanbanColumn(
   groupBy: TaskGroupBy,
@@ -39,7 +60,10 @@ export function buildNewTaskDefaultsFromKanbanColumn(
       const groupName = columnTitle?.trim()
       return groupName ? { group, groupName } : { group }
     }
-    case 'due':
+    case 'due': {
+      const dueDate = dueDateForSection(columnId)
+      return dueDate != null ? { dueDate } : {}
+    }
     case 'all':
     default:
       return {}

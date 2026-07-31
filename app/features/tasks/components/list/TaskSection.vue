@@ -14,6 +14,8 @@ withDefaults(
     selectedTaskId?: number | null
     /** Badge de status en cada fila. */
     showStatus?: boolean
+    /** Botón crear tarea al pie de la sección. */
+    showCreate?: boolean
   }>(),
   {
     count: undefined,
@@ -21,11 +23,13 @@ withDefaults(
     error: false,
     selectedTaskId: null,
     showStatus: false,
+    showCreate: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  create: []
 }>()
 
 const { t } = useI18n()
@@ -66,20 +70,41 @@ const { t } = useI18n()
         {{ t('tasks.loadError') }}
       </p>
 
-      <p v-else-if="!tasks.length" class="rounded-lg border border-border bg-card px-4 py-4 text-sm text-muted-foreground">
-        {{ t('tasks.empty') }}
-      </p>
+      <template v-else>
+        <p
+          v-if="!tasks.length"
+          class="rounded-lg border border-border bg-card px-4 py-4 text-sm text-muted-foreground"
+        >
+          {{ t('tasks.empty') }}
+        </p>
 
-      <div v-else class="space-y-1.5">
-        <TaskItem
-          v-for="task in tasks"
-          :key="task.id"
-          :task="task"
-          :selected="selectedTaskId === task.id"
-          :show-status="showStatus"
-          @select="emit('select', $event)"
-        />
-      </div>
+        <div v-else class="space-y-1.5">
+          <TaskItem
+            v-for="task in tasks"
+            :key="task.id"
+            :task="task"
+            :selected="selectedTaskId === task.id"
+            :show-status="showStatus"
+            @select="emit('select', $event)"
+          />
+        </div>
+
+        <div
+          v-if="showCreate"
+          class="mt-1.5 rounded-lg border border-border bg-card"
+        >
+          <UButton
+            icon="i-lucide-plus"
+            :label="t('tasks.kanban.createTask')"
+            color="neutral"
+            variant="ghost"
+            block
+            size="sm"
+            class="justify-start text-muted-foreground hover:bg-muted/50"
+            @click="emit('create')"
+          />
+        </div>
+      </template>
     </template>
   </UCollapsible>
 </template>

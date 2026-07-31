@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TaskSection from '~/features/tasks/components/list/TaskSection.vue'
-import type { TaskListFilters } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, TaskListFilters } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
   defineProps<{
@@ -12,8 +12,9 @@ const props = withDefaults(
   },
 )
 
-defineEmits<{
+const emit = defineEmits<{
   select: [taskId: number]
+  create: [column: KanbanCreateColumn]
 }>()
 
 const { t } = useI18n()
@@ -46,7 +47,9 @@ const { groups, sections } = useGroupTasks(() => props.filters)
         :error="section.error"
         :selected-task-id="selectedTaskId"
         show-status
-        @select="$emit('select', $event)"
+        show-create
+        @select="emit('select', $event)"
+        @create="emit('create', { id: section.id, title: section.name })"
       />
     </div>
   </div>

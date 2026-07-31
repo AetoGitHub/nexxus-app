@@ -46,7 +46,7 @@ useSeoMeta({
   title: () => t('toolbar.moduleName'),
 })
 
-function onKanbanCreate(
+function onSectionCreate(
   groupBy: TaskGroupBy,
   column: KanbanCreateColumn,
   openNewTask: (defaults?: NewTaskFormDefaults | null) => void,
@@ -69,24 +69,28 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskProjectListView
         v-else-if="view === 'list' && groupBy === 'project'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskUserListView
         v-else-if="view === 'list' && groupBy === 'user'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskGroupListView
         v-else-if="view === 'list' && groupBy === 'group'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskKanbanView
         v-else-if="view === 'kanban' && groupBy === 'all'"
@@ -94,7 +98,7 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
-        @create="onKanbanCreate(groupBy, $event, openNewTask)"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskDueKanbanView
         v-else-if="view === 'kanban' && groupBy === 'due'"
@@ -102,7 +106,7 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
-        @create="onKanbanCreate(groupBy, $event, openNewTask)"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskProjectKanbanView
         v-else-if="view === 'kanban' && groupBy === 'project'"
@@ -110,7 +114,7 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
-        @create="onKanbanCreate(groupBy, $event, openNewTask)"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskUserKanbanView
         v-else-if="view === 'kanban' && groupBy === 'user'"
@@ -118,7 +122,7 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
-        @create="onKanbanCreate(groupBy, $event, openNewTask)"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskGroupKanbanView
         v-else-if="view === 'kanban' && groupBy === 'group'"
@@ -126,7 +130,7 @@ function onKanbanCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
-        @create="onKanbanCreate(groupBy, $event, openNewTask)"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskCalendarView
         v-else-if="view === 'calendar'"
