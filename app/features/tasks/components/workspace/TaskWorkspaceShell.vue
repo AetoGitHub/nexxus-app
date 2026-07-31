@@ -4,6 +4,8 @@ import TaskGroupByFilter from '~/features/tasks/components/workspace/TaskGroupBy
 import TaskListFilters from '~/features/tasks/components/workspace/TaskListFilters.vue'
 import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSlideover.vue'
 import TaskViewSwitcher from '~/features/tasks/components/workspace/TaskViewSwitcher.vue'
+import { useRefreshTaskWorkspace } from '~/features/tasks/composables/workspace/useRefreshTaskWorkspace'
+import { useTaskWorkspaceState } from '~/features/tasks/composables/workspace/useTaskWorkspaceState'
 import type { TaskView } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -33,7 +35,13 @@ const {
   activeGroupByLabel,
   openNewTask,
   openTask,
-} = useTaskWorkspaceState()
+} = useTaskWorkspaceState({
+  excludeViews: () => props.excludeViews,
+})
+
+const { refresh, isRefreshing } = useRefreshTaskWorkspace()
+
+const showRefresh = computed(() => view.value === 'list' || view.value === 'kanban')
 </script>
 
 <template>
@@ -65,14 +73,29 @@ const {
           />
         </UButton>
 
-        <UButton
-          icon="i-lucide-plus"
-          color="primary"
-          size="sm"
-          class="h-8 font-semibold shrink-0"
-          :label="$t('tasks.newTask')"
-          @click="openNewTask()"
-        />
+        <div class="flex items-center gap-2 shrink-0">
+          <UButton
+            v-if="showRefresh"
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            class="h-8 shrink-0"
+            :label="$t('tasks.refresh')"
+            :loading="isRefreshing"
+            :disabled="isRefreshing"
+            @click="refresh"
+          />
+
+          <UButton
+            icon="i-lucide-plus"
+            color="primary"
+            size="sm"
+            class="h-8 font-semibold shrink-0"
+            :label="$t('tasks.newTask')"
+            @click="openNewTask()"
+          />
+        </div>
       </div>
 
       <div v-if="filtersOpen" class="space-y-2">

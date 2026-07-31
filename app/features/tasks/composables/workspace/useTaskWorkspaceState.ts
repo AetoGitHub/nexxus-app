@@ -1,15 +1,111 @@
+import type { MaybeRefOrGetter } from 'vue'
+import type { LocationQuery, LocationQueryRaw } from 'vue-router'
 import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters, TaskView } from '~/features/tasks/types/task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
-/** Estado compartido del workspace de tareas (filtros, vista, slideover). */
-export function useTaskWorkspaceState() {
-  const { t } = useI18n()
+const PREFERRED_VIEW_KEY = 'nexxus:tasks:preferred-view'
 
-  const view = ref<TaskView>('list')
+const VALID_VIEWS: TaskView[] = ['list', 'kanban', 'calendar']
+const VALID_GROUP_BY: TaskGroupBy[] = ['all', 'due', 'project', 'user', 'group']
+const VALID_PHASES: TaskCalendarPhase[] = ['start', 'process', 'close']
+
+function parseView(value: unknown): TaskView | null {
+  return typeof value === 'string' && VALID_VIEWS.includes(value as TaskView)
+    ? (value as TaskView)
+    : null
+}
+
+function parseGroupBy(value: unknown): TaskGroupBy | null {
+  return typeof value === 'string' && VALID_GROUP_BY.includes(value as TaskGroupBy)
+    ? (value as TaskGroupBy)
+    : null
+}
+
+function parsePhase(value: unknown): TaskCalendarPhase | null {
+  return typeof value === 'string' && VALID_PHASES.includes(value as TaskCalendarPhase)
+    ? (value as TaskCalendarPhase)
+    : null
+}
+
+function pickQueryString(query: LocationQuery, key: string): unknown {
+  const value = query[key]
+  return Array.isArray(value) ? value[0] : value
+}
+
+function buildWorkspaceQuery(
+  current: LocationQuery,
+  state: { view: TaskView, groupBy: TaskGroupBy, calendarPhase: TaskCalendarPhase },
+): LocationQueryRaw {
+  const next: LocationQueryRaw = { ...current }
+
+  if (state.view === 'list') {
+    delete next.view
+  }
+  else {
+    next.view = state.view
+  }
+
+  if (state.groupBy === 'all') {
+    delete next.groupBy
+  }
+  else {
+    next.groupBy = state.groupBy
+  }
+
+  if (state.view !== 'calendar' || state.calendarPhase === 'start') {
+    delete next.phase
+  }
+  else {
+    next.phase = state.calendarPhase
+  }
+
+  return next
+}
+
+function sameQuery(a: LocationQueryRaw, b: LocationQuery): boolean {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)])
+  for (const key of keys) {
+    const left = a[key]
+    const right = b[key]
+    const leftValue = Array.isArray(left) ? left[0] : left
+    const rightValue = Array.isArray(right) ? right[0] : right
+    if ((leftValue ?? undefined) !== (rightValue ?? undefined)) {
+      return false
+    }
+  }
+  return true
+}
+
+/** Estado compartido del workspace de tareas (filtros, vista, slideover). */
+export function useTaskWorkspaceState(options: {
+  excludeViews?: MaybeRefOrGetter<TaskView[]>
+} = {}) {
+  const { t } = useI18n()
+  const route = useRoute()
+  const router = useRouter()
+
+  const preferredView = useLocalStorage<TaskView>(PREFERRED_VIEW_KEY, 'list')
+
+  const excludedViews = computed(() => toValue(options.excludeViews) ?? [])
+
+  function resolveView(candidate: TaskView | null | undefined, fallback: TaskView = 'list'): TaskView {
+    const value = candidate && VALID_VIEWS.includes(candidate) ? candidate : fallback
+    if (excludedViews.value.includes(value)) {
+      return VALID_VIEWS.find(viewOption => !excludedViews.value.includes(viewOption)) ?? 'list'
+    }
+    return value
+  }
+
+  // Prioridad: URL > default. localStorage se aplica en cliente si no hay param.
+  const initialView = resolveView(parseView(pickQueryString(route.query, 'view')))
+  const initialGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
+  const initialPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
+
+  const view = ref<TaskView>(initialView)
   const search = ref('')
-  const groupBy = ref<TaskGroupBy>('all')
-  const calendarPhase = ref<TaskCalendarPhase>('start')
+  const groupBy = ref<TaskGroupBy>(initialGroupBy)
+  const calendarPhase = ref<TaskCalendarPhase>(initialPhase)
   const filtersOpen = ref(false)
   const newTaskOpen = ref(false)
   const selectedTaskId = ref<number | null>(null)
@@ -20,6 +116,22 @@ export function useTaskWorkspaceState() {
 
   const debouncedSearch = refDebounced(search, 300)
   const listFilters = ref<TaskListFilters>({})
+
+  /** Evita bucles al sincronizar URL ↔ estado. */
+  let syncingFromRoute = false
+
+  onMounted(() => {
+    if (parseView(pickQueryString(route.query, 'view'))) {
+      return
+    }
+
+    const stored = resolveView(
+      VALID_VIEWS.includes(preferredView.value) ? preferredView.value : null,
+    )
+    if (stored !== view.value) {
+      view.value = stored
+    }
+  })
 
   watch(debouncedSearch, (value) => {
     listFilters.value = {
@@ -34,6 +146,64 @@ export function useTaskWorkspaceState() {
       toUpdateSection.value = null
     }
   })
+
+  watch(excludedViews, () => {
+    view.value = resolveView(view.value)
+  })
+
+  watch(view, (value) => {
+    preferredView.value = value
+  })
+
+  // Estado → URL
+  watch(
+    [view, groupBy, calendarPhase],
+    () => {
+      if (syncingFromRoute || import.meta.server) {
+        return
+      }
+
+      const nextQuery = buildWorkspaceQuery(route.query, {
+        view: view.value,
+        groupBy: groupBy.value,
+        calendarPhase: calendarPhase.value,
+      })
+
+      if (sameQuery(nextQuery, route.query)) {
+        return
+      }
+
+      router.replace({ query: nextQuery })
+    },
+    { immediate: true },
+  )
+
+  // URL (back/forward o deep link) → estado
+  watch(
+    () => [route.query.view, route.query.groupBy, route.query.phase] as const,
+    () => {
+      // Sin param = default (list / all / start), no conservar el estado previo.
+      const nextView = resolveView(parseView(pickQueryString(route.query, 'view')) ?? 'list')
+      const nextGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
+      const nextPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
+
+      if (
+        nextView === view.value
+        && nextGroupBy === groupBy.value
+        && nextPhase === calendarPhase.value
+      ) {
+        return
+      }
+
+      syncingFromRoute = true
+      view.value = nextView
+      groupBy.value = nextGroupBy
+      calendarPhase.value = nextPhase
+      nextTick(() => {
+        syncingFromRoute = false
+      })
+    },
+  )
 
   const activeGroupByLabel = computed(() => t(`tasks.groupBy.${groupBy.value}`))
 
