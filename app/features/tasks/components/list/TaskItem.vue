@@ -6,7 +6,7 @@ const props = withDefaults(
   defineProps<{
     task: Task
     selected?: boolean
-    /** Badge de status (List All). */
+    /** Badge de status de la tarea. */
     showStatus?: boolean
   }>(),
   {

@@ -45,6 +45,7 @@ const { projects, sections } = useProjectTasks(() => props.filters)
         :loading="section.loading"
         :error="section.error"
         :selected-task-id="selectedTaskId"
+        show-status
         @select="$emit('select', $event)"
       />
     </div>

@@ -12,7 +12,7 @@ withDefaults(
     loading?: boolean
     error?: boolean
     selectedTaskId?: number | null
-    /** Badge de status en cada fila (List All). */
+    /** Badge de status en cada fila. */
     showStatus?: boolean
   }>(),
   {
