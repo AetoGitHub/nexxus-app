@@ -224,6 +224,11 @@ const showReopenProcess = computed(() =>
   && taskDetailQuery.data.value?.status === 'complete',
 )
 
+/** Completada: sin lápiz; solo se edita tras reabrir. */
+const canEditTask = computed(() =>
+  taskDetailQuery.data.value?.status !== 'complete',
+)
+
 const state = reactive<NewTaskFormState>({
   type: 'manual',
   name: '',
@@ -355,6 +360,9 @@ function close() {
 }
 
 function startEditing() {
+  if (!canEditTask.value) {
+    return
+  }
   submitError.value = ''
   isEditing.value = true
 }
@@ -606,7 +614,7 @@ const slideoverUi = computed(() => {
             </div>
             <div class="flex items-center gap-1 shrink-0">
               <UButton
-                v-if="!isEditing"
+                v-if="!isEditing && canEditTask"
                 icon="i-lucide-pencil"
                 color="neutral"
                 variant="ghost"
@@ -617,7 +625,7 @@ const slideoverUi = computed(() => {
                 @click="startEditing"
               />
               <UButton
-                v-else
+                v-else-if="isEditing"
                 icon="i-lucide-x"
                 color="neutral"
                 variant="ghost"
