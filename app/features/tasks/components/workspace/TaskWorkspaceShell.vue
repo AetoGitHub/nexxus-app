@@ -42,6 +42,10 @@ const {
 const { refresh, isRefreshing } = useRefreshTaskWorkspace()
 
 const showRefresh = computed(() => view.value === 'list' || view.value === 'kanban')
+
+function toggleFilters() {
+  filtersOpen.value = !filtersOpen.value
+}
 </script>
 
 <template>
@@ -58,7 +62,7 @@ const showRefresh = computed(() => view.value === 'list' || view.value === 'kanb
           color="neutral"
           variant="ghost"
           class="flex-1 justify-between px-0 hover:bg-transparent"
-          @click="filtersOpen = !filtersOpen"
+          @click="toggleFilters"
         >
           <span class="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground min-w-0">
             <UIcon name="i-lucide-sliders-horizontal" class="h-3.5 w-3.5 shrink-0" />
@@ -75,19 +79,6 @@ const showRefresh = computed(() => view.value === 'list' || view.value === 'kanb
 
         <div class="flex items-center gap-2 shrink-0">
           <UButton
-            v-if="showRefresh"
-            icon="i-lucide-refresh-cw"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            class="h-8 shrink-0"
-            :label="$t('tasks.refresh')"
-            :loading="isRefreshing"
-            :disabled="isRefreshing"
-            @click="refresh"
-          />
-
-          <UButton
             icon="i-lucide-plus"
             color="primary"
             size="sm"
@@ -99,7 +90,20 @@ const showRefresh = computed(() => view.value === 'list' || view.value === 'kanb
       </div>
 
       <div v-if="filtersOpen" class="space-y-2">
-        <TaskGroupByFilter v-model="groupBy" />
+        <TaskGroupByFilter v-model="groupBy">
+          <UButton
+            v-if="showRefresh"
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            class="h-8 shrink-0"
+            :label="$t('tasks.refresh')"
+            :loading="isRefreshing"
+            :disabled="isRefreshing"
+            @click="refresh"
+          />
+        </TaskGroupByFilter>
 
         <div class="mb-2 flex items-stretch gap-2">
           <div class="min-w-0 flex-1">

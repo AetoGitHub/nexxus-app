@@ -30,5 +30,8 @@ const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
       <UIcon :name="option.icon" class="h-3.5 w-3.5" />
       {{ t(option.labelKey) }}
     </button>
+    <div class="ml-auto">
+      <slot />
+    </div>
   </div>
 </template>

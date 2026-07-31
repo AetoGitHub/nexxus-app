@@ -5,6 +5,8 @@ import { useQueryClient } from '@tanstack/vue-query'
  * montadas en ese momento).
  */
 export function useRefreshTaskWorkspace() {
+  const { t } = useI18n()
+  const toast = useToast()
   const queryClient = useQueryClient()
   const isRefreshing = ref(false)
 
@@ -18,6 +20,18 @@ export function useRefreshTaskWorkspace() {
       await queryClient.refetchQueries({
         queryKey: ['tasks'],
         type: 'active',
+      })
+      toast.add({
+        title: t('tasks.refreshSuccessTitle'),
+        description: t('tasks.refreshSuccessDescription'),
+        color: 'success',
+      })
+    }
+    catch (error) {
+      toast.add({
+        title: t('tasks.refreshErrorTitle'),
+        description: parseFetchError(error),
+        color: 'error',
       })
     }
     finally {

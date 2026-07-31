@@ -63,6 +63,9 @@
     "filterMultipleClose": "Cierre múltiple",
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
+    "refreshSuccessTitle": "Datos actualizados",
+    "refreshSuccessDescription": "Las listas visibles se actualizaron correctamente.",
+    "refreshErrorTitle": "No se pudo actualizar",
     "taskDetail": "Detalle de tarea",
     "editTask": "Editar tarea",
     "toUpdate": {

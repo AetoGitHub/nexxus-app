@@ -63,6 +63,9 @@
     "filterMultipleClose": "Multiple close",
     "newTask": "New task",
     "refresh": "Refresh",
+    "refreshSuccessTitle": "Data updated",
+    "refreshSuccessDescription": "The visible lists were refreshed successfully.",
+    "refreshErrorTitle": "Could not refresh",
     "taskDetail": "Task detail",
     "editTask": "Edit task",
     "toUpdate": {
