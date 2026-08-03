@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskSettingsGroupModal from '~/features/task-settings/components/groups/TaskSettingsGroupModal.vue'
 import TaskSettingsGroupsPanel from '~/features/task-settings/components/groups/TaskSettingsGroupsPanel.vue'
+import TaskSettingsGeneralPanel from '~/features/task-settings/components/general/TaskSettingsGeneralPanel.vue'
 import TaskSettingsNavSidebar from '~/features/task-settings/components/shared/TaskSettingsNavSidebar.vue'
 import TaskSettingsPlaceholderPanel from '~/features/task-settings/components/shared/TaskSettingsPlaceholderPanel.vue'
 import TaskSettingsProjectModal from '~/features/task-settings/components/projects/TaskSettingsProjectModal.vue'
@@ -226,6 +227,10 @@ useSeoMeta({
           :error="groupsQuery.isError.value"
           @new-group="openNewGroupModal"
           @edit="openEditGroupModal"
+        />
+
+        <TaskSettingsGeneralPanel
+          v-else-if="activeSection === 'general'"
         />
 
         <TaskSettingsPlaceholderPanel
