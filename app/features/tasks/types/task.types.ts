@@ -300,6 +300,17 @@ export interface KanbanTaskMove {
 /** Origen del mensaje en el chat de una tarea. */
 export type TaskMessageType = 'user' | 'system'
 
+/** Claves de mensajes de sistema (alineadas con el backend). */
+export type TaskSystemMessageKey =
+  | 'task_created'
+  | 'task_updated'
+  | 'task_started'
+  | 'task_sent_to_review'
+  | 'task_closed'
+  | 'task_rejected'
+  | 'close_approved_by'
+  | 'task_reopened'
+
 /** Mensaje del chat de una tarea. */
 export interface TaskMessage {
   id: number
@@ -307,6 +318,9 @@ export interface TaskMessage {
   profile: number
   profile_username: string
   content: string
+  /** Presente en mensajes de sistema; permite re-traducir en el cliente. */
+  system_key?: TaskSystemMessageKey | null
+  system_params?: Record<string, string | number>
   type: TaskMessageType
   read: boolean
   created_at: string

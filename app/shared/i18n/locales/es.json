@@ -349,7 +349,17 @@
       "loadError": "No se pudieron cargar los mensajes",
       "sendSuccessTitle": "Mensaje enviado",
       "sendSuccessDescription": "Tu mensaje se publicó en el chat de la tarea.",
-      "sendErrorTitle": "No se pudo enviar el mensaje"
+      "sendErrorTitle": "No se pudo enviar el mensaje",
+      "system": {
+        "taskCreated": "Tarea creada.",
+        "taskUpdated": "Tarea actualizada.",
+        "taskStarted": "Tarea iniciada.",
+        "taskSentToReview": "Tarea enviada a revisión.",
+        "taskClosed": "Tarea cerrada.",
+        "taskRejected": "Tarea rechazada.",
+        "closeApprovedBy": "Cierre aprobado por {username}.",
+        "taskReopened": "Tarea reabierta por {username}."
+      }
     }
   },
   "settings": {

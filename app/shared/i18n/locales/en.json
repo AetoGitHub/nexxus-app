@@ -349,7 +349,17 @@
       "loadError": "Could not load messages",
       "sendSuccessTitle": "Message sent",
       "sendSuccessDescription": "Your message was posted in the task chat.",
-      "sendErrorTitle": "Could not send the message"
+      "sendErrorTitle": "Could not send the message",
+      "system": {
+        "taskCreated": "Task created.",
+        "taskUpdated": "Task updated.",
+        "taskStarted": "Task started.",
+        "taskSentToReview": "Task sent to review.",
+        "taskClosed": "Task closed.",
+        "taskRejected": "Task rejected.",
+        "closeApprovedBy": "Close approved by {username}.",
+        "taskReopened": "Task reopened by {username}."
+      }
     }
   },
   "settings": {

@@ -2,6 +2,7 @@
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
+import { resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
 import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
@@ -87,6 +88,10 @@ function formatTime(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function messageContent(message: TaskMessage) {
+  return resolveTaskMessageContent(message, (key, params) => t(key, params ?? {}))
 }
 
 async function scrollToBottom() {
@@ -215,7 +220,7 @@ watch(
           >
             <div class="flex flex-col items-center gap-0.5 px-2 py-1">
               <p class="text-center text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word">
-                {{ message.content }}
+                {{ messageContent(message) }}
               </p>
               <p class="text-center text-[10px] text-muted-foreground/80">
                 {{ formatDateTime(message.created_at, locale) }}
@@ -229,7 +234,7 @@ watch(
             class="max-w-[85%] rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white"
           >
             <p class="whitespace-pre-wrap wrap-break-word">
-              {{ message.content }}
+              {{ messageContent(message) }}
             </p>
             <p class="mt-1 text-right text-[10px] text-white/80">
               {{ formatTime(message.created_at) }}
@@ -263,7 +268,7 @@ watch(
                 {{ message.profile_username }}
               </p>
               <p class="whitespace-pre-wrap wrap-break-word">
-                {{ message.content }}
+                {{ messageContent(message) }}
               </p>
               <p class="mt-1 text-right text-[10px] text-muted-foreground">
                 {{ formatTime(message.created_at) }}
