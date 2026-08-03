@@ -15,6 +15,8 @@ const props = withDefaults(
     confirmBeforeMove?: boolean
     /** Botón crear tarea al pie de cada columna. */
     showCreate?: boolean
+    /** Si se define, el botón solo aparece en esas columnas. */
+    createColumnIds?: Array<string | number> | null
   }>(),
   {
     selectedTaskId: null,
@@ -22,6 +24,7 @@ const props = withDefaults(
     error: false,
     confirmBeforeMove: false,
     showCreate: true,
+    createColumnIds: null,
   },
 )
 
@@ -68,6 +71,16 @@ function onDropTask(payload: KanbanTaskMove) {
     emit('move', payload)
   }
 }
+
+function canCreateInColumn(columnId: string | number) {
+  if (!props.showCreate) {
+    return false
+  }
+  if (props.createColumnIds == null) {
+    return true
+  }
+  return props.createColumnIds.includes(columnId)
+}
 </script>
 
 <template>
@@ -96,7 +109,7 @@ function onDropTask(payload: KanbanTaskMove) {
         :selected-task-id="selectedTaskId"
         :dragging-task-id="draggingTaskId"
         :drop-target-id="dropTargetId"
-        :show-create="showCreate"
+        :show-create="canCreateInColumn(column.id)"
         @select="emit('select', $event)"
         @create="emit('create', $event)"
         @drag-start="onDragStart"

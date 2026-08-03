@@ -53,6 +53,7 @@ function onMove(payload: KanbanTaskMove) {
     :columns="columns"
     :selected-task-id="selectedTaskId"
     confirm-before-move
+    :create-column-ids="['pending']"
     @select="emit('select', $event)"
     @create="emit('create', $event)"
     @move="onMove"
