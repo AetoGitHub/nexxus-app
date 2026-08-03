@@ -22,6 +22,7 @@ useSeoMeta({
     :title="t('tasks.toUpdate.title')"
     :exclude-views="['calendar']"
     authorize-mode
+    hide-group-by
   >
     <template #default="{ view, groupBy, filters, selectedTaskId, openTask }">
       <ToUpdateListView

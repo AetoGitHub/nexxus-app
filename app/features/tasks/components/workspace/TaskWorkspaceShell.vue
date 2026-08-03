@@ -14,10 +14,13 @@ const props = withDefaults(
     excludeViews?: TaskView[]
     /** Slideover en modo autorización (pending-approval). */
     authorizeMode?: boolean
+    /** Oculta chips de «Ver por» y deja el contenedor (p. ej. botón actualizar). */
+    hideGroupBy?: boolean
   }>(),
   {
     excludeViews: () => [],
     authorizeMode: false,
+    hideGroupBy: false,
   },
 )
 
@@ -90,7 +93,7 @@ function toggleFilters() {
       </div>
 
       <div v-if="filtersOpen" class="space-y-2">
-        <TaskGroupByFilter v-model="groupBy">
+        <TaskGroupByFilter v-model="groupBy" :hide-options="hideGroupBy">
           <UButton
             v-if="showRefresh"
             icon="i-lucide-refresh-cw"
