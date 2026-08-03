@@ -63,6 +63,7 @@ function onSectionCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskDueListView
         v-else-if="view === 'list' && groupBy === 'due'"

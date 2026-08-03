@@ -3,7 +3,7 @@ import type { NewTaskFormInput } from '~/features/tasks/utils/form/task-form.uti
 
 /** Campos del formulario de creación que se pueden preseleccionar desde Kanban/List. */
 export type NewTaskFormDefaults = Partial<
-  Pick<NewTaskFormInput, 'project' | 'group' | 'assignedTo' | 'dueDate'>
+  Pick<NewTaskFormInput, 'project' | 'group' | 'assignedTo' | 'dueDate' | 'urgent'>
 > & {
   /** Label del grupo cuando se preselecciona sin asignado (Kanban por grupo). */
   groupName?: string
@@ -64,7 +64,16 @@ export function buildNewTaskDefaultsFromKanbanColumn(
       const dueDate = dueDateForSection(columnId)
       return dueDate != null ? { dueDate } : {}
     }
-    case 'all':
+    case 'all': {
+      if (columnId === 'urgent') {
+        return { urgent: true }
+      }
+      if (columnId === 'today') {
+        return { dueDate: formatLocalDate(new Date()) }
+      }
+      // upcoming / pending / resto: sin prefill
+      return {}
+    }
     default:
       return {}
   }
@@ -89,5 +98,8 @@ export function applyNewTaskFormDefaults(
   }
   if (defaults.dueDate !== undefined) {
     state.dueDate = defaults.dueDate
+  }
+  if (defaults.urgent !== undefined) {
+    state.urgent = defaults.urgent
   }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TaskSection from '~/features/tasks/components/list/TaskSection.vue'
-import type { TaskListFilters } from '~/features/tasks/types/task.types'
+import type { KanbanCreateColumn, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
   defineProps<{
@@ -12,12 +12,17 @@ const props = withDefaults(
   },
 )
 
-defineEmits<{
+const emit = defineEmits<{
   select: [taskId: number]
+  create: [column: KanbanCreateColumn]
 }>()
 
 const { t } = useI18n()
 const { counts, urgent, today, upcoming } = useTasks(() => props.filters)
+
+function onCreate(sectionId: TaskSectionKey) {
+  emit('create', { id: sectionId })
+}
 </script>
 
 <template>
@@ -31,7 +36,9 @@ const { counts, urgent, today, upcoming } = useTasks(() => props.filters)
       :error="urgent.isError.value"
       :selected-task-id="selectedTaskId"
       show-status
-      @select="$emit('select', $event)"
+      show-create
+      @select="emit('select', $event)"
+      @create="onCreate('urgent')"
     />
 
     <TaskSection
@@ -43,7 +50,9 @@ const { counts, urgent, today, upcoming } = useTasks(() => props.filters)
       :error="today.isError.value"
       :selected-task-id="selectedTaskId"
       show-status
-      @select="$emit('select', $event)"
+      show-create
+      @select="emit('select', $event)"
+      @create="onCreate('today')"
     />
 
     <TaskSection
@@ -55,7 +64,9 @@ const { counts, urgent, today, upcoming } = useTasks(() => props.filters)
       :error="upcoming.isError.value"
       :selected-task-id="selectedTaskId"
       show-status
-      @select="$emit('select', $event)"
+      show-create
+      @select="emit('select', $event)"
+      @create="onCreate('upcoming')"
     />
   </div>
 </template>

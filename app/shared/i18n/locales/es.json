@@ -535,6 +535,97 @@
       "empty": "No hay proyectos todavía",
       "loadError": "No se pudieron cargar los proyectos",
       "archived": "Archivados ({count})"
+    },
+    "general": {
+      "title": "Configuración general",
+      "subtitle": "Comportamiento del módulo de Tareas",
+      "creation": {
+        "section": "Creación de tareas",
+        "info": "Cualquier usuario puede crear tareas para sí mismo o asignarlas a otro usuario sin restricciones.",
+        "urgentDueDate": "Fecha límite obligatoria en urgentes",
+        "urgentDueDateHelp": "Las tareas urgentes deben tener fecha límite",
+        "projectRequired": "Proyecto obligatorio",
+        "projectRequiredHelp": "Las tareas deben pertenecer a un proyecto",
+        "assigneeRequired": "Asignación obligatoria",
+        "assigneeRequiredHelp": "Las tareas deben tener un asignado para crearse"
+      },
+      "types": {
+        "section": "Tipos de tarea",
+        "help": "Desactiva los tipos que tu empresa no utiliza",
+        "alwaysOn": "Este tipo siempre está activo",
+        "roleAuto": "Auto-tareas de puesto",
+        "roleAutoHelp": "Generadas automáticamente desde puestos en RRHH",
+        "manual": "Tareas manuales",
+        "manualHelp": "Creadas y asignadas manualmente",
+        "recurring": "Tareas repetitivas",
+        "recurringHelp": "Se repiten automáticamente según frecuencia",
+        "moduleTrigger": "Trigger de módulos",
+        "moduleTriggerHelp": "Generadas por eventos en otros módulos de Nexxus"
+      },
+      "defaultView": {
+        "section": "Vista predeterminada",
+        "help": "Vista que ve el usuario al entrar al módulo"
+      },
+      "capacity": {
+        "section": "Capacidad del equipo",
+        "help": "Define cuántos puntos de esfuerzo puede manejar cada colaborador simultáneamente.",
+        "maxLabel": "Capacidad máxima por colaborador",
+        "points": "puntos",
+        "scale": "Rápida = 1pt · Normal = 3pts · Compleja = 8pts",
+        "example": "Ejemplo: {n}pts ≈ {n} tareas rápidas, o varias normales/complejas combinadas.",
+        "previewIntro": "Con capacidad de {n} puntos, un colaborador puede manejar simultáneamente:",
+        "quickOnly": "{n} tareas rápidas",
+        "normalMix": "{normal} normales + {quick} rápidas",
+        "complexMix": "Complejas + el resto mixto"
+      },
+      "danger": {
+        "section": "Zona de peligro",
+        "archiveTitle": "Archivar todas las tareas completadas",
+        "archiveHelp": "Mueve todas las tareas completadas al archivo. No se eliminan — siguen en reportes.",
+        "archiveAction": "Archivar",
+        "archiveToastTitle": "Tareas archivadas",
+        "archiveToastDescription": "Las tareas completadas se archivaron (mock).",
+        "cleanTitle": "Eliminar proyectos sin tareas",
+        "cleanHelp": "Limpia proyectos que no tienen ninguna tarea activa o archivada.",
+        "cleanAction": "Limpiar",
+        "cleanToastTitle": "Proyectos limpiados",
+        "cleanToastDescription": "Se eliminaron los proyectos vacíos (mock)."
+      },
+      "departments": {
+        "operations": "Operaciones",
+        "commercial": "Comercial",
+        "finance": "Finanzas"
+      },
+      "signature": {
+        "section": "Firma de reporte semanal",
+        "moduleActive": "Módulo activo",
+        "moduleActiveHelp": "Si está apagado no se generan tareas de firma para nadie",
+        "frequency": "Frecuencia",
+        "frequencyWeekly": "Semanal",
+        "frequencyBiweekly": "Quincenal",
+        "frequencyMonthly": "Mensual",
+        "weekday": "Día de entrega",
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "hour": "Hora de entrega",
+        "info": "Las tareas de firma se generan automáticamente el día y hora configurados. El usuario debe firmar antes de poder usar el portal.",
+        "usersSection": "Usuarios — Requiere firma semanal",
+        "simulationSection": "Simulación de sesión (mock)",
+        "simulationHelp": "Selecciona qué usuario está \"logueado\" en el portal y prueba el flujo de firma.",
+        "generateAction": "Generar tareas de la semana",
+        "generateToastTitle": "Tareas generadas",
+        "generateToastDescription": "Se generaron las tareas de firma de la semana (mock).",
+        "pendingSection": "Firmas pendientes",
+        "pendingEmpty": "No hay firmas pendientes",
+        "weekLabel": "Semana {range}",
+        "reset": "Reset",
+        "release": "Liberar acceso",
+        "releaseToastTitle": "Acceso liberado",
+        "releaseToastDescription": "El acceso del usuario fue liberado (mock)."
+      }
     }
   }
 }
