@@ -25,6 +25,7 @@ const { t } = useI18n()
 const {
   typeMeta,
   priorityMeta,
+  statusMeta,
   barColor,
   // requiresAttention, // oculto de momento: genera confusión
   closeApprovalsProgress,
@@ -79,6 +80,12 @@ function onDragEnd() {
       </p>
 
       <div class="flex flex-wrap items-center gap-1.5">
+        <UBadge
+          :label="t(statusMeta.labelKey)"
+          :color="statusMeta.color"
+          variant="soft"
+          size="sm"
+        />
         <UBadge
           :icon="typeMeta.icon"
           :label="t(typeMeta.labelKey)"
