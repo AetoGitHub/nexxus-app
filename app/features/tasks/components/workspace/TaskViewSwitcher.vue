@@ -37,19 +37,20 @@ watch(
 </script>
 
 <template>
-  <div class="inline-flex p-0.5 rounded-md border border-border bg-background">
-    <button
-      v-for="view in views"
-      :key="view.value"
-      type="button"
-      class="px-2.5 py-1 text-xs rounded inline-flex items-center gap-1.5 transition-colors"
-      :class="model === view.value
-        ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold'
-        : 'text-muted-foreground hover:text-foreground'"
-      @click="model = view.value"
-    >
-      <UIcon :name="view.icon" class="h-3.5 w-3.5" />
-      {{ t(view.labelKey) }}
-    </button>
+  <div class="inline-flex w-full sm:w-auto p-0.5 rounded-md border border-border bg-background">
+    <UButton
+      v-for="viewOption in views"
+      :key="viewOption.value"
+      color="neutral"
+      variant="ghost"
+      size="sm"
+      class="flex-1 sm:flex-none px-2.5 py-1 h-auto text-xs rounded justify-center"
+      :class="model === viewOption.value
+        ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
+        : 'text-muted-foreground'"
+      :icon="viewOption.icon"
+      :label="t(viewOption.labelKey)"
+      @click="model = viewOption.value"
+    />
   </div>
 </template>

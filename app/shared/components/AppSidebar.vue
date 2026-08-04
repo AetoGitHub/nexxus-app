@@ -1,53 +1,15 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 
-interface NavItem {
-  labelKey: string
-  icon: string
-  to?: string
-  indent?: boolean
-  badge?: number
-}
-
 const { t, locale, setLocale } = useI18n()
 const { user, logout } = useAuth()
 const { collapsed } = useSidebar()
-const route = useRoute()
+const { tasksItems, masterItems, isActive, navigate } = useAppNav()
 
 // TODO: sustituir por el nombre/rol reales cuando el modelo de usuario los exponga.
 const displayName = computed(() => user.value?.username ?? t('user.fallback'))
 const displayRole = computed(() => t('user.roleManager'))
 const initials = computed(() => getInitials(displayName.value))
-
-const tasksItems: NavItem[] = [
-  { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
-  { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
-  { labelKey: 'sidebar.tasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
-  { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 }, // mock: aún sin ruta
-  { labelKey: 'sidebar.toUpdate', icon: 'i-lucide-refresh-cw', indent: true, to: '/tasks/pending-approval' },
-  { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
-]
-
-const masterItems: NavItem[] = [
-  { labelKey: 'sidebar.masterSettings', icon: 'i-lucide-settings-2', to: '/settings' },
-]
-
-function isActive(item: NavItem): boolean {
-  if (!item.to) {
-    return false
-  }
-  // /tasks no debe activarse en /tasks/settings
-  if (item.to === '/tasks') {
-    return route.path === '/tasks'
-  }
-  return route.path === item.to || route.path.startsWith(`${item.to}/`)
-}
-
-function navigate(item: NavItem) {
-  if (item.to) {
-    navigateTo(item.to)
-  }
-}
 
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
   [
@@ -92,7 +54,7 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
 
 <template>
   <aside
-    class="shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-[width] duration-200"
+    class="hidden md:flex shrink-0 flex-col bg-sidebar border-r border-sidebar-border transition-[width] duration-200"
     :class="collapsed ? 'w-16' : 'w-60'"
   >
     <div

@@ -38,20 +38,19 @@ const search = ref('')
 
 <template>
   <header
-    class="h-14 shrink-0 flex items-center justify-between px-6 bg-card border-b border-border relative"
+    class="h-14 shrink-0 flex items-center justify-between px-3 sm:px-6 bg-card border-b border-border relative"
   >
-    <div class="flex items-center gap-2.5">
-      <button
-        type="button"
+    <div class="flex items-center gap-2.5 min-w-0">
+      <UButton
+        color="neutral"
+        variant="ghost"
+        size="sm"
+        square
+        class="hidden md:inline-flex h-8 w-8 mr-1"
+        :icon="collapsed ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'"
         :title="collapsed ? t('toolbar.showMenu') : t('toolbar.hideMenu')"
-        class="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition mr-1"
         @click="toggle"
-      >
-        <UIcon
-          :name="collapsed ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'"
-          class="h-4 w-4"
-        />
-      </button>
+      />
 
       <div class="h-8 w-8 rounded-md flex items-center justify-center bg-aeto-teal-light">
         <UIcon name="i-lucide-square-check-big" class="h-4 w-4 text-aeto-teal-dark" />

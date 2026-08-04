@@ -35,7 +35,8 @@
     "toAccept": "To accept",
     "toUpdate": "Pending approval",
     "settings": "Settings",
-    "masterSettings": "Settings"
+    "masterSettings": "Settings",
+    "bottomNav": "Main navigation"
   },
   "toolbar": {
     "module": "Module",
@@ -51,6 +52,8 @@
     "moduleTitle": "Tasks Module",
     "placeholder": "The tasks content will be laid out here. For now the sidebar and toolbar are ready as a reference.",
     "filters": "Filters",
+    "applyFilters": "Apply filters",
+    "statusSummary": "Showing tasks · {groupBy} · {view}",
     "viewBy": "View by:",
     "filterAll": "All",
     "filterSearch": "Search",

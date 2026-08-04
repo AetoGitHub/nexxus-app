@@ -35,7 +35,8 @@
     "toAccept": "Por aceptar",
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
-    "masterSettings": "Configuración"
+    "masterSettings": "Configuración",
+    "bottomNav": "Navegación principal"
   },
   "toolbar": {
     "module": "Módulo",
@@ -51,6 +52,8 @@
     "moduleTitle": "Módulo de Tareas",
     "placeholder": "El contenido de tareas se maquetará aquí. Por ahora el sidebar y el toolbar están listos como referencia.",
     "filters": "Filtros",
+    "applyFilters": "Aplicar filtros",
+    "statusSummary": "Mostrando tareas · {groupBy} · {view}",
     "viewBy": "Ver por:",
     "filterAll": "Todos",
     "filterSearch": "Buscar",

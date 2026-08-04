@@ -86,11 +86,13 @@ function canCreateInColumn(columnId: string | number) {
 <template>
   <!--
     Tablero fijo a la altura del viewport disponible:
-    scroll X en el board, scroll Y independiente por columna.
+    scroll X en el board (touch-pan-x en mobile), scroll Y independiente por columna.
   -->
-  <div class="h-full min-h-0 overflow-x-auto overflow-y-hidden">
-    <div v-if="loading && !localColumns.length" class="flex h-full items-stretch gap-4">
-      <USkeleton v-for="n in 3" :key="n" class="h-full w-72 shrink-0 rounded-xl" />
+  <div
+    class="h-full min-h-0 w-full overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x"
+  >
+    <div v-if="loading && !localColumns.length" class="flex h-full items-stretch gap-3 sm:gap-4 px-0.5">
+      <USkeleton v-for="n in 3" :key="n" class="h-full w-[min(280px,78vw)] sm:w-72 shrink-0 rounded-xl" />
     </div>
 
     <p v-else-if="error" class="px-2 py-6 text-sm text-error">
@@ -101,7 +103,7 @@ function canCreateInColumn(columnId: string | number) {
       {{ t('tasks.empty') }}
     </p>
 
-    <div v-else class="flex h-full min-h-0 items-stretch gap-4 min-w-max">
+    <div v-else class="flex h-full min-h-0 items-stretch gap-3 sm:gap-4 min-w-max pb-1 px-0.5">
       <TaskKanbanColumn
         v-for="column in localColumns"
         :key="column.id"

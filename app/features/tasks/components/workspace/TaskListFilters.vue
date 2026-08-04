@@ -4,6 +4,19 @@ import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.type
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
 
+withDefaults(
+  defineProps<{
+    /** Layout vertical (sheet mobile). */
+    stacked?: boolean
+    /** Oculta el input de búsqueda (cuando ya está en la barra superior). */
+    hideSearch?: boolean
+  }>(),
+  {
+    stacked: false,
+    hideSearch: false,
+  },
+)
+
 const { t } = useI18n()
 const { projects, items: projectItems } = useProjectsDropdown()
 
@@ -82,21 +95,40 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
 </script>
 
 <template>
-  <div class="mb-2 rounded-lg border border-border bg-card px-3 py-2 flex items-start gap-3 flex-wrap h-full box-border">
-    <UFormField :label="t('tasks.filterSearch')">
+  <div
+    class="rounded-lg border border-border bg-card box-border"
+    :class="stacked
+      ? 'flex flex-col gap-4 px-3 py-3'
+      : 'mb-2 px-3 py-2 flex items-start gap-3 flex-wrap h-full'"
+  >
+    <UFormField
+      v-if="!hideSearch"
+      :label="t('tasks.filterSearch')"
+      :class="stacked ? 'w-full' : undefined"
+    >
       <UInput
         v-model="search"
         icon="i-lucide-search"
         size="sm"
-        class="w-52"
+        :class="stacked ? 'w-full' : 'w-52'"
         :placeholder="t('toolbar.searchPlaceholder')"
       />
     </UFormField>
 
-    <span class="hidden sm:block h-8 w-px bg-border self-end" aria-hidden="true" />
+    <span
+      v-if="!stacked && !hideSearch"
+      class="hidden sm:block h-8 w-px bg-border self-end"
+      aria-hidden="true"
+    />
 
-    <UFormField :label="t('tasks.filterType')">
-      <div class="flex h-8 items-center gap-2 flex-wrap">
+    <UFormField
+      :label="t('tasks.filterType')"
+      :class="stacked ? 'w-full' : undefined"
+    >
+      <div
+        class="flex items-center gap-2 flex-wrap"
+        :class="stacked ? 'min-h-8' : 'h-8'"
+      >
         <UButton
           color="neutral"
           variant="outline"
@@ -134,9 +166,16 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       </div>
     </UFormField>
 
-    <span class="hidden sm:block h-8 w-px bg-border self-end" aria-hidden="true" />
+    <span
+      v-if="!stacked"
+      class="hidden sm:block h-8 w-px bg-border self-end"
+      aria-hidden="true"
+    />
 
-    <UFormField :label="t('tasks.filterProject')" class="min-w-36">
+    <UFormField
+      :label="t('tasks.filterProject')"
+      :class="stacked ? 'w-full' : 'min-w-36'"
+    >
       <USelect
         v-model="selectedProjects"
         multiple
@@ -144,13 +183,22 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
         :placeholder="t('tasks.filterProjectPlaceholder')"
         :loading="projects.isPending.value"
         size="sm"
-        class="w-48"
+        :class="stacked ? 'w-full' : 'w-48'"
       />
     </UFormField>
 
-    <span class="hidden sm:block h-8 w-px bg-border self-end" aria-hidden="true" />
+    <span
+      v-if="!stacked"
+      class="hidden sm:block h-8 w-px bg-border self-end"
+      aria-hidden="true"
+    />
 
-    <div class="flex items-center gap-4 flex-wrap h-8 self-end">
+    <div
+      class="flex flex-wrap gap-4"
+      :class="stacked
+        ? 'flex-col items-stretch gap-3'
+        : 'items-center h-8 self-end'"
+    >
       <USwitch
         v-for="booleanFilter in BOOLEAN_FILTERS"
         :key="booleanFilter.key"
@@ -162,10 +210,13 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       />
     </div>
 
-    <div class="flex-1 min-w-2" />
-
-    <div class="self-end">
-      <slot />
+    <div
+      v-if="$slots.default"
+      :class="stacked ? 'w-full pt-1' : 'flex-1 min-w-2 self-end ml-auto'"
+    >
+      <div :class="stacked ? 'w-full' : 'self-end'">
+        <slot />
+      </div>
     </div>
   </div>
 </template>

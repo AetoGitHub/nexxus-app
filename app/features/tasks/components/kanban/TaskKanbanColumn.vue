@@ -69,7 +69,7 @@ function onDrop(event: DragEvent) {
 </script>
 
 <template>
-  <section class="flex h-full min-h-0 w-[280px] shrink-0 flex-col">
+  <section class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
     <header class="flex items-center gap-2 mb-3 px-1 shrink-0">
       <UBadge
         v-if="column.count !== undefined"
