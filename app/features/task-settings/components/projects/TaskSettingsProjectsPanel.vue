@@ -28,7 +28,7 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div class="min-w-0">
         <h2 class="text-xl font-bold text-foreground">
           {{ t('taskSettings.projects.title') }}
@@ -40,7 +40,7 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
       <UButton
         icon="i-lucide-plus"
         :label="t('taskSettings.projects.newProject')"
-        class="bg-aeto-teal hover:opacity-90 text-white shrink-0"
+        class="bg-aeto-teal hover:opacity-90 text-white self-start sm:shrink-0"
         @click="emit('newProject')"
       />
     </div>

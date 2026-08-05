@@ -33,7 +33,7 @@ const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-b
       </p>
     </div>
 
-    <div class="bg-card border border-border rounded-xl p-6 space-y-5">
+    <div class="bg-card border border-border rounded-xl p-4 sm:p-6 space-y-5">
       <div>
         <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
           {{ t('settings.company.tradeName') }} *
@@ -116,7 +116,7 @@ const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-b
           {{ t('settings.company.branches') }}
         </div>
 
-        <div class="flex items-start justify-between gap-4 mb-3">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
           <div class="min-w-0">
             <div class="text-[13px] text-foreground">
               {{ t('settings.company.branchesTitle') }}
@@ -125,17 +125,15 @@ const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-b
               {{ t('settings.company.branchesDescription') }}
             </p>
           </div>
-          <button
-            type="button"
-            class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground transition"
+          <UButton
+            icon="i-lucide-plus"
+            :label="t('settings.company.newBranch')"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            class="self-start shrink-0"
             @click="emit('newBranch')"
-          >
-            <UIcon
-              name="i-lucide-plus"
-              class="h-3.5 w-3.5"
-            />
-            {{ t('settings.company.newBranch') }}
-          </button>
+          />
         </div>
 
         <div class="space-y-2">
