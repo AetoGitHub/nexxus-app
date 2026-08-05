@@ -38,7 +38,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="flex h-[calc(100dvh-3.5rem)] overflow-hidden">
+  <div class="flex flex-col md:flex-row md:h-[calc(100dvh-3.5rem)] min-w-0 md:overflow-hidden">
     <SettingsNavSidebar
       :items="navItems"
       :active-id="activeSection"
@@ -48,8 +48,8 @@ useSeoMeta({
       @select="activeSection = $event"
     />
 
-    <div class="flex-1 overflow-y-auto">
-      <div class="max-w-[640px] mx-auto px-8 py-8">
+    <div class="flex-1 min-w-0 md:overflow-y-auto">
+      <div class="max-w-[640px] mx-auto w-full px-4 py-5 sm:px-6 md:px-8 md:py-8">
         <SettingsCompanyPanel
           v-if="activeSection === 'company'"
           v-model:company="company"

@@ -19,7 +19,7 @@ async function selectLocale(code: string) {
       </p>
     </div>
 
-    <section class="rounded-xl border border-border bg-card p-6">
+    <section class="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div class="mb-4">
         <h3 class="text-sm font-semibold text-foreground">
           {{ t('settings.language.title') }}

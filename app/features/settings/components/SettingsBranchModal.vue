@@ -151,7 +151,7 @@ function onSave() {
                   :class="inputClass"
                 >
               </div>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
                     {{ t('settings.branchModal.state') }}

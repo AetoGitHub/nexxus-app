@@ -256,7 +256,7 @@ function clampCapacity() {
         {{ t('taskSettings.general.defaultView.help') }}
       </div>
 
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <UButton
           v-for="option in viewOptions"
           :key="option.value"
@@ -388,7 +388,7 @@ function clampCapacity() {
       </div>
 
       <div class="rounded-lg p-4 space-y-4 border border-error/60">
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex-1 min-w-0">
             <div class="text-sm font-semibold text-foreground">
               {{ t('taskSettings.general.danger.archiveTitle') }}
@@ -402,14 +402,14 @@ function clampCapacity() {
             color="error"
             variant="soft"
             size="sm"
-            class="shrink-0 font-semibold"
+            class="self-start sm:shrink-0 font-semibold"
             @click="onArchiveCompleted"
           />
         </div>
 
         <div class="h-px bg-border" />
 
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex-1 min-w-0">
             <div class="text-sm font-semibold text-foreground">
               {{ t('taskSettings.general.danger.cleanTitle') }}
@@ -423,7 +423,7 @@ function clampCapacity() {
             color="error"
             variant="soft"
             size="sm"
-            class="shrink-0 font-semibold"
+            class="self-start sm:shrink-0 font-semibold"
             @click="onCleanEmptyProjects"
           />
         </div>
