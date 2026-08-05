@@ -38,7 +38,9 @@ const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessag
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
 
-const messageCount = computed(() => messages.value.length)
+const messageCount = computed(() =>
+  messages.value.filter(message => !isSystemMessage(message.type)).length,
+)
 
 const countLabel = computed(() =>
   t('tasks.messenger.messageCount', { n: messageCount.value }),
