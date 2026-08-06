@@ -10,10 +10,13 @@ withDefaults(
     stacked?: boolean
     /** Oculta el input de búsqueda (cuando ya está en la barra superior). */
     hideSearch?: boolean
+    /** Alinea switches y selector de vista al inicio. */
+    alignControlsStart?: boolean
   }>(),
   {
     stacked: false,
     hideSearch: false,
+    alignControlsStart: false,
   },
 )
 
@@ -194,27 +197,33 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
     />
 
     <div
-      class="flex flex-wrap gap-4"
+      class="flex min-w-0"
       :class="stacked
-        ? 'flex-col items-stretch gap-3'
-        : 'items-center h-8 self-end'"
+        ? 'w-full flex-col items-stretch gap-3'
+        : alignControlsStart
+          ? 'shrink-0 flex-col items-start gap-2'
+          : 'ml-auto shrink-0 flex-col items-end gap-2'"
     >
-      <USwitch
-        v-for="booleanFilter in BOOLEAN_FILTERS"
-        :key="booleanFilter.key"
-        size="sm"
-        :label="t(booleanFilter.labelKey)"
-        :model-value="isBooleanFilterActive(booleanFilter.key)"
-        :ui="{ label: 'text-xs text-muted-foreground' }"
-        @update:model-value="setBooleanFilter(booleanFilter.key, $event === true)"
-      />
-    </div>
+      <div
+        class="flex flex-wrap gap-4"
+        :class="stacked
+          ? 'flex-col items-stretch gap-3'
+          : alignControlsStart
+            ? 'h-8 items-center justify-start'
+            : 'h-8 items-center justify-end'"
+      >
+        <USwitch
+          v-for="booleanFilter in BOOLEAN_FILTERS"
+          :key="booleanFilter.key"
+          size="sm"
+          :label="t(booleanFilter.labelKey)"
+          :model-value="isBooleanFilterActive(booleanFilter.key)"
+          :ui="{ label: 'text-xs text-muted-foreground' }"
+          @update:model-value="setBooleanFilter(booleanFilter.key, $event === true)"
+        />
+      </div>
 
-    <div
-      v-if="$slots.default"
-      :class="stacked ? 'w-full pt-1' : 'flex-1 min-w-2 self-end ml-auto'"
-    >
-      <div :class="stacked ? 'w-full' : 'self-end'">
+      <div v-if="$slots.default" :class="stacked ? 'w-full pt-1' : 'max-w-full'">
         <slot />
       </div>
     </div>
