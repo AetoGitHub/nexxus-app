@@ -348,6 +348,8 @@
       "placeholder": "Escribe un mensaje",
       "send": "Enviar mensaje",
       "refresh": "Actualizar mensajes",
+      "showMessages": "Ver mensajes",
+      "showDetail": "Ver detalle de la tarea",
       "empty": "Aún no hay mensajes. Sé el primero en escribir.",
       "loadError": "No se pudieron cargar los mensajes",
       "sendSuccessTitle": "Mensaje enviado",

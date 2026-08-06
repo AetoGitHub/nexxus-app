@@ -167,9 +167,12 @@ watch(
             @click="refreshMessages"
           />
         </div>
-        <span class="text-xs text-muted-foreground shrink-0">
-          {{ countLabel }}
-        </span>
+        <div class="flex items-center gap-1 shrink-0">
+          <slot name="header-actions" />
+          <span class="text-xs text-muted-foreground">
+            {{ countLabel }}
+          </span>
+        </div>
       </div>
     </template>
 

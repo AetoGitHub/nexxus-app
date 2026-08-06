@@ -90,6 +90,8 @@ const isDetailView = computed(() => taskId.value != null)
 const isEditing = ref(false)
 /** Campos bloqueados: detalle sin edición activa. */
 const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
+/** En mobile: panel visible (mensajes o detalle). En sm+ se muestran ambos. */
+const mobilePanel = ref<'detail' | 'messages'>('detail')
 
 /** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
 const minDueDate = computed(() => {
@@ -356,6 +358,7 @@ function ensureCurrentUserInReviewers() {
 
 function close() {
   isEditing.value = false
+  mobilePanel.value = 'detail'
   open.value = false
 }
 
@@ -364,6 +367,7 @@ function startEditing() {
     return
   }
   submitError.value = ''
+  mobilePanel.value = 'detail'
   isEditing.value = true
 }
 
@@ -374,6 +378,14 @@ function cancelEditing() {
   if (detail) {
     applyFormInput(taskDetailToFormInput(detail))
   }
+}
+
+function showMobileMessages() {
+  mobilePanel.value = 'messages'
+}
+
+function showMobileDetail() {
+  mobilePanel.value = 'detail'
 }
 
 function openStartProcessModal() {
@@ -505,6 +517,7 @@ watch(open, (isOpen) => {
     reopenProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
+    mobilePanel.value = 'detail'
     taskId.value = null
     return
   }
@@ -575,15 +588,34 @@ const slideoverUi = computed(() => {
       <div class="flex h-full min-h-0 w-full">
         <div
           v-if="isDetailView && taskId != null"
-          class="hidden h-full sm:block sm:w-80 sm:shrink-0"
+          class="h-full min-h-0 flex-col"
+          :class="mobilePanel === 'messages'
+            ? 'flex w-full flex-1'
+            : 'hidden sm:flex sm:w-80 sm:shrink-0'"
         >
           <TaskMessenger
             :task-id="taskId"
             class="h-full"
-          />
+          >
+            <template #header-actions>
+              <UButton
+                class="sm:hidden"
+                icon="i-lucide-file-text"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                square
+                :aria-label="t('tasks.messenger.showDetail')"
+                @click="showMobileDetail"
+              />
+            </template>
+          </TaskMessenger>
         </div>
 
-        <div class="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div
+          class="min-h-0 min-w-0 flex-1 flex-col"
+          :class="mobilePanel === 'detail' ? 'flex' : 'hidden sm:flex'"
+        >
           <div
             v-if="isDetailView"
             class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3"
@@ -613,6 +645,17 @@ const slideoverUi = computed(() => {
               />
             </div>
             <div class="flex items-center gap-1 shrink-0">
+              <UButton
+                v-if="!isEditing"
+                class="sm:hidden"
+                icon="i-lucide-messages-square"
+                color="neutral"
+                variant="ghost"
+                size="md"
+                square
+                :aria-label="t('tasks.messenger.showMessages')"
+                @click="showMobileMessages"
+              />
               <UButton
                 v-if="!isEditing && canEditTask"
                 icon="i-lucide-pencil"
