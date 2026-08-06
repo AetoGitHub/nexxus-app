@@ -208,6 +208,7 @@ function closeMobileFilters() {
             <TaskListFilters
               v-model="listFilters"
               v-model:search="search"
+              :align-controls-start="view === 'calendar'"
               class="mb-0! h-full"
             >
               <TaskViewSwitcher v-model="view" :exclude="excludeViews" />

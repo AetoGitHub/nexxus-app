@@ -37,7 +37,7 @@ watch(
 </script>
 
 <template>
-  <div class="inline-flex w-full sm:w-auto p-0.5 rounded-md border border-border bg-background">
+  <div class="inline-flex w-full max-w-full sm:w-auto p-0.5 rounded-md border border-border bg-background">
     <UButton
       v-for="viewOption in views"
       :key="viewOption.value"
