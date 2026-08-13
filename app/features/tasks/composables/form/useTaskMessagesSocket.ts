@@ -57,7 +57,11 @@ export function useTaskMessagesSocket(
     generation += 1
     clearTimers()
 
-    if (socket?.readyState === WebSocket.OPEN) {
+    // Cerramos también en CONNECTING para abortar el handshake y no dejar el túnel vivo.
+    if (
+      socket
+      && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)
+    ) {
       socket.close(1000)
     }
     socket = null
