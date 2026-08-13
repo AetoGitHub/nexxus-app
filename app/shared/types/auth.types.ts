@@ -30,3 +30,8 @@ export interface AuthLoginRequest {
   username: string
   password: string
 }
+
+export interface WsTicketResponse {
+  ticket: string
+  expires_in: number
+}

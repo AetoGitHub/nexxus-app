@@ -18,14 +18,11 @@ export function useCreateTaskMessage() {
         body: payload,
       }),
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['tasks', 'messages', variables.task],
-      })
-      toast.add({
-        title: t('tasks.messenger.sendSuccessTitle'),
-        description: t('tasks.messenger.sendSuccessDescription'),
-        color: 'success',
-      })
+      if (!isTaskMessagesSocketConnected(variables.task)) {
+        await queryClient.invalidateQueries({
+          queryKey: ['tasks', 'messages', variables.task],
+        })
+      }
     },
     onError: (error) => {
       toast.add({

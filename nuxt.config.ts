@@ -54,6 +54,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: resolveApiBaseUrl(),
+      wsBaseUrl: process.env.NUXT_PUBLIC_WS_BASE_URL ?? '',
       apiAuthPath: process.env.NUXT_PUBLIC_API_AUTH_PATH ?? '/api/auth/login/',
       apiAuthLogoutPath: process.env.NUXT_PUBLIC_API_AUTH_LOGOUT_PATH ?? '/auth/logout/',
     },

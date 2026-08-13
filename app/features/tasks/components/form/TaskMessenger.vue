@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
+import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
 import { resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
 import { formatDateTime } from '~/shared/utils/date'
@@ -33,6 +34,7 @@ const {
   refetch,
 } = useTaskMessages(() => props.taskId)
 
+const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId)
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
 
 const draft = ref('')
@@ -44,6 +46,47 @@ const messageCount = computed(() =>
 
 const countLabel = computed(() =>
   t('tasks.messenger.messageCount', { n: messageCount.value }),
+)
+
+const socketBadge = computed(() => {
+  switch (socketStatus.value) {
+    case 'connected':
+      return {
+        label: t('tasks.messenger.live'),
+        icon: 'i-lucide-wifi',
+        color: 'success' as const,
+      }
+    case 'connecting':
+      return {
+        label: t('tasks.messenger.connecting'),
+        icon: 'i-lucide-loader-circle',
+        color: 'warning' as const,
+      }
+    case 'reconnecting':
+      return {
+        label: t('tasks.messenger.reconnecting'),
+        icon: 'i-lucide-loader-circle',
+        color: 'warning' as const,
+      }
+    case 'error':
+      return {
+        label: t('tasks.messenger.offline'),
+        icon: 'i-lucide-wifi-off',
+        color: 'error' as const,
+      }
+    default:
+      return {
+        label: t('tasks.messenger.offline'),
+        icon: 'i-lucide-wifi-off',
+        color: 'neutral' as const,
+      }
+  }
+})
+
+const socketTooltip = computed(() =>
+  socketStatus.value === 'error'
+    ? t('tasks.messenger.connectionErrorTitle')
+    : socketBadge.value.label,
 )
 
 function isOwnMessage(profileId: number, username: string) {
@@ -104,6 +147,18 @@ async function scrollToBottom() {
   listEl.value.scrollTop = listEl.value.scrollHeight
 }
 
+function isNearBottom() {
+  if (!listEl.value) {
+    return true
+  }
+
+  const distance = listEl.value.scrollHeight
+    - listEl.value.scrollTop
+    - listEl.value.clientHeight
+
+  return distance <= 80
+}
+
 async function sendMessage() {
   const content = draft.value.trim()
   if (!content || isSending.value) {
@@ -133,9 +188,10 @@ async function refreshMessages() {
 watch(
   messages,
   () => {
-    void scrollToBottom()
+    if (isNearBottom()) {
+      void scrollToBottom()
+    }
   },
-  { flush: 'post' },
 )
 </script>
 
@@ -169,6 +225,19 @@ watch(
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <slot name="header-actions" />
+          <UTooltip :text="socketTooltip">
+            <UBadge
+              :label="socketBadge.label"
+              :icon="socketBadge.icon"
+              :color="socketBadge.color"
+              variant="subtle"
+              size="sm"
+              :class="{
+                '**:data-[slot=leading-icon]:animate-spin': socketStatus === 'connecting'
+                  || socketStatus === 'reconnecting',
+              }"
+            />
+          </UTooltip>
           <span class="text-xs text-muted-foreground">
             {{ countLabel }}
           </span>
