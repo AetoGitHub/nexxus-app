@@ -39,6 +39,9 @@ const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessag
 
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
+const contentEl = ref<HTMLElement | null>(null)
+/** Mientras el usuario esté al final, la vista queda anclada al mensaje más reciente. */
+const isPinnedToBottom = ref(true)
 
 const messageCount = computed(() =>
   messages.value.filter(message => !isSystemMessage(message.type)).length,
@@ -139,24 +142,28 @@ function messageContent(message: TaskMessage) {
   return resolveTaskMessageContent(message, (key, params) => t(key, params ?? {}))
 }
 
-async function scrollToBottom() {
-  await nextTick()
+function scrollToLatest() {
   if (!listEl.value) {
     return
   }
   listEl.value.scrollTop = listEl.value.scrollHeight
 }
 
-function isNearBottom() {
+async function scrollToLatestAfterRender() {
+  await nextTick()
+  scrollToLatest()
+}
+
+function onListScroll() {
   if (!listEl.value) {
-    return true
+    return
   }
 
   const distance = listEl.value.scrollHeight
     - listEl.value.scrollTop
     - listEl.value.clientHeight
 
-  return distance <= 80
+  isPinnedToBottom.value = distance <= 80
 }
 
 async function sendMessage() {
@@ -170,7 +177,8 @@ async function sendMessage() {
     content,
   })
   draft.value = ''
-  await scrollToBottom()
+  isPinnedToBottom.value = true
+  await scrollToLatestAfterRender()
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -182,15 +190,31 @@ function onKeydown(event: KeyboardEvent) {
 
 async function refreshMessages() {
   await refetch()
-  await scrollToBottom()
+  isPinnedToBottom.value = true
+  await scrollToLatestAfterRender()
 }
+
+// El slideover entra animado: el alto real de la lista llega después del primer render,
+// así que reanclamos en cada cambio de tamaño mientras el usuario siga al final.
+useResizeObserver(contentEl, () => {
+  if (isPinnedToBottom.value) {
+    scrollToLatest()
+  }
+})
 
 watch(
   messages,
   () => {
-    if (isNearBottom()) {
-      void scrollToBottom()
+    if (isPinnedToBottom.value) {
+      void scrollToLatestAfterRender()
     }
+  },
+)
+
+watch(
+  () => props.taskId,
+  () => {
+    isPinnedToBottom.value = true
   },
 )
 </script>
@@ -248,6 +272,7 @@ watch(
     <div
       ref="listEl"
       class="h-full min-h-0 overflow-y-auto p-3"
+      @scroll.passive="onListScroll"
     >
       <div
         v-if="isPending"
@@ -276,6 +301,7 @@ watch(
 
       <ul
         v-else
+        ref="contentEl"
         class="flex flex-col gap-1.5"
       >
         <li
