@@ -347,7 +347,6 @@
       "messageCount": "{n} messages",
       "placeholder": "Write a message",
       "send": "Send message",
-      "refresh": "Refresh messages",
       "showMessages": "View messages",
       "showDetail": "View task detail",
       "empty": "No messages yet. Be the first to write.",

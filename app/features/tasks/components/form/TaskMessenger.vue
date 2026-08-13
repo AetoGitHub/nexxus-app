@@ -30,8 +30,6 @@ const {
   isPending,
   isError,
   errorMessage,
-  isFetching,
-  refetch,
 } = useTaskMessages(() => props.taskId)
 
 const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId)
@@ -188,12 +186,6 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-async function refreshMessages() {
-  await refetch()
-  isPinnedToBottom.value = true
-  await scrollToLatestAfterRender()
-}
-
 // El slideover entra animado: el alto real de la lista llega después del primer render,
 // así que reanclamos en cada cambio de tamaño mientras el usuario siga al final.
 useResizeObserver(contentEl, () => {
@@ -236,16 +228,6 @@ watch(
           <h2 class="font-semibold truncate">
             {{ t('tasks.messenger.title') }}
           </h2>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-            square
-            :loading="isFetching && !isPending"
-            :aria-label="t('tasks.messenger.refresh')"
-            @click="refreshMessages"
-          />
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <slot name="header-actions" />
