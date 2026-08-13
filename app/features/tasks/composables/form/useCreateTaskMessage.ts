@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { isTaskMessagesSocketConnected } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { CreateTaskMessagePayload, TaskMessage } from '~/features/tasks/types/task.types'
 
 /**

@@ -1,6 +1,8 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
+import { useWsTicket } from '~/shared/composables/useWsTicket'
+import { useWsBaseUrl } from '~/shared/utils/api'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 
