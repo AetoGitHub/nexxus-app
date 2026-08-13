@@ -353,7 +353,7 @@
       "empty": "Aún no hay mensajes. Sé el primero en escribir.",
       "loadError": "No se pudieron cargar los mensajes",
       "sendErrorTitle": "No se pudo enviar el mensaje",
-      "live": "En vivo",
+      "connected": "Conectado",
       "connecting": "Conectando",
       "reconnecting": "Reconectando",
       "offline": "Sin conexión",

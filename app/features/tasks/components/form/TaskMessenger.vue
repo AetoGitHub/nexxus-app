@@ -52,7 +52,7 @@ const socketBadge = computed(() => {
   switch (socketStatus.value) {
     case 'connected':
       return {
-        label: t('tasks.messenger.live'),
+        label: t('tasks.messenger.connected'),
         icon: 'i-lucide-wifi',
         color: 'success' as const,
       }

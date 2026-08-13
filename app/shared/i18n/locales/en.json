@@ -353,7 +353,7 @@
       "empty": "No messages yet. Be the first to write.",
       "loadError": "Could not load messages",
       "sendErrorTitle": "Could not send the message",
-      "live": "Live",
+      "connected": "Connected",
       "connecting": "Connecting",
       "reconnecting": "Reconnecting",
       "offline": "Offline",
