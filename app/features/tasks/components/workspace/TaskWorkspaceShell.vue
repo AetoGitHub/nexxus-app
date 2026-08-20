@@ -117,16 +117,6 @@ function closeMobileFilters() {
             @click="openMobileFilters"
           />
         </UChip>
-
-        <UButton
-          icon="i-lucide-plus"
-          color="primary"
-          size="sm"
-          square
-          class="h-8 w-8 shrink-0"
-          :aria-label="t('tasks.newTask')"
-          @click="openNewTask()"
-        />
       </div>
 
       <div class="flex items-center gap-2">
@@ -284,6 +274,26 @@ function closeMobileFilters() {
         />
       </template>
     </USlideover>
+
+    <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto. -->
+    <UButton
+      v-show="!newTaskOpen"
+      color="primary"
+      size="xl"
+      square
+      class="md:hidden fixed z-40 size-14 rounded-full shadow-lg right-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)] p-0!"
+      :ui="{
+        base: 'inline-flex items-center justify-center gap-0',
+        leadingIcon: 'hidden',
+      }"
+      :aria-label="t('tasks.newTask')"
+      @click="openNewTask()"
+    >
+      <UIcon
+        name="i-lucide-plus"
+        class="size-6"
+      />
+    </UButton>
 
     <TaskNewTaskSlideover
       v-model:open="newTaskOpen"
