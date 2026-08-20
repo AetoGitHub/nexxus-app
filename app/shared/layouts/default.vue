@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { useTaskChannelSocket } from '~/features/tasks/composables/workspace/useTaskChannelSocket'
+
+// Túnel único para toda la app autenticada: sincroniza el tablero y alimenta
+// el indicador de conexión del sidebar.
+useTaskChannelSocket()
+</script>
+
 <template>
   <div class="h-screen flex overflow-hidden bg-background text-foreground">
     <AppSidebar />

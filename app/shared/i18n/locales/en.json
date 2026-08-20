@@ -26,6 +26,11 @@
     "fallback": "User",
     "roleManager": "Manager"
   },
+  "realtime": {
+    "connected": "Connected in real time",
+    "connecting": "Connecting...",
+    "offline": "No real-time connection"
+  },
   "sidebar": {
     "sectionTasks": "Tasks",
     "sectionMaster": "Master settings",
