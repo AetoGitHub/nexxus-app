@@ -1,10 +1,24 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useKanbanRealtimeTask } from '~/features/tasks/composables/kanban/useKanbanRealtimeTask'
+import type { CreateTaskChannelEvent } from '~/features/tasks/types/task.types'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
 import { useWsBaseUrl } from '~/shared/utils/api'
 
 const RESYNC_DEBOUNCE_MS = 200
+
+function isCreateTaskEvent(value: unknown): value is CreateTaskChannelEvent {
+  if (typeof value !== 'object' || value == null) {
+    return false
+  }
+
+  const event = value as Partial<CreateTaskChannelEvent>
+  return event.event === 'create_task'
+    && typeof event.task_pk === 'number'
+    && Number.isInteger(event.task_pk)
+    && event.task_pk > 0
+}
 
 /**
  * Canal de tablero (`/ws/tasks/channel/`): solo lectura, agrupado por
@@ -19,6 +33,19 @@ export function useTaskChannelSocket() {
   const { requestTicket } = useWsTicket()
   const { isLoggedIn } = useAuth()
   const { status, isConnected } = useRealtimeStatus()
+  const { insertCreatedTask } = useKanbanRealtimeTask()
+  const route = useRoute()
+
+  const isGeneralKanbanActive = computed(() => {
+    const view = Array.isArray(route.query.view) ? route.query.view[0] : route.query.view
+    const groupBy = Array.isArray(route.query.groupBy)
+      ? route.query.groupBy[0]
+      : route.query.groupBy
+
+    return route.path === '/tasks'
+      && view === 'kanban'
+      && (groupBy == null || groupBy === 'all')
+  })
 
   let socket: WebSocket | null = null
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -151,8 +178,34 @@ export function useTaskChannelSocket() {
       }, 5000)
     }
 
-    nextSocket.onmessage = () => {
-      // El payload es un evento de Task; el tablero se sincroniza por refetch.
+    nextSocket.onmessage = (message) => {
+      let event: unknown
+      try {
+        event = JSON.parse(message.data as string)
+      }
+      catch {
+        return
+      }
+
+      if (isCreateTaskEvent(event)) {
+        if (!isGeneralKanbanActive.value) {
+          return
+        }
+
+        void insertCreatedTask(event.task_pk)
+          .then((found) => {
+            if (!found) {
+              scheduleBoardResync()
+            }
+          })
+          .catch(() => {
+            // Si falla una consulta puntual, recuperamos consistencia por refetch.
+            scheduleBoardResync()
+          })
+        return
+      }
+
+      // Los demás eventos conservan el refetch genérico hasta tener handler propio.
       scheduleBoardResync()
     }
 

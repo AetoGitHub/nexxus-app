@@ -126,6 +126,19 @@ export interface Task {
   assigned_to?: TaskAssignee[]
 }
 
+export interface CreateTaskChannelEvent {
+  event: 'create_task'
+  task_pk: number
+  user: number[]
+}
+
+export interface UnknownTaskChannelEvent {
+  event: string
+  [key: string]: unknown
+}
+
+export type TaskChannelEvent = CreateTaskChannelEvent | UnknownTaskChannelEvent
+
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   long_description: string

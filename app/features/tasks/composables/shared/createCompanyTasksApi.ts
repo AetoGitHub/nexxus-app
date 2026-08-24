@@ -4,6 +4,8 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { Task, TaskListFilters } from '~/features/tasks/types/task.types'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 
+export const CURRENT_TASKS_COMPANY_ID = 1
+
 /**
  * Factory compartido para queries de tareas por empresa.
  * Centraliza companyId, filtros (`toTaskListQuery`) y queryKeys.
@@ -13,7 +15,7 @@ import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
  */
 export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const companyId = CURRENT_TASKS_COMPANY_ID
   const query = computed(() => toTaskListQuery(toValue(filters)))
 
   function companyPath(path: string): string {
