@@ -33,19 +33,54 @@ export function useTaskChannelSocket() {
   const { requestTicket } = useWsTicket()
   const { isLoggedIn } = useAuth()
   const { status, isConnected } = useRealtimeStatus()
-  const { insertCreatedTask } = useKanbanRealtimeTask()
+  const {
+    insertCreatedTask,
+    insertCreatedDueTask,
+    insertCreatedProjectTask,
+    insertCreatedGroupTask,
+    insertCreatedUserTask,
+  } = useKanbanRealtimeTask()
   const route = useRoute()
 
-  const isGeneralKanbanActive = computed(() => {
-    const view = Array.isArray(route.query.view) ? route.query.view[0] : route.query.view
-    const groupBy = Array.isArray(route.query.groupBy)
-      ? route.query.groupBy[0]
-      : route.query.groupBy
+  function queryParam(key: string) {
+    const value = route.query[key]
+    const raw = Array.isArray(value) ? value[0] : value
+    return typeof raw === 'string' ? raw : null
+  }
 
-    return route.path === '/tasks'
-      && view === 'kanban'
-      && (groupBy == null || groupBy === 'all')
-  })
+  const isTasksKanbanActive = computed(() =>
+    route.path === '/tasks' && queryParam('view') === 'kanban',
+  )
+
+  const kanbanGroupBy = computed(() => queryParam('groupBy') ?? 'all')
+
+  function resolveKanbanInsert(taskPk: number) {
+    if (!isTasksKanbanActive.value) {
+      return null
+    }
+
+    if (kanbanGroupBy.value === 'due') {
+      return insertCreatedDueTask(taskPk)
+    }
+
+    if (kanbanGroupBy.value === 'project') {
+      return insertCreatedProjectTask(taskPk)
+    }
+
+    if (kanbanGroupBy.value === 'group') {
+      return insertCreatedGroupTask(taskPk)
+    }
+
+    if (kanbanGroupBy.value === 'user') {
+      return insertCreatedUserTask(taskPk)
+    }
+
+    if (kanbanGroupBy.value === 'all') {
+      return insertCreatedTask(taskPk)
+    }
+
+    return null
+  }
 
   let socket: WebSocket | null = null
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
@@ -188,11 +223,12 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateTaskEvent(event)) {
-        if (!isGeneralKanbanActive.value) {
+        const insertCreated = resolveKanbanInsert(event.task_pk)
+        if (!insertCreated) {
           return
         }
 
-        void insertCreatedTask(event.task_pk)
+        void insertCreated
           .then((found) => {
             if (!found) {
               scheduleBoardResync()
