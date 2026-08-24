@@ -31,6 +31,7 @@ const {
   search,
   groupBy,
   calendarPhase,
+  calendarMonth,
   filtersOpen,
   newTaskOpen,
   selectedTaskId,
@@ -38,6 +39,7 @@ const {
   toUpdateSection,
   listFilters,
   activeGroupByLabel,
+  setCalendarMonth,
   openNewTask,
   openTask,
 } = useTaskWorkspaceState({
@@ -178,7 +180,11 @@ function closeMobileFilters() {
       </div>
 
       <div v-if="filtersOpen" class="space-y-2">
-        <TaskGroupByFilter v-model="groupBy" :hide-options="hideGroupBy">
+        <TaskGroupByFilter
+          v-model="groupBy"
+          :hide-options="hideGroupBy"
+          :exclude="view === 'calendar' ? ['due'] : []"
+        >
           <UButton
             v-if="showRefresh"
             icon="i-lucide-refresh-cw"
@@ -228,6 +234,8 @@ function closeMobileFilters() {
         :group-by="groupBy"
         :filters="listFilters"
         :calendar-phase="calendarPhase"
+        :calendar-month="calendarMonth"
+        :set-calendar-month="setCalendarMonth"
         :selected-task-id="selectedTaskId"
         :open-task="openTask"
         :open-new-task="openNewTask"
@@ -250,6 +258,7 @@ function closeMobileFilters() {
           v-model="groupBy"
           stacked
           :hide-options="hideGroupBy"
+          :exclude="view === 'calendar' ? ['due'] : []"
         />
 
         <TaskListFilters

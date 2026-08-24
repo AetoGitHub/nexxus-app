@@ -1,7 +1,12 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useCalendarRealtimeTask } from '~/features/tasks/composables/calendar/useCalendarRealtimeTask'
 import { useKanbanRealtimeTask } from '~/features/tasks/composables/kanban/useKanbanRealtimeTask'
-import type { CreateTaskChannelEvent } from '~/features/tasks/types/task.types'
+import { useListRealtimeTask } from '~/features/tasks/composables/list/useListRealtimeTask'
+import type {
+  CreateTaskChannelEvent,
+  TaskCalendarPhase,
+} from '~/features/tasks/types/task.types'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
 import { useWsBaseUrl } from '~/shared/utils/api'
@@ -40,6 +45,8 @@ export function useTaskChannelSocket() {
     insertCreatedGroupTask,
     insertCreatedUserTask,
   } = useKanbanRealtimeTask()
+  const { refreshCreatedCalendarTask } = useCalendarRealtimeTask()
+  const { insertCreatedListTask } = useListRealtimeTask()
   const route = useRoute()
 
   function queryParam(key: string) {
@@ -54,7 +61,81 @@ export function useTaskChannelSocket() {
 
   const kanbanGroupBy = computed(() => queryParam('groupBy') ?? 'all')
 
-  function resolveKanbanInsert(taskPk: number) {
+  function resolveCalendarRefresh(taskPk: number) {
+    if (route.path !== '/tasks' || queryParam('view') !== 'calendar') {
+      return null
+    }
+
+    const groupBy = queryParam('groupBy') ?? 'all'
+
+    if (groupBy === 'project') {
+      return insertCreatedProjectTask(taskPk)
+    }
+
+    if (groupBy === 'group') {
+      return insertCreatedGroupTask(taskPk)
+    }
+
+    if (groupBy === 'user') {
+      return insertCreatedUserTask(taskPk)
+    }
+
+    // Due no aplica al calendario.
+    if (groupBy !== 'all') {
+      return null
+    }
+
+    const year = Number(queryParam('year'))
+    const month = Number(queryParam('month'))
+    const rawPhase = queryParam('phase')
+    const phase: TaskCalendarPhase = rawPhase === 'process' || rawPhase === 'close'
+      ? rawPhase
+      : 'start'
+
+    if (!Number.isInteger(year) || year < 1 || !Number.isInteger(month) || month < 1 || month > 12) {
+      return null
+    }
+
+    return refreshCreatedCalendarTask({ year, month }, phase)
+  }
+
+  function resolveListInsert(taskPk: number) {
+    if (route.path !== '/tasks' || queryParam('view') !== 'list') {
+      return null
+    }
+
+    const groupBy = queryParam('groupBy') ?? 'all'
+
+    if (groupBy === 'due') {
+      return insertCreatedDueTask(taskPk)
+    }
+
+    if (groupBy === 'project') {
+      return insertCreatedProjectTask(taskPk)
+    }
+
+    if (groupBy === 'group') {
+      return insertCreatedGroupTask(taskPk)
+    }
+
+    if (groupBy === 'user') {
+      return insertCreatedUserTask(taskPk)
+    }
+
+    return groupBy === 'all' ? insertCreatedListTask(taskPk) : null
+  }
+
+  function resolveCreatedTaskSync(taskPk: number) {
+    const calendarRefresh = resolveCalendarRefresh(taskPk)
+    if (calendarRefresh) {
+      return calendarRefresh
+    }
+
+    const listInsert = resolveListInsert(taskPk)
+    if (listInsert) {
+      return listInsert
+    }
+
     if (!isTasksKanbanActive.value) {
       return null
     }
@@ -223,7 +304,7 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateTaskEvent(event)) {
-        const insertCreated = resolveKanbanInsert(event.task_pk)
+        const insertCreated = resolveCreatedTaskSync(event.task_pk)
         if (!insertCreated) {
           return
         }

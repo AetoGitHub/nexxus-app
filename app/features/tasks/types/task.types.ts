@@ -65,6 +65,11 @@ export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'
 
+export interface CalendarMonth {
+  year: number
+  month: number
+}
+
 export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
 
 /** Filtros de query compartidos por listas y Kanban. */

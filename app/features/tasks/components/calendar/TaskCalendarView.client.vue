@@ -19,7 +19,12 @@ import { useCalendarTasks } from '~/features/tasks/composables/calendar/useCalen
 import { useCalendarProjectTasks } from '~/features/tasks/composables/calendar/useCalendarProjectTasks'
 import { useCalendarAssignedTasks } from '~/features/tasks/composables/calendar/useCalendarAssignedTasks'
 import { useCalendarGroupTasks } from '~/features/tasks/composables/calendar/useCalendarGroupTasks'
-import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters } from '~/features/tasks/types/task.types'
+import type {
+  CalendarMonth,
+  TaskCalendarPhase,
+  TaskGroupBy,
+  TaskListFilters,
+} from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { coloredTasksToCalendarEvents, tasksToCalendarEvents } from '~/features/tasks/utils/calendar/task-calendar.util'
 
@@ -32,6 +37,7 @@ type LegendSelectValue = typeof LEGEND_ALL_VALUE | number
 
 const props = defineProps<{
   filters: TaskListFilters
+  period: CalendarMonth
   phase?: TaskCalendarPhase
   groupBy?: TaskGroupBy
   selectedTaskId?: number | null
@@ -39,6 +45,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [taskId: number]
+  'update:period': [period: CalendarMonth]
 }>()
 
 const { t } = useI18n()
@@ -58,11 +65,7 @@ const legendMode = computed(() => projectMode.value || userMode.value || groupsM
  */
 const selectedLegendValues = ref<LegendSelectValue[]>([])
 
-const now = new Date()
-const visibleMonth = ref({
-  year: now.getFullYear(),
-  month: now.getMonth() + 1,
-})
+const visibleMonth = ref<CalendarMonth>({ ...props.period })
 
 const { tasks } = useCalendarTasks(
   visibleMonth,
@@ -261,8 +264,13 @@ function setVisibleMonth(date: Date) {
   }
 
   visibleMonth.value = next
+  emit('update:period', next)
   expandedWeeks.value = new Set()
   applyDayMaxEventRows()
+}
+
+function monthStart(period: CalendarMonth) {
+  return `${period.year}-${String(period.month).padStart(2, '0')}-01`
 }
 
 function syncFromDatesSet(arg: DatesSetArg) {
@@ -388,6 +396,7 @@ function handleEventClick(arg: EventClickArg) {
 const calendarOptions = reactive<CalendarOptions>({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
+  initialDate: monthStart(visibleMonth.value),
   locale: esLocale,
   weekends: true,
   editable: false,
@@ -458,6 +467,24 @@ async function applyCalendarEvents(events: EventInput[], animate: boolean) {
 watch(() => props.groupBy, () => {
   selectedLegendValues.value = []
 })
+
+// Back/forward o deep links actualizan también el mes visible de FullCalendar.
+watch(
+  () => props.period,
+  (period) => {
+    if (
+      period.year === visibleMonth.value.year
+      && period.month === visibleMonth.value.month
+    ) {
+      return
+    }
+
+    visibleMonth.value = { ...period }
+    expandedWeeks.value = new Set()
+    calendarRef.value?.getApi().gotoDate(monthStart(period))
+  },
+  { deep: true },
+)
 
 // Al cargar o cambiar fuentes, mantenemos "Todos" o la selección parcial válida.
 watch(legendItems, (items, previousItems) => {

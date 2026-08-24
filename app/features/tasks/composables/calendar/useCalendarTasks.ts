@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
-import type { Task, TaskCalendarPhase, TaskListFilters } from '~/features/tasks/types/task.types'
+import type {
+  CalendarMonth,
+  Task,
+  TaskCalendarPhase,
+  TaskListFilters,
+} from '~/features/tasks/types/task.types'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
-
-export interface CalendarMonth {
-  year: number
-  month: number
-}
 
 /**
  * Tareas del mes para la vista calendario.

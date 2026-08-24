@@ -32,23 +32,11 @@ function eventColors(task: Task, color?: string) {
 }
 
 /**
- * Vista Inicio: la tarea aparece solo el día de `start_date`
- * (sin importar cuántos días dure hasta limit_date).
+ * Vista Inicio: muestra el periodo completo desde `start_date` hasta
+ * `limit_date`, igual que Proceso.
  */
 export function taskToStartCalendarEvent(task: Task, color?: string): EventInput | null {
-  const start = toDateOnly(task.start_date)
-  if (!start) {
-    return null
-  }
-
-  return {
-    id: String(task.id),
-    title: task.short_description,
-    start,
-    allDay: true,
-    extendedProps: { taskId: task.id },
-    ...eventColors(task, color),
-  }
+  return taskToProcessCalendarEvent(task, color)
 }
 
 /**

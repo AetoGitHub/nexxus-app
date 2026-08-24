@@ -1,6 +1,12 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { LocationQuery, LocationQueryRaw } from 'vue-router'
-import type { TaskCalendarPhase, TaskGroupBy, TaskListFilters, TaskView } from '~/features/tasks/types/task.types'
+import type {
+  CalendarMonth,
+  TaskCalendarPhase,
+  TaskGroupBy,
+  TaskListFilters,
+  TaskView,
+} from '~/features/tasks/types/task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
@@ -33,18 +39,37 @@ function pickQueryString(query: LocationQuery, key: string): unknown {
   return Array.isArray(value) ? value[0] : value
 }
 
+function parseCalendarMonth(query: LocationQuery): CalendarMonth | null {
+  const year = Number(pickQueryString(query, 'year'))
+  const month = Number(pickQueryString(query, 'month'))
+
+  if (!Number.isInteger(year) || year < 1 || !Number.isInteger(month) || month < 1 || month > 12) {
+    return null
+  }
+
+  return { year, month }
+}
+
+function currentCalendarMonth(): CalendarMonth {
+  const now = new Date()
+  return {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+  }
+}
+
 function buildWorkspaceQuery(
   current: LocationQuery,
-  state: { view: TaskView, groupBy: TaskGroupBy, calendarPhase: TaskCalendarPhase },
+  state: {
+    view: TaskView
+    groupBy: TaskGroupBy
+    calendarPhase: TaskCalendarPhase
+    calendarMonth: CalendarMonth
+  },
 ): LocationQueryRaw {
   const next: LocationQueryRaw = { ...current }
 
-  if (state.view === 'list') {
-    delete next.view
-  }
-  else {
-    next.view = state.view
-  }
+  next.view = state.view
 
   if (state.groupBy === 'all') {
     delete next.groupBy
@@ -53,11 +78,15 @@ function buildWorkspaceQuery(
     next.groupBy = state.groupBy
   }
 
-  if (state.view !== 'calendar' || state.calendarPhase === 'start') {
+  if (state.view !== 'calendar') {
     delete next.phase
+    delete next.year
+    delete next.month
   }
   else {
     next.phase = state.calendarPhase
+    next.year = String(state.calendarMonth.year)
+    next.month = String(state.calendarMonth.month)
   }
 
   return next
@@ -101,11 +130,13 @@ export function useTaskWorkspaceState(options: {
   const initialView = resolveView(parseView(pickQueryString(route.query, 'view')))
   const initialGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
   const initialPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
+  const initialCalendarMonth = parseCalendarMonth(route.query) ?? currentCalendarMonth()
 
   const view = ref<TaskView>(initialView)
   const search = ref('')
   const groupBy = ref<TaskGroupBy>(initialGroupBy)
   const calendarPhase = ref<TaskCalendarPhase>(initialPhase)
+  const calendarMonth = ref<CalendarMonth>(initialCalendarMonth)
   const filtersOpen = ref(false)
   const newTaskOpen = ref(false)
   const selectedTaskId = ref<number | null>(null)
@@ -151,13 +182,16 @@ export function useTaskWorkspaceState(options: {
     view.value = resolveView(view.value)
   })
 
-  watch(view, (value) => {
+  watch([view, groupBy], ([value, selectedGroupBy]) => {
     preferredView.value = value
-  })
+    if (value === 'calendar' && selectedGroupBy === 'due') {
+      groupBy.value = 'all'
+    }
+  }, { immediate: true })
 
   // Estado → URL
   watch(
-    [view, groupBy, calendarPhase],
+    [view, groupBy, calendarPhase, calendarMonth],
     () => {
       if (syncingFromRoute || import.meta.server) {
         return
@@ -167,6 +201,7 @@ export function useTaskWorkspaceState(options: {
         view: view.value,
         groupBy: groupBy.value,
         calendarPhase: calendarPhase.value,
+        calendarMonth: calendarMonth.value,
       })
 
       if (sameQuery(nextQuery, route.query)) {
@@ -180,17 +215,26 @@ export function useTaskWorkspaceState(options: {
 
   // URL (back/forward o deep link) → estado
   watch(
-    () => [route.query.view, route.query.groupBy, route.query.phase] as const,
+    () => [
+      route.query.view,
+      route.query.groupBy,
+      route.query.phase,
+      route.query.year,
+      route.query.month,
+    ] as const,
     () => {
       // Sin param = default (list / all / start), no conservar el estado previo.
       const nextView = resolveView(parseView(pickQueryString(route.query, 'view')) ?? 'list')
       const nextGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
       const nextPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
+      const nextCalendarMonth = parseCalendarMonth(route.query) ?? currentCalendarMonth()
 
       if (
         nextView === view.value
         && nextGroupBy === groupBy.value
         && nextPhase === calendarPhase.value
+        && nextCalendarMonth.year === calendarMonth.value.year
+        && nextCalendarMonth.month === calendarMonth.value.month
       ) {
         return
       }
@@ -199,6 +243,7 @@ export function useTaskWorkspaceState(options: {
       view.value = nextView
       groupBy.value = nextGroupBy
       calendarPhase.value = nextPhase
+      calendarMonth.value = nextCalendarMonth
       nextTick(() => {
         syncingFromRoute = false
       })
@@ -221,11 +266,16 @@ export function useTaskWorkspaceState(options: {
     newTaskOpen.value = true
   }
 
+  function setCalendarMonth(value: CalendarMonth) {
+    calendarMonth.value = value
+  }
+
   return {
     view,
     search,
     groupBy,
     calendarPhase,
+    calendarMonth,
     filtersOpen,
     newTaskOpen,
     selectedTaskId,
@@ -233,6 +283,7 @@ export function useTaskWorkspaceState(options: {
     toUpdateSection,
     listFilters,
     activeGroupByLabel,
+    setCalendarMonth,
     openNewTask,
     openTask,
   }
