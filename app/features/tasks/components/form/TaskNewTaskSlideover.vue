@@ -72,9 +72,8 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { user, selectedCompanyId } = useAuth()
 const { $api } = useNuxtApp()
-const companyId = 1
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -269,9 +268,9 @@ const nexxtepSuggestions = [
 ] as const
 
 const projectsQuery = useQuery({
-  queryKey: ['tasks', companyId, 'projects', 'dropdown', 'new-task'],
-  queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`/api/tools/dropdown/projects/company/${companyId}/`),
-  enabled: computed(() => open.value),
+  queryKey: computed(() => ['tasks', selectedCompanyId.value, 'projects', 'dropdown', 'new-task']),
+  queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`/api/tools/dropdown/projects/company/${selectedCompanyId.value}/`),
+  enabled: computed(() => open.value && selectedCompanyId.value != null),
 })
 
 const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(

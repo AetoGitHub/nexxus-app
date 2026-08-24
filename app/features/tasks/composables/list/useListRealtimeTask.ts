@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/vue-query'
-import { CURRENT_TASKS_COMPANY_ID } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import type { Task, TaskCounts } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 
@@ -27,13 +26,18 @@ type ListCountKey = typeof REALTIME_LIST_SECTIONS[number]['countKey']
 export function useListRealtimeTask() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { selectedCompanyId: companyId } = useAuth()
 
   async function insertCreatedListTask(taskPk: number): Promise<boolean> {
+    if (companyId.value == null) {
+      return false
+    }
+
     const responses = await Promise.all(
       REALTIME_LIST_SECTIONS.map(async section => ({
         ...section,
         data: await $api<PaginatedResponse<Task>>(
-          `/api/tasks/company/${CURRENT_TASKS_COMPANY_ID}${section.path}`,
+          `/api/tasks/company/${companyId.value}${section.path}`,
           { query: { pk: taskPk } },
         ),
       })),
@@ -53,7 +57,7 @@ export function useListRealtimeTask() {
     for (const match of matches) {
       queryClient.setQueriesData<PaginatedResponse<Task>>(
         {
-          queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, match.cacheId],
+          queryKey: ['tasks', companyId.value, match.cacheId],
           type: 'active',
         },
         (current) => {
@@ -74,7 +78,7 @@ export function useListRealtimeTask() {
     if (insertedCounts.size) {
       queryClient.setQueriesData<TaskCounts>(
         {
-          queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'counts'],
+          queryKey: ['tasks', companyId.value, 'counts'],
           type: 'active',
         },
         (current) => {

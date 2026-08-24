@@ -125,9 +125,13 @@ async function onSubmitProject() {
     return
   }
 
+  if (companyId.value == null) {
+    return
+  }
+
   const payload = {
     name,
-    company: companyId,
+    company: companyId.value,
     color: projectForm.value.color,
     members: projectForm.value.members,
   }

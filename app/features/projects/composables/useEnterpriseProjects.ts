@@ -9,21 +9,18 @@ import type {
 /**
  * Listado y creación de proyectos de empresa.
  * Con meProyect=true → GET /api/enterprise/projects/?me_proyect=true
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useEnterpriseProjects(
   meProyect: MaybeRefOrGetter<boolean> = false,
 ) {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
 
   const projectsQuery = useQuery({
     queryKey: computed(() => [
       'enterprise-projects',
-      companyId,
+      companyId.value,
       toValue(meProyect) ? 'mine' : 'all',
     ]),
     queryFn: () => {

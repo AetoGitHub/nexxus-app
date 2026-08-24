@@ -36,25 +36,22 @@ export interface CalendarGroup {
  *
  * - Grupos → GET /api/tasks/company/:id/groups/
  * - Tareas por grupo → GET /api/tasks/company/:id/group/:groupId/
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useCalendarGroupTasks(
   filters: MaybeRefOrGetter<TaskListFilters> = {},
   enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
 
-  const groupsBase = `/api/tasks/company/${companyId}/groups`
-  const tasksBase = `/api/tasks/company/${companyId}/group`
+  const groupsBase = computed(() => `/api/tasks/company/${companyId.value}/groups`)
+  const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/group`)
   const query = computed(() => toTaskListQuery(toValue(filters)))
-  const isEnabled = computed(() => toValue(enabled))
+  const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
   const groups = useQuery({
-    queryKey: ['tasks', companyId, 'groups', 'list'],
-    queryFn: () => $api<PaginatedResponse<TaskGroupListItem>>(`${groupsBase}/`),
+    queryKey: computed(() => ['tasks', companyId.value, 'groups', 'list']),
+    queryFn: () => $api<PaginatedResponse<TaskGroupListItem>>(`${groupsBase.value}/`),
     enabled: isEnabled,
   })
 
@@ -64,8 +61,8 @@ export function useCalendarGroupTasks(
   const taskQueries = useQueries({
     queries: computed(() =>
       groupIds.value.map(id => ({
-        queryKey: ['tasks', companyId, 'group', id, query.value],
-        queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
+        queryKey: ['tasks', companyId.value, 'group', id, query.value],
+        queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
         enabled: isEnabled.value && groupIds.value.length > 0,
       })),
     ),

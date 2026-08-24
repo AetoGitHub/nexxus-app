@@ -3,22 +3,18 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { ProjectDropdown } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 
-/**
- * Dropdown de proyectos de la empresa.
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
- */
+/** Dropdown de proyectos de la empresa seleccionada en sesión. */
 export function useProjectsDropdown() {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
 
   const projects = useQuery({
-    queryKey: ['tasks', companyId, 'projects', 'dropdown'],
+    queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),
     queryFn: () =>
       $api<PaginatedResponse<ProjectDropdown>>(
-        `/api/tools/dropdown/projects/company/${companyId}/`,
+        `/api/tools/dropdown/projects/company/${companyId.value}/`,
       ),
+    enabled: computed(() => companyId.value != null),
   })
 
   const items = computed(() =>

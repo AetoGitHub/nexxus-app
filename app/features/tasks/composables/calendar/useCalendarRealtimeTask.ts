@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/vue-query'
-import { CURRENT_TASKS_COMPANY_ID } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import type {
   CalendarMonth,
   Task,
@@ -14,14 +13,19 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 export function useCalendarRealtimeTask() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { selectedCompanyId: companyId } = useAuth()
 
   async function refreshCreatedCalendarTask(
     period: CalendarMonth,
     phase: TaskCalendarPhase,
   ): Promise<boolean> {
+    if (companyId.value == null) {
+      return false
+    }
+
     const queryPrefix = [
       'tasks',
-      CURRENT_TASKS_COMPANY_ID,
+      companyId.value,
       'calendar',
       phase,
     ]
@@ -42,7 +46,7 @@ export function useCalendarRealtimeTask() {
       year: period.year,
       month: period.month,
     }
-    const calendarBase = `/api/tasks/company/${CURRENT_TASKS_COMPANY_ID}/calendar`
+    const calendarBase = `/api/tasks/company/${companyId.value}/calendar`
     const path = phase === 'close'
       ? `${calendarBase}/closing-date/`
       : `${calendarBase}/`

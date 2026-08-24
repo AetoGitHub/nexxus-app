@@ -12,6 +12,7 @@ export interface AuthOrganization {
 export interface AuthUser {
   id: number
   username: string
+  selected_company: AuthCompany | null
 }
 
 export interface AuthLoginResponse {

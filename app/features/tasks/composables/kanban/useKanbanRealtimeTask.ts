@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/vue-query'
-import { CURRENT_TASKS_COMPANY_ID } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import type {
   AssignedTaskCount,
   KanbanCounts,
@@ -38,16 +37,21 @@ type RealtimeDueColumnId = typeof REALTIME_DUE_COLUMNS[number]['id']
 export function useKanbanRealtimeTask() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { selectedCompanyId: companyId } = useAuth()
 
   async function locateCreatedTasks<TColumnId extends string | number>(
     columns: ReadonlyArray<{ id: TColumnId, path: string }>,
     taskPk: number,
   ) {
+    if (companyId.value == null) {
+      return []
+    }
+
     const responses = await Promise.all(
       columns.map(async column => ({
         columnId: column.id,
         data: await $api<PaginatedResponse<Task>>(
-          `/api/tasks/company/${CURRENT_TASKS_COMPANY_ID}${column.path}`,
+          `/api/tasks/company/${companyId.value}${column.path}`,
           { query: { pk: taskPk } },
         ),
       })),
@@ -77,7 +81,7 @@ export function useKanbanRealtimeTask() {
 
     queryClient.setQueriesData<PaginatedResponse<Task>>(
       {
-        queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, ...scope, columnId],
+        queryKey: ['tasks', companyId.value, ...scope, columnId],
         type: options.seedIfMissing ? 'all' : 'active',
       },
       (current) => {
@@ -114,7 +118,7 @@ export function useKanbanRealtimeTask() {
   function incrementKanbanCounts(columnId: RealtimeKanbanColumnId) {
     queryClient.setQueriesData<KanbanCounts>(
       {
-        queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'kanban', 'counts'],
+        queryKey: ['tasks', companyId.value, 'kanban', 'counts'],
         type: 'active',
       },
       current => current
@@ -130,7 +134,7 @@ export function useKanbanRealtimeTask() {
   function incrementDueCounts(columnId: RealtimeDueColumnId) {
     queryClient.setQueriesData<OverdueCounts>(
       {
-        queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'overdue', 'counts'],
+        queryKey: ['tasks', companyId.value, 'overdue', 'counts'],
         type: 'active',
       },
       current => current
@@ -175,7 +179,7 @@ export function useKanbanRealtimeTask() {
   ) {
     queryClient.setQueriesData<Array<ProjectTaskCount | TaskGroupCount>>(
       {
-        queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, ...scope],
+        queryKey: ['tasks', companyId.value, ...scope],
         type: 'active',
       },
       (current) => {
@@ -198,11 +202,15 @@ export function useKanbanRealtimeTask() {
   }
 
   async function insertCreatedProjectTask(taskPk: number): Promise<boolean> {
+    if (companyId.value == null) {
+      return false
+    }
+
     const projects = await queryClient.ensureQueryData({
-      queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'projects', 'dropdown'],
+      queryKey: ['tasks', companyId.value, 'projects', 'dropdown'],
       queryFn: () =>
         $api<PaginatedResponse<ProjectDropdown>>(
-          `/api/tools/dropdown/projects/company/${CURRENT_TASKS_COMPANY_ID}/`,
+          `/api/tools/dropdown/projects/company/${companyId.value}/`,
         ),
     })
 
@@ -231,11 +239,15 @@ export function useKanbanRealtimeTask() {
   }
 
   async function insertCreatedGroupTask(taskPk: number): Promise<boolean> {
+    if (companyId.value == null) {
+      return false
+    }
+
     const groups = await queryClient.ensureQueryData({
-      queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'groups', 'list'],
+      queryKey: ['tasks', companyId.value, 'groups', 'list'],
       queryFn: () =>
         $api<PaginatedResponse<TaskGroupListItem>>(
-          `/api/tasks/company/${CURRENT_TASKS_COMPANY_ID}/groups/`,
+          `/api/tasks/company/${companyId.value}/groups/`,
         ),
     })
 
@@ -266,7 +278,7 @@ export function useKanbanRealtimeTask() {
   function incrementAssignedCounts(userId: number, username: string) {
     queryClient.setQueriesData<AssignedTaskCount[]>(
       {
-        queryKey: ['tasks', CURRENT_TASKS_COMPANY_ID, 'assigned', 'counts'],
+        queryKey: ['tasks', companyId.value, 'assigned', 'counts'],
         type: 'active',
       },
       (current) => {
