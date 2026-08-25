@@ -266,6 +266,20 @@
       "successDescription": "The task moved back to In progress.",
       "errorTitle": "Could not reopen the task"
     },
+    "processArchive": {
+      "submit": "Archive",
+      "modalTitle": "Archive task",
+      "modalDescription": "Are you sure you want to archive this task?",
+      "irreversibleTitle": "This action is irreversible",
+      "irreversibleDescription": "The task will be archived permanently and you will not be able to undo this change.",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for archiving",
+      "optional": "Optional",
+      "confirm": "Archive",
+      "successTitle": "Task archived",
+      "successDescription": "The task was archived successfully.",
+      "errorTitle": "Could not archive the task"
+    },
     "due": {
       "today": "Today",
       "tomorrow": "Tomorrow",

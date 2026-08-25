@@ -266,6 +266,20 @@
       "successDescription": "La tarea volvió a En progreso.",
       "errorTitle": "No se pudo reabrir la tarea"
     },
+    "processArchive": {
+      "submit": "Archivar",
+      "modalTitle": "Archivar tarea",
+      "modalDescription": "¿Estás seguro de que quieres archivar esta tarea?",
+      "irreversibleTitle": "Esta acción es irreversible",
+      "irreversibleDescription": "La tarea se archivará de forma permanente y no podrás deshacer este cambio.",
+      "comment": "Comentario",
+      "commentPlaceholder": "Motivo del archivado",
+      "optional": "Opcional",
+      "confirm": "Archivar",
+      "successTitle": "Tarea archivada",
+      "successDescription": "La tarea se archivó correctamente.",
+      "errorTitle": "No se pudo archivar la tarea"
+    },
     "due": {
       "today": "Hoy",
       "tomorrow": "Mañana",

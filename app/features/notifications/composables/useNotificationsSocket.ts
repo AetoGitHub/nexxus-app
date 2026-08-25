@@ -1,6 +1,7 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useNotificationDetail } from '~/features/notifications/composables/useNotificationDetail'
+import { useNotificationSound } from '~/features/notifications/composables/useNotificationSound'
 import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
 import { notificationListQueryKey } from '~/features/notifications/utils/notification-counts.util'
 import type {
@@ -60,6 +61,7 @@ export function useNotificationsSocket() {
     refreshCounts,
     resetNotifications,
   } = useNotificationState()
+  const { playNotificationSound } = useNotificationSound()
   const toast = useToast()
   const { t } = useI18n()
 
@@ -142,6 +144,7 @@ export function useNotificationsSocket() {
       },
     }[kind]
 
+    playNotificationSound()
     toast.add({
       title: t(meta.title),
       description: notification.message.trim() || t(meta.description),
