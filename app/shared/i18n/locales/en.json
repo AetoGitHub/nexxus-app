@@ -51,7 +51,26 @@
     "hideMenu": "Hide menu",
     "nexxa": "Nexxa in action",
     "notifications": "Notifications",
+    "notificationsCount": "Notifications: {count} unread",
     "toggleTheme": "Toggle theme"
+  },
+  "notifications": {
+    "assigned": {
+      "title": "New assigned task",
+      "description": "A new task was assigned to you."
+    },
+    "updated": {
+      "title": "Task updated",
+      "description": "A task assigned to you was updated."
+    },
+    "message": {
+      "title": "New message",
+      "description": "You received a new message on a task."
+    },
+    "generic": {
+      "title": "New notification",
+      "description": "You have a new notification."
+    }
   },
   "tasks": {
     "moduleTitle": "Tasks Module",

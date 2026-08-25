@@ -51,7 +51,26 @@
     "hideMenu": "Ocultar menú",
     "nexxa": "Nexxa en acción",
     "notifications": "Notificaciones",
+    "notificationsCount": "Notificaciones: {count} sin leer",
     "toggleTheme": "Cambiar tema"
+  },
+  "notifications": {
+    "assigned": {
+      "title": "Nueva tarea asignada",
+      "description": "Se te asignó una nueva tarea."
+    },
+    "updated": {
+      "title": "Tarea actualizada",
+      "description": "Se actualizó una tarea que tienes asignada."
+    },
+    "message": {
+      "title": "Nuevo mensaje",
+      "description": "Recibiste un nuevo mensaje en una tarea."
+    },
+    "generic": {
+      "title": "Nueva notificación",
+      "description": "Tienes una nueva notificación."
+    }
   },
   "tasks": {
     "moduleTitle": "Módulo de Tareas",

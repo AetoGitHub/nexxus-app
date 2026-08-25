@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { useNotificationsSocket } from '~/features/notifications/composables/useNotificationsSocket'
 import { useTaskChannelSocket } from '~/features/tasks/composables/workspace/useTaskChannelSocket'
 
-// Túnel único para toda la app autenticada: sincroniza el tablero y alimenta
-// el indicador de conexión del sidebar.
+// Canales globales de la sesión autenticada.
 useTaskChannelSocket()
+useNotificationsSocket()
 </script>
 
 <template>
