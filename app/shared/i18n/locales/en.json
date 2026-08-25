@@ -488,6 +488,31 @@
       "general": "General",
       "projects": "Projects"
     },
+    "notificationsPanel": {
+      "title": "Notifications",
+      "subtitle": "Review activity on your tasks. Opening a notification marks it as read.",
+      "infoBanner": "Click a notification to mark it as read. Then you can open the related task.",
+      "select": "Select notification",
+      "unread": "Unread",
+      "openTask": "Open task",
+      "noTask": "This notification is not linked to a task.",
+      "empty": "There are no notifications",
+      "loadError": "Could not load notifications",
+      "markReadErrorTitle": "Could not mark as read",
+      "filterKey": "Type",
+      "filterKeyAll": "All types",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread",
+        "read": "Read"
+      },
+      "keys": {
+        "task_created": "Assigned task",
+        "task_started": "Task started",
+        "task_message": "Comment",
+        "generic": "Activity"
+      }
+    },
     "groups": {
       "title": "Groups",
       "subtitle": "Organize work teams. Set a manager and invite the members you need.",

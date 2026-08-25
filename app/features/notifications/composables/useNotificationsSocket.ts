@@ -1,6 +1,8 @@
 import { FetchError } from 'ofetch'
+import { useQueryClient } from '@tanstack/vue-query'
 import { useNotificationDetail } from '~/features/notifications/composables/useNotificationDetail'
 import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
+import { notificationListQueryKey } from '~/features/notifications/utils/notification-counts.util'
 import type {
   AppNotification,
   NotificationSocketEvent,
@@ -49,6 +51,7 @@ export function useNotificationsSocket() {
   const wsBaseUrl = useWsBaseUrl()
   const { requestTicket } = useWsTicket()
   const { isLoggedIn } = useAuth()
+  const queryClient = useQueryClient()
   const { fetchNotification } = useNotificationDetail()
   const {
     hasProcessed,
@@ -164,6 +167,7 @@ export function useNotificationsSocket() {
       if (!notification.read) {
         incrementUnread()
       }
+      void queryClient.invalidateQueries({ queryKey: notificationListQueryKey })
       showNotificationToast(notification, socketEvent)
     }
     catch {

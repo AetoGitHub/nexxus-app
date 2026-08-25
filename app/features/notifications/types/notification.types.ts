@@ -31,3 +31,12 @@ export type NotificationToastKind =
   | 'updated'
   | 'message'
   | 'generic'
+
+/** Filtros de GET /api/notifications/. */
+export interface NotificationListFilters {
+  read?: boolean
+  key?: string
+  task?: number
+}
+
+export type NotificationReadTab = 'all' | 'unread' | 'read'

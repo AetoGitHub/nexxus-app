@@ -58,6 +58,17 @@ function currentCalendarMonth(): CalendarMonth {
   }
 }
 
+function parseTaskId(value: unknown): number | null {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    return null
+  }
+  const id = Number(value)
+  if (!Number.isInteger(id) || id <= 0) {
+    return null
+  }
+  return id
+}
+
 function buildWorkspaceQuery(
   current: LocationQuery,
   state: {
@@ -132,14 +143,16 @@ export function useTaskWorkspaceState(options: {
   const initialPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
   const initialCalendarMonth = parseCalendarMonth(route.query) ?? currentCalendarMonth()
 
+  const initialTaskId = parseTaskId(pickQueryString(route.query, 'task'))
+
   const view = ref<TaskView>(initialView)
   const search = ref('')
   const groupBy = ref<TaskGroupBy>(initialGroupBy)
   const calendarPhase = ref<TaskCalendarPhase>(initialPhase)
   const calendarMonth = ref<CalendarMonth>(initialCalendarMonth)
   const filtersOpen = ref(false)
-  const newTaskOpen = ref(false)
-  const selectedTaskId = ref<number | null>(null)
+  const newTaskOpen = ref(initialTaskId != null)
+  const selectedTaskId = ref<number | null>(initialTaskId)
   /** Prefills al abrir el slideover en modo creación (p. ej. proyecto desde Kanban). */
   const newTaskDefaults = ref<NewTaskFormDefaults | null>(null)
   /** Sección de pending-approval desde la que se abrió el detalle. */
@@ -172,11 +185,35 @@ export function useTaskWorkspaceState(options: {
   })
 
   watch(newTaskOpen, (isOpen) => {
-    if (!isOpen) {
-      newTaskDefaults.value = null
-      toUpdateSection.value = null
+    if (isOpen) {
+      return
     }
+
+    newTaskDefaults.value = null
+    toUpdateSection.value = null
+
+    if (import.meta.server || route.query.task == null) {
+      return
+    }
+
+    const nextQuery = { ...route.query }
+    delete nextQuery.task
+    void router.replace({ query: nextQuery })
   })
+
+  watch(
+    () => pickQueryString(route.query, 'task'),
+    (raw) => {
+      const taskId = parseTaskId(raw)
+      if (taskId == null) {
+        return
+      }
+      if (selectedTaskId.value === taskId && newTaskOpen.value) {
+        return
+      }
+      openTask(taskId)
+    },
+  )
 
   watch(excludedViews, () => {
     view.value = resolveView(view.value)

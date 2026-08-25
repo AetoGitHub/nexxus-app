@@ -488,6 +488,31 @@
       "general": "General",
       "projects": "Proyectos"
     },
+    "notificationsPanel": {
+      "title": "Notificaciones",
+      "subtitle": "Revisa la actividad de tus tareas. Al abrir una notificación se marca como leída.",
+      "infoBanner": "Haz clic en una notificación para marcarla como leída. Luego puedes abrir la tarea relacionada.",
+      "select": "Seleccionar notificación",
+      "unread": "Sin leer",
+      "openTask": "Abrir tarea",
+      "noTask": "Esta notificación no está asociada a una tarea.",
+      "empty": "No hay notificaciones",
+      "loadError": "No se pudieron cargar las notificaciones",
+      "markReadErrorTitle": "No se pudo marcar como leída",
+      "filterKey": "Tipo",
+      "filterKeyAll": "Todos los tipos",
+      "tabs": {
+        "all": "Todas",
+        "unread": "No leídas",
+        "read": "Leídas"
+      },
+      "keys": {
+        "task_created": "Tarea asignada",
+        "task_started": "Tarea iniciada",
+        "task_message": "Comentario",
+        "generic": "Actividad"
+      }
+    },
     "groups": {
       "title": "Grupos",
       "subtitle": "Organiza equipos de trabajo. Define un responsable e invita a los miembros que necesites.",
