@@ -5,11 +5,23 @@ const { t, locale, setLocale } = useI18n()
 const { user, logout } = useAuth()
 const { collapsed } = useSidebar()
 const { tasksItems, masterItems, isActive, navigate } = useAppNav()
+const { indicator: realtimeIndicator } = useRealtimeStatus()
 
 // TODO: sustituir por el nombre/rol reales cuando el modelo de usuario los exponga.
 const displayName = computed(() => user.value?.username ?? t('user.fallback'))
 const displayRole = computed(() => t('user.roleManager'))
 const initials = computed(() => getInitials(displayName.value))
+
+const realtimeDot = computed(() => {
+  switch (realtimeIndicator.value) {
+    case 'online':
+      return { dotClass: 'bg-success', label: t('realtime.connected') }
+    case 'pending':
+      return { dotClass: 'bg-warning', label: t('realtime.connecting') }
+    default:
+      return { dotClass: 'bg-neutral-400', label: t('realtime.offline') }
+  }
+})
 
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
   [
@@ -167,11 +179,19 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
           class="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted transition-colors"
           :class="collapsed ? 'justify-center' : ''"
         >
-          <span
-            class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none w-8 h-8 text-[12.8px] leading-none shrink-0"
-            style="background-color: #f59e0b"
-          >
-            {{ initials }}
+          <span class="relative shrink-0">
+            <span
+              class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none w-8 h-8 text-[12.8px] leading-none"
+              style="background-color: #f59e0b"
+            >
+              {{ initials }}
+            </span>
+            <span
+              v-if="collapsed"
+              class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-sidebar transition-colors"
+              :class="realtimeDot.dotClass"
+              :title="realtimeDot.label"
+            />
           </span>
           <template v-if="!collapsed">
             <div class="flex-1 min-w-0 text-left">
@@ -182,6 +202,12 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
                 {{ displayRole }}
               </div>
             </div>
+            <span
+              class="h-2.5 w-2.5 shrink-0 rounded-full transition-colors"
+              :class="realtimeDot.dotClass"
+              :title="realtimeDot.label"
+            />
+            <span class="sr-only">{{ realtimeDot.label }}</span>
             <UIcon
               name="i-lucide-chevrons-up-down"
               class="h-4 w-4 shrink-0 text-muted-foreground"

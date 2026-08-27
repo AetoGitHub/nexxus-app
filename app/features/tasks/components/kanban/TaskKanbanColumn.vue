@@ -117,7 +117,12 @@ function onDrop(event: DragEvent) {
           {{ isDropTarget ? t('tasks.kanban.dropHere') : t('tasks.empty') }}
         </p>
 
-        <template v-else>
+        <TransitionGroup
+          v-else
+          name="kanban-task"
+          tag="div"
+          class="space-y-2"
+        >
           <TaskKanbanCard
             v-for="task in column.tasks"
             :key="task.id"
@@ -129,7 +134,7 @@ function onDrop(event: DragEvent) {
             @drag-start="emit('dragStart', $event)"
             @drag-end="emit('dragEnd')"
           />
-        </template>
+        </TransitionGroup>
       </div>
 
       <div
@@ -150,3 +155,27 @@ function onDrop(event: DragEvent) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.kanban-task-enter-active {
+  transition:
+    opacity 320ms ease-out,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kanban-task-enter-from {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.96);
+}
+
+.kanban-task-move {
+  transition: transform 250ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kanban-task-enter-active,
+  .kanban-task-move {
+    transition: none;
+  }
+}
+</style>

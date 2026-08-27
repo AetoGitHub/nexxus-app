@@ -17,6 +17,7 @@ import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
+import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
@@ -72,9 +73,8 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { user, selectedCompanyId } = useAuth()
 const { $api } = useNuxtApp()
-const companyId = 1
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -84,6 +84,7 @@ const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const reopenProcessModalOpen = ref(false)
+const archiveProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
@@ -226,6 +227,14 @@ const showReopenProcess = computed(() =>
   && taskDetailQuery.data.value?.status === 'complete',
 )
 
+/** Detalle: archivar (oculto si ya está archivada). */
+const showArchiveProcess = computed(() =>
+  isDetailView.value
+  && !isEditing.value
+  && taskDetailQuery.data.value != null
+  && taskDetailQuery.data.value.status !== 'archived',
+)
+
 /** Completada: sin lápiz; solo se edita tras reabrir. */
 const canEditTask = computed(() =>
   taskDetailQuery.data.value?.status !== 'complete',
@@ -269,9 +278,9 @@ const nexxtepSuggestions = [
 ] as const
 
 const projectsQuery = useQuery({
-  queryKey: ['tasks', companyId, 'projects', 'dropdown', 'new-task'],
-  queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`/api/tools/dropdown/projects/company/${companyId}/`),
-  enabled: computed(() => open.value),
+  queryKey: computed(() => ['tasks', selectedCompanyId.value, 'projects', 'dropdown', 'new-task']),
+  queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`/api/tools/dropdown/projects/company/${selectedCompanyId.value}/`),
+  enabled: computed(() => open.value && selectedCompanyId.value != null),
 })
 
 const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
@@ -406,6 +415,10 @@ function openReopenProcessModal() {
   reopenProcessModalOpen.value = true
 }
 
+function openArchiveProcessModal() {
+  archiveProcessModalOpen.value = true
+}
+
 function onProcessStarted() {
   close()
 }
@@ -419,6 +432,10 @@ function onReviewDecision() {
 }
 
 function onProcessReopened() {
+  close()
+}
+
+function onProcessArchived() {
   close()
 }
 
@@ -515,6 +532,7 @@ watch(open, (isOpen) => {
     closeProcessModalOpen.value = false
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
+    archiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
     mobilePanel.value = 'detail'
@@ -621,6 +639,7 @@ const slideoverUi = computed(() => {
             class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3"
           >
             <div class="flex items-center gap-2 min-w-0">
+              
               <UIcon
                 name="i-lucide-file-text"
                 class="h-5 w-5 text-foreground shrink-0"
@@ -635,6 +654,21 @@ const slideoverUi = computed(() => {
                 size="sm"
                 class="uppercase tracking-wide shrink-0"
               />
+              <UTooltip
+                v-if="showArchiveProcess"
+                :text="t('tasks.processArchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-archive"
+                  color="error"
+                  variant="ghost"
+                  size="md"
+                  square
+                  class="shrink-0"
+                  :aria-label="t('tasks.processArchive.submit')"
+                  @click="openArchiveProcessModal"
+                />
+              </UTooltip>
               <UBadge
                 v-if="props.authorizeMode"
                 :label="t('tasks.toUpdate.authorize.label')"
@@ -1179,6 +1213,13 @@ const slideoverUi = computed(() => {
     v-model:open="reopenProcessModalOpen"
     :task-id="taskId"
     @success="onProcessReopened"
+  />
+
+  <TaskArchiveProcessModal
+    v-if="taskId != null"
+    v-model:open="archiveProcessModalOpen"
+    :task-id="taskId"
+    @success="onProcessArchived"
   />
 
   <TaskAuthorizeCloseModal

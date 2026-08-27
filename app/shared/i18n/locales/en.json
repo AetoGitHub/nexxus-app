@@ -26,6 +26,11 @@
     "fallback": "User",
     "roleManager": "Manager"
   },
+  "realtime": {
+    "connected": "Connected in real time",
+    "connecting": "Connecting...",
+    "offline": "No real-time connection"
+  },
   "sidebar": {
     "sectionTasks": "Tasks",
     "sectionMaster": "Master settings",
@@ -46,7 +51,26 @@
     "hideMenu": "Hide menu",
     "nexxa": "Nexxa in action",
     "notifications": "Notifications",
+    "notificationsCount": "Notifications: {count} unread",
     "toggleTheme": "Toggle theme"
+  },
+  "notifications": {
+    "assigned": {
+      "title": "New assigned task",
+      "description": "A new task was assigned to you."
+    },
+    "updated": {
+      "title": "Task updated",
+      "description": "A task assigned to you was updated."
+    },
+    "message": {
+      "title": "New message",
+      "description": "You received a new message on a task."
+    },
+    "generic": {
+      "title": "New notification",
+      "description": "You have a new notification."
+    }
   },
   "tasks": {
     "moduleTitle": "Tasks Module",
@@ -242,6 +266,20 @@
       "successDescription": "The task moved back to In progress.",
       "errorTitle": "Could not reopen the task"
     },
+    "processArchive": {
+      "submit": "Archive",
+      "modalTitle": "Archive task",
+      "modalDescription": "Are you sure you want to archive this task?",
+      "irreversibleTitle": "This action is irreversible",
+      "irreversibleDescription": "The task will be archived permanently and you will not be able to undo this change.",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for archiving",
+      "optional": "Optional",
+      "confirm": "Archive",
+      "successTitle": "Task archived",
+      "successDescription": "The task was archived successfully.",
+      "errorTitle": "Could not archive the task"
+    },
     "due": {
       "today": "Today",
       "tomorrow": "Tomorrow",
@@ -347,14 +385,16 @@
       "messageCount": "{n} messages",
       "placeholder": "Write a message",
       "send": "Send message",
-      "refresh": "Refresh messages",
       "showMessages": "View messages",
       "showDetail": "View task detail",
       "empty": "No messages yet. Be the first to write.",
       "loadError": "Could not load messages",
-      "sendSuccessTitle": "Message sent",
-      "sendSuccessDescription": "Your message was posted in the task chat.",
       "sendErrorTitle": "Could not send the message",
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "reconnecting": "Reconnecting",
+      "offline": "Offline",
+      "connectionErrorTitle": "Could not connect to the real-time chat",
       "system": {
         "taskCreated": "Task created.",
         "taskUpdated": "Task updated.",
@@ -461,6 +501,31 @@
       "notifications": "Notifications",
       "general": "General",
       "projects": "Projects"
+    },
+    "notificationsPanel": {
+      "title": "Notifications",
+      "subtitle": "Review activity on your tasks. Opening a notification marks it as read.",
+      "infoBanner": "Click a notification to mark it as read. Then you can open the related task.",
+      "select": "Select notification",
+      "unread": "Unread",
+      "openTask": "Open task",
+      "noTask": "This notification is not linked to a task.",
+      "empty": "There are no notifications",
+      "loadError": "Could not load notifications",
+      "markReadErrorTitle": "Could not mark as read",
+      "filterKey": "Type",
+      "filterKeyAll": "All types",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread",
+        "read": "Read"
+      },
+      "keys": {
+        "task_created": "Assigned task",
+        "task_started": "Task started",
+        "task_message": "Comment",
+        "generic": "Activity"
+      }
     },
     "groups": {
       "title": "Groups",

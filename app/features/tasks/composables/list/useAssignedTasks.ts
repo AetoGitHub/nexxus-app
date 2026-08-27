@@ -16,16 +16,14 @@ const GROUP_SECTION_COLORS = ['#6366f1', '#28ceab', '#f97316', '#8b5cf6', '#dc26
 
 /**
  * Server state de tareas agrupadas por usuario asignado vía TanStack Query.
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
+  const hasCompany = computed(() => companyId.value != null)
 
   const usersBase = '/api/tools/dropdown/users'
-  const tasksBase = `/api/tasks/company/${companyId}/assigned`
+  const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/assigned`)
   const query = computed(() => toTaskListQuery(toValue(filters)))
 
   const users = useQuery({
@@ -34,8 +32,9 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   })
 
   const counts = useQuery({
-    queryKey: computed(() => ['tasks', companyId, 'assigned', 'counts', query.value]),
-    queryFn: () => $api<AssignedTaskCount[]>(`${tasksBase}/counts/`, { query: query.value }),
+    queryKey: computed(() => ['tasks', companyId.value, 'assigned', 'counts', query.value]),
+    queryFn: () => $api<AssignedTaskCount[]>(`${tasksBase.value}/counts/`, { query: query.value }),
+    enabled: hasCompany,
   })
 
   const userList = computed(() => extractResults(users.data.value))
@@ -49,9 +48,9 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
       return userIds.value.map(id => {
         const total = countsMap.get(id) ?? 0
         return {
-          queryKey: ['tasks', companyId, 'assigned', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
-          enabled: total > 0,
+          queryKey: ['tasks', companyId.value, 'assigned', id, query.value],
+          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          enabled: hasCompany.value && total > 0,
         }
       })
     }),

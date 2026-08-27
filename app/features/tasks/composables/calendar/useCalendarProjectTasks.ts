@@ -40,25 +40,22 @@ export interface CalendarProject {
  *
  * - Proyectos → GET /api/tools/dropdown/projects/company/:id/
  * - Tareas por proyecto → GET /api/tasks/company/:id/project/:projectId/
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useCalendarProjectTasks(
   filters: MaybeRefOrGetter<TaskListFilters> = {},
   enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
 
-  const projectsBase = `/api/tools/dropdown/projects/company/${companyId}`
-  const tasksBase = `/api/tasks/company/${companyId}/project`
+  const projectsBase = computed(() => `/api/tools/dropdown/projects/company/${companyId.value}`)
+  const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/project`)
   const query = computed(() => toTaskListQuery(toValue(filters)))
-  const isEnabled = computed(() => toValue(enabled))
+  const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
   const projects = useQuery({
-    queryKey: ['tasks', companyId, 'projects', 'dropdown'],
-    queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase}/`),
+    queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),
+    queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase.value}/`),
     enabled: isEnabled,
   })
 
@@ -76,8 +73,8 @@ export function useCalendarProjectTasks(
   const taskQueries = useQueries({
     queries: computed(() =>
       projectIds.value.map(id => ({
-        queryKey: ['tasks', companyId, 'project', id, query.value],
-        queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
+        queryKey: ['tasks', companyId.value, 'project', id, query.value],
+        queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
         enabled: isEnabled.value && projectIds.value.length > 0,
       })),
     ),

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { isTaskMessagesSocketConnected } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { CreateTaskMessagePayload, TaskMessage } from '~/features/tasks/types/task.types'
 
 /**
@@ -18,14 +19,11 @@ export function useCreateTaskMessage() {
         body: payload,
       }),
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['tasks', 'messages', variables.task],
-      })
-      toast.add({
-        title: t('tasks.messenger.sendSuccessTitle'),
-        description: t('tasks.messenger.sendSuccessDescription'),
-        color: 'success',
-      })
+      if (!isTaskMessagesSocketConnected(variables.task)) {
+        await queryClient.invalidateQueries({
+          queryKey: ['tasks', 'messages', variables.task],
+        })
+      }
     },
     onError: (error) => {
       toast.add({

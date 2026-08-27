@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
+
 const { t } = useI18n()
 const { user } = useAuth()
 const { collapsed, toggle } = useSidebar()
 const colorMode = useColorMode()
 const route = useRoute()
+const { unreadCount, unreadCountLabel } = useNotificationState()
 
 const displayName = computed(() => user.value?.username ?? t('user.fallback'))
 const initials = computed(() => getInitials(displayName.value))
+const notificationsAriaLabel = computed(() =>
+  unreadCount.value > 0
+    ? t('toolbar.notificationsCount', { count: unreadCount.value })
+    : t('toolbar.notifications'),
+)
 
 const moduleName = computed(() => {
   if (route.path.startsWith('/dashboard')) {
@@ -26,6 +34,8 @@ const moduleName = computed(() => {
   }
   return t('toolbar.moduleName')
 })
+
+const nexxaCount = 3
 
 const isDark = computed(() => colorMode.value === 'dark')
 
@@ -79,28 +89,41 @@ const search = ref('')
         >
       </div>
 
-      <button
-        type="button"
-        :aria-label="t('toolbar.nexxa')"
-        :title="t('toolbar.nexxa')"
-        class="relative h-9 w-9 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition"
+      <UChip
+        :show="nexxaCount > 0"
+        :text="nexxaCount"
+        size="3xl"
+        color="error"
+        :ui="{ base: 'text-white h-auto px-1.5 py-0.5 leading-none' }"
       >
-        <UIcon name="i-lucide-bot" class="h-4 w-4" />
-        <span
-          class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center rounded-full font-mono font-bold text-white animate-pulse w-4 h-4 text-[10px] leading-none"
-          style="background-color: #dc2626"
-        >
-          3
-        </span>
-      </button>
+        <UButton
+          icon="i-lucide-bot"
+          color="neutral"
+          variant="ghost"
+          square
+          class="h-9 w-9 text-muted-foreground hover:text-foreground"
+          :aria-label="t('toolbar.nexxa')"
+          :title="t('toolbar.nexxa')"
+        />
+      </UChip>
 
-      <button
-        type="button"
-        :aria-label="t('toolbar.notifications')"
-        class="h-9 w-9 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition"
+      <UChip
+        :show="unreadCount > 0"
+        :text="unreadCountLabel"
+        size="3xl"
+        color="error"
+        :ui="{ base: 'text-white h-auto px-1.5 py-0.5 leading-none' }"
       >
-        <UIcon name="i-lucide-bell" class="h-4 w-4" />
-      </button>
+        <UButton
+          icon="i-lucide-bell"
+          color="neutral"
+          variant="ghost"
+          square
+          class="h-9 w-9 text-muted-foreground hover:text-foreground"
+          :aria-label="notificationsAriaLabel"
+          :title="notificationsAriaLabel"
+        />
+      </UChip>
 
       <ClientOnly>
         <button

@@ -16,26 +16,26 @@ const PROJECT_SECTION_COLORS = ['#6366f1', '#28ceab', '#f97316', '#8b5cf6', '#dc
 
 /**
  * Server state de tareas agrupadas por proyecto vía TanStack Query.
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
+  const hasCompany = computed(() => companyId.value != null)
 
-  const projectsBase = `/api/tools/dropdown/projects/company/${companyId}`
-  const tasksBase = `/api/tasks/company/${companyId}/project`
+  const projectsBase = computed(() => `/api/tools/dropdown/projects/company/${companyId.value}`)
+  const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/project`)
   const query = computed(() => toTaskListQuery(toValue(filters)))
 
   const projects = useQuery({
-    queryKey: ['tasks', companyId, 'projects', 'dropdown'],
-    queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase}/`),
+    queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),
+    queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase.value}/`),
+    enabled: hasCompany,
   })
 
   const counts = useQuery({
-    queryKey: computed(() => ['tasks', companyId, 'project', 'counts', query.value]),
-    queryFn: () => $api<ProjectTaskCount[]>(`${tasksBase}/counts/`, { query: query.value }),
+    queryKey: computed(() => ['tasks', companyId.value, 'project', 'counts', query.value]),
+    queryFn: () => $api<ProjectTaskCount[]>(`${tasksBase.value}/counts/`, { query: query.value }),
+    enabled: hasCompany,
   })
 
   const projectList = computed(() => {
@@ -56,9 +56,9 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
       return projectIds.value.map(id => {
         const total = countsMap.get(id) ?? 0
         return {
-          queryKey: ['tasks', companyId, 'project', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
-          enabled: total > 0,
+          queryKey: ['tasks', companyId.value, 'project', id, query.value],
+          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          enabled: hasCompany.value && total > 0,
         }
       })
     }),

@@ -78,7 +78,12 @@ const { t } = useI18n()
           {{ t('tasks.empty') }}
         </p>
 
-        <div v-else class="space-y-1.5">
+        <TransitionGroup
+          v-else
+          name="list-task"
+          tag="div"
+          class="space-y-1.5"
+        >
           <TaskItem
             v-for="task in tasks"
             :key="task.id"
@@ -87,7 +92,7 @@ const { t } = useI18n()
             :show-status="showStatus"
             @select="emit('select', $event)"
           />
-        </div>
+        </TransitionGroup>
 
         <div
           v-if="showCreate"
@@ -108,3 +113,27 @@ const { t } = useI18n()
     </template>
   </UCollapsible>
 </template>
+
+<style scoped>
+.list-task-enter-active {
+  transition:
+    opacity 320ms ease-out,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.list-task-enter-from {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
+.list-task-move {
+  transition: transform 250ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-task-enter-active,
+  .list-task-move {
+    transition: none;
+  }
+}
+</style>

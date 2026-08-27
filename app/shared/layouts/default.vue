@@ -1,3 +1,12 @@
+<script setup lang="ts">
+import { useNotificationsSocket } from '~/features/notifications/composables/useNotificationsSocket'
+import { useTaskChannelSocket } from '~/features/tasks/composables/workspace/useTaskChannelSocket'
+
+// Canales globales de la sesión autenticada.
+useTaskChannelSocket()
+useNotificationsSocket()
+</script>
+
 <template>
   <div class="h-screen flex overflow-hidden bg-background text-foreground">
     <AppSidebar />

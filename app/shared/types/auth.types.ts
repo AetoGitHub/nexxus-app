@@ -12,6 +12,7 @@ export interface AuthOrganization {
 export interface AuthUser {
   id: number
   username: string
+  selected_company: AuthCompany | null
 }
 
 export interface AuthLoginResponse {
@@ -29,4 +30,9 @@ export interface AuthSession {
 export interface AuthLoginRequest {
   username: string
   password: string
+}
+
+export interface WsTicketResponse {
+  ticket: string
+  expires_in: number
 }

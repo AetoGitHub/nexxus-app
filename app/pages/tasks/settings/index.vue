@@ -2,6 +2,7 @@
 import TaskSettingsGroupModal from '~/features/task-settings/components/groups/TaskSettingsGroupModal.vue'
 import TaskSettingsGroupsPanel from '~/features/task-settings/components/groups/TaskSettingsGroupsPanel.vue'
 import TaskSettingsGeneralPanel from '~/features/task-settings/components/general/TaskSettingsGeneralPanel.vue'
+import TaskSettingsNotificationsPanel from '~/features/task-settings/components/notifications/TaskSettingsNotificationsPanel.vue'
 import TaskSettingsNavSidebar from '~/features/task-settings/components/shared/TaskSettingsNavSidebar.vue'
 import TaskSettingsPlaceholderPanel from '~/features/task-settings/components/shared/TaskSettingsPlaceholderPanel.vue'
 import TaskSettingsProjectModal from '~/features/task-settings/components/projects/TaskSettingsProjectModal.vue'
@@ -125,9 +126,13 @@ async function onSubmitProject() {
     return
   }
 
+  if (companyId.value == null) {
+    return
+  }
+
   const payload = {
     name,
-    company: companyId,
+    company: companyId.value,
     color: projectForm.value.color,
     members: projectForm.value.members,
   }
@@ -231,6 +236,10 @@ useSeoMeta({
 
         <TaskSettingsGeneralPanel
           v-else-if="activeSection === 'general'"
+        />
+
+        <TaskSettingsNotificationsPanel
+          v-else-if="activeSection === 'notifications'"
         />
 
         <TaskSettingsPlaceholderPanel

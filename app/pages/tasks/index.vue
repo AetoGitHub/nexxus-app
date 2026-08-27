@@ -57,7 +57,17 @@ function onSectionCreate(
 
 <template>
   <TaskWorkspaceShell :title="t('toolbar.moduleName')">
-    <template #default="{ view, groupBy, filters, calendarPhase, selectedTaskId, openTask, openNewTask }">
+    <template #default="{
+      view,
+      groupBy,
+      filters,
+      calendarPhase,
+      calendarMonth,
+      selectedTaskId,
+      openTask,
+      openNewTask,
+      setCalendarMonth,
+    }">
       <TaskListView
         v-if="view === 'list' && groupBy === 'all'"
         :filters="filters"
@@ -137,9 +147,11 @@ function onSectionCreate(
         v-else-if="view === 'calendar'"
         :filters="filters"
         :phase="calendarPhase"
+        :period="calendarMonth"
         :group-by="groupBy"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @update:period="setCalendarMonth"
       />
 
       <div

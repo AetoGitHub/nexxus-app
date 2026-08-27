@@ -65,6 +65,11 @@ export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'
 
+export interface CalendarMonth {
+  year: number
+  month: number
+}
+
 export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
 
 /** Filtros de query compartidos por listas y Kanban. */
@@ -125,6 +130,19 @@ export interface Task {
   close_approvals: TaskCloseApproval[]
   assigned_to?: TaskAssignee[]
 }
+
+export interface CreateTaskChannelEvent {
+  event: 'create_task'
+  task_pk: number
+  user: number[]
+}
+
+export interface UnknownTaskChannelEvent {
+  event: string
+  [key: string]: unknown
+}
+
+export type TaskChannelEvent = CreateTaskChannelEvent | UnknownTaskChannelEvent
 
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {
@@ -283,6 +301,12 @@ export interface ReopenTaskProcessPayload {
   task: number
   comment?: string
   images?: File[]
+}
+
+/** Payload de POST /api/tasks/process/archive/. */
+export interface ArchiveTaskProcessPayload {
+  task: number
+  comment?: string
 }
 
 /** Payload de drop entre columnas Kanban.

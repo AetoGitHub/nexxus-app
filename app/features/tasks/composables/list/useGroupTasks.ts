@@ -20,26 +20,26 @@ const GROUP_SECTION_COLORS = ['#6366f1', '#28ceab', '#f97316', '#8b5cf6', '#dc26
  * - Grupos → GET /api/tasks/company/:id/groups/
  * - Counts → GET /api/tasks/company/:id/group/counts/ (+ filtros)
  * - Tareas → GET /api/tasks/company/:id/group/:groupId/
- *
- * NOTA: la empresa está fija en 1 por ahora (TODO: derivar de la empresa
- * seleccionada).
  */
 export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { $api } = useNuxtApp()
-  const companyId = 1
+  const { selectedCompanyId: companyId } = useAuth()
+  const hasCompany = computed(() => companyId.value != null)
 
-  const groupsBase = `/api/tasks/company/${companyId}/groups`
-  const tasksBase = `/api/tasks/company/${companyId}/group`
+  const groupsBase = computed(() => `/api/tasks/company/${companyId.value}/groups`)
+  const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/group`)
   const query = computed(() => toTaskListQuery(toValue(filters)))
 
   const groups = useQuery({
-    queryKey: ['tasks', companyId, 'groups', 'list'],
-    queryFn: () => $api<PaginatedResponse<TaskGroupListItem>>(`${groupsBase}/`),
+    queryKey: computed(() => ['tasks', companyId.value, 'groups', 'list']),
+    queryFn: () => $api<PaginatedResponse<TaskGroupListItem>>(`${groupsBase.value}/`),
+    enabled: hasCompany,
   })
 
   const counts = useQuery({
-    queryKey: computed(() => ['tasks', companyId, 'group', 'counts', query.value]),
-    queryFn: () => $api<TaskGroupCount[]>(`${tasksBase}/counts/`, { query: query.value }),
+    queryKey: computed(() => ['tasks', companyId.value, 'group', 'counts', query.value]),
+    queryFn: () => $api<TaskGroupCount[]>(`${tasksBase.value}/counts/`, { query: query.value }),
+    enabled: hasCompany,
   })
 
   const groupList = computed(() => extractResults(groups.data.value))
@@ -53,9 +53,9 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
       return groupIds.value.map(id => {
         const total = countsMap.get(id) ?? 0
         return {
-          queryKey: ['tasks', companyId, 'group', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase}/${id}/`, { query: query.value }),
-          enabled: total > 0,
+          queryKey: ['tasks', companyId.value, 'group', id, query.value],
+          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          enabled: hasCompany.value && total > 0,
         }
       })
     }),

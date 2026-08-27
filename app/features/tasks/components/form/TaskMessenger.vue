@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
+import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
 import { resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
 import { formatDateTime } from '~/shared/utils/date'
@@ -29,14 +30,16 @@ const {
   isPending,
   isError,
   errorMessage,
-  isFetching,
-  refetch,
 } = useTaskMessages(() => props.taskId)
 
+const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId)
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
 
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
+const contentEl = ref<HTMLElement | null>(null)
+/** Mientras el usuario esté al final, la vista queda anclada al mensaje más reciente. */
+const isPinnedToBottom = ref(true)
 
 const messageCount = computed(() =>
   messages.value.filter(message => !isSystemMessage(message.type)).length,
@@ -44,6 +47,47 @@ const messageCount = computed(() =>
 
 const countLabel = computed(() =>
   t('tasks.messenger.messageCount', { n: messageCount.value }),
+)
+
+const socketBadge = computed(() => {
+  switch (socketStatus.value) {
+    case 'connected':
+      return {
+        label: t('tasks.messenger.connected'),
+        icon: 'i-lucide-wifi',
+        color: 'success' as const,
+      }
+    case 'connecting':
+      return {
+        label: t('tasks.messenger.connecting'),
+        icon: 'i-lucide-loader-circle',
+        color: 'warning' as const,
+      }
+    case 'reconnecting':
+      return {
+        label: t('tasks.messenger.reconnecting'),
+        icon: 'i-lucide-loader-circle',
+        color: 'warning' as const,
+      }
+    case 'error':
+      return {
+        label: t('tasks.messenger.offline'),
+        icon: 'i-lucide-wifi-off',
+        color: 'error' as const,
+      }
+    default:
+      return {
+        label: t('tasks.messenger.offline'),
+        icon: 'i-lucide-wifi-off',
+        color: 'neutral' as const,
+      }
+  }
+})
+
+const socketTooltip = computed(() =>
+  socketStatus.value === 'error'
+    ? t('tasks.messenger.connectionErrorTitle')
+    : socketBadge.value.label,
 )
 
 function isOwnMessage(profileId: number, username: string) {
@@ -96,12 +140,28 @@ function messageContent(message: TaskMessage) {
   return resolveTaskMessageContent(message, (key, params) => t(key, params ?? {}))
 }
 
-async function scrollToBottom() {
-  await nextTick()
+function scrollToLatest() {
   if (!listEl.value) {
     return
   }
   listEl.value.scrollTop = listEl.value.scrollHeight
+}
+
+async function scrollToLatestAfterRender() {
+  await nextTick()
+  scrollToLatest()
+}
+
+function onListScroll() {
+  if (!listEl.value) {
+    return
+  }
+
+  const distance = listEl.value.scrollHeight
+    - listEl.value.scrollTop
+    - listEl.value.clientHeight
+
+  isPinnedToBottom.value = distance <= 80
 }
 
 async function sendMessage() {
@@ -115,7 +175,8 @@ async function sendMessage() {
     content,
   })
   draft.value = ''
-  await scrollToBottom()
+  isPinnedToBottom.value = true
+  await scrollToLatestAfterRender()
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -125,17 +186,28 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-async function refreshMessages() {
-  await refetch()
-  await scrollToBottom()
-}
+// El slideover entra animado: el alto real de la lista llega después del primer render,
+// así que reanclamos en cada cambio de tamaño mientras el usuario siga al final.
+useResizeObserver(contentEl, () => {
+  if (isPinnedToBottom.value) {
+    scrollToLatest()
+  }
+})
 
 watch(
   messages,
   () => {
-    void scrollToBottom()
+    if (isPinnedToBottom.value) {
+      void scrollToLatestAfterRender()
+    }
   },
-  { flush: 'post' },
+)
+
+watch(
+  () => props.taskId,
+  () => {
+    isPinnedToBottom.value = true
+  },
 )
 </script>
 
@@ -156,19 +228,22 @@ watch(
           <h2 class="font-semibold truncate">
             {{ t('tasks.messenger.title') }}
           </h2>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            color="neutral"
-            variant="ghost"
-            size="xs"
-            square
-            :loading="isFetching && !isPending"
-            :aria-label="t('tasks.messenger.refresh')"
-            @click="refreshMessages"
-          />
         </div>
         <div class="flex items-center gap-1 shrink-0">
           <slot name="header-actions" />
+          <UTooltip :text="socketTooltip">
+            <UBadge
+              :label="socketBadge.label"
+              :icon="socketBadge.icon"
+              :color="socketBadge.color"
+              variant="subtle"
+              size="sm"
+              :class="{
+                '**:data-[slot=leading-icon]:animate-spin': socketStatus === 'connecting'
+                  || socketStatus === 'reconnecting',
+              }"
+            />
+          </UTooltip>
           <span class="text-xs text-muted-foreground">
             {{ countLabel }}
           </span>
@@ -179,6 +254,7 @@ watch(
     <div
       ref="listEl"
       class="h-full min-h-0 overflow-y-auto p-3"
+      @scroll.passive="onListScroll"
     >
       <div
         v-if="isPending"
@@ -207,6 +283,7 @@ watch(
 
       <ul
         v-else
+        ref="contentEl"
         class="flex flex-col gap-1.5"
       >
         <li

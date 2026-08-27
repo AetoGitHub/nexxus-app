@@ -3,16 +3,19 @@ import type { TaskGroupBy } from '~/features/tasks/types/task.types'
 
 const groupBy = defineModel<TaskGroupBy>({ required: true })
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** Oculta el label y chips de «Ver por» (mantiene el contenedor y el slot). */
     hideOptions?: boolean
     /** Layout vertical (sheet mobile). */
     stacked?: boolean
+    /** Opciones no aplicables a la vista activa. */
+    exclude?: TaskGroupBy[]
   }>(),
   {
     hideOptions: false,
     stacked: false,
+    exclude: () => [],
   },
 )
 
@@ -25,6 +28,10 @@ const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
   { value: 'group', icon: 'i-lucide-users', labelKey: 'tasks.groupBy.group' },
   { value: 'user', icon: 'i-lucide-user', labelKey: 'tasks.groupBy.user' },
 ]
+
+const visibleOptions = computed(() =>
+  options.filter(option => !props.exclude.includes(option.value)),
+)
 </script>
 
 <template>
@@ -38,7 +45,7 @@ const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
       </span>
       <div class="flex flex-wrap gap-2" :class="stacked ? '' : 'contents'">
         <UButton
-          v-for="option in options"
+          v-for="option in visibleOptions"
           :key="option.value"
           color="neutral"
           variant="outline"

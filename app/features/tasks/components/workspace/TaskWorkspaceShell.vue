@@ -31,6 +31,7 @@ const {
   search,
   groupBy,
   calendarPhase,
+  calendarMonth,
   filtersOpen,
   newTaskOpen,
   selectedTaskId,
@@ -38,6 +39,7 @@ const {
   toUpdateSection,
   listFilters,
   activeGroupByLabel,
+  setCalendarMonth,
   openNewTask,
   openTask,
 } = useTaskWorkspaceState({
@@ -117,16 +119,6 @@ function closeMobileFilters() {
             @click="openMobileFilters"
           />
         </UChip>
-
-        <UButton
-          icon="i-lucide-plus"
-          color="primary"
-          size="sm"
-          square
-          class="h-8 w-8 shrink-0"
-          :aria-label="t('tasks.newTask')"
-          @click="openNewTask()"
-        />
       </div>
 
       <div class="flex items-center gap-2">
@@ -188,7 +180,11 @@ function closeMobileFilters() {
       </div>
 
       <div v-if="filtersOpen" class="space-y-2">
-        <TaskGroupByFilter v-model="groupBy" :hide-options="hideGroupBy">
+        <TaskGroupByFilter
+          v-model="groupBy"
+          :hide-options="hideGroupBy"
+          :exclude="view === 'calendar' ? ['due'] : []"
+        >
           <UButton
             v-if="showRefresh"
             icon="i-lucide-refresh-cw"
@@ -238,6 +234,8 @@ function closeMobileFilters() {
         :group-by="groupBy"
         :filters="listFilters"
         :calendar-phase="calendarPhase"
+        :calendar-month="calendarMonth"
+        :set-calendar-month="setCalendarMonth"
         :selected-task-id="selectedTaskId"
         :open-task="openTask"
         :open-new-task="openNewTask"
@@ -260,6 +258,7 @@ function closeMobileFilters() {
           v-model="groupBy"
           stacked
           :hide-options="hideGroupBy"
+          :exclude="view === 'calendar' ? ['due'] : []"
         />
 
         <TaskListFilters
@@ -284,6 +283,26 @@ function closeMobileFilters() {
         />
       </template>
     </USlideover>
+
+    <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto. -->
+    <UButton
+      v-show="!newTaskOpen"
+      color="primary"
+      size="xl"
+      square
+      class="md:hidden fixed z-40 size-14 rounded-full shadow-lg right-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)] p-0!"
+      :ui="{
+        base: 'inline-flex items-center justify-center gap-0',
+        leadingIcon: 'hidden',
+      }"
+      :aria-label="t('tasks.newTask')"
+      @click="openNewTask()"
+    >
+      <UIcon
+        name="i-lucide-plus"
+        class="size-6"
+      />
+    </UButton>
 
     <TaskNewTaskSlideover
       v-model:open="newTaskOpen"
