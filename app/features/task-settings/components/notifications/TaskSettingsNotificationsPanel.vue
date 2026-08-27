@@ -2,6 +2,7 @@
 import { useMarkNotificationRead } from '~/features/notifications/composables/useMarkNotificationRead'
 import { useNotifications } from '~/features/notifications/composables/useNotifications'
 import type {
+  AppNotification,
   NotificationListFilters,
   NotificationReadTab,
 } from '~/features/notifications/types/notification.types'
@@ -14,6 +15,8 @@ const markRead = useMarkNotificationRead()
 const readTab = ref<NotificationReadTab>('all')
 const selectedKey = ref<string>('all')
 const expandedId = ref<number | null>(null)
+/** Sigue visible en “No leídas” hasta colapsar o elegir otra. */
+const stickyNotification = ref<AppNotification | null>(null)
 
 const filters = computed<NotificationListFilters>(() => ({
   read: readTab.value === 'all' ? undefined : readTab.value === 'read',
@@ -21,6 +24,27 @@ const filters = computed<NotificationListFilters>(() => ({
 }))
 
 const { notifications, notificationsQuery } = useNotifications(filters)
+
+const displayedNotifications = computed(() => {
+  const items = notifications.value
+  const sticky = stickyNotification.value
+  if (!sticky) {
+    return items
+  }
+
+  const index = items.findIndex(item => item.id === sticky.id)
+  if (index >= 0) {
+    const next = [...items]
+    next[index] = { ...items[index]!, ...sticky }
+    return next
+  }
+
+  if (expandedId.value !== sticky.id) {
+    return items
+  }
+
+  return [sticky, ...items]
+})
 
 const tabs: { id: NotificationReadTab, labelKey: string }[] = [
   { id: 'all', labelKey: 'taskSettings.notificationsPanel.tabs.all' },
@@ -40,15 +64,30 @@ const isLoading = computed(
   () => notificationsQuery.isFetching.value && notificationsQuery.data.value == null,
 )
 
-async function onSelect(notificationId: number, alreadyRead: boolean) {
-  expandedId.value = notificationId
+async function onSelect(notification: AppNotification) {
+  if (expandedId.value === notification.id) {
+    expandedId.value = null
+    stickyNotification.value = null
+    return
+  }
 
-  if (alreadyRead) {
+  expandedId.value = notification.id
+  stickyNotification.value = notification
+
+  if (notification.read) {
     return
   }
 
   try {
-    await markRead.mutateAsync(notificationId)
+    await markRead.mutateAsync(notification.id)
+    if (stickyNotification.value?.id !== notification.id) {
+      return
+    }
+    stickyNotification.value = {
+      ...stickyNotification.value,
+      read: true,
+      read_at: stickyNotification.value.read_at ?? new Date().toISOString(),
+    }
   }
   catch {
     // Toast de error lo maneja useMarkNotificationRead
@@ -64,6 +103,7 @@ function openTask(taskId: number) {
 
 watch([readTab, selectedKey], () => {
   expandedId.value = null
+  stickyNotification.value = null
 })
 </script>
 
@@ -139,7 +179,7 @@ watch([readTab, selectedKey], () => {
     </p>
 
     <p
-      v-else-if="!notifications.length"
+      v-else-if="!displayedNotifications.length"
       class="text-sm text-muted-foreground py-4"
     >
       {{ t('taskSettings.notificationsPanel.empty') }}
@@ -150,12 +190,11 @@ watch([readTab, selectedKey], () => {
       class="space-y-2"
     >
       <TaskSettingsNotificationCard
-        v-for="notification in notifications"
+        v-for="notification in displayedNotifications"
         :key="notification.id"
         :notification="notification"
         :expanded="expandedId === notification.id"
-        :marking="markRead.isPending.value && expandedId === notification.id && !notification.read"
-        @select="onSelect(notification.id, notification.read)"
+        @select="onSelect(notification)"
         @open-task="openTask"
       />
     </div>

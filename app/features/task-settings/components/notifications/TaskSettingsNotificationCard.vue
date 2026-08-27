@@ -9,7 +9,6 @@ import { formatDateTime } from '~/shared/utils/date'
 const props = defineProps<{
   notification: AppNotification
   expanded?: boolean
-  marking?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -41,7 +40,6 @@ function goToTask() {
       color="neutral"
       variant="ghost"
       class="w-full justify-start rounded-none px-3.5 py-3 h-auto"
-      :loading="marking"
       :aria-expanded="expanded"
       :aria-label="t('taskSettings.notificationsPanel.select')"
       @click="emit('select')"
