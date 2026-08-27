@@ -1,17 +1,39 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+function stripTrailingSlashes(url: string): string {
+  return url.replace(/\/+$/, '')
+}
+
+function isLoopbackHost(url: string): boolean {
+  try {
+    const parsed = new URL(url.includes('://') ? url : `http://${url}`)
+    return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost'
+  }
+  catch {
+    return false
+  }
+}
+
 function resolveApiBaseUrl(): string {
-  if (process.env.NUXT_PUBLIC_API_BASE_URL) {
-    return process.env.NUXT_PUBLIC_API_BASE_URL
+  const explicit = process.env.NUXT_PUBLIC_API_BASE_URL?.trim()
+  if (explicit) {
+    return stripTrailingSlashes(explicit)
   }
 
-  const host = (process.env.API_URL ?? 'http://127.0.0.1').replace(/:+$/, '')
-  const port = process.env.API_PORT ?? '8000'
+  const host = stripTrailingSlashes(
+    (process.env.API_URL ?? 'http://127.0.0.1').trim().replace(/:+$/, ''),
+  )
 
   if (/:\d+$/.test(host)) {
     return host
   }
 
-  return `${host}:${port}`
+  // Puerto solo en local. En prod (Railway, etc.) el host público ya escucha en 443.
+  if (isLoopbackHost(host)) {
+    const port = process.env.API_PORT ?? '8000'
+    return `${host}:${port}`
+  }
+
+  return host
 }
 
 export default defineNuxtConfig({
