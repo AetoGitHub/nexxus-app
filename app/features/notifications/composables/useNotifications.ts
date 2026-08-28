@@ -20,6 +20,9 @@ function toQueryParams(filters: NotificationListFilters) {
   if (filters.task != null) {
     query.task = filters.task
   }
+  if (filters.page_size != null) {
+    query.page_size = filters.page_size
+  }
 
   return query
 }

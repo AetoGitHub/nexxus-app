@@ -70,6 +70,14 @@
     "generic": {
       "title": "Nueva notificación",
       "description": "Tienes una nueva notificación."
+    },
+    "preview": {
+      "title": "Notificaciones",
+      "unreadCount": "{count} sin leer",
+      "empty": "No hay notificaciones",
+      "loadError": "No se pudieron cargar las notificaciones",
+      "openTask": "Abrir tarea",
+      "unread": "Sin leer"
     }
   },
   "tasks": {
@@ -646,6 +654,19 @@
         "section": "Mensajes del sistema",
         "label": "Mostrar mensajes de sistema",
         "help": "Muestra notificaciones y mensajes generados automáticamente por el sistema"
+      },
+      "notificationSound": {
+        "section": "Sonido de notificación",
+        "help": "Elige el tono que suena al recibir una notificación",
+        "play": "Reproducir sonido",
+        "stop": "Detener sonido",
+        "savedTitle": "Sonido actualizado",
+        "savedDescription": "Este tono se usará en las notificaciones.",
+        "options": {
+          "chime": "Clásico",
+          "pop": "Pop",
+          "tone": "Alerta"
+        }
       },
       "capacity": {
         "section": "Capacidad del equipo",

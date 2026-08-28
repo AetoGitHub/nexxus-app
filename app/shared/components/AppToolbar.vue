@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
+import NotificationPreviewMenu from '~/features/notifications/components/NotificationPreviewMenu.vue'
 
 const { t } = useI18n()
 const { user } = useAuth()
 const { collapsed, toggle } = useSidebar()
 const colorMode = useColorMode()
 const route = useRoute()
-const { unreadCount, unreadCountLabel } = useNotificationState()
 
 const displayName = computed(() => user.value?.username ?? t('user.fallback'))
 const initials = computed(() => getInitials(displayName.value))
-const notificationsAriaLabel = computed(() =>
-  unreadCount.value > 0
-    ? t('toolbar.notificationsCount', { count: unreadCount.value })
-    : t('toolbar.notifications'),
-)
 
 const moduleName = computed(() => {
   if (route.path.startsWith('/dashboard')) {
@@ -107,23 +101,7 @@ const search = ref('')
         />
       </UChip>
 
-      <UChip
-        :show="unreadCount > 0"
-        :text="unreadCountLabel"
-        size="3xl"
-        color="error"
-        :ui="{ base: 'text-white h-auto px-1.5 py-0.5 leading-none' }"
-      >
-        <UButton
-          icon="i-lucide-bell"
-          color="neutral"
-          variant="ghost"
-          square
-          class="h-9 w-9 text-muted-foreground hover:text-foreground"
-          :aria-label="notificationsAriaLabel"
-          :title="notificationsAriaLabel"
-        />
-      </UChip>
+      <NotificationPreviewMenu />
 
       <ClientOnly>
         <button

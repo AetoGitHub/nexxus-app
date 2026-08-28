@@ -43,3 +43,30 @@ export function formatDateTime(value?: string | null, locale = 'es'): string {
   }
   return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
 }
+
+/** Tiempo relativo compacto para previews (hace 5 min, ayer…). */
+export function formatRelativeTime(value?: string | null, locale = 'es'): string {
+  const date = parseDate(value)
+  if (!date) {
+    return ''
+  }
+
+  const diffMs = date.getTime() - Date.now()
+  const absSec = Math.round(Math.abs(diffMs) / 1000)
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+
+  if (absSec < 60) {
+    return rtf.format(Math.round(diffMs / 1000), 'second')
+  }
+  if (absSec < 3600) {
+    return rtf.format(Math.round(diffMs / 60_000), 'minute')
+  }
+  if (absSec < 86_400) {
+    return rtf.format(Math.round(diffMs / 3_600_000), 'hour')
+  }
+  if (absSec < 86_400 * 7) {
+    return rtf.format(Math.round(diffMs / 86_400_000), 'day')
+  }
+
+  return formatShortDate(value, locale)
+}

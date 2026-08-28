@@ -2,6 +2,7 @@ import type { NotificationCounts } from '~/features/notifications/types/notifica
 
 export const notificationCountsQueryKey = ['notifications', 'counts'] as const
 export const notificationListQueryKey = ['notifications', 'list'] as const
+export const NOTIFICATION_PREVIEW_LIMIT = 8
 
 export function notificationBadgeCount(
   counts?: NotificationCounts | null,
