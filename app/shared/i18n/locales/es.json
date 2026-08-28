@@ -609,6 +609,12 @@
     "general": {
       "title": "Configuración general",
       "subtitle": "Comportamiento del módulo de Tareas",
+      "loadError": "No se pudo cargar la configuración",
+      "save": {
+        "successTitle": "Configuración actualizada",
+        "successDescription": "Tus preferencias se guardaron correctamente.",
+        "errorTitle": "No se pudo guardar la configuración"
+      },
       "creation": {
         "section": "Creación de tareas",
         "info": "Cualquier usuario puede crear tareas para sí mismo o asignarlas a otro usuario sin restricciones.",
@@ -635,6 +641,11 @@
       "defaultView": {
         "section": "Vista predeterminada",
         "help": "Vista que ve el usuario al entrar al módulo"
+      },
+      "systemMessages": {
+        "section": "Mensajes del sistema",
+        "label": "Mostrar mensajes de sistema",
+        "help": "Muestra notificaciones y mensajes generados automáticamente por el sistema"
       },
       "capacity": {
         "section": "Capacidad del equipo",

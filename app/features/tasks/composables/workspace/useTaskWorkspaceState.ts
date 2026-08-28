@@ -9,8 +9,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
-
-const PREFERRED_VIEW_KEY = 'nexxus:tasks:preferred-view'
+import { useProfileConfigurationStore } from '~/features/auth/composables/useProfileConfigurationStore'
 
 const VALID_VIEWS: TaskView[] = ['list', 'kanban', 'calendar']
 const VALID_GROUP_BY: TaskGroupBy[] = ['all', 'due', 'project', 'user', 'group']
@@ -124,8 +123,8 @@ export function useTaskWorkspaceState(options: {
   const { t } = useI18n()
   const route = useRoute()
   const router = useRouter()
-
-  const preferredView = useLocalStorage<TaskView>(PREFERRED_VIEW_KEY, 'list')
+  const { configuration } = useProfileConfigurationStore()
+  const defaultView = computed<TaskView>(() => configuration.value?.default_view ?? 'list')
 
   const excludedViews = computed(() => toValue(options.excludeViews) ?? [])
 
@@ -137,8 +136,11 @@ export function useTaskWorkspaceState(options: {
     return value
   }
 
-  // Prioridad: URL > default. localStorage se aplica en cliente si no hay param.
-  const initialView = resolveView(parseView(pickQueryString(route.query, 'view')))
+  // Prioridad: URL > configuración del perfil > lista.
+  const initialView = resolveView(
+    parseView(pickQueryString(route.query, 'view')),
+    defaultView.value,
+  )
   const initialGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
   const initialPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
   const initialCalendarMonth = parseCalendarMonth(route.query) ?? currentCalendarMonth()
@@ -163,19 +165,6 @@ export function useTaskWorkspaceState(options: {
 
   /** Evita bucles al sincronizar URL ↔ estado. */
   let syncingFromRoute = false
-
-  onMounted(() => {
-    if (parseView(pickQueryString(route.query, 'view'))) {
-      return
-    }
-
-    const stored = resolveView(
-      VALID_VIEWS.includes(preferredView.value) ? preferredView.value : null,
-    )
-    if (stored !== view.value) {
-      view.value = stored
-    }
-  })
 
   watch(debouncedSearch, (value) => {
     listFilters.value = {
@@ -220,7 +209,6 @@ export function useTaskWorkspaceState(options: {
   })
 
   watch([view, groupBy], ([value, selectedGroupBy]) => {
-    preferredView.value = value
     if (value === 'calendar' && selectedGroupBy === 'due') {
       groupBy.value = 'all'
     }
@@ -260,8 +248,11 @@ export function useTaskWorkspaceState(options: {
       route.query.month,
     ] as const,
     () => {
-      // Sin param = default (list / all / start), no conservar el estado previo.
-      const nextView = resolveView(parseView(pickQueryString(route.query, 'view')) ?? 'list')
+      // Sin param = configuración del perfil (o lista como fallback).
+      const nextView = resolveView(
+        parseView(pickQueryString(route.query, 'view')),
+        defaultView.value,
+      )
       const nextGroupBy = parseGroupBy(pickQueryString(route.query, 'groupBy')) ?? 'all'
       const nextPhase = parsePhase(pickQueryString(route.query, 'phase')) ?? 'start'
       const nextCalendarMonth = parseCalendarMonth(route.query) ?? currentCalendarMonth()

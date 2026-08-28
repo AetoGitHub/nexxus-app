@@ -609,6 +609,12 @@
     "general": {
       "title": "General settings",
       "subtitle": "Task module behavior",
+      "loadError": "Could not load the configuration",
+      "save": {
+        "successTitle": "Configuration updated",
+        "successDescription": "Your preferences were saved successfully.",
+        "errorTitle": "Could not save the configuration"
+      },
       "creation": {
         "section": "Task creation",
         "info": "Any user can create tasks for themselves or assign them to another user without restrictions.",
@@ -635,6 +641,11 @@
       "defaultView": {
         "section": "Default view",
         "help": "View users see when opening the module"
+      },
+      "systemMessages": {
+        "section": "System messages",
+        "label": "Show system messages",
+        "help": "Shows notifications and messages generated automatically by the system"
       },
       "capacity": {
         "section": "Team capacity",

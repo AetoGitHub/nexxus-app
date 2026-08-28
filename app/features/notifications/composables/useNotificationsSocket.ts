@@ -52,6 +52,8 @@ export function useNotificationsSocket() {
   const wsBaseUrl = useWsBaseUrl()
   const { requestTicket } = useWsTicket()
   const { isLoggedIn } = useAuth()
+  const route = useRoute()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { fetchNotification } = useNotificationDetail()
   const {
@@ -144,13 +146,29 @@ export function useNotificationsSocket() {
       },
     }[kind]
 
+    const openTask = notification.task == null
+      ? undefined
+      : () => {
+          const currentQuery = route.path === '/tasks' ? route.query : {}
+          void router.push({
+            path: '/tasks',
+            query: {
+              ...currentQuery,
+              task: String(notification.task),
+            },
+          })
+        }
+
     playNotificationSound()
-    toast.add({
+    const toastOptions = {
       title: t(meta.title),
       description: notification.message.trim() || t(meta.description),
       icon: meta.icon,
       color: 'primary',
-    })
+      onClick: openTask,
+    } as const
+
+    toast.add(toastOptions)
   }
 
   async function handleNotification(socketEvent: NotificationSocketEvent) {

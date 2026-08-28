@@ -34,6 +34,7 @@ export function useAuth() {
       token: data.token,
       user: data.user,
       organization: data.organization,
+      profile_configurations: data.profile_configurations,
     }
   }
 
