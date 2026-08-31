@@ -30,6 +30,7 @@ const {
   // requiresAttention, // oculto de momento: genera confusión
   closeApprovalsProgress,
   assignees,
+  projectName,
   isOverdue,
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
@@ -80,6 +81,15 @@ function onDragEnd() {
       </p>
 
       <div class="flex flex-wrap items-center gap-1.5">
+        <UBadge
+          v-if="projectName"
+          icon="i-lucide-folder-kanban"
+          :label="projectName"
+          color="primary"
+          variant="soft"
+          size="sm"
+          :aria-label="t('tasks.projectName', { name: projectName })"
+        />
         <UBadge
           :label="t(statusMeta.labelKey)"
           :color="statusMeta.color"

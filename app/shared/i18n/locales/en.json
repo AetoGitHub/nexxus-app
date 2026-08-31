@@ -130,6 +130,7 @@
       }
     },
     "comingSoon": "Coming soon",
+    "projectName": "Project {name}",
     "requiresAttention": "Needs attention",
     "complete": "Complete task",
     "empty": "No tasks",

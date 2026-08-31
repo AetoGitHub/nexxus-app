@@ -130,6 +130,7 @@
       }
     },
     "comingSoon": "Próximamente",
+    "projectName": "Proyecto {name}",
     "requiresAttention": "Requiere atención",
     "complete": "Completar tarea",
     "empty": "No hay tareas",
