@@ -1,3 +1,5 @@
+import { useToUpdateCounts } from '~/features/to-update/composables/useToUpdateCounts'
+
 export interface AppNavItem {
   labelKey: string
   icon: string
@@ -13,15 +15,23 @@ export interface AppNavItem {
  */
 export function useAppNav() {
   const route = useRoute()
+  const { actionableCount } = useToUpdateCounts()
 
-  const tasksItems: AppNavItem[] = [
+  const tasksItems = computed<AppNavItem[]>(() => [
     { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
     { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
     { labelKey: 'sidebar.tasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
     { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 }, // mock: aún sin ruta
-    { labelKey: 'sidebar.toUpdate', icon: 'i-lucide-refresh-cw', indent: true, to: '/tasks/pending-approval', bottomNav: false },
+    {
+      labelKey: 'sidebar.toUpdate',
+      icon: 'i-lucide-refresh-cw',
+      indent: true,
+      to: '/tasks/pending-approval',
+      badge: actionableCount.value,
+      bottomNav: false,
+    },
     { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
-  ]
+  ])
 
   const masterItems: AppNavItem[] = [
     { labelKey: 'sidebar.masterSettings', icon: 'i-lucide-settings-2', to: '/settings' },
@@ -29,7 +39,7 @@ export function useAppNav() {
 
   /** Ítems planos para la bottom nav (sin indentación; máx. ~6 para que quepan). */
   const bottomNavItems = computed<AppNavItem[]>(() =>
-    [...tasksItems, ...masterItems].filter(item => item.bottomNav !== false),
+    [...tasksItems.value, ...masterItems].filter(item => item.bottomNav !== false),
   )
 
   function isActive(item: AppNavItem): boolean {

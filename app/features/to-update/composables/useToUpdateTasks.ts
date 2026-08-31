@@ -1,7 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { TaskListFilters } from '~/features/tasks/types/task.types'
 import type {
-  ToUpdateCounts,
   ToUpdateSection,
   ToUpdateSectionId,
 } from '~/features/to-update/types/to-update.types'
@@ -10,6 +9,7 @@ import {
   TO_UPDATE_SECTION_ORDER,
 } from '~/features/to-update/utils/to-update-sections.util'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
+import { useToUpdateCounts } from '~/features/to-update/composables/useToUpdateCounts'
 import { extractResults } from '~/shared/utils/paginated.util'
 
 /**
@@ -21,7 +21,7 @@ export function useToUpdateTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   const api = createCompanyTasksApi(filters)
   const scope = ['close']
 
-  const counts = api.countsQuery<ToUpdateCounts>(scope, '/close/counts/')
+  const { counts } = useToUpdateCounts(filters)
   const pending = api.listQuery([...scope, 'pending'], '/close/pending/')
   const urgent = api.listQuery([...scope, 'urgent'], '/close/urgent/')
   const delayed = api.listQuery([...scope, 'delayed'], '/close/delayed/')
