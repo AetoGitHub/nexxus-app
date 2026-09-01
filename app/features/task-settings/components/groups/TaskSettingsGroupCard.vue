@@ -208,7 +208,7 @@ function onToggle() {
             v-if="!displayMembers.length"
             class="text-sm text-muted-foreground py-2"
           >
-            {{ t('taskSettings.groups.noMembers') }}
+            {{ t('common.noUsers') }}
           </p>
 
           <ul

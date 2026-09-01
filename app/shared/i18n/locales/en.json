@@ -20,7 +20,9 @@
   "common": {
     "settings": "Settings",
     "logout": "Sign out",
-    "back": "Back"
+    "back": "Back",
+    "noData": "No data",
+    "noUsers": "No users available"
   },
   "user": {
     "fallback": "User",

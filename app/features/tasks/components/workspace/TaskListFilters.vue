@@ -32,7 +32,11 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
   { value: 'trigger', dotClass: 'bg-warning' },
 ]
 
-const projectSelectItems = computed(() => projectItems.value)
+const projectSelectItems = computed(() =>
+  withEmptySelectItems(projectItems.value, t('common.noData'), {
+    pending: projects.isPending.value,
+  }),
+)
 
 const selectedTypes = computed(() => filters.value.type ?? [])
 

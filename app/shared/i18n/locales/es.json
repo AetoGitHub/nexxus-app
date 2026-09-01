@@ -20,7 +20,9 @@
   "common": {
     "settings": "Configuración",
     "logout": "Cerrar sesión",
-    "back": "Volver"
+    "back": "Volver",
+    "noData": "Sin datos",
+    "noUsers": "Sin usuarios disponibles"
   },
   "user": {
     "fallback": "Usuario",

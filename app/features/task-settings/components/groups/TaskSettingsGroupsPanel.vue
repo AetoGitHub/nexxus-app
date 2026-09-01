@@ -64,7 +64,7 @@ const { t } = useI18n()
       v-else-if="!groups.length"
       class="text-sm text-muted-foreground py-4"
     >
-      {{ t('taskSettings.groups.empty') }}
+      {{ t('common.noData') }}
     </p>
 
     <div

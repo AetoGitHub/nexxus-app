@@ -28,6 +28,18 @@ const memberItems = computed(() =>
   profileItems.value.filter(item => item.value !== form.value.manager),
 )
 
+const managerSelectItems = computed(() =>
+  withEmptySelectItems(profileItems.value, t('common.noUsers'), {
+    pending: profilesQuery.isPending.value,
+  }),
+)
+
+const memberSelectItems = computed(() =>
+  withEmptySelectItems(memberItems.value, t('common.noUsers'), {
+    pending: profilesQuery.isPending.value,
+  }),
+)
+
 /** USelect tipa el model como `number | undefined`; el form usa `null`. */
 const managerModel = computed({
   get: () => form.value.manager ?? undefined,
@@ -142,7 +154,7 @@ function onSubmit() {
         >
           <USelect
             v-model="managerModel"
-            :items="profileItems"
+            :items="managerSelectItems"
             :loading="profilesQuery.isPending.value"
             :placeholder="t('taskSettings.groupModal.managerPlaceholder')"
             class="w-full"
@@ -156,7 +168,7 @@ function onSubmit() {
           <USelect
             v-model="form.members"
             multiple
-            :items="memberItems"
+            :items="memberSelectItems"
             :loading="profilesQuery.isPending.value"
             :placeholder="t('taskSettings.groupModal.membersPlaceholder')"
             class="w-full"

@@ -287,6 +287,12 @@ const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdow
   () => open.value,
 )
 
+const userSelectItems = computed(() =>
+  withEmptySelectItems(userItems.value, t('common.noUsers'), {
+    pending: usersQuery.isPending.value,
+  }),
+)
+
 /** Valor especial: no es un proyecto, redirige a crear uno. */
 const CREATE_PROJECT_VALUE = '__create_project__'
 
@@ -903,7 +909,7 @@ const slideoverUi = computed(() => {
             <USelect
               v-model="state.taskReviewer"
               multiple
-              :items="userItems"
+              :items="userSelectItems"
               :placeholder="t('tasks.form.multipleClose.searchPlaceholder')"
               :loading="usersQuery.isPending.value"
               :disabled="isReadOnly"
@@ -974,7 +980,7 @@ const slideoverUi = computed(() => {
               <USelect
                 v-model="state.assignedTo"
                 multiple
-                :items="userItems"
+                :items="userSelectItems"
                 :placeholder="t('tasks.form.assignedToPlaceholder')"
                 :loading="usersQuery.isPending.value"
                 :disabled="isReadOnly"
