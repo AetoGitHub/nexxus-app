@@ -120,6 +120,7 @@ export interface Task {
   status: string
   priority: string
   project: number
+  project_name?: string
   project_color?: string
   group?: number | null
   group_name?: string

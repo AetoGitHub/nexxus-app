@@ -19,6 +19,7 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
     taskCloseApprovalsProgress(current.value.close_approvals),
   )
   const assignees = computed(() => current.value.assigned_to ?? [])
+  const projectName = computed(() => current.value.project_name?.trim() ?? '')
 
   const dueDiff = computed(() => diffInDays(current.value.limit_date))
   const isOverdue = computed(() => dueDiff.value !== null && dueDiff.value < 0)
@@ -51,6 +52,7 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
     requiresAttention,
     closeApprovalsProgress,
     assignees,
+    projectName,
     dueDiff,
     isOverdue,
     dueLabel,

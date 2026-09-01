@@ -70,6 +70,14 @@
     "generic": {
       "title": "New notification",
       "description": "You have a new notification."
+    },
+    "preview": {
+      "title": "Notifications",
+      "unreadCount": "{count} unread",
+      "empty": "There are no notifications",
+      "loadError": "Could not load notifications",
+      "openTask": "Open task",
+      "unread": "Unread"
     }
   },
   "tasks": {
@@ -122,6 +130,7 @@
       }
     },
     "comingSoon": "Coming soon",
+    "projectName": "Project {name}",
     "requiresAttention": "Needs attention",
     "complete": "Complete task",
     "empty": "No tasks",
@@ -646,6 +655,19 @@
         "section": "System messages",
         "label": "Show system messages",
         "help": "Shows notifications and messages generated automatically by the system"
+      },
+      "notificationSound": {
+        "section": "Notification sound",
+        "help": "Choose the tone that plays when you receive a notification",
+        "play": "Play sound",
+        "stop": "Stop sound",
+        "savedTitle": "Sound updated",
+        "savedDescription": "This tone will be used for notifications.",
+        "options": {
+          "chime": "Classic",
+          "pop": "Pop",
+          "tone": "Alert"
+        }
       },
       "capacity": {
         "section": "Team capacity",

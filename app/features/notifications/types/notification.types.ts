@@ -37,6 +37,7 @@ export interface NotificationListFilters {
   read?: boolean
   key?: string
   task?: number
+  page_size?: number
 }
 
 export type NotificationReadTab = 'all' | 'unread' | 'read'

@@ -4,6 +4,7 @@ import type {
   ProfileDefaultView,
   UpdateProfileConfigurationPayload,
 } from '~/shared/types/auth.types'
+import TaskSettingsNotificationSoundList from '~/features/task-settings/components/general/TaskSettingsNotificationSoundList.vue'
 
 const { t } = useI18n()
 const {
@@ -210,5 +211,7 @@ function updateSetting(
         </div>
       </section>
     </template>
+
+    <TaskSettingsNotificationSoundList />
   </div>
 </template>
