@@ -1045,7 +1045,11 @@ const slideoverUi = computed(() => {
             </div>
           </div>
 
-          <div class="rounded-lg border border-aeto-teal/40 bg-aeto-teal-light/40 p-4 space-y-4">
+          <!-- Oculto de momento: aún no funciona -->
+          <div
+            v-if="false"
+            class="rounded-lg border border-aeto-teal/40 bg-aeto-teal-light/40 p-4 space-y-4"
+          >
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-bot" class="h-4 w-4 text-aeto-teal-dark" />
               <p class="text-sm font-medium text-foreground">
