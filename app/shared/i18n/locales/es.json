@@ -487,7 +487,29 @@
     "title": "Selecciona un módulo",
     "subtitle": "Elige a dónde quieres ir",
     "openModule": "Abrir módulo",
-    "tasksDescription": "Gestiona y da seguimiento a tus tareas."
+    "tasksTitle": "Nexxus Tasks",
+    "tasksDescription": "Gestiona y da seguimiento a tus tareas.",
+    "configurationTitle": "Configuración",
+    "configurationDescription": "Administra organización, compañía y usuarios."
+  },
+  "configuration": {
+    "title": "Configuración",
+    "subtitle": "Elige qué quieres configurar",
+    "organization": {
+      "title": "Organización",
+      "description": "Estructura y datos de tu organización.",
+      "placeholder": "Organización"
+    },
+    "company": {
+      "title": "Compañía",
+      "description": "Información y sucursales de la compañía.",
+      "placeholder": "Compañía"
+    },
+    "user": {
+      "title": "Usuario",
+      "description": "Gestión de usuarios y perfiles.",
+      "placeholder": "Usuario"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

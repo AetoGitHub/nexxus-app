@@ -487,7 +487,29 @@
     "title": "Select a module",
     "subtitle": "Choose where you want to go",
     "openModule": "Open module",
-    "tasksDescription": "Manage and track your tasks."
+    "tasksTitle": "Nexxus Tasks",
+    "tasksDescription": "Manage and track your tasks.",
+    "configurationTitle": "Configuration",
+    "configurationDescription": "Manage organization, company, and users."
+  },
+  "configuration": {
+    "title": "Configuration",
+    "subtitle": "Choose what you want to configure",
+    "organization": {
+      "title": "Organization",
+      "description": "Structure and details of your organization.",
+      "placeholder": "Organization"
+    },
+    "company": {
+      "title": "Company",
+      "description": "Company information and branches.",
+      "placeholder": "Company"
+    },
+    "user": {
+      "title": "User",
+      "description": "User and profile management.",
+      "placeholder": "User"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
