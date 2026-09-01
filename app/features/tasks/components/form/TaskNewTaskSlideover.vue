@@ -287,12 +287,32 @@ const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdow
   () => open.value,
 )
 
-const projectItems = computed<SelectItem[]>(() =>
-  extractResults(projectsQuery.data.value).map(project => ({
+/** Valor especial: no es un proyecto, redirige a crear uno. */
+const CREATE_PROJECT_VALUE = '__create_project__'
+
+const projectItems = computed<SelectItem[]>(() => {
+  const items = extractResults(projectsQuery.data.value).map(project => ({
     label: project.name,
     value: project.id,
-  })),
-)
+  }))
+  if (!projectsQuery.isPending.value && items.length === 0) {
+    return [{
+      label: t('tasks.form.createProject'),
+      value: CREATE_PROJECT_VALUE,
+      icon: 'i-lucide-plus',
+    }]
+  }
+  return items
+})
+
+function onProjectSelect(value: string | number | undefined | null) {
+  if (value === CREATE_PROJECT_VALUE) {
+    open.value = false
+    void navigateTo('/tasks/settings')
+    return
+  }
+  state.project = typeof value === 'number' ? value : undefined
+}
 
 /** Grupo: del asignado, del detalle, o prefill Kanban (group-id + group-name). */
 const selectedGroupLabel = computed(() => {
@@ -922,12 +942,13 @@ const slideoverUi = computed(() => {
               :required="!isReadOnly"
             >
               <USelect
-                v-model="state.project"
+                :model-value="state.project"
                 :items="projectItems"
                 :placeholder="t('tasks.form.projectPlaceholder')"
                 :loading="projectsQuery.isPending.value"
                 :disabled="isReadOnly"
                 class="w-full"
+                @update:model-value="onProjectSelect"
               />
             </UFormField>
 

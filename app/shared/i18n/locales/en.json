@@ -387,7 +387,8 @@
         "evidence": "Request photographic evidence"
       },
       "project": "Project",
-      "projectPlaceholder": "Select a project..."
+      "projectPlaceholder": "Select a project...",
+      "createProject": "Create project"
     },
     "messenger": {
       "title": "Activity and chat",
