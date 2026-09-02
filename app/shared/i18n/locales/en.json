@@ -684,7 +684,136 @@
     "user": {
       "title": "User",
       "description": "User and profile management.",
-      "placeholder": "User"
+      "placeholder": "User",
+      "list": {
+        "title": "Users",
+        "subtitle": "Manage user profiles and access.",
+        "empty": "No users found",
+        "emptyDescription": "There are no registered users yet.",
+        "loadErrorTitle": "Users could not be loaded",
+        "retry": "Try again",
+        "openActions": "Open actions",
+        "emptyValue": "---",
+        "columns": {
+          "username": "Username",
+          "email": "Email",
+          "whatsapp": "WhatsApp"
+        }
+      },
+      "fields": {
+        "username": "Username",
+        "password": "Password",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Personal email",
+        "corporateEmail": "Corporate email",
+        "whatsapp": "WhatsApp"
+      },
+      "placeholders": {
+        "username": "E.g. tuco_salamanca",
+        "password": "Enter a secure password",
+        "firstName": "E.g. John",
+        "lastName": "E.g. Smith",
+        "email": "E.g. john{'@'}personal.com",
+        "corporateEmail": "E.g. john{'@'}company.com",
+        "whatsapp": "E.g. +521234567890"
+      },
+      "validation": {
+        "usernameRequired": "Username is required.",
+        "passwordRequired": "Password is required.",
+        "passwordMin": "Password must be at least 8 characters long.",
+        "passwordNumber": "Password must include at least one number.",
+        "passwordLowercase": "Password must include at least one lowercase letter.",
+        "passwordUppercase": "Password must include at least one uppercase letter.",
+        "emailInvalid": "Enter a valid personal email.",
+        "corporateEmailInvalid": "Enter a valid corporate email.",
+        "currentPasswordRequired": "Current password is required.",
+        "confirmationRequired": "Confirm the new password.",
+        "passwordsMismatch": "The new passwords do not match."
+      },
+      "create": {
+        "toolbarButton": "Create",
+        "title": "Create user",
+        "description": "Complete the form to register a user.",
+        "submit": "Create user",
+        "successTitle": "User created",
+        "successDescription": "The user was created successfully.",
+        "errorTitle": "User could not be created"
+      },
+      "bulkCreate": {
+        "action": "Create multiple users",
+        "title": "Create multiple users",
+        "subtitle": "Register multiple users for a company with a single form.",
+        "infoTitle": "Bulk user creation",
+        "infoDescription": "Select a company and add the users. Passwords will be generated automatically by the system.",
+        "company": "Company",
+        "companyPlaceholder": "Select a company",
+        "companySearch": "Search company...",
+        "companyEmpty": "No companies found",
+        "companyLoadError": "Companies could not be loaded",
+        "companyLoadingMore": "Loading more companies...",
+        "usersTitle": "New users",
+        "usersDescription": "All fields are required for each user.",
+        "addUser": "Add another user",
+        "removeUser": "Remove user {number}",
+        "submit": "Create users",
+        "successTitle": "Users created",
+        "successDescription": "The users were created successfully.",
+        "errorTitle": "Users could not be created",
+        "organizationUnavailableTitle": "Organization unavailable",
+        "organizationUnavailableDescription": "No active organization was found to create the users.",
+        "validation": {
+          "companyRequired": "Select a company.",
+          "usernameRequired": "Username is required.",
+          "emailRequired": "Email is required.",
+          "emailInvalid": "Enter a valid email.",
+          "whatsappRequired": "WhatsApp is required.",
+          "usersMin": "Add at least one user."
+        }
+      },
+      "update": {
+        "edit": "Edit",
+        "title": "Edit user",
+        "description": "Update the user information.",
+        "submit": "Save changes",
+        "successTitle": "User updated",
+        "successDescription": "The changes were saved successfully.",
+        "errorTitle": "User could not be updated",
+        "loadErrorTitle": "User could not be loaded"
+      },
+      "password": {
+        "action": "Change password",
+        "title": "Change password",
+        "description": "Enter the current password and set a new one.",
+        "current": "Current password",
+        "currentPlaceholder": "Enter the current password",
+        "new": "New password",
+        "newPlaceholder": "Enter the new password",
+        "confirm": "Confirm new password",
+        "confirmPlaceholder": "Repeat the new password",
+        "submit": "Change password",
+        "successTitle": "Password updated",
+        "successDescription": "The password was changed successfully.",
+        "errorTitle": "Password could not be changed"
+      },
+      "passwordStrength": {
+        "empty": "Enter a password",
+        "weak": "Weak password",
+        "medium": "Medium password",
+        "strong": "Strong password",
+        "mustContain": "Must contain:",
+        "requirementsLabel": "Password requirements",
+        "show": "Show password",
+        "hide": "Hide password",
+        "met": "Requirement met",
+        "notMet": "Requirement not met",
+        "requirements": {
+          "length": "At least 8 characters",
+          "number": "At least 1 number",
+          "lowercase": "At least 1 lowercase letter",
+          "uppercase": "At least 1 uppercase letter"
+        }
+      }
     }
   },
   "dashboard": {

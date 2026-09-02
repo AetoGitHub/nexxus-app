@@ -35,6 +35,13 @@ function createInitialState(): CompanySchema {
 
 const state = reactive<CompanySchema>(createInitialState())
 
+const nameModel = computed({
+  get: () => state.name,
+  set: (value: string) => {
+    state.name = value.toLocaleUpperCase()
+  },
+})
+
 function addContact() {
   state.contacts.push({ name: '', phone: '', email: '' })
 }
@@ -109,7 +116,7 @@ async function onSubmit(event: FormSubmitEvent<CompanySchema>) {
           required
         >
           <UInput
-            v-model="state.name"
+            v-model="nameModel"
             :placeholder="t('configuration.company.create.placeholders.name')"
             class="w-full"
           />

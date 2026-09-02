@@ -18,6 +18,13 @@ function createInitialState(): OrganizationSchema {
 
 const state = reactive<OrganizationSchema>(createInitialState())
 
+const nameModel = computed({
+  get: () => state.name,
+  set: (value: string) => {
+    state.name = value.toLocaleUpperCase()
+  },
+})
+
 function resetForm() {
   Object.assign(state, createInitialState())
   form.value?.clear()
@@ -69,7 +76,7 @@ async function onSubmit(event: FormSubmitEvent<OrganizationSchema>) {
           required
         >
           <UInput
-            v-model="state.name"
+            v-model="nameModel"
             :placeholder="t('configuration.organization.create.placeholders.name')"
             class="w-full"
           />

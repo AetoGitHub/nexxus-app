@@ -684,7 +684,136 @@
     "user": {
       "title": "Usuario",
       "description": "Gestión de usuarios y perfiles.",
-      "placeholder": "Usuario"
+      "placeholder": "Usuario",
+      "list": {
+        "title": "Usuarios",
+        "subtitle": "Administra los perfiles y accesos de los usuarios.",
+        "empty": "No se encontraron usuarios",
+        "emptyDescription": "Todavía no hay usuarios registrados.",
+        "loadErrorTitle": "No se pudieron cargar los usuarios",
+        "retry": "Reintentar",
+        "openActions": "Abrir acciones",
+        "emptyValue": "---",
+        "columns": {
+          "username": "Usuario",
+          "email": "Correo",
+          "whatsapp": "WhatsApp"
+        }
+      },
+      "fields": {
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "firstName": "Nombre",
+        "lastName": "Apellidos",
+        "email": "Correo personal",
+        "corporateEmail": "Correo corporativo",
+        "whatsapp": "WhatsApp"
+      },
+      "placeholders": {
+        "username": "Ej. tuco_salamanca",
+        "password": "Ingresa una contraseña segura",
+        "firstName": "Ej. Juan",
+        "lastName": "Ej. Pérez",
+        "email": "Ej. juan{'@'}personal.com",
+        "corporateEmail": "Ej. juan{'@'}empresa.com",
+        "whatsapp": "Ej. +521234567890"
+      },
+      "validation": {
+        "usernameRequired": "El nombre de usuario es obligatorio.",
+        "passwordRequired": "La contraseña es obligatoria.",
+        "passwordMin": "La contraseña debe tener al menos 8 caracteres.",
+        "passwordNumber": "La contraseña debe incluir al menos un número.",
+        "passwordLowercase": "La contraseña debe incluir al menos una minúscula.",
+        "passwordUppercase": "La contraseña debe incluir al menos una mayúscula.",
+        "emailInvalid": "Ingresa un correo personal válido.",
+        "corporateEmailInvalid": "Ingresa un correo corporativo válido.",
+        "currentPasswordRequired": "La contraseña actual es obligatoria.",
+        "confirmationRequired": "Confirma la contraseña nueva.",
+        "passwordsMismatch": "Las contraseñas nuevas no coinciden."
+      },
+      "create": {
+        "toolbarButton": "Crear",
+        "title": "Crear usuario",
+        "description": "Completa el formulario para registrar un usuario.",
+        "submit": "Crear usuario",
+        "successTitle": "Usuario creado",
+        "successDescription": "El usuario se creó correctamente.",
+        "errorTitle": "No se pudo crear el usuario"
+      },
+      "bulkCreate": {
+        "action": "Crear múltiples usuarios",
+        "title": "Crear múltiples usuarios",
+        "subtitle": "Registra varios usuarios en una compañía mediante un solo formulario.",
+        "infoTitle": "Creación masiva de usuarios",
+        "infoDescription": "Selecciona una compañía y agrega los usuarios. Las contraseñas serán generadas automáticamente por el sistema.",
+        "company": "Compañía",
+        "companyPlaceholder": "Selecciona una compañía",
+        "companySearch": "Buscar compañía...",
+        "companyEmpty": "No se encontraron compañías",
+        "companyLoadError": "No se pudieron cargar las compañías",
+        "companyLoadingMore": "Cargando más compañías...",
+        "usersTitle": "Usuarios nuevos",
+        "usersDescription": "Todos los campos son obligatorios para cada usuario.",
+        "addUser": "Agregar otro usuario",
+        "removeUser": "Eliminar usuario {number}",
+        "submit": "Crear usuarios",
+        "successTitle": "Usuarios creados",
+        "successDescription": "Los usuarios se crearon correctamente.",
+        "errorTitle": "No se pudieron crear los usuarios",
+        "organizationUnavailableTitle": "Organización no disponible",
+        "organizationUnavailableDescription": "No se encontró una organización activa para crear los usuarios.",
+        "validation": {
+          "companyRequired": "Selecciona una compañía.",
+          "usernameRequired": "El nombre de usuario es obligatorio.",
+          "emailRequired": "El correo es obligatorio.",
+          "emailInvalid": "Ingresa un correo válido.",
+          "whatsappRequired": "El WhatsApp es obligatorio.",
+          "usersMin": "Agrega al menos un usuario."
+        }
+      },
+      "update": {
+        "edit": "Editar",
+        "title": "Editar usuario",
+        "description": "Actualiza la información del usuario.",
+        "submit": "Guardar cambios",
+        "successTitle": "Usuario actualizado",
+        "successDescription": "Los cambios se guardaron correctamente.",
+        "errorTitle": "No se pudo actualizar el usuario",
+        "loadErrorTitle": "No se pudo cargar el usuario"
+      },
+      "password": {
+        "action": "Cambiar contraseña",
+        "title": "Cambiar contraseña",
+        "description": "Ingresa la contraseña actual y establece una nueva.",
+        "current": "Contraseña actual",
+        "currentPlaceholder": "Ingresa la contraseña actual",
+        "new": "Contraseña nueva",
+        "newPlaceholder": "Ingresa la contraseña nueva",
+        "confirm": "Confirmar contraseña nueva",
+        "confirmPlaceholder": "Repite la contraseña nueva",
+        "submit": "Cambiar contraseña",
+        "successTitle": "Contraseña actualizada",
+        "successDescription": "La contraseña se cambió correctamente.",
+        "errorTitle": "No se pudo cambiar la contraseña"
+      },
+      "passwordStrength": {
+        "empty": "Ingresa una contraseña",
+        "weak": "Contraseña débil",
+        "medium": "Contraseña media",
+        "strong": "Contraseña segura",
+        "mustContain": "Debe contener:",
+        "requirementsLabel": "Requisitos de contraseña",
+        "show": "Mostrar contraseña",
+        "hide": "Ocultar contraseña",
+        "met": "Requisito cumplido",
+        "notMet": "Requisito no cumplido",
+        "requirements": {
+          "length": "Al menos 8 caracteres",
+          "number": "Al menos 1 número",
+          "lowercase": "Al menos 1 letra minúscula",
+          "uppercase": "Al menos 1 letra mayúscula"
+        }
+      }
     }
   },
   "dashboard": {
