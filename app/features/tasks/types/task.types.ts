@@ -10,7 +10,28 @@ export type TaskType =
   | 'bug'
 
 /** Tipos disponibles al crear una tarea desde el slideover. */
-export type NewTaskFormType = Extract<TaskType, 'manual' | 'volume' | 'multiple_close'>
+export type NewTaskFormType = Extract<TaskType, 'manual' | 'volume' | 'multiple_close' | 'repeat'>
+
+/** Frecuencia de una tarea repetitiva. */
+export type RepeatFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+/** Día de la semana ISO: 1=lunes … 7=domingo. */
+export type RepeatWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+/** Semana del mes: 1-4 o -1 (última). */
+export type RepeatWeekOfMonth = 1 | 2 | 3 | 4 | -1
+
+/** Mes del año: 1=enero … 12=diciembre. */
+export type RepeatMonth = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+
+/** Configuración de recurrencia enviada en create/update cuando type=repeat. */
+export interface TaskRepeatConfig {
+  frequency: RepeatFrequency
+  every: number
+  weekday: RepeatWeekday | null
+  week_of_month: RepeatWeekOfMonth | null
+  on_month: RepeatMonth | null
+}
 
 /** Esfuerzo seleccionado en el formulario de creación. */
 export type TaskEffort = 'quick' | 'normal' | 'complex'
@@ -29,6 +50,7 @@ export interface CreateTaskPayload {
   group: number
   assigned_to: number[]
   task_reviewer?: number[]
+  repeat_config?: TaskRepeatConfig
 }
 
 /** Payload de PATCH /api/tasks/:id/update/. */
@@ -43,6 +65,7 @@ export interface UpdateTaskPayload {
   project: number
   assigned_to: number[]
   task_reviewer?: number[]
+  repeat_config?: TaskRepeatConfig
 }
 
 /** PATCH parcial para mover vencimiento en Kanban Due. */
@@ -151,6 +174,7 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   effort: TaskEffort | string | null
   assigned_to: number[]
   recurrence: boolean
+  repeat_config?: TaskRepeatConfig | null
   finish_at: string | null
   updated_at: string
   process_tasks: TaskProcessEntry[]
