@@ -498,12 +498,130 @@
     "organization": {
       "title": "Organización",
       "description": "Estructura y datos de tu organización.",
-      "placeholder": "Organización"
+      "placeholder": "Organización",
+      "list": {
+        "title": "Organizaciones",
+        "subtitle": "Consulta las organizaciones registradas en la plataforma.",
+        "empty": "No se encontraron organizaciones",
+        "emptyDescription": "Todavía no hay organizaciones registradas.",
+        "loadErrorTitle": "No se pudieron cargar las organizaciones",
+        "retry": "Reintentar",
+        "openActions": "Abrir acciones",
+        "columns": {
+          "name": "Nombre",
+          "createdAt": "Fecha de registro"
+        }
+      },
+      "create": {
+        "toolbarButton": "Crear",
+        "title": "Crear organización",
+        "description": "Completa el formulario para registrar una organización.",
+        "submit": "Crear organización",
+        "successTitle": "Organización creada",
+        "successDescription": "La organización se creó correctamente.",
+        "errorTitle": "No se pudo crear la organización",
+        "fields": {
+          "name": "Nombre"
+        },
+        "placeholders": {
+          "name": "Ej. NEXXUS TECHNOLOGY"
+        },
+        "validation": {
+          "nameRequired": "El nombre es obligatorio."
+        }
+      },
+      "update": {
+        "edit": "Editar",
+        "title": "Editar organización",
+        "description": "Actualiza la información de la organización.",
+        "submit": "Guardar cambios",
+        "successTitle": "Organización actualizada",
+        "successDescription": "Los cambios se guardaron correctamente.",
+        "errorTitle": "No se pudo actualizar la organización",
+        "loadErrorTitle": "No se pudo cargar la organización"
+      }
     },
     "company": {
       "title": "Compañía",
       "description": "Información y sucursales de la compañía.",
-      "placeholder": "Compañía"
+      "placeholder": "Compañía",
+      "list": {
+        "title": "Compañías",
+        "subtitle": "Consulta la información fiscal y de contacto de las compañías de tu organización.",
+        "empty": "No se encontraron compañías",
+        "emptyDescription": "Todavía no hay compañías registradas en tu organización.",
+        "loadErrorTitle": "No se pudieron cargar las compañías",
+        "retry": "Reintentar",
+        "openActions": "Abrir acciones",
+        "columns": {
+          "name": "Nombre comercial",
+          "legalName": "Razón social",
+          "taxRegime": "Régimen fiscal",
+          "address": "Dirección",
+          "phone": "Teléfono",
+          "createdAt": "Fecha de registro"
+        }
+      },
+      "create": {
+        "toolbarButton": "Crear",
+        "title": "Crear compañía",
+        "description": "Completa el formulario para registrar una compañía.",
+        "submit": "Crear compañía",
+        "successTitle": "Compañía creada",
+        "successDescription": "La compañía se creó correctamente.",
+        "errorTitle": "No se pudo crear la compañía",
+        "organizationUnavailableTitle": "Organización no disponible",
+        "organizationUnavailableDescription": "No se encontró una organización activa para registrar la compañía.",
+        "fields": {
+          "name": "Nombre comercial",
+          "legalName": "Razón social",
+          "taxRegime": "Régimen fiscal",
+          "address": "Dirección",
+          "phone": "Teléfono",
+          "contactName": "Nombre",
+          "contactPhone": "Teléfono",
+          "contactEmail": "Correo electrónico"
+        },
+        "placeholders": {
+          "name": "Ej. NEXXUS TECHNOLOGY",
+          "legalName": "Ej. Nombre Comercial Sociedad Anónima",
+          "taxRegime": "Ej. 601 - General de Ley Personas Morales",
+          "address": "Ej. Av. Siempre Viva 123, CDMX",
+          "phone": "Ej. 5555555555",
+          "contactName": "Ej. Juan Pérez",
+          "contactPhone": "Ej. 5511112222",
+          "contactEmail": "Ej. juan{'@'}empresa.com"
+        },
+        "contacts": {
+          "title": "Contactos",
+          "description": "Agrega las personas de contacto de la compañía.",
+          "add": "Agregar",
+          "empty": "No se han agregado contactos.",
+          "item": "Contacto {number}",
+          "remove": "Eliminar contacto {number}"
+        },
+        "validation": {
+          "nameRequired": "El nombre comercial es obligatorio.",
+          "legalNameRequired": "La razón social es obligatoria.",
+          "taxRegimeRequired": "El régimen fiscal es obligatorio.",
+          "addressRequired": "La dirección es obligatoria.",
+          "phoneRequired": "El teléfono es obligatorio.",
+          "contactNameRequired": "El nombre del contacto es obligatorio.",
+          "contactPhoneRequired": "El teléfono del contacto es obligatorio.",
+          "contactEmailRequired": "El correo del contacto es obligatorio.",
+          "contactEmailInvalid": "Ingresa un correo electrónico válido."
+        }
+      },
+      "update": {
+        "edit": "Editar",
+        "title": "Editar compañía",
+        "description": "Actualiza la información de la compañía.",
+        "submit": "Guardar cambios",
+        "successTitle": "Compañía actualizada",
+        "successDescription": "Los cambios se guardaron correctamente.",
+        "errorTitle": "No se pudo actualizar la compañía",
+        "loadErrorTitle": "No se pudo cargar la compañía"
+      }
     },
     "user": {
       "title": "Usuario",
