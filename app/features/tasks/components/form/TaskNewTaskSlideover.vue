@@ -22,7 +22,6 @@ import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReview
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatConfigFields.vue'
-import { extractResults } from '~/shared/utils/paginated.util'
 import {
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
@@ -286,7 +285,7 @@ const nexxtepSuggestions = [
 const projectSearchTerm = ref('')
 const debouncedProjectSearch = refDebounced(projectSearchTerm, 300)
 
-const { projects: projectsQuery, items: projectItems } = useProjectsDropdown({
+const { projects: projectsQuery, items: fetchedProjectItems } = useProjectsDropdown({
   enabled: () => open.value,
   name: debouncedProjectSearch,
 })
@@ -304,11 +303,8 @@ const userSelectItems = computed(() =>
 /** Valor especial: no es un proyecto, redirige a crear uno. */
 const CREATE_PROJECT_VALUE = '__create_project__'
 
-const projectItems = computed<SelectItem[]>(() => {
-  const items = extractResults(projectsQuery.data.value).map(project => ({
-    label: project.name,
-    value: project.id,
-  }))
+const projectItems = computed(() => {
+  const items = fetchedProjectItems.value
   if (!projectsQuery.isPending.value && items.length === 0) {
     return [{
       label: t('tasks.form.createProject'),
@@ -966,7 +962,7 @@ const slideoverUi = computed(() => {
               :required="!isReadOnly"
             >
               <USelectMenu
-                v-model="state.project"
+                :model-value="state.project"
                 v-model:search-term="projectSearchTerm"
                 value-key="value"
                 :items="projectItems"

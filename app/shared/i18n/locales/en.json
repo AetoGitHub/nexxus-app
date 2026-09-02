@@ -444,7 +444,8 @@
       },
       "project": "Project",
       "projectPlaceholder": "Select a project...",
-      "projectSearchPlaceholder": "Search project..."
+      "projectSearchPlaceholder": "Search project...",
+      "createProject": "Create project"
     },
     "messenger": {
       "title": "Activity and chat",
