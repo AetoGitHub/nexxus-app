@@ -325,6 +325,7 @@
       "groupPlaceholder": "Se asigna según el usuario seleccionado",
       "assignedTo": "Asignado a",
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
+      "assignedToSearchPlaceholder": "Buscar usuario...",
       "dueDate": "Fecha Límite",
       "datePlaceholder": "Selecciona una fecha",
       "markUrgent": "Marcar como urgente",
@@ -387,7 +388,8 @@
         "evidence": "Solicitar evidencia fotográfica"
       },
       "project": "Proyecto",
-      "projectPlaceholder": "Selecciona un proyecto..."
+      "projectPlaceholder": "Selecciona un proyecto...",
+      "projectSearchPlaceholder": "Buscar proyecto..."
     },
     "messenger": {
       "title": "Actividad y chat",

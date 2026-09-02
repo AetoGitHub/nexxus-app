@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { useQuery } from '@tanstack/vue-query'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { SelectItem } from '@nuxt/ui'
-import type { PaginatedResponse } from '~/shared/types/api.types'
 import type {
   CloseTaskProcessStatus,
   NewTaskFormType,
-  ProjectDropdown,
   ReviewDecisionStatus,
   TaskEffort,
   TaskGroupBy,
@@ -14,6 +10,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
+import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
@@ -24,7 +21,6 @@ import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenP
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
-import { extractResults } from '~/shared/utils/paginated.util'
 import {
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
@@ -73,8 +69,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user, selectedCompanyId } = useAuth()
-const { $api } = useNuxtApp()
+const { user } = useAuth()
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -277,21 +272,16 @@ const nexxtepSuggestions = [
   { key: 'tasks.form.nexxtepSuggestions.evidence', confidence: 74, dotClass: 'bg-orange-500' },
 ] as const
 
-const projectsQuery = useQuery({
-  queryKey: computed(() => ['tasks', selectedCompanyId.value, 'projects', 'dropdown', 'new-task']),
-  queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`/api/tools/dropdown/projects/company/${selectedCompanyId.value}/`),
-  enabled: computed(() => open.value && selectedCompanyId.value != null),
+const projectSearchTerm = ref('')
+const debouncedProjectSearch = refDebounced(projectSearchTerm, 300)
+
+const { projects: projectsQuery, items: projectItems } = useProjectsDropdown({
+  enabled: () => open.value,
+  name: debouncedProjectSearch,
 })
 
 const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
   () => open.value,
-)
-
-const projectItems = computed<SelectItem[]>(() =>
-  extractResults(projectsQuery.data.value).map(project => ({
-    label: project.name,
-    value: project.id,
-  })),
 )
 
 /** Grupo: del asignado, del detalle, o prefill Kanban (group-id + group-name). */
@@ -527,6 +517,7 @@ watch(() => state.urgent, (isUrgent) => {
 watch(open, (isOpen) => {
   if (!isOpen) {
     resetForm()
+    projectSearchTerm.value = ''
     submitError.value = ''
     startProcessModalOpen.value = false
     closeProcessModalOpen.value = false
@@ -921,12 +912,20 @@ const slideoverUi = computed(() => {
               name="project"
               :required="!isReadOnly"
             >
-              <USelect
+              <USelectMenu
                 v-model="state.project"
+                v-model:search-term="projectSearchTerm"
+                value-key="value"
                 :items="projectItems"
                 :placeholder="t('tasks.form.projectPlaceholder')"
                 :loading="projectsQuery.isPending.value"
                 :disabled="isReadOnly"
+                :search-input="{
+                  icon: 'i-lucide-search',
+                  placeholder: t('tasks.form.projectSearchPlaceholder'),
+                  loading: projectsQuery.isFetching.value,
+                }"
+                ignore-filter
                 class="w-full"
               />
             </UFormField>
@@ -950,14 +949,19 @@ const slideoverUi = computed(() => {
               name="assignedTo"
               :required="!isReadOnly"
             >
-              <USelect
+              <USelectMenu
                 v-model="state.assignedTo"
                 multiple
+                value-key="value"
                 :items="userItems"
                 :placeholder="t('tasks.form.assignedToPlaceholder')"
                 :loading="usersQuery.isPending.value"
                 :disabled="isReadOnly"
                 icon="i-lucide-user-search"
+                :search-input="{
+                  icon: 'i-lucide-search',
+                  placeholder: t('tasks.form.assignedToSearchPlaceholder'),
+                }"
                 class="w-full"
               />
             </UFormField>
