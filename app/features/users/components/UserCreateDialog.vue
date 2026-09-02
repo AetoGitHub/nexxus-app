@@ -33,6 +33,13 @@ function createInitialState(): CreateUserSchema {
 
 const state = reactive<CreateUserSchema>(createInitialState())
 
+const usernameModel = computed({
+  get: () => state.username,
+  set: (value: string) => {
+    state.username = value.toLocaleUpperCase()
+  },
+})
+
 function resetForm() {
   Object.assign(state, createInitialState())
   form.value?.clear()
@@ -84,7 +91,7 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
           required
         >
           <UInput
-            v-model="state.username"
+            v-model="usernameModel"
             :placeholder="t('configuration.user.placeholders.username')"
             autocomplete="username"
             class="w-full"

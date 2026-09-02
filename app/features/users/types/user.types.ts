@@ -1,6 +1,11 @@
 export interface UserProfile {
   id: number
   username: string
+  first_name: string
+  last_name: string
+  email: string
+  corporate_email: string
+  whatsapp: string
   selected_company: number | null
 }
 

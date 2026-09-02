@@ -22,6 +22,13 @@ const {
   refetch,
 } = useUsers()
 
+function displayCell(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) {
+    return t('configuration.user.list.emptyValue')
+  }
+  return value
+}
+
 function rowMenuItems(user: UserProfile): DropdownMenuItem[][] {
   return [
     [
@@ -53,15 +60,17 @@ const columns = computed<TableColumn<UserProfile>[]>(() => [
   {
     accessorKey: 'username',
     header: t('configuration.user.list.columns.username'),
-    cell: ({ row }) => row.getValue('username') ?? '-',
+    cell: ({ row }) => displayCell(row.getValue('username')),
   },
   {
-    accessorKey: 'selected_company',
-    header: t('configuration.user.list.columns.selectedCompany'),
-    cell: ({ row }) => {
-      const companyId = row.original.selected_company
-      return companyId ? `#${companyId}` : '-'
-    },
+    accessorKey: 'email',
+    header: t('configuration.user.list.columns.email'),
+    cell: ({ row }) => displayCell(row.getValue('email')),
+  },
+  {
+    accessorKey: 'whatsapp',
+    header: t('configuration.user.list.columns.whatsapp'),
+    cell: ({ row }) => displayCell(row.getValue('whatsapp')),
   },
 ])
 

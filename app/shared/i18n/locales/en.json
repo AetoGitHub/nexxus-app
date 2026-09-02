@@ -693,9 +693,11 @@
         "loadErrorTitle": "Users could not be loaded",
         "retry": "Try again",
         "openActions": "Open actions",
+        "emptyValue": "---",
         "columns": {
           "username": "Username",
-          "selectedCompany": "Selected company"
+          "email": "Email",
+          "whatsapp": "WhatsApp"
         }
       },
       "fields": {

@@ -693,9 +693,11 @@
         "loadErrorTitle": "No se pudieron cargar los usuarios",
         "retry": "Reintentar",
         "openActions": "Abrir acciones",
+        "emptyValue": "---",
         "columns": {
           "username": "Usuario",
-          "selectedCompany": "Compañía seleccionada"
+          "email": "Correo",
+          "whatsapp": "WhatsApp"
         }
       },
       "fields": {
