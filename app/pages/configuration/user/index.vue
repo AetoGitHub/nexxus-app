@@ -23,6 +23,13 @@ useSeoMeta({
       }"
     >
       <template #right>
+        <UButton
+          to="/configuration/user/bulk-create"
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-users"
+          :label="t('configuration.user.bulkCreate.action')"
+        />
         <UserCreateDialog />
       </template>
     </UDashboardToolbar>

@@ -46,3 +46,15 @@ export interface ChangePasswordVariables {
   id: number
   payload: ChangePasswordPayload
 }
+
+export interface BulkCreateUserItem {
+  username: string
+  email: string
+  whatsapp: string
+}
+
+export interface BulkCreateUsersPayload {
+  organization: number
+  company: number
+  users: BulkCreateUserItem[]
+}

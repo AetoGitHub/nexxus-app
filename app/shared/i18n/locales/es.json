@@ -740,6 +740,37 @@
         "successDescription": "El usuario se creó correctamente.",
         "errorTitle": "No se pudo crear el usuario"
       },
+      "bulkCreate": {
+        "action": "Crear múltiples usuarios",
+        "title": "Crear múltiples usuarios",
+        "subtitle": "Registra varios usuarios en una compañía mediante un solo formulario.",
+        "infoTitle": "Creación masiva de usuarios",
+        "infoDescription": "Selecciona una compañía y agrega los usuarios. Las contraseñas serán generadas automáticamente por el sistema.",
+        "company": "Compañía",
+        "companyPlaceholder": "Selecciona una compañía",
+        "companySearch": "Buscar compañía...",
+        "companyEmpty": "No se encontraron compañías",
+        "companyLoadError": "No se pudieron cargar las compañías",
+        "companyLoadingMore": "Cargando más compañías...",
+        "usersTitle": "Usuarios nuevos",
+        "usersDescription": "Todos los campos son obligatorios para cada usuario.",
+        "addUser": "Agregar otro usuario",
+        "removeUser": "Eliminar usuario {number}",
+        "submit": "Crear usuarios",
+        "successTitle": "Usuarios creados",
+        "successDescription": "Los usuarios se crearon correctamente.",
+        "errorTitle": "No se pudieron crear los usuarios",
+        "organizationUnavailableTitle": "Organización no disponible",
+        "organizationUnavailableDescription": "No se encontró una organización activa para crear los usuarios.",
+        "validation": {
+          "companyRequired": "Selecciona una compañía.",
+          "usernameRequired": "El nombre de usuario es obligatorio.",
+          "emailRequired": "El correo es obligatorio.",
+          "emailInvalid": "Ingresa un correo válido.",
+          "whatsappRequired": "El WhatsApp es obligatorio.",
+          "usersMin": "Agrega al menos un usuario."
+        }
+      },
       "update": {
         "edit": "Editar",
         "title": "Editar usuario",

@@ -740,6 +740,37 @@
         "successDescription": "The user was created successfully.",
         "errorTitle": "User could not be created"
       },
+      "bulkCreate": {
+        "action": "Create multiple users",
+        "title": "Create multiple users",
+        "subtitle": "Register multiple users for a company with a single form.",
+        "infoTitle": "Bulk user creation",
+        "infoDescription": "Select a company and add the users. Passwords will be generated automatically by the system.",
+        "company": "Company",
+        "companyPlaceholder": "Select a company",
+        "companySearch": "Search company...",
+        "companyEmpty": "No companies found",
+        "companyLoadError": "Companies could not be loaded",
+        "companyLoadingMore": "Loading more companies...",
+        "usersTitle": "New users",
+        "usersDescription": "All fields are required for each user.",
+        "addUser": "Add another user",
+        "removeUser": "Remove user {number}",
+        "submit": "Create users",
+        "successTitle": "Users created",
+        "successDescription": "The users were created successfully.",
+        "errorTitle": "Users could not be created",
+        "organizationUnavailableTitle": "Organization unavailable",
+        "organizationUnavailableDescription": "No active organization was found to create the users.",
+        "validation": {
+          "companyRequired": "Select a company.",
+          "usernameRequired": "Username is required.",
+          "emailRequired": "Email is required.",
+          "emailInvalid": "Enter a valid email.",
+          "whatsappRequired": "WhatsApp is required.",
+          "usersMin": "Add at least one user."
+        }
+      },
       "update": {
         "edit": "Edit",
         "title": "Edit user",
