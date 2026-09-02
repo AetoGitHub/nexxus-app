@@ -32,7 +32,6 @@ const {
   groupBy,
   calendarPhase,
   calendarMonth,
-  filtersOpen,
   newTaskOpen,
   selectedTaskId,
   newTaskDefaults,
@@ -72,10 +71,6 @@ const statusSummary = computed(() =>
     view: t(`tasks.views.${view.value}`),
   }),
 )
-
-function toggleFilters() {
-  filtersOpen.value = !filtersOpen.value
-}
 
 function openMobileFilters() {
   mobileFiltersOpen.value = true
@@ -145,48 +140,14 @@ function closeMobileFilters() {
       </p>
     </div>
 
-    <!-- Desktop: barra colapsable existente -->
+    <!-- Desktop: agrupación y filtros siempre visibles -->
     <div class="hidden md:block shrink-0 space-y-2">
-      <div
-        class="rounded-lg border border-border bg-card px-3 py-1.5 flex items-center justify-between gap-2"
+      <TaskGroupByFilter
+        v-model="groupBy"
+        :hide-options="hideGroupBy"
+        :exclude="view === 'calendar' ? ['due'] : []"
       >
-        <UButton
-          color="neutral"
-          variant="ghost"
-          class="flex-1 justify-between px-0 hover:bg-transparent"
-          @click="toggleFilters"
-        >
-          <span class="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground min-w-0">
-            <UIcon name="i-lucide-sliders-horizontal" class="h-3.5 w-3.5 shrink-0" />
-            <span>{{ t('tasks.filters') }} ·</span>
-            <span class="text-foreground truncate">{{ activeGroupByLabel }}</span>
-            <span class="font-normal hidden sm:inline">· {{ t(`tasks.views.${view}`) }}</span>
-          </span>
-          <UIcon
-            name="i-lucide-chevron-down"
-            class="h-4 w-4 text-muted-foreground shrink-0 transition-transform"
-            :class="{ 'rotate-180': filtersOpen }"
-          />
-        </UButton>
-
-        <div class="flex items-center gap-2 shrink-0">
-          <UButton
-            icon="i-lucide-plus"
-            color="primary"
-            size="sm"
-            class="h-8 font-semibold shrink-0"
-            :label="t('tasks.newTask')"
-            @click="openNewTask()"
-          />
-        </div>
-      </div>
-
-      <div v-if="filtersOpen" class="space-y-2">
-        <TaskGroupByFilter
-          v-model="groupBy"
-          :hide-options="hideGroupBy"
-          :exclude="view === 'calendar' ? ['due'] : []"
-        >
+        <div class="flex items-center gap-2">
           <UButton
             v-if="showRefresh"
             icon="i-lucide-refresh-cw"
@@ -199,32 +160,39 @@ function closeMobileFilters() {
             :disabled="isRefreshing"
             @click="refresh"
           />
-        </TaskGroupByFilter>
-
-        <div class="mb-2 flex items-stretch gap-2">
-          <div class="min-w-0 flex-1">
-            <TaskListFilters
-              v-model="listFilters"
-              v-model:search="search"
-              hide-search
-              :align-controls-start="view === 'calendar'"
-              class="mb-0! h-full"
-            >
-              <TaskViewSwitcher v-model="view" :exclude="excludeViews" />
-            </TaskListFilters>
-          </div>
-          <Transition name="calendar-phase">
-            <div
-              v-if="view === 'calendar'"
-              class="calendar-phase-panel h-auto self-stretch"
-            >
-              <TaskCalendarPhaseFilter
-                v-model="calendarPhase"
-                class="h-full"
-              />
-            </div>
-          </Transition>
+          <UButton
+            icon="i-lucide-plus"
+            color="primary"
+            size="sm"
+            class="h-8 font-semibold shrink-0"
+            :label="t('tasks.newTask')"
+            @click="openNewTask()"
+          />
         </div>
+      </TaskGroupByFilter>
+
+      <div class="flex items-stretch gap-2">
+        <div class="min-w-0 flex-1">
+          <TaskListFilters
+            v-model="listFilters"
+            v-model:search="search"
+            :align-controls-start="view === 'calendar'"
+            class="mb-0! h-full"
+          >
+            <TaskViewSwitcher v-model="view" :exclude="excludeViews" />
+          </TaskListFilters>
+        </div>
+        <Transition name="calendar-phase">
+          <div
+            v-if="view === 'calendar'"
+            class="calendar-phase-panel h-auto self-stretch"
+          >
+            <TaskCalendarPhaseFilter
+              v-model="calendarPhase"
+              class="h-full"
+            />
+          </div>
+        </Transition>
       </div>
     </div>
 

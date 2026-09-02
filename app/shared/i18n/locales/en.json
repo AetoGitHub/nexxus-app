@@ -327,6 +327,7 @@
       "groupPlaceholder": "Assigned from the selected user",
       "assignedTo": "Assigned to",
       "assignedToPlaceholder": "Select one or more users...",
+      "assignedToSearchPlaceholder": "Search user...",
       "dueDate": "Due date",
       "datePlaceholder": "Select a date",
       "markUrgent": "Mark as urgent",
@@ -443,6 +444,7 @@
       },
       "project": "Project",
       "projectPlaceholder": "Select a project...",
+      "projectSearchPlaceholder": "Search project...",
       "createProject": "Create project"
     },
     "messenger": {
@@ -543,7 +545,147 @@
     "title": "Select a module",
     "subtitle": "Choose where you want to go",
     "openModule": "Open module",
-    "tasksDescription": "Manage and track your tasks."
+    "tasksTitle": "Nexxus Tasks",
+    "tasksDescription": "Manage and track your tasks.",
+    "configurationTitle": "Configuration",
+    "configurationDescription": "Manage organization, company, and users."
+  },
+  "configuration": {
+    "title": "Configuration",
+    "subtitle": "Choose what you want to configure",
+    "organization": {
+      "title": "Organization",
+      "description": "Structure and details of your organization.",
+      "placeholder": "Organization",
+      "list": {
+        "title": "Organizations",
+        "subtitle": "View the organizations registered on the platform.",
+        "empty": "No organizations found",
+        "emptyDescription": "There are no organizations registered yet.",
+        "loadErrorTitle": "Organizations could not be loaded",
+        "retry": "Try again",
+        "openActions": "Open actions",
+        "columns": {
+          "name": "Name",
+          "createdAt": "Registration date"
+        }
+      },
+      "create": {
+        "toolbarButton": "Create",
+        "title": "Create organization",
+        "description": "Complete the form to register an organization.",
+        "submit": "Create organization",
+        "successTitle": "Organization created",
+        "successDescription": "The organization was created successfully.",
+        "errorTitle": "Organization could not be created",
+        "fields": {
+          "name": "Name"
+        },
+        "placeholders": {
+          "name": "E.g. NEXXUS TECHNOLOGY"
+        },
+        "validation": {
+          "nameRequired": "Name is required."
+        }
+      },
+      "update": {
+        "edit": "Edit",
+        "title": "Edit organization",
+        "description": "Update the organization information.",
+        "submit": "Save changes",
+        "successTitle": "Organization updated",
+        "successDescription": "The changes were saved successfully.",
+        "errorTitle": "Organization could not be updated",
+        "loadErrorTitle": "Organization could not be loaded"
+      }
+    },
+    "company": {
+      "title": "Company",
+      "description": "Company information and branches.",
+      "placeholder": "Company",
+      "list": {
+        "title": "Companies",
+        "subtitle": "View the tax and contact information for your organization's companies.",
+        "empty": "No companies found",
+        "emptyDescription": "There are no companies registered in your organization yet.",
+        "loadErrorTitle": "Companies could not be loaded",
+        "retry": "Try again",
+        "openActions": "Open actions",
+        "columns": {
+          "name": "Trade name",
+          "legalName": "Legal name",
+          "taxRegime": "Tax regime",
+          "address": "Address",
+          "phone": "Phone",
+          "createdAt": "Registration date"
+        }
+      },
+      "create": {
+        "toolbarButton": "Create",
+        "title": "Create company",
+        "description": "Complete the form to register a company.",
+        "submit": "Create company",
+        "successTitle": "Company created",
+        "successDescription": "The company was created successfully.",
+        "errorTitle": "Company could not be created",
+        "organizationUnavailableTitle": "Organization unavailable",
+        "organizationUnavailableDescription": "No active organization was found to register the company.",
+        "fields": {
+          "name": "Trade name",
+          "legalName": "Legal name",
+          "taxRegime": "Tax regime",
+          "address": "Address",
+          "phone": "Phone",
+          "contactName": "Name",
+          "contactPhone": "Phone",
+          "contactEmail": "Email"
+        },
+        "placeholders": {
+          "name": "E.g. NEXXUS TECHNOLOGY",
+          "legalName": "E.g. Trade Name Corporation",
+          "taxRegime": "E.g. 601 - General Business Tax Regime",
+          "address": "E.g. 123 Main Street, Mexico City",
+          "phone": "E.g. 5555555555",
+          "contactName": "E.g. John Smith",
+          "contactPhone": "E.g. 5511112222",
+          "contactEmail": "E.g. john{'@'}company.com"
+        },
+        "contacts": {
+          "title": "Contacts",
+          "description": "Add the company's contact people.",
+          "add": "Add",
+          "empty": "No contacts have been added.",
+          "item": "Contact {number}",
+          "remove": "Remove contact {number}"
+        },
+        "validation": {
+          "nameRequired": "Trade name is required.",
+          "legalNameRequired": "Legal name is required.",
+          "taxRegimeRequired": "Tax regime is required.",
+          "addressRequired": "Address is required.",
+          "phoneRequired": "Phone is required.",
+          "contactNameRequired": "Contact name is required.",
+          "contactPhoneRequired": "Contact phone is required.",
+          "contactEmailRequired": "Contact email is required.",
+          "contactEmailInvalid": "Enter a valid email address."
+        }
+      },
+      "update": {
+        "edit": "Edit",
+        "title": "Edit company",
+        "description": "Update the company information.",
+        "submit": "Save changes",
+        "successTitle": "Company updated",
+        "successDescription": "The changes were saved successfully.",
+        "errorTitle": "Company could not be updated",
+        "loadErrorTitle": "Company could not be loaded"
+      }
+    },
+    "user": {
+      "title": "User",
+      "description": "User and profile management.",
+      "placeholder": "User"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

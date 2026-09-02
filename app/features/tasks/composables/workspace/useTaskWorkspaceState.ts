@@ -152,7 +152,6 @@ export function useTaskWorkspaceState(options: {
   const groupBy = ref<TaskGroupBy>(initialGroupBy)
   const calendarPhase = ref<TaskCalendarPhase>(initialPhase)
   const calendarMonth = ref<CalendarMonth>(initialCalendarMonth)
-  const filtersOpen = ref(false)
   const newTaskOpen = ref(initialTaskId != null)
   const selectedTaskId = ref<number | null>(initialTaskId)
   /** Prefills al abrir el slideover en modo creación (p. ej. proyecto desde Kanban). */
@@ -304,7 +303,6 @@ export function useTaskWorkspaceState(options: {
     groupBy,
     calendarPhase,
     calendarMonth,
-    filtersOpen,
     newTaskOpen,
     selectedTaskId,
     newTaskDefaults,

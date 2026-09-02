@@ -37,7 +37,7 @@ const visibleOptions = computed(() =>
 <template>
   <div
     class="rounded-lg border border-border bg-card px-3 py-2 flex gap-2"
-    :class="stacked ? 'flex-col items-stretch' : 'items-center flex-wrap mb-2'"
+    :class="stacked ? 'flex-col items-stretch' : 'items-center flex-wrap'"
   >
     <template v-if="!hideOptions">
       <span class="text-xs text-muted-foreground" :class="stacked ? '' : 'mr-1'">
@@ -56,7 +56,7 @@ const visibleOptions = computed(() =>
             : 'border-border bg-transparent text-muted-foreground font-medium'"
           :icon="option.icon"
           :label="t(option.labelKey)"
-          @click="groupBy = option.value"
+          @click="() => { groupBy = option.value }"
         />
       </div>
     </template>
