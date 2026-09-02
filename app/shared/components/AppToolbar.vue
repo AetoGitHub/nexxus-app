@@ -71,7 +71,11 @@ const search = ref('')
     </div>
 
     <div class="flex items-center gap-2">
-      <div class="relative hidden md:block">
+      <!-- Oculto de momento: aún no funciona -->
+      <div
+        v-if="false"
+        class="relative hidden md:block"
+      >
         <UIcon
           name="i-lucide-search"
           class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
@@ -83,7 +87,9 @@ const search = ref('')
         >
       </div>
 
+      <!-- Oculto de momento: aún no funciona -->
       <UChip
+        v-if="false"
         :show="nexxaCount > 0"
         :text="nexxaCount"
         size="3xl"

@@ -20,7 +20,9 @@
   "common": {
     "settings": "Settings",
     "logout": "Sign out",
-    "back": "Back"
+    "back": "Back",
+    "noData": "No data",
+    "noUsers": "No users available"
   },
   "user": {
     "fallback": "User",
@@ -358,12 +360,65 @@
         "groupRequired": "Select a group",
         "assignedToRequired": "Select at least one assigned user",
         "dueDateRequired": "Select a due date",
-        "taskReviewerRequired": "Select at least one collaborator who must confirm"
+        "taskReviewerRequired": "Select at least one collaborator who must confirm",
+        "repeatConfigRequired": "Complete the recurrence settings"
       },
       "typeDescriptions": {
         "manual": "Standard operational task",
+        "repeat": "Created again on a set frequency",
         "volume": "Measure units with AI",
         "multiple_close": "Requires confirmation from all participants"
+      },
+      "repeat": {
+        "title": "Recurrence",
+        "description": "Choose how often this task should be created again.",
+        "frequencyLabel": "Frequency",
+        "everyLabel": "Every",
+        "weekdayLabel": "Weekday",
+        "weekOfMonthLabel": "Week of month",
+        "monthLabel": "Month",
+        "frequency": {
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "monthly": "Monthly",
+          "yearly": "Yearly"
+        },
+        "everyHelp": {
+          "daily": "Number of days between each recurrence",
+          "weekly": "Number of weeks between each recurrence",
+          "monthly": "Number of months between each recurrence",
+          "yearly": "Number of years between each recurrence"
+        },
+        "weekdays": {
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday",
+          "7": "Sunday"
+        },
+        "weekOfMonth": {
+          "1": "First",
+          "2": "Second",
+          "3": "Third",
+          "4": "Fourth",
+          "last": "Last"
+        },
+        "months": {
+          "1": "January",
+          "2": "February",
+          "3": "March",
+          "4": "April",
+          "5": "May",
+          "6": "June",
+          "7": "July",
+          "8": "August",
+          "9": "September",
+          "10": "October",
+          "11": "November",
+          "12": "December"
+        }
       },
       "volume": {
         "countWhat": "What will you count?",

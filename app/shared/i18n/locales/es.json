@@ -20,7 +20,9 @@
   "common": {
     "settings": "Configuración",
     "logout": "Cerrar sesión",
-    "back": "Volver"
+    "back": "Volver",
+    "noData": "Sin datos",
+    "noUsers": "Sin usuarios disponibles"
   },
   "user": {
     "fallback": "Usuario",
@@ -358,12 +360,65 @@
         "groupRequired": "Selecciona un grupo",
         "assignedToRequired": "Selecciona al menos un usuario asignado",
         "dueDateRequired": "Selecciona una fecha límite",
-        "taskReviewerRequired": "Selecciona al menos un colaborador que deba confirmar"
+        "taskReviewerRequired": "Selecciona al menos un colaborador que deba confirmar",
+        "repeatConfigRequired": "Completa la configuración de repetición"
       },
       "typeDescriptions": {
         "manual": "Tarea operativa estándar",
+        "repeat": "Se crea de nuevo según una frecuencia",
         "volume": "Mide unidades con IA",
         "multiple_close": "Requiere confirmación de todos los participantes"
+      },
+      "repeat": {
+        "title": "Repetición",
+        "description": "Define cada cuánto se vuelve a generar esta tarea.",
+        "frequencyLabel": "Frecuencia",
+        "everyLabel": "Cada",
+        "weekdayLabel": "Día de la semana",
+        "weekOfMonthLabel": "Semana del mes",
+        "monthLabel": "Mes",
+        "frequency": {
+          "daily": "Diaria",
+          "weekly": "Semanal",
+          "monthly": "Mensual",
+          "yearly": "Anual"
+        },
+        "everyHelp": {
+          "daily": "Número de días entre cada repetición",
+          "weekly": "Número de semanas entre cada repetición",
+          "monthly": "Número de meses entre cada repetición",
+          "yearly": "Número de años entre cada repetición"
+        },
+        "weekdays": {
+          "1": "Lunes",
+          "2": "Martes",
+          "3": "Miércoles",
+          "4": "Jueves",
+          "5": "Viernes",
+          "6": "Sábado",
+          "7": "Domingo"
+        },
+        "weekOfMonth": {
+          "1": "Primera",
+          "2": "Segunda",
+          "3": "Tercera",
+          "4": "Cuarta",
+          "last": "Última"
+        },
+        "months": {
+          "1": "Enero",
+          "2": "Febrero",
+          "3": "Marzo",
+          "4": "Abril",
+          "5": "Mayo",
+          "6": "Junio",
+          "7": "Julio",
+          "8": "Agosto",
+          "9": "Septiembre",
+          "10": "Octubre",
+          "11": "Noviembre",
+          "12": "Diciembre"
+        }
       },
       "volume": {
         "countWhat": "¿Qué vas a contar?",

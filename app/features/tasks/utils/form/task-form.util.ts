@@ -5,8 +5,14 @@ import type {
   TaskCloseApproval,
   TaskDetail,
   TaskEffort,
+  TaskRepeatConfig,
   UpdateTaskPayload,
 } from '~/features/tasks/types/task.types'
+import {
+  isRepeatConfigComplete,
+  normalizeRepeatConfig,
+  parseRepeatConfig,
+} from '~/features/tasks/utils/form/repeat-config.util'
 
 export interface NewTaskFormInput {
   type: NewTaskFormType
@@ -19,9 +25,10 @@ export interface NewTaskFormInput {
   dueDate: string
   urgent: boolean
   effort: TaskEffort | undefined
+  repeatConfig: TaskRepeatConfig
 }
 
-const FORM_TASK_TYPES: NewTaskFormType[] = ['manual', 'volume', 'multiple_close']
+const FORM_TASK_TYPES: NewTaskFormType[] = ['manual', 'volume', 'multiple_close', 'repeat']
 const FORM_EFFORTS: TaskEffort[] = ['quick', 'normal', 'complex']
 
 function isNewTaskFormType(value: string): value is NewTaskFormType {
@@ -57,6 +64,7 @@ export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
     dueDate: isoToDateInput(detail.limit_date),
     urgent,
     effort: urgent ? undefined : effortFromApi,
+    repeatConfig: parseRepeatConfig(detail.repeat_config),
   }
 }
 
@@ -140,6 +148,13 @@ export function buildCreateTaskPayload(
     payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
   }
 
+  if (form.type === 'repeat') {
+    if (!isRepeatConfigComplete(form.repeatConfig)) {
+      throw new Error('repeat_config_required')
+    }
+    payload.repeat_config = normalizeRepeatConfig(form.repeatConfig)
+  }
+
   return payload
 }
 
@@ -190,6 +205,13 @@ export function buildUpdateTaskPayload(
   }
   else if (form.taskReviewer.length) {
     payload.task_reviewer = form.taskReviewer
+  }
+
+  if (form.type === 'repeat') {
+    if (!isRepeatConfigComplete(form.repeatConfig)) {
+      throw new Error('repeat_config_required')
+    }
+    payload.repeat_config = normalizeRepeatConfig(form.repeatConfig)
   }
 
   return payload

@@ -597,6 +597,10 @@ watch(
                 aria-hidden="true"
               />
             </template>
+
+            <template #empty>
+              {{ t('common.noData') }}
+            </template>
           </USelectMenu>
         </div>
       </Transition>

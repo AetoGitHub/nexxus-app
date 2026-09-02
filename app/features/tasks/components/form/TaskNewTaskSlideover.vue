@@ -21,6 +21,8 @@ import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenP
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
+import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatConfigFields.vue'
+import { extractResults } from '~/shared/utils/paginated.util'
 import {
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
@@ -34,6 +36,10 @@ import {
   applyNewTaskFormDefaults,
   type NewTaskFormDefaults,
 } from '~/features/tasks/utils/form/new-task-defaults.util'
+import {
+  createDefaultRepeatConfig,
+  isRepeatConfigComplete,
+} from '~/features/tasks/utils/form/repeat-config.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 interface NewTaskFormState extends NewTaskFormInput {
@@ -122,6 +128,9 @@ const canSubmit = computed(() => {
     return false
   }
   if (state.type === 'multiple_close' && !state.taskReviewer.length && user.value?.id == null) {
+    return false
+  }
+  if (state.type === 'repeat' && !isRepeatConfigComplete(state.repeatConfig)) {
     return false
   }
   return true
@@ -252,10 +261,12 @@ const state = reactive<NewTaskFormState>({
   volumeVerifyDates: true,
   volumeRejectDuplicates: true,
   volumeNexxaAiAnalysis: true,
+  repeatConfig: createDefaultRepeatConfig(),
 })
 
 const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: string }[] = [
   { value: 'manual', icon: 'i-lucide-hand', descriptionKey: 'tasks.form.typeDescriptions.manual' },
+  { value: 'repeat', icon: 'i-lucide-repeat', descriptionKey: 'tasks.form.typeDescriptions.repeat' },
   { value: 'volume', icon: 'i-lucide-chart-bar', descriptionKey: 'tasks.form.typeDescriptions.volume' },
   { value: 'multiple_close', icon: 'i-lucide-users', descriptionKey: 'tasks.form.typeDescriptions.multiple_close' },
 ]
@@ -283,6 +294,39 @@ const { projects: projectsQuery, items: projectItems } = useProjectsDropdown({
 const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
   () => open.value,
 )
+
+const userSelectItems = computed(() =>
+  withEmptySelectItems(userItems.value, t('common.noUsers'), {
+    pending: usersQuery.isPending.value,
+  }),
+)
+
+/** Valor especial: no es un proyecto, redirige a crear uno. */
+const CREATE_PROJECT_VALUE = '__create_project__'
+
+const projectItems = computed<SelectItem[]>(() => {
+  const items = extractResults(projectsQuery.data.value).map(project => ({
+    label: project.name,
+    value: project.id,
+  }))
+  if (!projectsQuery.isPending.value && items.length === 0) {
+    return [{
+      label: t('tasks.form.createProject'),
+      value: CREATE_PROJECT_VALUE,
+      icon: 'i-lucide-plus',
+    }]
+  }
+  return items
+})
+
+function onProjectSelect(value: string | number | undefined | null) {
+  if (value === CREATE_PROJECT_VALUE) {
+    open.value = false
+    void navigateTo('/tasks/settings')
+    return
+  }
+  state.project = typeof value === 'number' ? value : undefined
+}
 
 /** Grupo: del asignado, del detalle, o prefill Kanban (group-id + group-name). */
 const selectedGroupLabel = computed(() => {
@@ -328,6 +372,7 @@ function resetForm() {
   state.volumeVerifyDates = true
   state.volumeRejectDuplicates = true
   state.volumeNexxaAiAnalysis = true
+  state.repeatConfig = createDefaultRepeatConfig()
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -343,6 +388,7 @@ function applyFormInput(input: NewTaskFormInput) {
   state.dueDate = input.dueDate
   state.urgent = input.urgent
   state.effort = input.effort
+  state.repeatConfig = { ...input.repeatConfig }
 }
 
 function ensureCurrentUserInReviewers() {
@@ -449,6 +495,7 @@ function validationMessage(code: string): string {
     assigned_to_required: t('tasks.form.validation.assignedToRequired'),
     due_date_required: t('tasks.form.validation.dueDateRequired'),
     task_reviewer_required: t('tasks.form.validation.taskReviewerRequired'),
+    repeat_config_required: t('tasks.form.validation.repeatConfigRequired'),
   }
   return messages[code] ?? t('tasks.form.createError')
 }
@@ -754,7 +801,7 @@ const slideoverUi = computed(() => {
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.taskType') }}
             </p>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 gap-2">
               <button
                 v-for="option in taskTypeOptions"
                 :key="option.value"
@@ -815,7 +862,7 @@ const slideoverUi = computed(() => {
                   min="0"
                   :placeholder="t('tasks.form.volume.periodGoalPlaceholder')"
                   :disabled="isReadOnly"
-                  class="w-full"
+                  class="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </UFormField>
 
@@ -831,7 +878,7 @@ const slideoverUi = computed(() => {
                   min="0"
                   :placeholder="t('tasks.form.volume.pointsPerUnitPlaceholder')"
                   :disabled="isReadOnly"
-                  class="w-full"
+                  class="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </UFormField>
             </div>
@@ -874,7 +921,7 @@ const slideoverUi = computed(() => {
             <USelect
               v-model="state.taskReviewer"
               multiple
-              :items="userItems"
+              :items="userSelectItems"
               :placeholder="t('tasks.form.multipleClose.searchPlaceholder')"
               :loading="usersQuery.isPending.value"
               :disabled="isReadOnly"
@@ -882,6 +929,12 @@ const slideoverUi = computed(() => {
               class="w-full"
             />
           </div>
+
+          <TaskRepeatConfigFields
+            v-else-if="state.type === 'repeat'"
+            v-model="state.repeatConfig"
+            :disabled="isReadOnly"
+          />
 
           <UFormField
             :label="t('tasks.form.name')"
@@ -927,6 +980,7 @@ const slideoverUi = computed(() => {
                 }"
                 ignore-filter
                 class="w-full"
+                @update:model-value="onProjectSelect"
               />
             </UFormField>
 
@@ -1022,7 +1076,11 @@ const slideoverUi = computed(() => {
             </div>
           </div>
 
-          <div class="rounded-lg border border-aeto-teal/40 bg-aeto-teal-light/40 p-4 space-y-4">
+          <!-- Oculto de momento: aún no funciona -->
+          <div
+            v-if="false"
+            class="rounded-lg border border-aeto-teal/40 bg-aeto-teal-light/40 p-4 space-y-4"
+          >
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-bot" class="h-4 w-4 text-aeto-teal-dark" />
               <p class="text-sm font-medium text-foreground">

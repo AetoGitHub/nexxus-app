@@ -90,7 +90,9 @@ function closeMobileFilters() {
     <!-- Mobile: barra compacta (búsqueda + filtros en sheet + nueva tarea) -->
     <div class="shrink-0 space-y-2 md:hidden">
       <div class="flex items-center gap-2">
+        <!-- Oculto de momento: aún no funciona -->
         <UInput
+          v-if="false"
           v-model="search"
           icon="i-lucide-search"
           size="sm"

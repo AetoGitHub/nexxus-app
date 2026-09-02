@@ -21,7 +21,8 @@ export function useAppNav() {
     { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
     { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
     { labelKey: 'sidebar.tasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
-    { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 }, // mock: aún sin ruta
+    // Oculto de momento: aún no funciona
+    // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 },
     {
       labelKey: 'sidebar.toUpdate',
       icon: 'i-lucide-refresh-cw',

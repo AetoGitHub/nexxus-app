@@ -137,12 +137,20 @@ const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-b
         </div>
 
         <div class="space-y-2">
-          <SettingsBranchCard
-            v-for="branch in branches"
-            :key="branch.id"
-            :branch="branch"
-            @remove="emit('removeBranch', $event)"
-          />
+          <p
+            v-if="!branches.length"
+            class="text-sm text-muted-foreground py-2"
+          >
+            {{ t('common.noData') }}
+          </p>
+          <template v-else>
+            <SettingsBranchCard
+              v-for="branch in branches"
+              :key="branch.id"
+              :branch="branch"
+              @remove="emit('removeBranch', $event)"
+            />
+          </template>
         </div>
       </div>
     </div>

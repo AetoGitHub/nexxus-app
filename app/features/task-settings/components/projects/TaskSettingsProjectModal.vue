@@ -21,6 +21,12 @@ const { t } = useI18n()
 
 const { items: profileItems, profilesQuery } = useProfiles(() => open.value)
 
+const memberSelectItems = computed(() =>
+  withEmptySelectItems(profileItems.value, t('common.noUsers'), {
+    pending: profilesQuery.isPending.value,
+  }),
+)
+
 const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring'
 
 const modalTitle = computed(() =>
@@ -108,7 +114,7 @@ function onSubmit() {
           <USelect
             v-model="form.members"
             multiple
-            :items="profileItems"
+            :items="memberSelectItems"
             :loading="profilesQuery.isPending.value"
             :placeholder="t('taskSettings.projectModal.membersPlaceholder')"
             class="w-full"
