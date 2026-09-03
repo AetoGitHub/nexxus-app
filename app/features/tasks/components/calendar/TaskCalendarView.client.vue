@@ -26,7 +26,15 @@ import type {
   TaskListFilters,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
-import { coloredTasksToCalendarEvents, tasksToCalendarEvents } from '~/features/tasks/utils/calendar/task-calendar.util'
+import {
+  calendarCivilDate,
+  calendarDateKey,
+  calendarMonthStart,
+  calendarWeekdayLetter,
+  calendarWeekStartKey,
+  coloredTasksToCalendarEvents,
+  tasksToCalendarEvents,
+} from '~/features/tasks/utils/calendar/task-calendar.util'
 
 const COLLAPSED_EVENT_ROWS = 3
 const PHASE_TRANSITION_MS = 180
@@ -216,10 +224,8 @@ const expandedWeeks = ref(new Set<string>())
 const isEventsExiting = ref(false)
 let phaseTransitionToken = 0
 
-const dayLetters = ['D', 'L', 'M', 'X', 'J', 'V', 'S'] as const
-
 function dayHeaderContent(arg: DayHeaderContentArg) {
-  return dayLetters[arg.date.getDay()] ?? ''
+  return calendarWeekdayLetter(arg.date)
 }
 
 function wait(ms: number) {
@@ -232,28 +238,17 @@ function mountEventEnter(arg: EventMountArg) {
   arg.el.classList.add('fc-event-enter')
 }
 
-function toDateKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 function weekRowKey(date: Date): string {
   const api = calendarRef.value?.getApi()
   const weekStartsOn = Number(api?.getOption('firstDay') ?? 1)
-  const day = date.getDay()
-  const diff = (day - weekStartsOn + 7) % 7
-  const start = new Date(date)
-  start.setHours(0, 0, 0, 0)
-  start.setDate(start.getDate() - diff)
-  return toDateKey(start)
+  return calendarWeekStartKey(date, weekStartsOn)
 }
 
 function setVisibleMonth(date: Date) {
+  const civil = calendarCivilDate(date)
   const next = {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
+    year: civil.year,
+    month: civil.month,
   }
 
   if (
@@ -270,7 +265,7 @@ function setVisibleMonth(date: Date) {
 }
 
 function monthStart(period: CalendarMonth) {
-  return `${period.year}-${String(period.month).padStart(2, '0')}-01`
+  return calendarMonthStart(period)
 }
 
 function syncFromDatesSet(arg: DatesSetArg) {
@@ -360,7 +355,7 @@ function syncWeekToggleButtons() {
 function mountWeekToggle(arg: DayCellMountArg) {
   const key = weekRowKey(arg.date)
   const weekStartKey = key
-  const cellKey = toDateKey(arg.date)
+  const cellKey = calendarDateKey(arg.date)
   // Solo el primer día de la semana (fila) lleva el control.
   if (cellKey !== weekStartKey) {
     return
@@ -397,6 +392,7 @@ const calendarOptions = reactive<CalendarOptions>({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
   initialDate: monthStart(visibleMonth.value),
+  timeZone: 'local',
   locale: esLocale,
   weekends: true,
   editable: false,

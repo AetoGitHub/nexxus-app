@@ -1,6 +1,65 @@
 import type { EventInput } from '@fullcalendar/core'
-import type { Task, TaskCalendarPhase } from '~/features/tasks/types/task.types'
+import type { CalendarMonth, Task, TaskCalendarPhase } from '~/features/tasks/types/task.types'
 import { taskBarColor } from '~/features/tasks/utils/task-format.util'
+
+/** Letras de weekday en es; índice = domingo…sábado (0–6). */
+export const CALENDAR_WEEKDAY_LETTERS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'] as const
+
+export interface CalendarCivilDate {
+  year: number
+  month: number
+  day: number
+  weekday: number
+}
+
+/**
+ * FullCalendar marca fechas all-day como UTC midnight.
+ * En zonas UTC−N, getDay/getDate locales retroceden un día civil.
+ */
+export function calendarCivilDate(date: Date): CalendarCivilDate {
+  const isAllDayUtcMarker =
+    date.getUTCHours() === 0
+    && date.getUTCMinutes() === 0
+    && date.getUTCSeconds() === 0
+    && date.getUTCMilliseconds() === 0
+
+  if (isAllDayUtcMarker) {
+    return {
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      weekday: date.getUTCDay(),
+    }
+  }
+
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    weekday: date.getDay(),
+  }
+}
+
+export function calendarDateKey(date: Date): string {
+  const { year, month, day } = calendarCivilDate(date)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+export function calendarWeekdayLetter(date: Date): string {
+  return CALENDAR_WEEKDAY_LETTERS[calendarCivilDate(date).weekday] ?? ''
+}
+
+export function calendarWeekStartKey(date: Date, weekStartsOn: number): string {
+  const civil = calendarCivilDate(date)
+  const diff = (civil.weekday - weekStartsOn + 7) % 7
+  const start = new Date(Date.UTC(civil.year, civil.month - 1, civil.day - diff))
+  return calendarDateKey(start)
+}
+
+/** Medianoche local del día 1: evita que YYYY-MM-DD se parsee como UTC. */
+export function calendarMonthStart(period: CalendarMonth): Date {
+  return new Date(period.year, period.month - 1, 1)
+}
 
 /** Extrae YYYY-MM-DD de un ISO o fecha parcial. */
 function toDateOnly(value: string | null | undefined): string | null {
