@@ -97,6 +97,12 @@ export interface CalendarMonth {
   month: number
 }
 
+/** Rango visible del mes, inclusive, con días del mes previo y siguiente. */
+export interface CalendarDateRange {
+  dateFrom: string
+  dateTo: string
+}
+
 export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
 
 /** Filtros de query compartidos por listas y Kanban. */
@@ -165,12 +171,21 @@ export interface CreateTaskChannelEvent {
   user: number[]
 }
 
+export interface CreateMultipleTasksChannelEvent {
+  event: 'create_multiple_tasks'
+  task_pks: number[]
+  user: number[]
+}
+
 export interface UnknownTaskChannelEvent {
   event: string
   [key: string]: unknown
 }
 
-export type TaskChannelEvent = CreateTaskChannelEvent | UnknownTaskChannelEvent
+export type TaskChannelEvent =
+  | CreateTaskChannelEvent
+  | CreateMultipleTasksChannelEvent
+  | UnknownTaskChannelEvent
 
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {

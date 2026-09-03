@@ -26,7 +26,9 @@ import type {
   TaskListFilters,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import TaskCalendarEvent from '~/features/tasks/components/calendar/TaskCalendarEvent.vue'
 import {
+  CALENDAR_WEEK_STARTS_ON,
   calendarCivilDate,
   calendarDateKey,
   calendarMonthStart,
@@ -240,7 +242,7 @@ function mountEventEnter(arg: EventMountArg) {
 
 function weekRowKey(date: Date): string {
   const api = calendarRef.value?.getApi()
-  const weekStartsOn = Number(api?.getOption('firstDay') ?? 1)
+  const weekStartsOn = Number(api?.getOption('firstDay') ?? CALENDAR_WEEK_STARTS_ON)
   return calendarWeekStartKey(date, weekStartsOn)
 }
 
@@ -394,6 +396,8 @@ const calendarOptions = reactive<CalendarOptions>({
   initialDate: monthStart(visibleMonth.value),
   timeZone: 'local',
   locale: esLocale,
+  firstDay: CALENDAR_WEEK_STARTS_ON,
+  showNonCurrentDates: true,
   weekends: true,
   editable: false,
   selectable: false,
@@ -605,7 +609,17 @@ watch(
         ref="calendarRef"
         :options="calendarOptions"
         @dates-set="syncFromDatesSet"
-      />
+      >
+        <template #eventContent="arg">
+          <TaskCalendarEvent
+            :title="arg.event.title"
+            :project-name="String(arg.event.extendedProps.projectName ?? '')"
+            :status="String(arg.event.extendedProps.status ?? '')"
+            :type="String(arg.event.extendedProps.type ?? '')"
+            :show-badges="arg.isStart"
+          />
+        </template>
+      </FullCalendar>
     </div>
   </div>
 </template>
@@ -879,9 +893,10 @@ watch(
   border: 0;
   border-left: 3px solid var(--fc-event-border-color);
   border-radius: 0.375rem;
-  background: var(--fc-event-bg-color);
+  background: color-mix(in oklab, var(--fc-event-bg-color) 18%, var(--card));
   box-shadow: none;
   cursor: pointer;
+  white-space: normal;
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -908,17 +923,33 @@ watch(
 }
 
 .task-calendar :deep(.fc .fc-daygrid-event .fc-event-main) {
-  color: var(--fc-event-text-color);
+  color: var(--foreground);
+  padding: 0.25rem 0.35rem;
 }
 
-.task-calendar :deep(.fc .fc-daygrid-block-event .fc-event-title) {
-  padding: 0.2rem 0.4rem;
+.task-calendar :deep(.fc .fc-event-body) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.task-calendar :deep(.fc .fc-event-title-text) {
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.25;
+  color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.task-calendar :deep(.fc .fc-event-badges) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
 }
 
 .task-calendar :deep(.fc .fc-daygrid-day-events) {
@@ -934,7 +965,7 @@ watch(
 
 /* En Proceso no recortamos con overflow: corta barras multi-día a mitad. */
 .task-calendar.is-week-expanded:not(.is-process-phase) :deep(tr:not([data-week-expanded]) .fc-daygrid-day-events) {
-  max-height: 4.8rem;
+  max-height: 8.5rem;
   overflow: hidden;
 }
 
