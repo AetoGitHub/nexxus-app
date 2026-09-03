@@ -48,6 +48,8 @@ interface NewTaskFormState extends NewTaskFormInput {
   volumeVerifyDates: boolean
   volumeRejectDuplicates: boolean
   volumeNexxaAiAnalysis: boolean
+  setAsMaster: boolean
+  applyToAll: boolean
 }
 
 const open = defineModel<boolean>('open', { default: false })
@@ -261,6 +263,8 @@ const state = reactive<NewTaskFormState>({
   volumeRejectDuplicates: true,
   volumeNexxaAiAnalysis: true,
   repeatConfig: createDefaultRepeatConfig(),
+  setAsMaster: false,
+  applyToAll: false,
 })
 
 const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: string }[] = [
@@ -369,6 +373,8 @@ function resetForm() {
   state.volumeRejectDuplicates = true
   state.volumeNexxaAiAnalysis = true
   state.repeatConfig = createDefaultRepeatConfig()
+  state.setAsMaster = false
+  state.applyToAll = false
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -385,6 +391,8 @@ function applyFormInput(input: NewTaskFormInput) {
   state.urgent = input.urgent
   state.effort = input.effort
   state.repeatConfig = { ...input.repeatConfig }
+  state.setAsMaster = false
+  state.applyToAll = false
 }
 
 function ensureCurrentUserInReviewers() {
@@ -409,8 +417,28 @@ function startEditing() {
   }
   submitError.value = ''
   mobilePanel.value = 'detail'
+  state.setAsMaster = false
+  state.applyToAll = false
   isEditing.value = true
 }
+
+/** Tarea repetitiva autogenerada a partir de una maestra. */
+const generatedFromId = computed(() => {
+  const value = taskDetailQuery.data.value?.generated_from
+  return typeof value === 'number' && value > 0 ? value : null
+})
+
+const isRepeatSeriesEdit = computed(() =>
+  isDetailView.value && isEditing.value && state.type === 'repeat',
+)
+
+/** set_as_master solo en instancias (tienen generated_from). */
+const showSetAsMaster = computed(() =>
+  isRepeatSeriesEdit.value && generatedFromId.value != null,
+)
+
+/** apply_to_all en instancias o en la maestra (generated_from null). */
+const showApplyToAll = computed(() => isRepeatSeriesEdit.value)
 
 function cancelEditing() {
   submitError.value = ''
@@ -509,6 +537,11 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
         state,
         taskDetailQuery.data.value?.start_date,
         user.value?.id,
+        {
+          generatedFrom: generatedFromId.value,
+          setAsMaster: state.setAsMaster,
+          applyToAll: state.applyToAll,
+        },
       )
       await updateTask({ taskId: taskId.value, payload })
       isEditing.value = false
@@ -931,6 +964,24 @@ const slideoverUi = computed(() => {
             v-model="state.repeatConfig"
             :disabled="isReadOnly"
           />
+
+          <div
+            v-if="showSetAsMaster || showApplyToAll"
+            class="space-y-3"
+          >
+            <USwitch
+              v-if="showSetAsMaster"
+              v-model="state.setAsMaster"
+              :label="t('tasks.form.repeat.setAsMaster')"
+              :description="t('tasks.form.repeat.setAsMasterHelp')"
+            />
+            <USwitch
+              v-if="showApplyToAll"
+              v-model="state.applyToAll"
+              :label="t('tasks.form.repeat.applyToAll')"
+              :description="t('tasks.form.repeat.applyToAllHelp')"
+            />
+          </div>
 
           <UFormField
             :label="t('tasks.form.name')"

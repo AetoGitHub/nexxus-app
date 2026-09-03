@@ -383,6 +383,10 @@
           "monthly": "Mensual",
           "yearly": "Anual"
         },
+        "setAsMaster": "Convertir en tarea maestra",
+        "setAsMasterHelp": "Las próximas repeticiones se generarán a partir de esta instancia.",
+        "applyToAll": "Aplicar a todas las instancias",
+        "applyToAllHelp": "Los cambios se aplican a todas las tareas de esta serie.",
         "everyHelp": {
           "daily": "Número de días entre cada repetición",
           "weekly": "Número de semanas entre cada repetición",

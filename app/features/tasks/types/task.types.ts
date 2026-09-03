@@ -66,6 +66,10 @@ export interface UpdateTaskPayload {
   assigned_to: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
+  /** Convierte esta instancia en la plantilla maestra. Solo si type=repeat y hay generated_from. */
+  set_as_master?: boolean
+  /** Aplica los cambios a todas las instancias de la serie. Solo si type=repeat. */
+  apply_to_all?: boolean
 }
 
 /** PATCH parcial para mover vencimiento en Kanban Due. */
@@ -175,6 +179,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   assigned_to: number[]
   recurrence: boolean
   repeat_config?: TaskRepeatConfig | null
+  /** Id de la tarea maestra; null si esta es la original. */
+  generated_from: number | null
   finish_at: string | null
   updated_at: string
   process_tasks: TaskProcessEntry[]

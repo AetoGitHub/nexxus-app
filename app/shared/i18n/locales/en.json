@@ -383,6 +383,10 @@
           "monthly": "Monthly",
           "yearly": "Yearly"
         },
+        "setAsMaster": "Set as master task",
+        "setAsMasterHelp": "Future recurrences will be generated from this instance.",
+        "applyToAll": "Apply to all instances",
+        "applyToAllHelp": "Changes will be applied to every task in this series.",
         "everyHelp": {
           "daily": "Number of days between each recurrence",
           "weekly": "Number of weeks between each recurrence",

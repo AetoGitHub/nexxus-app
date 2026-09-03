@@ -158,6 +158,13 @@ export function buildCreateTaskPayload(
   return payload
 }
 
+/** Flags de update para series repetitivas (instancia generada vs maestra). */
+export interface RepeatSeriesUpdateOptions {
+  generatedFrom?: number | null
+  setAsMaster?: boolean
+  applyToAll?: boolean
+}
+
 /**
  * Payload de PATCH /api/tasks/:id/update/.
  * Conserva `start_date` original; `group` puede ser null.
@@ -166,6 +173,7 @@ export function buildUpdateTaskPayload(
   form: NewTaskFormInput,
   startDate: string | null | undefined,
   currentUserId?: number,
+  repeatSeries?: RepeatSeriesUpdateOptions,
 ): UpdateTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -212,6 +220,10 @@ export function buildUpdateTaskPayload(
       throw new Error('repeat_config_required')
     }
     payload.repeat_config = normalizeRepeatConfig(form.repeatConfig)
+    payload.apply_to_all = repeatSeries?.applyToAll ?? false
+    if (repeatSeries?.generatedFrom != null) {
+      payload.set_as_master = repeatSeries.setAsMaster ?? false
+    }
   }
 
   return payload
