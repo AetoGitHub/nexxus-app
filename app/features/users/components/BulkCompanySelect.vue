@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const companyId = defineModel<number | undefined>({ required: true })
+const props = withDefaults(defineProps<{
+  excludedCompanyIds?: number[]
+}>(), {
+  excludedCompanyIds: () => [],
+})
 const { t } = useI18n()
 
 const {
@@ -10,6 +15,13 @@ const {
   isFetchingNextPage,
   isPending,
 } = useCompanies()
+
+const items = computed(() =>
+  companies.value.map(company => ({
+    ...company,
+    disabled: props.excludedCompanyIds.includes(company.id),
+  })),
+)
 
 const selectMenu = useTemplateRef<{
   viewportRef?: HTMLElement | null
@@ -30,7 +42,7 @@ useInfiniteScroll(
   <USelectMenu
     ref="selectMenu"
     v-model="companyId"
-    :items="companies"
+    :items="items"
     value-key="id"
     label-key="name"
     icon="i-lucide-building-2"

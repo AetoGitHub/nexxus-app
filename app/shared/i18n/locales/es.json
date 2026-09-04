@@ -701,7 +701,10 @@
         "columns": {
           "username": "Usuario",
           "email": "Correo",
-          "whatsapp": "WhatsApp"
+          "whatsapp": "WhatsApp",
+          "organization": "Organización",
+          "company": "Compañía",
+          "context": "Contexto"
         }
       },
       "fields": {
@@ -816,6 +819,52 @@
           "number": "Al menos 1 número",
           "lowercase": "Al menos 1 letra minúscula",
           "uppercase": "Al menos 1 letra mayúscula"
+        }
+      },
+      "contextSettings": {
+        "action": "Configuración de contexto"
+      },
+      "context": {
+        "fields": {
+          "company": "Compañía"
+        },
+        "companyPlaceholder": "Selecciona una compañía",
+        "companyEmpty": "Este usuario no tiene compañías disponibles",
+        "loadErrorTitle": "No se pudieron cargar las compañías del usuario",
+        "validation": {
+          "companyRequired": "Selecciona una compañía."
+        },
+        "update": {
+          "title": "Configurar contexto de compañía",
+          "description": "Selecciona la compañía que el usuario usará como contexto activo.",
+          "submit": "Guardar cambios",
+          "successTitle": "Contexto actualizado",
+          "successDescription": "El contexto de compañía se actualizó correctamente.",
+          "errorTitle": "No se pudo actualizar el contexto"
+        }
+      },
+      "membership": {
+        "action": "Crear membresía",
+        "title": "Crear membresía de compañía",
+        "description": "Selecciona la compañía a la que se agregará el usuario.",
+        "fields": {
+          "company": "Compañía"
+        },
+        "submit": "Crear membresía",
+        "successTitle": "Membresía creada",
+        "successDescription": "La membresía se creó correctamente.",
+        "errorTitle": "No se pudo crear la membresía",
+        "validation": {
+          "companyRequired": "Selecciona una compañía."
+        },
+        "update": {
+          "action": "Editar membresía: {company}",
+          "title": "Editar membresía de compañía",
+          "description": "Actualiza la compañía asociada a esta membresía.",
+          "submit": "Guardar cambios",
+          "successTitle": "Membresía actualizada",
+          "successDescription": "Los cambios se guardaron correctamente.",
+          "errorTitle": "No se pudo actualizar la membresía"
         }
       }
     }

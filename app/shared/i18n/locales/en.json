@@ -701,7 +701,10 @@
         "columns": {
           "username": "Username",
           "email": "Email",
-          "whatsapp": "WhatsApp"
+          "whatsapp": "WhatsApp",
+          "organization": "Organization",
+          "company": "Company",
+          "context": "Context"
         }
       },
       "fields": {
@@ -816,6 +819,52 @@
           "number": "At least 1 number",
           "lowercase": "At least 1 lowercase letter",
           "uppercase": "At least 1 uppercase letter"
+        }
+      },
+      "contextSettings": {
+        "action": "Context settings"
+      },
+      "context": {
+        "fields": {
+          "company": "Company"
+        },
+        "companyPlaceholder": "Select a company",
+        "companyEmpty": "This user has no companies available",
+        "loadErrorTitle": "The user's companies could not be loaded",
+        "validation": {
+          "companyRequired": "Select a company."
+        },
+        "update": {
+          "title": "Configure company context",
+          "description": "Select the company the user will use as their active context.",
+          "submit": "Save changes",
+          "successTitle": "Context updated",
+          "successDescription": "The company context was updated successfully.",
+          "errorTitle": "Context could not be updated"
+        }
+      },
+      "membership": {
+        "action": "Create membership",
+        "title": "Create company membership",
+        "description": "Select the company the user will be added to.",
+        "fields": {
+          "company": "Company"
+        },
+        "submit": "Create membership",
+        "successTitle": "Membership created",
+        "successDescription": "The membership was created successfully.",
+        "errorTitle": "Membership could not be created",
+        "validation": {
+          "companyRequired": "Select a company."
+        },
+        "update": {
+          "action": "Edit membership: {company}",
+          "title": "Edit company membership",
+          "description": "Update the company associated with this membership.",
+          "submit": "Save changes",
+          "successTitle": "Membership updated",
+          "successDescription": "The changes were saved successfully.",
+          "errorTitle": "Membership could not be updated"
         }
       }
     }

@@ -1,3 +1,5 @@
+import type { UserCompanyMembership } from '~/features/company-memberships/types/company-membership.types'
+
 export interface UserProfile {
   id: number
   username: string
@@ -6,7 +8,11 @@ export interface UserProfile {
   email: string
   corporate_email: string
   whatsapp: string
+  organization: number
+  organization_name: string
   selected_company: number | null
+  selected_company_name: string | null
+  company_memberships: UserCompanyMembership[]
 }
 
 export interface UserProfileDetail {

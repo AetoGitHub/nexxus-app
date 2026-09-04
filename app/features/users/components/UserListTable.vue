@@ -9,6 +9,9 @@ const {
   openEditDialog,
   openPasswordDialog,
 } = useUserManagementDialog()
+const { openDialog: openMembershipDialog } = useCompanyMembershipDialog()
+const { openDialog: openMembershipEditDialog } = useCompanyMembershipEditDialog()
+const { openDialog: openContextDialog } = useUserContextDialog()
 
 const {
   users,
@@ -30,7 +33,7 @@ function displayCell(value: unknown): string {
 }
 
 function rowMenuItems(user: UserProfile): DropdownMenuItem[][] {
-  return [
+  const groups: DropdownMenuItem[][] = [
     [
       {
         label: t('configuration.user.update.edit'),
@@ -44,6 +47,22 @@ function rowMenuItems(user: UserProfile): DropdownMenuItem[][] {
       },
     ],
   ]
+
+  const membershipItems: DropdownMenuItem[] = user.company_memberships.map(membership => ({
+    label: t('configuration.user.membership.update.action', { company: membership.company_name }),
+    icon: 'i-lucide-building-2',
+    onSelect: () => openMembershipEditDialog({
+      id: membership.id,
+      company: membership.company,
+      companyName: membership.company_name,
+    }),
+  }))
+
+  if (membershipItems.length) {
+    groups.push(membershipItems)
+  }
+
+  return groups
 }
 
 const columns = computed<TableColumn<UserProfile>[]>(() => [
@@ -71,6 +90,26 @@ const columns = computed<TableColumn<UserProfile>[]>(() => [
     accessorKey: 'whatsapp',
     header: t('configuration.user.list.columns.whatsapp'),
     cell: ({ row }) => displayCell(row.getValue('whatsapp')),
+  },
+  {
+    accessorKey: 'organization_name',
+    header: t('configuration.user.list.columns.organization'),
+    cell: ({ row }) => displayCell(row.getValue('organization_name')),
+  },
+  {
+    accessorKey: 'selected_company_name',
+    header: t('configuration.user.list.columns.company'),
+    cell: ({ row }) => displayCell(row.getValue('selected_company_name')),
+  },
+  {
+    id: 'context',
+    header: t('configuration.user.list.columns.context'),
+    meta: {
+      class: {
+        th: 'w-24',
+        td: 'w-24',
+      },
+    },
   },
 ])
 
@@ -166,6 +205,38 @@ useInfiniteScroll(
               :aria-label="t('configuration.user.list.openActions')"
             />
           </UDropdownMenu>
+        </template>
+
+        <template #context-cell="{ row }">
+          <div class="flex items-center gap-1">
+            <UTooltip :text="t('configuration.user.membership.action')">
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="sm"
+                icon="i-lucide-building-2"
+                :aria-label="t('configuration.user.membership.action')"
+                @click="openMembershipDialog({
+                  profileId: row.original.id,
+                  existingCompanyIds: row.original.company_memberships.map((membership) => membership.company),
+                })"
+              />
+            </UTooltip>
+
+            <UTooltip :text="t('configuration.user.contextSettings.action')">
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="sm"
+                icon="i-lucide-settings"
+                :aria-label="t('configuration.user.contextSettings.action')"
+                @click="openContextDialog({
+                  profileId: row.original.id,
+                  currentCompanyId: row.original.selected_company,
+                })"
+              />
+            </UTooltip>
+          </div>
         </template>
       </UTable>
     </AppListTableShell>
