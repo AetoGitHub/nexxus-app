@@ -45,7 +45,11 @@ function resolveUsername(userId: number): string {
   return fromProfiles?.username ?? `#${userId}`
 }
 
-const managerName = computed(() => resolveUsername(props.group.manager))
+const managerName = computed(() =>
+  detail.value?.manager_name
+  || props.group.manager_name
+  || resolveUsername(props.group.manager),
+)
 
 const displayMembers = computed(() =>
   (detail.value?.members ?? []).filter(member => member.id !== props.group.manager),

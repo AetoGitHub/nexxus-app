@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import type { GroupFormState } from '~/features/task-settings/types/group.types'
+import type { SelectItem } from '@nuxt/ui'
+import type { CatalogueGroupMember, GroupFormState } from '~/features/task-settings/types/group.types'
 import { THEME_COLORS } from '~/features/projects/types/project.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 
 const open = defineModel<boolean>('open', { required: true })
 const form = defineModel<GroupFormState>('form', { required: true })
 
-const props = defineProps<{
-  loading?: boolean
-  /** true = edición; false = alta */
-  isEdit?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    loading?: boolean
+    /** true = edición; false = alta */
+    isEdit?: boolean
+    /** Usuarios ya asignados (detail): labels aunque no aparezcan en no_group. */
+    assignedUsers?: CatalogueGroupMember[]
+  }>(),
+  {
+    loading: false,
+    isEdit: false,
+    assignedUsers: () => [],
+  },
+)
 
 const emit = defineEmits<{
   submit: []
@@ -24,12 +34,25 @@ const { items: profileItems, profilesQuery } = useProfiles(
   { no_group: true },
 )
 
+const assignedItems = computed<SelectItem[]>(() =>
+  props.assignedUsers.map(user => ({
+    label: user.username,
+    value: user.id,
+  })),
+)
+
+function withAssignedLabels(items: SelectItem[]): SelectItem[] {
+  const seen = new Set(items.map(item => item.value))
+  const extras = assignedItems.value.filter(item => !seen.has(item.value))
+  return [...extras, ...items]
+}
+
 const memberItems = computed(() =>
-  profileItems.value.filter(item => item.value !== form.value.manager),
+  withAssignedLabels(profileItems.value).filter(item => item.value !== form.value.manager),
 )
 
 const managerSelectItems = computed(() =>
-  withEmptySelectItems(profileItems.value, t('common.noUsers'), {
+  withEmptySelectItems(withAssignedLabels(profileItems.value), t('common.noUsers'), {
     pending: profilesQuery.isPending.value,
   }),
 )

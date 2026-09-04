@@ -287,20 +287,49 @@ const nexxtepSuggestions = [
 ] as const
 
 const projectSearchTerm = ref('')
-const debouncedProjectSearch = refDebounced(projectSearchTerm, 300)
+const userSearchTerm = ref('')
 
-const { projects: projectsQuery, items: fetchedProjectItems } = useProjectsDropdown({
+const {
+  projects: projectsQuery,
+  items: fetchedProjectItems,
+  allItems: allProjectItems,
+  isSearching: isSearchingProjects,
+} = useProjectsDropdown({
   enabled: () => open.value,
-  name: debouncedProjectSearch,
+  searchTerm: projectSearchTerm,
 })
 
-const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
+const {
+  users: usersQuery,
+  list: usersList,
+  items: fetchedUserItems,
+  allItems: allUserItems,
+  isSearching: isSearchingUsers,
+} = useUsersDropdown(
   () => open.value,
+  { searchTerm: userSearchTerm },
+)
+
+function withSelectedItems<T extends { value: string | number }>(
+  items: T[],
+  selected: Array<string | number | undefined | null>,
+  catalog: T[],
+): T[] {
+  const present = new Set(items.map(item => item.value))
+  const extras = selected
+    .filter((value): value is string | number => value != null && !present.has(value))
+    .map(value => catalog.find(item => item.value === value))
+    .filter((item): item is T => item != null)
+  return extras.length ? [...extras, ...items] : items
+}
+
+const userItems = computed(() =>
+  withSelectedItems(fetchedUserItems.value, state.assignedTo, allUserItems.value),
 )
 
 const userSelectItems = computed(() =>
   withEmptySelectItems(userItems.value, t('common.noUsers'), {
-    pending: usersQuery.isPending.value,
+    pending: usersQuery.isPending.value || isSearchingUsers.value,
   }),
 )
 
@@ -308,8 +337,12 @@ const userSelectItems = computed(() =>
 const CREATE_PROJECT_VALUE = '__create_project__'
 
 const projectItems = computed(() => {
-  const items = fetchedProjectItems.value
-  if (!projectsQuery.isPending.value && items.length === 0) {
+  const items = withSelectedItems(
+    fetchedProjectItems.value,
+    [state.project],
+    allProjectItems.value,
+  )
+  if (!projectsQuery.isPending.value && !isSearchingProjects.value && fetchedProjectItems.value.length === 0) {
     return [{
       label: t('tasks.form.createProject'),
       value: CREATE_PROJECT_VALUE,
@@ -594,6 +627,7 @@ watch(open, (isOpen) => {
   if (!isOpen) {
     resetForm()
     projectSearchTerm.value = ''
+    userSearchTerm.value = ''
     submitError.value = ''
     startProcessModalOpen.value = false
     closeProcessModalOpen.value = false
@@ -1023,7 +1057,7 @@ const slideoverUi = computed(() => {
                 :search-input="{
                   icon: 'i-lucide-search',
                   placeholder: t('tasks.form.projectSearchPlaceholder'),
-                  loading: projectsQuery.isFetching.value,
+                  loading: isSearchingProjects,
                 }"
                 ignore-filter
                 class="w-full"
@@ -1052,6 +1086,7 @@ const slideoverUi = computed(() => {
             >
               <USelectMenu
                 v-model="state.assignedTo"
+                v-model:search-term="userSearchTerm"
                 multiple
                 value-key="value"
                 :items="userItems"
@@ -1062,7 +1097,9 @@ const slideoverUi = computed(() => {
                 :search-input="{
                   icon: 'i-lucide-search',
                   placeholder: t('tasks.form.assignedToSearchPlaceholder'),
+                  loading: isSearchingUsers,
                 }"
+                ignore-filter
                 class="w-full"
               />
             </UFormField>

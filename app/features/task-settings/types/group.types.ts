@@ -10,6 +10,7 @@ export interface CatalogueGroup {
   name: string
   color: string
   manager: number
+  manager_name?: string
   created_by: number
   created_at: string
 }
@@ -20,6 +21,7 @@ export interface CatalogueGroupDetail {
   name: string
   color: string
   manager: number
+  manager_name: string
   members: CatalogueGroupMember[]
   created_by: number
   created_at: string
@@ -77,4 +79,16 @@ export function createGroupFormFromDetail(detail: CatalogueGroupDetail): GroupFo
       .map(member => member.id)
       .filter(id => id !== detail.manager),
   }
+}
+
+/** Manager + members del detail para labels del select (aunque no vengan en no_group). */
+export function groupUsersFromDetail(detail: CatalogueGroupDetail): CatalogueGroupMember[] {
+  const users = new Map<number, string>()
+  if (detail.manager_name) {
+    users.set(detail.manager, detail.manager_name)
+  }
+  for (const member of detail.members) {
+    users.set(member.id, member.username)
+  }
+  return [...users.entries()].map(([id, username]) => ({ id, username }))
 }
