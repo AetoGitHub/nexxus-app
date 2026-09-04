@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { UserCompanyMembership } from '~/features/company-memberships/types/company-membership.types'
-
+import { extractResults } from '~/shared/utils/paginated.util'
 
 export function useProfileCompanyMemberships(profileId: MaybeRefOrGetter<number | null>) {
   const { $api } = useNuxtApp()
@@ -17,7 +17,7 @@ export function useProfileCompanyMemberships(profileId: MaybeRefOrGetter<number 
     }),
   })
 
-  const memberships = computed(() => query.data.value?.results ?? [])
+  const memberships = computed(() => extractResults(query.data.value))
 
   const errorMessage = computed(() =>
     query.error.value ? parseFetchError(query.error.value) : '',

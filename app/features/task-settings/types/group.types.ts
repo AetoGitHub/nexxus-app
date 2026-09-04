@@ -11,6 +11,8 @@ export interface CatalogueGroup {
   color: string
   manager: number
   manager_name?: string
+  company?: number
+  company_name?: string
   created_by: number
   created_at: string
 }
@@ -22,6 +24,8 @@ export interface CatalogueGroupDetail {
   color: string
   manager: number
   manager_name: string
+  company: number
+  company_name?: string
   members: CatalogueGroupMember[]
   created_by: number
   created_at: string
@@ -32,6 +36,7 @@ export interface CreateCatalogueGroupPayload {
   name: string
   color: string
   manager: number
+  company: number
   members: number[]
 }
 
@@ -39,6 +44,7 @@ export interface UpdateCatalogueGroupPayload {
   name: string
   color: string
   manager: number
+  company: number
   members: number[]
 }
 
@@ -47,6 +53,7 @@ export interface GroupFormState {
   /** Hex que espera el backend en create/update. */
   color: string
   manager: number | null
+  company: number | null
   members: number[]
 }
 
@@ -55,6 +62,7 @@ export function createEmptyGroupForm(): GroupFormState {
     name: '',
     color: '#ef4444',
     manager: null,
+    company: null,
     members: [],
   }
 }
@@ -65,6 +73,7 @@ export function createGroupFormFromCatalogue(group: CatalogueGroup): GroupFormSt
     name: group.name,
     color: group.color,
     manager: group.manager,
+    company: group.company ?? null,
     members: [],
   }
 }
@@ -75,6 +84,7 @@ export function createGroupFormFromDetail(detail: CatalogueGroupDetail): GroupFo
     name: detail.name,
     color: detail.color,
     manager: detail.manager,
+    company: detail.company,
     members: detail.members
       .map(member => member.id)
       .filter(id => id !== detail.manager),

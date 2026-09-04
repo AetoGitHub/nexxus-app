@@ -179,7 +179,8 @@ async function onSubmitProject() {
 async function onSubmitGroup() {
   const name = groupForm.value.name.trim()
   const manager = groupForm.value.manager
-  if (!name || !groupForm.value.color || manager == null) {
+  const company = groupForm.value.company
+  if (!name || !groupForm.value.color || manager == null || company == null) {
     return
   }
 
@@ -187,6 +188,7 @@ async function onSubmitGroup() {
     name,
     color: groupForm.value.color,
     manager,
+    company,
     members: groupForm.value.members.filter(id => id !== manager),
   }
 

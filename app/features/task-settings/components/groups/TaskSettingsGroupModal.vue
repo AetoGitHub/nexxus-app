@@ -3,6 +3,7 @@ import type { SelectItem } from '@nuxt/ui'
 import type { CatalogueGroupMember, GroupFormState } from '~/features/task-settings/types/group.types'
 import { THEME_COLORS } from '~/features/projects/types/project.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
+import { useProfileCompanyMemberships } from '~/features/company-memberships/composables/useProfileCompanyMemberships'
 
 const open = defineModel<boolean>('open', { required: true })
 const form = defineModel<GroupFormState>('form', { required: true })
@@ -28,6 +29,13 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { user } = useAuth()
+
+const profileId = computed(() => user.value?.id ?? null)
+const {
+  memberships,
+  isPending: isMembershipsPending,
+} = useProfileCompanyMemberships(profileId)
 
 const { items: profileItems, profilesQuery } = useProfiles(
   () => open.value,
@@ -71,6 +79,13 @@ const managerModel = computed({
   },
 })
 
+const companyModel = computed({
+  get: () => form.value.company ?? undefined,
+  set: (value: number | undefined) => {
+    form.value.company = value ?? null
+  },
+})
+
 watch(
   () => form.value.manager,
   (managerId) => {
@@ -96,7 +111,8 @@ const submitLabel = computed(() =>
 const canSubmit = computed(() =>
   form.value.name.trim().length > 0
   && !!form.value.color
-  && form.value.manager != null,
+  && form.value.manager != null
+  && form.value.company != null,
 )
 
 function isSelectedColor(hex: string) {
@@ -182,6 +198,27 @@ function onSubmit() {
             :placeholder="t('taskSettings.groupModal.managerPlaceholder')"
             class="w-full"
           />
+        </UFormField>
+
+        <UFormField
+          :label="t('taskSettings.groupModal.company')"
+          required
+        >
+          <USelectMenu
+            v-model="companyModel"
+            :items="memberships"
+            value-key="company"
+            label-key="company_name"
+            :loading="isMembershipsPending"
+            icon="i-lucide-building-2"
+            :placeholder="t('taskSettings.groupModal.companyPlaceholder')"
+            :search-input="false"
+            class="w-full"
+          >
+            <template #empty>
+              {{ t('taskSettings.groupModal.companyEmpty') }}
+            </template>
+          </USelectMenu>
         </UFormField>
 
         <UFormField
