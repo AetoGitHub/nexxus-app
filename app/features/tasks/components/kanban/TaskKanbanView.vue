@@ -21,7 +21,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
 }>()
 
-const { columns } = useKanbanTasks(() => props.filters)
+const { columns, loadMore } = useKanbanTasks(() => props.filters)
 const {
   pendingTaskId,
   startProcessModalOpen,
@@ -57,6 +57,7 @@ function onMove(payload: KanbanTaskMove) {
     @select="emit('select', $event)"
     @create="emit('create', $event)"
     @move="onMove"
+    @load-more="loadMore"
   />
 
   <TaskStartProcessModal

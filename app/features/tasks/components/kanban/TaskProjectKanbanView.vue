@@ -19,7 +19,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
 }>()
 
-const { projects, sections } = useProjectTasks(() => props.filters)
+const { projects, sections, loadMore } = useProjectTasks(() => props.filters)
 const columns = computed(() => sectionsToKanbanColumns(sections.value))
 
 const {
@@ -57,6 +57,7 @@ function onMove(payload: KanbanTaskMove) {
     @select="emit('select', $event)"
     @create="emit('create', $event)"
     @move="onMove"
+    @load-more="loadMore"
   />
 
   <TaskProjectMoveConfirmModal
