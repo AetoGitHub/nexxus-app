@@ -137,6 +137,7 @@
     "complete": "Completar tarea",
     "empty": "No hay tareas",
     "loadError": "No se pudieron cargar las tareas",
+    "loadingMore": "Cargando más tareas",
     "sections": {
       "all": "Todas",
       "urgent": "Urgentes",

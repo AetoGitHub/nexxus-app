@@ -1,6 +1,8 @@
+import type { InfiniteData } from '@tanstack/vue-query'
 import { useQueryClient } from '@tanstack/vue-query'
 import type { Task, TaskCounts } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
+import { prependTaskToInfiniteData } from '~/features/tasks/utils/task-infinite.util'
 
 const REALTIME_LIST_SECTIONS = [
   {
@@ -55,22 +57,17 @@ export function useListRealtimeTask() {
     const insertedCounts = new Set<ListCountKey>()
 
     for (const match of matches) {
-      queryClient.setQueriesData<PaginatedResponse<Task>>(
+      queryClient.setQueriesData<InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task>>(
         {
           queryKey: ['tasks', companyId.value, match.cacheId],
           type: 'active',
         },
         (current) => {
-          if (!current || current.results.some(task => task.id === match.task.id)) {
-            return current
+          const next = prependTaskToInfiniteData(current, match.task)
+          if (next !== current) {
+            insertedCounts.add(match.countKey)
           }
-
-          insertedCounts.add(match.countKey)
-          return {
-            ...current,
-            count: current.count == null ? undefined : current.count + 1,
-            results: [match.task, ...current.results],
-          }
+          return next
         },
       )
     }

@@ -1,6 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { TaskCounts, TaskListFilters } from '~/features/tasks/types/task.types'
+import type { TaskCounts, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
+import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
  * Server state del módulo de tareas (vista Lista) vía TanStack Query.
@@ -13,5 +14,10 @@ export function useTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const today = api.listQuery(['today'], '/due_today/')
   const upcoming = api.listQuery(['upcoming'], '/upcoming/')
 
-  return { counts, urgent, today, upcoming }
+  function loadMore(sectionId: TaskSectionKey) {
+    const queries = { urgent, today, upcoming } as const
+    fetchTaskListNextPage(queries[sectionId])
+  }
+
+  return { counts, urgent, today, upcoming, loadMore }
 }

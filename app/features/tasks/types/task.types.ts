@@ -239,6 +239,8 @@ export interface ProjectTaskSection {
   tasks: Task[]
   loading: boolean
   error: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 /** Sección genérica de lista/kanban (due, close, status, etc.). */
@@ -252,6 +254,8 @@ export interface TaskBoardSection {
   loading: boolean
   error: boolean
   comingSoon?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 export interface UserDropdown {
@@ -306,6 +310,8 @@ export interface KanbanColumn {
   error: boolean
   /** Columnas cuyo endpoint de lista aún no está listo. */
   comingSoon?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 /** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */

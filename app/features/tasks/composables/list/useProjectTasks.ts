@@ -4,11 +4,11 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 import type {
   ProjectDropdown,
   ProjectTaskCount,
   ProjectTaskSection,
-  Task,
   TaskListFilters,
 } from '~/features/tasks/types/task.types'
 
@@ -53,13 +53,15 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     queries: computed(() => {
       const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
-      return projectIds.value.map(id => {
+      return projectIds.value.map((id) => {
         const total = countsMap.get(id) ?? 0
-        return {
+        return taskListInfiniteQueryOptions({
+          $api,
           queryKey: ['tasks', companyId.value, 'project', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          url: `${tasksBase.value}/${id}/`,
+          query: query.value,
           enabled: hasCompany.value && total > 0,
-        }
+        })
       })
     }),
   })
@@ -80,11 +82,21 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
           ? resolveThemeColor(tasks[0].project_color)
           : PROJECT_SECTION_COLORS[index % PROJECT_SECTION_COLORS.length]!,
         tasks,
-        loading: total > 0 && (queryResult?.isLoading ?? false),
+        loading: total > 0 && (queryResult?.isPending ?? false),
         error: queryResult?.isError ?? false,
+        hasNextPage: queryResult?.hasNextPage ?? false,
+        isFetchingNextPage: queryResult?.isFetchingNextPage ?? false,
       }
     })
   })
 
-  return { projects, counts, sections }
+  function loadMore(sectionId: string | number) {
+    const index = projectIds.value.findIndex(id => id === Number(sectionId))
+    const queryResult = taskQueries.value[index]
+    if (queryResult) {
+      fetchTaskListNextPage(queryResult)
+    }
+  }
+
+  return { projects, counts, sections, loadMore }
 }

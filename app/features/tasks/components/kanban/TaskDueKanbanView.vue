@@ -20,7 +20,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
 }>()
 
-const { sections } = useOverdueTasks(() => props.filters)
+const { sections, loadMore } = useOverdueTasks(() => props.filters)
 const columns = computed(() => sectionsToKanbanColumns(sections.value))
 
 const {
@@ -50,6 +50,7 @@ function onMove(payload: KanbanTaskMove) {
     @select="emit('select', $event)"
     @create="emit('create', $event)"
     @move="onMove"
+    @load-more="loadMore"
   />
 
   <TaskDueMoveConfirmModal

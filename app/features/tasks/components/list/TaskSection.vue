@@ -3,7 +3,7 @@ import type { Task } from '~/features/tasks/types/task.types'
 import TaskItem from '~/features/tasks/components/list/TaskItem.vue'
 import TaskSectionBadgeFallback from '~/features/tasks/components/shared/TaskSectionBadgeFallback.vue'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     title: string
     dotColor: string
@@ -16,6 +16,8 @@ withDefaults(
     showStatus?: boolean
     /** Botón crear tarea al pie de la sección. */
     showCreate?: boolean
+    hasNextPage?: boolean
+    isFetchingNextPage?: boolean
   }>(),
   {
     count: undefined,
@@ -24,15 +26,25 @@ withDefaults(
     selectedTaskId: null,
     showStatus: false,
     showCreate: false,
+    hasNextPage: false,
+    isFetchingNextPage: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
   create: []
+  loadMore: []
 }>()
 
 const { t } = useI18n()
+const loadMoreSentinel = useTemplateRef<HTMLElement>('loadMoreSentinel')
+
+useIntersectionObserver(loadMoreSentinel, ([entry]) => {
+  if (entry?.isIntersecting && props.hasNextPage && !props.isFetchingNextPage) {
+    emit('loadMore')
+  }
+})
 </script>
 
 <template>
@@ -93,6 +105,19 @@ const { t } = useI18n()
             @select="emit('select', $event)"
           />
         </TransitionGroup>
+
+        <div
+          v-if="hasNextPage || isFetchingNextPage"
+          ref="loadMoreSentinel"
+          class="flex justify-center py-2"
+        >
+          <UIcon
+            v-if="isFetchingNextPage"
+            name="i-lucide-loader-circle"
+            class="h-4 w-4 animate-spin text-muted-foreground"
+            :aria-label="t('tasks.loadingMore')"
+          />
+        </div>
 
         <div
           v-if="showCreate"

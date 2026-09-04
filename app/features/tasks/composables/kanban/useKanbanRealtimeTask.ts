@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/vue-query'
+import { useQueryClient, type InfiniteData } from '@tanstack/vue-query'
 import type {
   AssignedTaskCount,
   KanbanCounts,
@@ -12,6 +12,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { prependTaskToInfiniteData } from '~/features/tasks/utils/task-infinite.util'
 
 const REALTIME_KANBAN_COLUMNS = [
   { id: 'pending', path: '/kanban/pending/' },
@@ -79,36 +80,17 @@ export function useKanbanRealtimeTask() {
   ) {
     let inserted = false
 
-    queryClient.setQueriesData<PaginatedResponse<Task>>(
+    queryClient.setQueriesData<InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task>>(
       {
         queryKey: ['tasks', companyId.value, ...scope, columnId],
         type: options.seedIfMissing ? 'all' : 'active',
       },
       (current) => {
-        if (!current) {
-          if (!options.seedIfMissing) {
-            return current
-          }
-
+        const next = prependTaskToInfiniteData(current, task, options.seedIfMissing)
+        if (next !== current) {
           inserted = true
-          return {
-            next: null,
-            previous: null,
-            count: 1,
-            results: [task],
-          }
         }
-
-        if (current.results.some(item => item.id === task.id)) {
-          return current
-        }
-
-        inserted = true
-        return {
-          ...current,
-          count: current.count == null ? undefined : current.count + 1,
-          results: [task, ...current.results],
-        }
+        return next
       },
     )
 

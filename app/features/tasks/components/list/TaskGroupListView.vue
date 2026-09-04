@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { groups, sections } = useGroupTasks(() => props.filters)
+const { groups, sections, loadMore } = useGroupTasks(() => props.filters)
 </script>
 
 <template>
@@ -45,11 +45,14 @@ const { groups, sections } = useGroupTasks(() => props.filters)
         :tasks="section.tasks"
         :loading="section.loading"
         :error="section.error"
+        :has-next-page="section.hasNextPage"
+        :is-fetching-next-page="section.isFetchingNextPage"
         :selected-task-id="selectedTaskId"
         show-status
         show-create
         @select="emit('select', $event)"
         @create="emit('create', { id: section.id, title: section.name })"
+        @load-more="loadMore(section.id)"
       />
     </div>
   </div>

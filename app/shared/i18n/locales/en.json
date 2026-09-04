@@ -137,6 +137,7 @@
     "complete": "Complete task",
     "empty": "No tasks",
     "loadError": "Could not load tasks",
+    "loadingMore": "Loading more tasks",
     "sections": {
       "all": "All",
       "urgent": "Urgent",
