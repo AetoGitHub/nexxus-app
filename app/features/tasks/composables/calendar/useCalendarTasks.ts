@@ -8,12 +8,13 @@ import type {
   TaskListFilters,
 } from '~/features/tasks/types/task.types'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { calendarVisibleRange } from '~/features/tasks/utils/calendar/task-calendar.util'
 
 /**
- * Tareas del mes para la vista calendario.
+ * Tareas del rango visible del calendario (mes + días colindantes).
  *
- * - Inicio / Proceso → GET .../calendar/
- * - Cierre → GET .../calendar/closing-date/
+ * - Inicio / Proceso → GET .../calendar/?date_from=&date_to=
+ * - Cierre → GET .../calendar/closing-date/?date_from=&date_to=
  *
  * Reutiliza los mismos query params que listas/Kanban (`toTaskListQuery`).
  */
@@ -26,13 +27,12 @@ export function useCalendarTasks(
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
 
-  const year = computed(() => toValue(period).year)
-  const month = computed(() => toValue(period).month)
+  const range = computed(() => calendarVisibleRange(toValue(period)))
   const resolvedPhase = computed(() => toValue(phase))
   const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
   const query = computed(() => ({
-    year: year.value,
-    month: month.value,
+    date_from: range.value.dateFrom,
+    date_to: range.value.dateTo,
     ...toTaskListQuery(toValue(filters)),
   }))
 

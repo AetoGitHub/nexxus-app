@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import type { GroupFormState } from '~/features/task-settings/types/group.types'
+import type { SelectItem } from '@nuxt/ui'
+import type { CatalogueGroupMember, GroupFormState } from '~/features/task-settings/types/group.types'
 import { THEME_COLORS } from '~/features/projects/types/project.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
+import { useProfileCompanyMemberships } from '~/features/company-memberships/composables/useProfileCompanyMemberships'
 
 const open = defineModel<boolean>('open', { required: true })
 const form = defineModel<GroupFormState>('form', { required: true })
 
-const props = defineProps<{
-  loading?: boolean
-  /** true = edición; false = alta */
-  isEdit?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    loading?: boolean
+    /** true = edición; false = alta */
+    isEdit?: boolean
+    /** Usuarios ya asignados (detail): labels aunque no aparezcan en no_group. */
+    assignedUsers?: CatalogueGroupMember[]
+  }>(),
+  {
+    loading: false,
+    isEdit: false,
+    assignedUsers: () => [],
+  },
+)
 
 const emit = defineEmits<{
   submit: []
@@ -18,18 +29,38 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { user } = useAuth()
+
+const profileId = computed(() => user.value?.id ?? null)
+const {
+  memberships,
+  isPending: isMembershipsPending,
+} = useProfileCompanyMemberships(profileId)
 
 const { items: profileItems, profilesQuery } = useProfiles(
   () => open.value,
   { no_group: true },
 )
 
+const assignedItems = computed<SelectItem[]>(() =>
+  props.assignedUsers.map(user => ({
+    label: user.username,
+    value: user.id,
+  })),
+)
+
+function withAssignedLabels(items: SelectItem[]): SelectItem[] {
+  const seen = new Set(items.map(item => item.value))
+  const extras = assignedItems.value.filter(item => !seen.has(item.value))
+  return [...extras, ...items]
+}
+
 const memberItems = computed(() =>
-  profileItems.value.filter(item => item.value !== form.value.manager),
+  withAssignedLabels(profileItems.value).filter(item => item.value !== form.value.manager),
 )
 
 const managerSelectItems = computed(() =>
-  withEmptySelectItems(profileItems.value, t('common.noUsers'), {
+  withEmptySelectItems(withAssignedLabels(profileItems.value), t('common.noUsers'), {
     pending: profilesQuery.isPending.value,
   }),
 )
@@ -45,6 +76,13 @@ const managerModel = computed({
   get: () => form.value.manager ?? undefined,
   set: (value: number | undefined) => {
     form.value.manager = value ?? null
+  },
+})
+
+const companyModel = computed({
+  get: () => form.value.company ?? undefined,
+  set: (value: number | undefined) => {
+    form.value.company = value ?? null
   },
 })
 
@@ -73,7 +111,8 @@ const submitLabel = computed(() =>
 const canSubmit = computed(() =>
   form.value.name.trim().length > 0
   && !!form.value.color
-  && form.value.manager != null,
+  && form.value.manager != null
+  && form.value.company != null,
 )
 
 function isSelectedColor(hex: string) {
@@ -159,6 +198,27 @@ function onSubmit() {
             :placeholder="t('taskSettings.groupModal.managerPlaceholder')"
             class="w-full"
           />
+        </UFormField>
+
+        <UFormField
+          :label="t('taskSettings.groupModal.company')"
+          required
+        >
+          <USelectMenu
+            v-model="companyModel"
+            :items="memberships"
+            value-key="company"
+            label-key="company_name"
+            :loading="isMembershipsPending"
+            icon="i-lucide-building-2"
+            :placeholder="t('taskSettings.groupModal.companyPlaceholder')"
+            :search-input="false"
+            class="w-full"
+          >
+            <template #empty>
+              {{ t('taskSettings.groupModal.companyEmpty') }}
+            </template>
+          </USelectMenu>
         </UFormField>
 
         <UFormField

@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { Task, TaskListFilters } from '~/features/tasks/types/task.types'
+import { getPaginatedNextPageParam } from '~/shared/utils/paginated.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 
 /**
@@ -33,10 +34,14 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
     path: string,
     options: { enabled?: MaybeRefOrGetter<boolean> } = {},
   ) {
-    return useQuery({
+    return useInfiniteQuery({
       queryKey: computed(() => ['tasks', companyId.value, ...scope, query.value]),
-      queryFn: () =>
-        $api<PaginatedResponse<Task>>(companyPath(path), { query: query.value }),
+      initialPageParam: undefined as string | undefined,
+      queryFn: ({ pageParam }) =>
+        pageParam
+          ? $api<PaginatedResponse<Task>>(pageParam)
+          : $api<PaginatedResponse<Task>>(companyPath(path), { query: query.value }),
+      getNextPageParam: getPaginatedNextPageParam,
       enabled: computed(() =>
         hasCompany.value
         && (options.enabled === undefined ? true : toValue(options.enabled)),

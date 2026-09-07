@@ -4,9 +4,9 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 import type {
   ProjectTaskSection,
-  Task,
   TaskGroupCount,
   TaskGroupListItem,
   TaskListFilters,
@@ -50,13 +50,15 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
     queries: computed(() => {
       const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
-      return groupIds.value.map(id => {
+      return groupIds.value.map((id) => {
         const total = countsMap.get(id) ?? 0
-        return {
+        return taskListInfiniteQueryOptions({
+          $api,
           queryKey: ['tasks', companyId.value, 'group', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          url: `${tasksBase.value}/${id}/`,
+          query: query.value,
           enabled: hasCompany.value && total > 0,
-        }
+        })
       })
     }),
   })
@@ -77,11 +79,21 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
           ? resolveThemeColor(group.color)
           : GROUP_SECTION_COLORS[index % GROUP_SECTION_COLORS.length]!,
         tasks,
-        loading: total > 0 && (queryResult?.isLoading ?? false),
+        loading: total > 0 && (queryResult?.isPending ?? false),
         error: queryResult?.isError ?? false,
+        hasNextPage: queryResult?.hasNextPage ?? false,
+        isFetchingNextPage: queryResult?.isFetchingNextPage ?? false,
       }
     })
   })
 
-  return { groups, counts, sections }
+  function loadMore(sectionId: string | number) {
+    const index = groupIds.value.findIndex(id => id === Number(sectionId))
+    const queryResult = taskQueries.value[index]
+    if (queryResult) {
+      fetchTaskListNextPage(queryResult)
+    }
+  }
+
+  return { groups, counts, sections, loadMore }
 }

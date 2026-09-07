@@ -4,6 +4,7 @@ import type { TaskDetail } from '~/features/tasks/types/task.types'
 
 /**
  * Detalle de una tarea vía GET /api/tasks/:id/.
+ * Incluye `generated_from` (null = maestra; id = instancia autogenerada).
  */
 export function useTaskDetail(taskId: MaybeRefOrGetter<number | null | undefined>) {
   const { $api } = useNuxtApp()

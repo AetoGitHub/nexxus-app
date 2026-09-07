@@ -18,7 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { sections } = useOverdueTasks(() => props.filters)
+const { sections, loadMore } = useOverdueTasks(() => props.filters)
 </script>
 
 <template>
@@ -32,11 +32,14 @@ const { sections } = useOverdueTasks(() => props.filters)
       :tasks="section.tasks"
       :loading="section.loading"
       :error="section.error"
+      :has-next-page="section.hasNextPage"
+      :is-fetching-next-page="section.isFetchingNextPage"
       :selected-task-id="selectedTaskId"
       show-status
       show-create
       @select="emit('select', $event)"
       @create="emit('create', { id: section.id })"
+      @load-more="loadMore(section.id)"
     />
   </div>
 </template>

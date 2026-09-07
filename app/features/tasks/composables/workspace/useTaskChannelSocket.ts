@@ -4,6 +4,7 @@ import { useCalendarRealtimeTask } from '~/features/tasks/composables/calendar/u
 import { useKanbanRealtimeTask } from '~/features/tasks/composables/kanban/useKanbanRealtimeTask'
 import { useListRealtimeTask } from '~/features/tasks/composables/list/useListRealtimeTask'
 import type {
+  CreateMultipleTasksChannelEvent,
   CreateTaskChannelEvent,
   TaskCalendarPhase,
 } from '~/features/tasks/types/task.types'
@@ -25,6 +26,24 @@ function isCreateTaskEvent(value: unknown): value is CreateTaskChannelEvent {
     && event.task_pk > 0
 }
 
+function isPositiveTaskId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
+function isCreateMultipleTasksEvent(
+  value: unknown,
+): value is CreateMultipleTasksChannelEvent {
+  if (typeof value !== 'object' || value == null) {
+    return false
+  }
+
+  const event = value as Partial<CreateMultipleTasksChannelEvent>
+  return event.event === 'create_multiple_tasks'
+    && Array.isArray(event.task_pks)
+    && event.task_pks.length > 0
+    && event.task_pks.every(isPositiveTaskId)
+}
+
 /**
  * Canal de tablero (`/ws/tasks/channel/`): solo lectura, agrupado por
  * `selected_company` del usuario. Cualquier alta/cambio de Task dispara
@@ -36,7 +55,7 @@ export function useTaskChannelSocket() {
   const queryClient = useQueryClient()
   const wsBaseUrl = useWsBaseUrl()
   const { requestTicket } = useWsTicket()
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, selectedCompanyId } = useAuth()
   const { status, isConnected } = useRealtimeStatus()
   const {
     insertCreatedTask,
@@ -167,6 +186,7 @@ export function useTaskChannelSocket() {
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let stableTimer: ReturnType<typeof setTimeout> | null = null
   let resyncTimer: ReturnType<typeof setTimeout> | null = null
+  let viewResyncTimer: ReturnType<typeof setTimeout> | null = null
   let reconnectAttempt = 0
   let ticketAuthRetryUsed = false
   let shouldResync = false
@@ -185,6 +205,10 @@ export function useTaskChannelSocket() {
     if (resyncTimer) {
       clearTimeout(resyncTimer)
       resyncTimer = null
+    }
+    if (viewResyncTimer) {
+      clearTimeout(viewResyncTimer)
+      viewResyncTimer = null
     }
   }
 
@@ -229,6 +253,88 @@ export function useTaskChannelSocket() {
       type: 'active',
       predicate: query => query.queryKey[1] !== 'messages',
     })
+  }
+
+  /** Prefijos de query de la vista/groupBy actuales (lista, kanban o calendario). */
+  function currentViewQueryKeys(): Array<Array<string | number>> {
+    const companyId = selectedCompanyId.value
+    if (companyId == null) {
+      return []
+    }
+
+    const view = queryParam('view') ?? 'list'
+    const groupBy = queryParam('groupBy') ?? 'all'
+
+    if (route.path === '/tasks/pending-approval') {
+      return [['tasks', companyId, 'close']]
+    }
+
+    if (route.path !== '/tasks') {
+      return []
+    }
+
+    if (view === 'calendar') {
+      const keys: Array<Array<string | number>> = [['tasks', companyId, 'calendar']]
+      if (groupBy === 'project') {
+        keys.push(['tasks', companyId, 'project'], ['tasks', companyId, 'projects'])
+      }
+      if (groupBy === 'group') {
+        keys.push(['tasks', companyId, 'group'], ['tasks', companyId, 'groups'])
+      }
+      if (groupBy === 'user') {
+        keys.push(['tasks', companyId, 'assigned'])
+      }
+      return keys
+    }
+
+    if (groupBy === 'due') {
+      return [['tasks', companyId, 'overdue']]
+    }
+    if (groupBy === 'project') {
+      return [['tasks', companyId, 'project'], ['tasks', companyId, 'projects']]
+    }
+    if (groupBy === 'group') {
+      return [['tasks', companyId, 'group'], ['tasks', companyId, 'groups']]
+    }
+    if (groupBy === 'user') {
+      return [['tasks', companyId, 'assigned']]
+    }
+
+    if (view === 'kanban') {
+      return [['tasks', companyId, 'kanban']]
+    }
+
+    return [
+      ['tasks', companyId, 'counts'],
+      ['tasks', companyId, 'urgent'],
+      ['tasks', companyId, 'today'],
+      ['tasks', companyId, 'upcoming'],
+    ]
+  }
+
+  function resyncCurrentView() {
+    const queryKeys = currentViewQueryKeys()
+    if (!queryKeys.length) {
+      return
+    }
+
+    for (const queryKey of queryKeys) {
+      void queryClient.invalidateQueries({
+        queryKey,
+        type: 'active',
+      })
+    }
+  }
+
+  function scheduleCurrentViewResync() {
+    if (viewResyncTimer) {
+      return
+    }
+
+    viewResyncTimer = setTimeout(() => {
+      viewResyncTimer = null
+      resyncCurrentView()
+    }, RESYNC_DEBOUNCE_MS)
   }
 
   function scheduleBoardResync() {
@@ -319,6 +425,11 @@ export function useTaskChannelSocket() {
             // Si falla una consulta puntual, recuperamos consistencia por refetch.
             scheduleBoardResync()
           })
+        return
+      }
+
+      if (isCreateMultipleTasksEvent(event)) {
+        scheduleCurrentViewResync()
         return
       }
 

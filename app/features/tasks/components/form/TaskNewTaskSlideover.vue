@@ -48,6 +48,8 @@ interface NewTaskFormState extends NewTaskFormInput {
   volumeVerifyDates: boolean
   volumeRejectDuplicates: boolean
   volumeNexxaAiAnalysis: boolean
+  setAsMaster: boolean
+  applyToAll: boolean
 }
 
 const open = defineModel<boolean>('open', { default: false })
@@ -261,6 +263,8 @@ const state = reactive<NewTaskFormState>({
   volumeRejectDuplicates: true,
   volumeNexxaAiAnalysis: true,
   repeatConfig: createDefaultRepeatConfig(),
+  setAsMaster: false,
+  applyToAll: false,
 })
 
 const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: string }[] = [
@@ -283,20 +287,49 @@ const nexxtepSuggestions = [
 ] as const
 
 const projectSearchTerm = ref('')
-const debouncedProjectSearch = refDebounced(projectSearchTerm, 300)
+const userSearchTerm = ref('')
 
-const { projects: projectsQuery, items: fetchedProjectItems } = useProjectsDropdown({
+const {
+  projects: projectsQuery,
+  items: fetchedProjectItems,
+  allItems: allProjectItems,
+  isSearching: isSearchingProjects,
+} = useProjectsDropdown({
   enabled: () => open.value,
-  name: debouncedProjectSearch,
+  searchTerm: projectSearchTerm,
 })
 
-const { users: usersQuery, list: usersList, items: userItems } = useUsersDropdown(
+const {
+  users: usersQuery,
+  list: usersList,
+  items: fetchedUserItems,
+  allItems: allUserItems,
+  isSearching: isSearchingUsers,
+} = useUsersDropdown(
   () => open.value,
+  { searchTerm: userSearchTerm },
+)
+
+function withSelectedItems<T extends { value: string | number }>(
+  items: T[],
+  selected: Array<string | number | undefined | null>,
+  catalog: T[],
+): T[] {
+  const present = new Set(items.map(item => item.value))
+  const extras = selected
+    .filter((value): value is string | number => value != null && !present.has(value))
+    .map(value => catalog.find(item => item.value === value))
+    .filter((item): item is T => item != null)
+  return extras.length ? [...extras, ...items] : items
+}
+
+const userItems = computed(() =>
+  withSelectedItems(fetchedUserItems.value, state.assignedTo, allUserItems.value),
 )
 
 const userSelectItems = computed(() =>
   withEmptySelectItems(userItems.value, t('common.noUsers'), {
-    pending: usersQuery.isPending.value,
+    pending: usersQuery.isPending.value || isSearchingUsers.value,
   }),
 )
 
@@ -304,8 +337,12 @@ const userSelectItems = computed(() =>
 const CREATE_PROJECT_VALUE = '__create_project__'
 
 const projectItems = computed(() => {
-  const items = fetchedProjectItems.value
-  if (!projectsQuery.isPending.value && items.length === 0) {
+  const items = withSelectedItems(
+    fetchedProjectItems.value,
+    [state.project],
+    allProjectItems.value,
+  )
+  if (!projectsQuery.isPending.value && !isSearchingProjects.value && fetchedProjectItems.value.length === 0) {
     return [{
       label: t('tasks.form.createProject'),
       value: CREATE_PROJECT_VALUE,
@@ -369,6 +406,8 @@ function resetForm() {
   state.volumeRejectDuplicates = true
   state.volumeNexxaAiAnalysis = true
   state.repeatConfig = createDefaultRepeatConfig()
+  state.setAsMaster = false
+  state.applyToAll = false
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -385,6 +424,8 @@ function applyFormInput(input: NewTaskFormInput) {
   state.urgent = input.urgent
   state.effort = input.effort
   state.repeatConfig = { ...input.repeatConfig }
+  state.setAsMaster = false
+  state.applyToAll = false
 }
 
 function ensureCurrentUserInReviewers() {
@@ -409,8 +450,28 @@ function startEditing() {
   }
   submitError.value = ''
   mobilePanel.value = 'detail'
+  state.setAsMaster = false
+  state.applyToAll = false
   isEditing.value = true
 }
+
+/** Tarea repetitiva autogenerada a partir de una maestra. */
+const generatedFromId = computed(() => {
+  const value = taskDetailQuery.data.value?.generated_from
+  return typeof value === 'number' && value > 0 ? value : null
+})
+
+const isRepeatSeriesEdit = computed(() =>
+  isDetailView.value && isEditing.value && state.type === 'repeat',
+)
+
+/** set_as_master solo en instancias (tienen generated_from). */
+const showSetAsMaster = computed(() =>
+  isRepeatSeriesEdit.value && generatedFromId.value != null,
+)
+
+/** apply_to_all en instancias o en la maestra (generated_from null). */
+const showApplyToAll = computed(() => isRepeatSeriesEdit.value)
 
 function cancelEditing() {
   submitError.value = ''
@@ -509,6 +570,11 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
         state,
         taskDetailQuery.data.value?.start_date,
         user.value?.id,
+        {
+          generatedFrom: generatedFromId.value,
+          setAsMaster: state.setAsMaster,
+          applyToAll: state.applyToAll,
+        },
       )
       await updateTask({ taskId: taskId.value, payload })
       isEditing.value = false
@@ -561,6 +627,7 @@ watch(open, (isOpen) => {
   if (!isOpen) {
     resetForm()
     projectSearchTerm.value = ''
+    userSearchTerm.value = ''
     submitError.value = ''
     startProcessModalOpen.value = false
     closeProcessModalOpen.value = false
@@ -932,6 +999,24 @@ const slideoverUi = computed(() => {
             :disabled="isReadOnly"
           />
 
+          <div
+            v-if="showSetAsMaster || showApplyToAll"
+            class="space-y-3"
+          >
+            <USwitch
+              v-if="showSetAsMaster"
+              v-model="state.setAsMaster"
+              :label="t('tasks.form.repeat.setAsMaster')"
+              :description="t('tasks.form.repeat.setAsMasterHelp')"
+            />
+            <USwitch
+              v-if="showApplyToAll"
+              v-model="state.applyToAll"
+              :label="t('tasks.form.repeat.applyToAll')"
+              :description="t('tasks.form.repeat.applyToAllHelp')"
+            />
+          </div>
+
           <UFormField
             :label="t('tasks.form.name')"
             name="name"
@@ -972,7 +1057,7 @@ const slideoverUi = computed(() => {
                 :search-input="{
                   icon: 'i-lucide-search',
                   placeholder: t('tasks.form.projectSearchPlaceholder'),
-                  loading: projectsQuery.isFetching.value,
+                  loading: isSearchingProjects,
                 }"
                 ignore-filter
                 class="w-full"
@@ -1001,6 +1086,7 @@ const slideoverUi = computed(() => {
             >
               <USelectMenu
                 v-model="state.assignedTo"
+                v-model:search-term="userSearchTerm"
                 multiple
                 value-key="value"
                 :items="userItems"
@@ -1011,7 +1097,9 @@ const slideoverUi = computed(() => {
                 :search-input="{
                   icon: 'i-lucide-search',
                   placeholder: t('tasks.form.assignedToSearchPlaceholder'),
+                  loading: isSearchingUsers,
                 }"
+                ignore-filter
                 class="w-full"
               />
             </UFormField>

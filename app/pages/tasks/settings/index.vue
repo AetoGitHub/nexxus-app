@@ -20,12 +20,14 @@ import {
 import type {
   CatalogueGroup,
   CatalogueGroupDetail,
+  CatalogueGroupMember,
   GroupFormState,
 } from '~/features/task-settings/types/group.types'
 import {
   createEmptyGroupForm,
   createGroupFormFromCatalogue,
   createGroupFormFromDetail,
+  groupUsersFromDetail,
 } from '~/features/task-settings/types/group.types'
 import type { EnterpriseProject } from '~/features/projects/types/project.types'
 import { useEnterpriseProjects } from '~/features/projects/composables/useEnterpriseProjects'
@@ -51,6 +53,7 @@ const editingProjectId = ref<number | null>(null)
 const groupModalOpen = ref(false)
 const groupForm = ref<GroupFormState>(createEmptyGroupForm())
 const editingGroupId = ref<number | null>(null)
+const assignedGroupUsers = ref<CatalogueGroupMember[]>([])
 
 const isEditingProject = computed(() => editingProjectId.value != null)
 const isEditingGroup = computed(() => editingGroupId.value != null)
@@ -99,12 +102,16 @@ function openEditProjectModal(project: EnterpriseProject) {
 
 function openNewGroupModal() {
   editingGroupId.value = null
+  assignedGroupUsers.value = []
   groupForm.value = createEmptyGroupForm()
   groupModalOpen.value = true
 }
 
 async function openEditGroupModal(group: CatalogueGroup) {
   editingGroupId.value = group.id
+  assignedGroupUsers.value = group.manager_name
+    ? [{ id: group.manager, username: group.manager_name }]
+    : []
   groupForm.value = createGroupFormFromCatalogue(group)
   groupModalOpen.value = true
 
@@ -114,6 +121,7 @@ async function openEditGroupModal(group: CatalogueGroup) {
       queryFn: () => $api<CatalogueGroupDetail>(`/api/catalogues/groups/${group.id}/`),
     })
     groupForm.value = createGroupFormFromDetail(detail)
+    assignedGroupUsers.value = groupUsersFromDetail(detail)
   }
   catch {
     // Prefill mínimo del listado; el toast de submit cubre fallos al guardar
@@ -171,7 +179,8 @@ async function onSubmitProject() {
 async function onSubmitGroup() {
   const name = groupForm.value.name.trim()
   const manager = groupForm.value.manager
-  if (!name || !groupForm.value.color || manager == null) {
+  const company = groupForm.value.company
+  if (!name || !groupForm.value.color || manager == null || company == null) {
     return
   }
 
@@ -179,6 +188,7 @@ async function onSubmitGroup() {
     name,
     color: groupForm.value.color,
     manager,
+    company,
     members: groupForm.value.members.filter(id => id !== manager),
   }
 
@@ -263,6 +273,7 @@ useSeoMeta({
       v-model:form="groupForm"
       :is-edit="isEditingGroup"
       :loading="isGroupMutating"
+      :assigned-users="assignedGroupUsers"
       @submit="onSubmitGroup"
     />
   </div>

@@ -2,6 +2,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { OverdueCounts, TaskBoardSection, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 const OVERDUE_SECTIONS = [
   { id: 'today', path: '/overdue/today/', labelKey: 'tasks.overdueSections.today', color: '#dc2626', countKey: 'today' as const },
@@ -46,9 +47,18 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
         tasks: extractResults(slice.data.value),
         loading: slice.isPending.value,
         error: slice.isError.value,
+        hasNextPage: slice.hasNextPage.value,
+        isFetchingNextPage: slice.isFetchingNextPage.value,
       }
     })
   })
 
-  return { counts, today, tomorrow, week, month, noDate, sections }
+  function loadMore(sectionId: string | number) {
+    const slice = sliceQueries[sectionId as keyof typeof sliceQueries]
+    if (slice) {
+      fetchTaskListNextPage(slice)
+    }
+  }
+
+  return { counts, today, tomorrow, week, month, noDate, sections, loadMore }
 }

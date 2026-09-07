@@ -26,9 +26,21 @@ const emit = defineEmits<{
   dragEnd: []
   dragOverColumn: [columnId: string | number]
   dropTask: [payload: { taskId: number, fromColumnId: string | number, toColumnId: string | number }]
+  loadMore: [columnId: string | number]
 }>()
 
 const { t } = useI18n()
+const columnScroller = useTemplateRef<HTMLElement>('columnScroller')
+
+useInfiniteScroll(
+  columnScroller,
+  () => emit('loadMore', props.column.id),
+  {
+    distance: 80,
+    canLoadMore: () =>
+      !!props.column.hasNextPage && !props.column.isFetchingNextPage,
+  },
+)
 
 const canDrop = computed(() => !props.column.loading && !props.column.error)
 const isDropTarget = computed(() => props.dropTargetId === props.column.id)
@@ -92,7 +104,10 @@ function onDrop(event: DragEvent) {
       @dragover="onDragOver"
       @drop="onDrop"
     >
-      <div class="flex-1 min-h-0 overflow-y-auto p-2 space-y-2">
+      <div
+        ref="columnScroller"
+        class="flex-1 min-h-0 overflow-y-auto p-2 space-y-2"
+      >
         <div v-if="column.loading" class="space-y-2">
           <USkeleton v-for="n in 3" :key="n" class="h-20 w-full rounded-lg" />
         </div>
@@ -135,6 +150,18 @@ function onDrop(event: DragEvent) {
             @drag-end="emit('dragEnd')"
           />
         </TransitionGroup>
+
+        <div
+          v-if="column.hasNextPage || column.isFetchingNextPage"
+          class="flex justify-center py-2"
+        >
+          <UIcon
+            v-if="column.isFetchingNextPage"
+            name="i-lucide-loader-circle"
+            class="h-4 w-4 animate-spin text-muted-foreground"
+            :aria-label="t('tasks.loadingMore')"
+          />
+        </div>
       </div>
 
       <div

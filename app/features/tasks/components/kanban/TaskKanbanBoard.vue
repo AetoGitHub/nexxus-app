@@ -33,6 +33,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
   /** Drop entre columnas; en All/Due/Project dispara el flujo de confirmación. */
   move: [payload: KanbanTaskMove]
+  loadMore: [columnId: string | number]
 }>()
 
 const { t } = useI18n()
@@ -118,6 +119,7 @@ function canCreateInColumn(columnId: string | number) {
         @drag-end="onDragEnd"
         @drag-over-column="onDragOverColumn"
         @drop-task="onDropTask"
+        @load-more="emit('loadMore', $event)"
       />
     </div>
   </div>

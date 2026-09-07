@@ -12,6 +12,8 @@ export interface KanbanSectionSource {
   loading: boolean
   error: boolean
   comingSoon?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 /** Normaliza secciones de lista al contrato Kanban. */
@@ -26,5 +28,7 @@ export function sectionsToKanbanColumns(sections: KanbanSectionSource[]): Kanban
     loading: section.loading,
     error: section.error,
     comingSoon: section.comingSoon,
+    hasNextPage: section.hasNextPage,
+    isFetchingNextPage: section.isFetchingNextPage,
   }))
 }

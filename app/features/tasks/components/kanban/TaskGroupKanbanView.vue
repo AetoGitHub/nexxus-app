@@ -18,7 +18,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
 }>()
 
-const { groups, sections } = useGroupTasks(() => props.filters)
+const { groups, sections, loadMore } = useGroupTasks(() => props.filters)
 
 const columns = computed(() => sectionsToKanbanColumns(sections.value))
 </script>
@@ -32,5 +32,6 @@ const columns = computed(() => sectionsToKanbanColumns(sections.value))
     :error="groups.isError.value"
     @select="emit('select', $event)"
     @create="emit('create', $event)"
+    @load-more="loadMore"
   />
 </template>

@@ -5,6 +5,9 @@ import type {
   TaskCalendarPhase,
 } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
+import { calendarVisibleRange } from '~/features/tasks/utils/calendar/task-calendar.util'
+
+const RANGE_QUERY_KEYS = new Set(['year', 'month', 'date_from', 'date_to'])
 
 /**
  * Refresca el único endpoint del calendario activo y reemplaza su caché.
@@ -41,10 +44,16 @@ export function useCalendarRealtimeTask() {
     }
 
     const cachedQuery = activeQueryKey[4]
+    const range = calendarVisibleRange(period)
+    const extra = typeof cachedQuery === 'object' && cachedQuery != null
+      ? Object.fromEntries(
+          Object.entries(cachedQuery).filter(([key]) => !RANGE_QUERY_KEYS.has(key)),
+        )
+      : {}
     const query = {
-      ...(typeof cachedQuery === 'object' && cachedQuery != null ? cachedQuery : {}),
-      year: period.year,
-      month: period.month,
+      ...extra,
+      date_from: range.dateFrom,
+      date_to: range.dateTo,
     }
     const calendarBase = `/api/tasks/company/${companyId.value}/calendar`
     const path = phase === 'close'

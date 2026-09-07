@@ -2,6 +2,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { KanbanColumn, KanbanCounts, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
  * Server state del Kanban (groupBy = all) vía TanStack Query.
@@ -38,6 +39,8 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         tasks: extractResults(pending.data.value),
         loading: pending.isPending.value,
         error: pending.isError.value,
+        hasNextPage: pending.hasNextPage.value,
+        isFetchingNextPage: pending.isFetchingNextPage.value,
       },
       {
         id: 'wip',
@@ -47,6 +50,8 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         tasks: extractResults(wip.data.value),
         loading: wip.isPending.value,
         error: wip.isError.value,
+        hasNextPage: wip.hasNextPage.value,
+        isFetchingNextPage: wip.isFetchingNextPage.value,
       },
       {
         id: 'in_review',
@@ -56,6 +61,8 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         tasks: extractResults(inReview.data.value),
         loading: inReview.isPending.value,
         error: inReview.isError.value,
+        hasNextPage: inReview.hasNextPage.value,
+        isFetchingNextPage: inReview.isFetchingNextPage.value,
       },
       {
         id: 'rejected',
@@ -65,6 +72,8 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         tasks: extractResults(rejected.data.value),
         loading: !countsReady.value || rejected.isPending.value,
         error: rejected.isError.value,
+        hasNextPage: rejected.hasNextPage.value,
+        isFetchingNextPage: rejected.isFetchingNextPage.value,
       },
       {
         id: 'complete',
@@ -74,11 +83,27 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         tasks: extractResults(complete.data.value),
         loading: complete.isPending.value,
         error: complete.isError.value,
+        hasNextPage: complete.hasNextPage.value,
+        isFetchingNextPage: complete.isFetchingNextPage.value,
       },
     ]
 
     return allColumns.filter(column => column.id !== 'rejected' || showRejected.value)
   })
 
-  return { counts, pending, wip, inReview, rejected, complete, columns }
+  function loadMore(columnId: string | number) {
+    const queries = {
+      pending,
+      wip,
+      in_review: inReview,
+      rejected,
+      complete,
+    } as const
+    const query = queries[columnId as keyof typeof queries]
+    if (query) {
+      fetchTaskListNextPage(query)
+    }
+  }
+
+  return { counts, pending, wip, inReview, rejected, complete, columns, loadMore }
 }

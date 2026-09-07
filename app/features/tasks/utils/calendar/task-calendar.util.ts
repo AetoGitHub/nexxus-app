@@ -1,6 +1,99 @@
 import type { EventInput } from '@fullcalendar/core'
-import type { Task, TaskCalendarPhase } from '~/features/tasks/types/task.types'
+import type {
+  CalendarDateRange,
+  CalendarMonth,
+  Task,
+  TaskCalendarPhase,
+} from '~/features/tasks/types/task.types'
 import { taskBarColor } from '~/features/tasks/utils/task-format.util'
+
+/** Letras de weekday en es; índice = domingo…sábado (0–6). */
+export const CALENDAR_WEEKDAY_LETTERS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'] as const
+
+export interface CalendarCivilDate {
+  year: number
+  month: number
+  day: number
+  weekday: number
+}
+
+/**
+ * FullCalendar marca fechas all-day como UTC midnight.
+ * En zonas UTC−N, getDay/getDate locales retroceden un día civil.
+ */
+export function calendarCivilDate(date: Date): CalendarCivilDate {
+  const isAllDayUtcMarker =
+    date.getUTCHours() === 0
+    && date.getUTCMinutes() === 0
+    && date.getUTCSeconds() === 0
+    && date.getUTCMilliseconds() === 0
+
+  if (isAllDayUtcMarker) {
+    return {
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      weekday: date.getUTCDay(),
+    }
+  }
+
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    weekday: date.getDay(),
+  }
+}
+
+export function calendarDateKey(date: Date): string {
+  const { year, month, day } = calendarCivilDate(date)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+export function calendarWeekdayLetter(date: Date): string {
+  return CALENDAR_WEEKDAY_LETTERS[calendarCivilDate(date).weekday] ?? ''
+}
+
+export function calendarWeekStartKey(date: Date, weekStartsOn: number): string {
+  const civil = calendarCivilDate(date)
+  const diff = (civil.weekday - weekStartsOn + 7) % 7
+  const start = new Date(Date.UTC(civil.year, civil.month - 1, civil.day - diff))
+  return calendarDateKey(start)
+}
+
+/** Medianoche local del día 1: evita que YYYY-MM-DD se parsee como UTC. */
+export function calendarMonthStart(period: CalendarMonth): Date {
+  return new Date(period.year, period.month - 1, 1)
+}
+
+/** Lunes: coincide con el locale `es` de FullCalendar. */
+export const CALENDAR_WEEK_STARTS_ON = 1
+
+/**
+ * Rango inclusive de la grilla del mes (semanas parciales del mes
+ * anterior y siguiente). Sept 2026 → 2026-08-31 … 2026-10-04.
+ */
+export function calendarVisibleRange(
+  period: CalendarMonth,
+  weekStartsOn = CALENDAR_WEEK_STARTS_ON,
+): CalendarDateRange {
+  const { year, month } = period
+  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
+  const leadingDays = (firstWeekday - weekStartsOn + 7) % 7
+
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const lastWeekday = new Date(Date.UTC(year, month - 1, lastDay)).getUTCDay()
+  const weekEndsOn = (weekStartsOn + 6) % 7
+  const trailingDays = (weekEndsOn - lastWeekday + 7) % 7
+
+  const from = new Date(Date.UTC(year, month - 1, 1 - leadingDays))
+  const to = new Date(Date.UTC(year, month - 1, lastDay + trailingDays))
+
+  return {
+    dateFrom: calendarDateKey(from),
+    dateTo: calendarDateKey(to),
+  }
+}
 
 /** Extrae YYYY-MM-DD de un ISO o fecha parcial. */
 function toDateOnly(value: string | null | undefined): string | null {
@@ -21,13 +114,28 @@ function nextDay(dateOnly: string): string {
   return `${year}-${month}-${day}`
 }
 
+export interface CalendarEventMeta {
+  taskId: number
+  projectName: string
+  status: string
+  type: string
+}
+
+function calendarEventMeta(task: Task): CalendarEventMeta {
+  return {
+    taskId: task.id,
+    projectName: task.project_name?.trim() ?? '',
+    status: task.status,
+    type: task.type,
+  }
+}
+
 /** `color` fuerza el color (modo por proyecto); si no, usa el de la tarea. */
 function eventColors(task: Task, color?: string) {
   const resolved = color ?? taskBarColor(task)
   return {
     backgroundColor: resolved,
     borderColor: resolved,
-    textColor: '#ffffff',
   }
 }
 
@@ -46,7 +154,7 @@ export function taskToStartCalendarEvent(task: Task, color?: string): EventInput
     title: task.short_description,
     start: startDate,
     allDay: true,
-    extendedProps: { taskId: task.id },
+    extendedProps: calendarEventMeta(task),
     ...eventColors(task, color),
   }
 }
@@ -75,7 +183,7 @@ export function taskToProcessCalendarEvent(task: Task, color?: string): EventInp
     start,
     end: endExclusive,
     allDay: true,
-    extendedProps: { taskId: task.id },
+    extendedProps: calendarEventMeta(task),
     ...eventColors(task, color),
   }
 }
@@ -95,7 +203,7 @@ export function taskToCloseCalendarEvent(task: Task, color?: string): EventInput
     title: task.short_description,
     start: closeDate,
     allDay: true,
-    extendedProps: { taskId: task.id },
+    extendedProps: calendarEventMeta(task),
     ...eventColors(task, color),
   }
 }

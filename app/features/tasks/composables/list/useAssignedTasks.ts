@@ -5,12 +5,12 @@ import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import type {
   AssignedTaskCount,
   ProjectTaskSection,
-  Task,
   TaskListFilters,
   UserDropdown,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 
 const GROUP_SECTION_COLORS = ['#6366f1', '#28ceab', '#f97316', '#8b5cf6', '#dc2626', '#6b7280']
 
@@ -45,13 +45,15 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
     queries: computed(() => {
       const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
-      return userIds.value.map(id => {
+      return userIds.value.map((id) => {
         const total = countsMap.get(id) ?? 0
-        return {
+        return taskListInfiniteQueryOptions({
+          $api,
           queryKey: ['tasks', companyId.value, 'assigned', id, query.value],
-          queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
+          url: `${tasksBase.value}/${id}/`,
+          query: query.value,
           enabled: hasCompany.value && total > 0,
-        }
+        })
       })
     }),
   })
@@ -73,11 +75,21 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
           ? resolveThemeColor(tasks[0].project_color)
           : fallbackColor,
         tasks,
-        loading: total > 0 && (queryResult?.isLoading ?? false),
+        loading: total > 0 && (queryResult?.isPending ?? false),
         error: queryResult?.isError ?? false,
+        hasNextPage: queryResult?.hasNextPage ?? false,
+        isFetchingNextPage: queryResult?.isFetchingNextPage ?? false,
       }
     })
   })
 
-  return { users, counts, sections }
+  function loadMore(sectionId: string | number) {
+    const index = userIds.value.findIndex(id => id === Number(sectionId))
+    const queryResult = taskQueries.value[index]
+    if (queryResult) {
+      fetchTaskListNextPage(queryResult)
+    }
+  }
+
+  return { users, counts, sections, loadMore }
 }

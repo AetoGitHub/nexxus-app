@@ -66,6 +66,10 @@ export interface UpdateTaskPayload {
   assigned_to: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
+  /** Convierte esta instancia en la plantilla maestra. Solo si type=repeat y hay generated_from. */
+  set_as_master?: boolean
+  /** Aplica los cambios a todas las instancias de la serie. Solo si type=repeat. */
+  apply_to_all?: boolean
 }
 
 /** PATCH parcial para mover vencimiento en Kanban Due. */
@@ -91,6 +95,12 @@ export type TaskCalendarPhase = 'start' | 'process' | 'close'
 export interface CalendarMonth {
   year: number
   month: number
+}
+
+/** Rango visible del mes, inclusive, con días del mes previo y siguiente. */
+export interface CalendarDateRange {
+  dateFrom: string
+  dateTo: string
 }
 
 export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
@@ -161,12 +171,21 @@ export interface CreateTaskChannelEvent {
   user: number[]
 }
 
+export interface CreateMultipleTasksChannelEvent {
+  event: 'create_multiple_tasks'
+  task_pks: number[]
+  user: number[]
+}
+
 export interface UnknownTaskChannelEvent {
   event: string
   [key: string]: unknown
 }
 
-export type TaskChannelEvent = CreateTaskChannelEvent | UnknownTaskChannelEvent
+export type TaskChannelEvent =
+  | CreateTaskChannelEvent
+  | CreateMultipleTasksChannelEvent
+  | UnknownTaskChannelEvent
 
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {
@@ -175,6 +194,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   assigned_to: number[]
   recurrence: boolean
   repeat_config?: TaskRepeatConfig | null
+  /** Id de la tarea maestra; null si esta es la original. */
+  generated_from: number | null
   finish_at: string | null
   updated_at: string
   process_tasks: TaskProcessEntry[]
@@ -218,6 +239,8 @@ export interface ProjectTaskSection {
   tasks: Task[]
   loading: boolean
   error: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 /** Sección genérica de lista/kanban (due, close, status, etc.). */
@@ -231,6 +254,8 @@ export interface TaskBoardSection {
   loading: boolean
   error: boolean
   comingSoon?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 export interface UserDropdown {
@@ -285,6 +310,8 @@ export interface KanbanColumn {
   error: boolean
   /** Columnas cuyo endpoint de lista aún no está listo. */
   comingSoon?: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
 }
 
 /** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */

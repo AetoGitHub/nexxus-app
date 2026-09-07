@@ -106,7 +106,7 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
     class="rounded-lg border border-border bg-card box-border"
     :class="stacked
       ? 'flex flex-col gap-4 px-3 py-3'
-      : 'mb-2 px-3 py-2 flex items-start gap-3 flex-wrap h-full'"
+      : 'mb-2 px-3 py-2 flex items-end gap-3 flex-wrap h-full'"
   >
     <UFormField
       v-if="!hideSearch"
@@ -205,16 +205,14 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       :class="stacked
         ? 'w-full flex-col items-stretch gap-3'
         : alignControlsStart
-          ? 'shrink-0 flex-col items-start gap-2'
-          : 'ml-auto shrink-0 flex-col items-end gap-2'"
+          ? 'shrink-0 items-center gap-4'
+          : 'ml-auto shrink-0 items-center gap-4'"
     >
       <div
         class="flex flex-wrap gap-4"
         :class="stacked
           ? 'flex-col items-stretch gap-3'
-          : alignControlsStart
-            ? 'h-8 items-center justify-start'
-            : 'h-8 items-center justify-end'"
+          : 'h-8 items-center'"
       >
         <USwitch
           v-for="booleanFilter in BOOLEAN_FILTERS"
