@@ -777,6 +777,18 @@
           "emailInvalid": "Enter a valid email.",
           "whatsappRequired": "WhatsApp is required.",
           "usersMin": "Add at least one user."
+        },
+        "result": {
+          "title": "Users created",
+          "description": "Copy and share the generated passwords. You won't be able to see them again after closing this window.",
+          "usernameLabel": "Username",
+          "passwordLabel": "Password",
+          "copyAll": "Copy all",
+          "copyOne": "Copy password",
+          "copySuccess": "Copied {username}'s password",
+          "copyAllSuccess": "All passwords were copied",
+          "copyError": "Could not copy to clipboard",
+          "close": "Close"
         }
       },
       "update": {

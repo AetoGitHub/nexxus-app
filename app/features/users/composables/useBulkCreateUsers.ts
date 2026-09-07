@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { BulkCreateUsersPayload } from '~/features/users/types/user.types'
+import type { BulkCreatedUserCredential, BulkCreateUsersPayload } from '~/features/users/types/user.types'
 
 export function useBulkCreateUsers() {
   const { $api } = useNuxtApp()
@@ -9,7 +9,7 @@ export function useBulkCreateUsers() {
 
   return useMutation({
     mutationFn: (payload: BulkCreateUsersPayload) =>
-      $api('/api/tools/user/bulk_create/', {
+      $api<BulkCreatedUserCredential[]>('/api/tools/user/bulk_create/', {
         method: 'POST',
         body: payload,
       }),

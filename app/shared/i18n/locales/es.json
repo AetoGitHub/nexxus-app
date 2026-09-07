@@ -777,6 +777,18 @@
           "emailInvalid": "Ingresa un correo válido.",
           "whatsappRequired": "El WhatsApp es obligatorio.",
           "usersMin": "Agrega al menos un usuario."
+        },
+        "result": {
+          "title": "Usuarios creados",
+          "description": "Copia y comparte las contraseñas generadas. No podrás volver a verlas después de cerrar esta ventana.",
+          "usernameLabel": "Usuario",
+          "passwordLabel": "Contraseña",
+          "copyAll": "Copiar todas",
+          "copyOne": "Copiar contraseña",
+          "copySuccess": "Contraseña de {username} copiada",
+          "copyAllSuccess": "Se copiaron todas las contraseñas",
+          "copyError": "No se pudo copiar al portapapeles",
+          "close": "Cerrar"
         }
       },
       "update": {

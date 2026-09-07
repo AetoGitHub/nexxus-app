@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
 import BulkCompanySelect from '~/features/users/components/BulkCompanySelect.vue'
+import UserBulkCreateResultModal from '~/features/users/components/UserBulkCreateResultModal.vue'
 import type { BulkUserSchema } from '~/features/users/schemas/bulk-user.schema'
-import type { BulkCreateUserItem } from '~/features/users/types/user.types'
+import type { BulkCreatedUserCredential, BulkCreateUserItem } from '~/features/users/types/user.types'
 
 interface BulkUserFormState {
   company?: number
@@ -28,6 +29,9 @@ const state = reactive<BulkUserFormState>({
   company: undefined,
   users: [createEmptyUser()],
 })
+
+const isResultModalOpen = ref(false)
+const createdCredentials = ref<BulkCreatedUserCredential[]>([])
 
 function createEmptyUser(): BulkCreateUserItem {
   return {
@@ -68,17 +72,22 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
   }
 
   try {
-    await bulkCreate.mutateAsync({
+    const credentials = await bulkCreate.mutateAsync({
       organization: organizationId,
       company: event.data.company,
       users: event.data.users,
     })
-    await navigateTo('/configuration/user')
+    createdCredentials.value = credentials
+    isResultModalOpen.value = true
   }
   catch {
     // El composable presenta el error ya interpretado.
   }
 }
+
+watch(isResultModalOpen, (isOpenValue) => {
+  if (!isOpenValue) navigateTo('/configuration/user')
+})
 </script>
 
 <template>
@@ -204,5 +213,10 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
         </div>
       </UForm>
     </UCard>
+
+    <UserBulkCreateResultModal
+      v-model="isResultModalOpen"
+      :credentials="createdCredentials"
+    />
   </div>
 </template>

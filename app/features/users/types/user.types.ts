@@ -64,3 +64,8 @@ export interface BulkCreateUsersPayload {
   company: number
   users: BulkCreateUserItem[]
 }
+
+export interface BulkCreatedUserCredential {
+  username: string
+  password: string
+}
