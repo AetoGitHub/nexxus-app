@@ -40,8 +40,35 @@ function createInitialState(): UserContextFormState {
 
 const state = reactive<UserContextFormState>(createInitialState())
 
+const currentCompanyId = ref<number | null>(null)
+const currentCompanyName = ref<string | null>(null)
+
+/**
+ * Garantiza que la compañía actual del usuario aparezca en las opciones aunque
+ * la paginación de memberships aún no la haya cargado (evita que el select
+ * muestre el id crudo por no encontrar coincidencia en `items`).
+ */
+const selectItems = computed(() => {
+  const id = currentCompanyId.value
+  if (id == null || memberships.value.some(m => m.company === id)) {
+    return memberships.value
+  }
+
+  return [
+    {
+      id: -1,
+      company: id,
+      company_name: currentCompanyName.value ?? String(id),
+      created_at: '',
+    },
+    ...memberships.value,
+  ]
+})
+
 function applyContext(context: EditingUserContext) {
   state.company = context.currentCompanyId ?? undefined
+  currentCompanyId.value = context.currentCompanyId
+  currentCompanyName.value = context.currentCompanyName
 }
 
 function resetForm() {
@@ -138,7 +165,7 @@ async function onSubmit(event: FormSubmitEvent<UserContextSchema>) {
         >
           <USelectMenu
             v-model="state.company"
-            :items="memberships"
+            :items="selectItems"
             value-key="company"
             label-key="company_name"
             icon="i-lucide-building-2"

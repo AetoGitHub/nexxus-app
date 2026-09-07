@@ -233,6 +233,7 @@ useInfiniteScroll(
                 @click="openContextDialog({
                   profileId: row.original.id,
                   currentCompanyId: row.original.selected_company,
+                  currentCompanyName: row.original.selected_company_name,
                 })"
               />
             </UTooltip>
