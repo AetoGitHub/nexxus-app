@@ -323,8 +323,20 @@ function withSelectedItems<T extends { value: string | number }>(
   return extras.length ? [...extras, ...items] : items
 }
 
+/** Fallback inmediato para el usuario logueado, mientras el dropdown de usuarios aún no cargó. */
+const currentUserFallbackItems = computed(() => {
+  if (user.value?.id == null) {
+    return []
+  }
+  return [{ label: user.value.username, value: user.value.id }]
+})
+
 const userItems = computed(() =>
-  withSelectedItems(fetchedUserItems.value, state.assignedTo, allUserItems.value),
+  withSelectedItems(
+    fetchedUserItems.value,
+    state.assignedTo,
+    [...allUserItems.value, ...currentUserFallbackItems.value],
+  ),
 )
 
 const userSelectItems = computed(() =>
@@ -643,6 +655,12 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
+    if (!state.assignedTo.length && user.value?.id != null) {
+      state.assignedTo = [user.value.id]
+    }
+    if (!state.dueDate) {
+      state.dueDate = minDueDate.value
+    }
   }
 })
 
