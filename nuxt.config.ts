@@ -49,7 +49,16 @@ export default defineNuxtConfig({
   app: {
     head: {
       titleTemplate: "Nexxus - %s",
-      link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+        { rel: "manifest", href: "/manifest.webmanifest" },
+      ],
+      meta: [
+        { name: "apple-mobile-web-app-title", content: "ERP" },
+        { name: "apple-mobile-web-app-capable", content: "yes" },
+        { name: "theme-color", content: "#28ceab" },
+      ],
     },
   },
 

@@ -763,6 +763,7 @@
         "usersTitle": "New users",
         "usersDescription": "All fields are required for each user.",
         "addUser": "Add another user",
+        "userNumber": "User {number}",
         "removeUser": "Remove user {number}",
         "submit": "Create users",
         "successTitle": "Users created",
@@ -773,10 +774,24 @@
         "validation": {
           "companyRequired": "Select a company.",
           "usernameRequired": "Username is required.",
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
           "emailRequired": "Email is required.",
           "emailInvalid": "Enter a valid email.",
           "whatsappRequired": "WhatsApp is required.",
           "usersMin": "Add at least one user."
+        },
+        "result": {
+          "title": "Users created",
+          "description": "Copy and share the generated passwords. You won't be able to see them again after closing this window.",
+          "usernameLabel": "Username",
+          "passwordLabel": "Password",
+          "copyAll": "Copy all",
+          "copyOne": "Copy password",
+          "copySuccess": "Copied {username}'s password",
+          "copyAllSuccess": "All passwords were copied",
+          "copyError": "Could not copy to clipboard",
+          "close": "Close"
         }
       },
       "update": {

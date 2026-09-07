@@ -5,6 +5,7 @@ import type {
   Task,
   TaskCalendarPhase,
 } from '~/features/tasks/types/task.types'
+import { getReadableTextColor } from '~/features/projects/utils/project-color.util'
 import { taskBarColor } from '~/features/tasks/utils/task-format.util'
 
 /** Letras de weekday en es; índice = domingo…sábado (0–6). */
@@ -130,12 +131,17 @@ function calendarEventMeta(task: Task): CalendarEventMeta {
   }
 }
 
-/** `color` fuerza el color (modo por proyecto); si no, usa el de la tarea. */
+/**
+ * `color` fuerza el color (modo por proyecto); si no, usa el de la tarea.
+ * `textColor` se deriva del brillo del fondo para que el texto y los badges
+ * del evento sean legibles sin importar qué color haya elegido el usuario.
+ */
 function eventColors(task: Task, color?: string) {
   const resolved = color ?? taskBarColor(task)
   return {
     backgroundColor: resolved,
     borderColor: resolved,
+    textColor: getReadableTextColor(resolved),
   }
 }
 

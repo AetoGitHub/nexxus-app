@@ -15,4 +15,5 @@ export interface UserContextResponse {
 export interface EditingUserContext {
   profileId: number
   currentCompanyId: number | null
+  currentCompanyName: string | null
 }

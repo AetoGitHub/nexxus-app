@@ -763,6 +763,7 @@
         "usersTitle": "Usuarios nuevos",
         "usersDescription": "Todos los campos son obligatorios para cada usuario.",
         "addUser": "Agregar otro usuario",
+        "userNumber": "Usuario {number}",
         "removeUser": "Eliminar usuario {number}",
         "submit": "Crear usuarios",
         "successTitle": "Usuarios creados",
@@ -773,10 +774,24 @@
         "validation": {
           "companyRequired": "Selecciona una compañía.",
           "usernameRequired": "El nombre de usuario es obligatorio.",
+          "firstNameRequired": "El nombre es obligatorio.",
+          "lastNameRequired": "El apellido es obligatorio.",
           "emailRequired": "El correo es obligatorio.",
           "emailInvalid": "Ingresa un correo válido.",
           "whatsappRequired": "El WhatsApp es obligatorio.",
           "usersMin": "Agrega al menos un usuario."
+        },
+        "result": {
+          "title": "Usuarios creados",
+          "description": "Copia y comparte las contraseñas generadas. No podrás volver a verlas después de cerrar esta ventana.",
+          "usernameLabel": "Usuario",
+          "passwordLabel": "Contraseña",
+          "copyAll": "Copiar todas",
+          "copyOne": "Copiar contraseña",
+          "copySuccess": "Contraseña de {username} copiada",
+          "copyAllSuccess": "Se copiaron todas las contraseñas",
+          "copyError": "No se pudo copiar al portapapeles",
+          "close": "Cerrar"
         }
       },
       "update": {

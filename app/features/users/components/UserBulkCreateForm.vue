@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
 import BulkCompanySelect from '~/features/users/components/BulkCompanySelect.vue'
+import UserBulkCreateResultModal from '~/features/users/components/UserBulkCreateResultModal.vue'
 import type { BulkUserSchema } from '~/features/users/schemas/bulk-user.schema'
-import type { BulkCreateUserItem } from '~/features/users/types/user.types'
+import type { BulkCreatedUserCredential, BulkCreateUserItem } from '~/features/users/types/user.types'
 
 interface BulkUserFormState {
   company?: number
@@ -18,6 +19,8 @@ const form = useTemplateRef<Form<BulkUserSchema>>('form')
 const schema = computed(() => createBulkUserSchema({
   companyRequired: t('configuration.user.bulkCreate.validation.companyRequired'),
   userRequired: t('configuration.user.bulkCreate.validation.usernameRequired'),
+  firstNameRequired: t('configuration.user.bulkCreate.validation.firstNameRequired'),
+  lastNameRequired: t('configuration.user.bulkCreate.validation.lastNameRequired'),
   emailRequired: t('configuration.user.bulkCreate.validation.emailRequired'),
   emailInvalid: t('configuration.user.bulkCreate.validation.emailInvalid'),
   whatsappRequired: t('configuration.user.bulkCreate.validation.whatsappRequired'),
@@ -29,9 +32,14 @@ const state = reactive<BulkUserFormState>({
   users: [createEmptyUser()],
 })
 
+const isResultModalOpen = ref(false)
+const createdCredentials = ref<BulkCreatedUserCredential[]>([])
+
 function createEmptyUser(): BulkCreateUserItem {
   return {
     username: '',
+    first_name: '',
+    last_name: '',
     email: '',
     whatsapp: '',
   }
@@ -68,17 +76,22 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
   }
 
   try {
-    await bulkCreate.mutateAsync({
+    const credentials = await bulkCreate.mutateAsync({
       organization: organizationId,
       company: event.data.company,
       users: event.data.users,
     })
-    await navigateTo('/configuration/user')
+    createdCredentials.value = credentials
+    isResultModalOpen.value = true
   }
   catch {
     // El composable presenta el error ya interpretado.
   }
 }
+
+watch(isResultModalOpen, (isOpenValue) => {
+  if (!isOpenValue) navigateTo('/configuration/user')
+})
 </script>
 
 <template>
@@ -133,51 +146,12 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
             <div
               v-for="(user, index) in state.users"
               :key="index"
-              class="grid items-start gap-3 rounded-lg border border-default p-3 md:grid-cols-[1fr_1fr_1fr_auto]"
+              class="space-y-3 rounded-lg border border-default p-3"
             >
-              <UFormField
-                :name="`users.${index}.username`"
-                :label="t('configuration.user.fields.username')"
-                required
-              >
-                <UInput
-                  :model-value="user.username"
-                  :placeholder="t('configuration.user.placeholders.username')"
-                  autocomplete="off"
-                  class="w-full"
-                  @update:model-value="updateUsername(index, $event)"
-                />
-              </UFormField>
-
-              <UFormField
-                :name="`users.${index}.email`"
-                :label="t('configuration.user.fields.email')"
-                required
-              >
-                <UInput
-                  v-model="user.email"
-                  type="email"
-                  :placeholder="t('configuration.user.placeholders.email')"
-                  autocomplete="off"
-                  class="w-full"
-                />
-              </UFormField>
-
-              <UFormField
-                :name="`users.${index}.whatsapp`"
-                :label="t('configuration.user.fields.whatsapp')"
-                required
-              >
-                <UInput
-                  v-model="user.whatsapp"
-                  type="tel"
-                  :placeholder="t('configuration.user.placeholders.whatsapp')"
-                  autocomplete="off"
-                  class="w-full"
-                />
-              </UFormField>
-
-              <div class="flex h-8 items-center md:mt-6">
+              <div class="flex items-start justify-between gap-3">
+                <span class="pt-1.5 text-xs font-medium text-muted">
+                  {{ t('configuration.user.bulkCreate.userNumber', { number: index + 1 }) }}
+                </span>
                 <UButton
                   type="button"
                   color="error"
@@ -188,6 +162,78 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
                   :aria-label="t('configuration.user.bulkCreate.removeUser', { number: index + 1 })"
                   @click="removeUser(index)"
                 />
+              </div>
+
+              <div class="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <UFormField
+                  :name="`users.${index}.username`"
+                  :label="t('configuration.user.fields.username')"
+                  required
+                >
+                  <UInput
+                    :model-value="user.username"
+                    :placeholder="t('configuration.user.placeholders.username')"
+                    autocomplete="off"
+                    class="w-full"
+                    @update:model-value="updateUsername(index, $event)"
+                  />
+                </UFormField>
+
+                <UFormField
+                  :name="`users.${index}.first_name`"
+                  :label="t('configuration.user.fields.firstName')"
+                  required
+                >
+                  <UInput
+                    v-model="user.first_name"
+                    :placeholder="t('configuration.user.placeholders.firstName')"
+                    autocomplete="given-name"
+                    class="w-full"
+                  />
+                </UFormField>
+
+                <UFormField
+                  :name="`users.${index}.last_name`"
+                  :label="t('configuration.user.fields.lastName')"
+                  required
+                >
+                  <UInput
+                    v-model="user.last_name"
+                    :placeholder="t('configuration.user.placeholders.lastName')"
+                    autocomplete="family-name"
+                    class="w-full"
+                  />
+                </UFormField>
+              </div>
+
+              <div class="grid items-start gap-3 sm:grid-cols-2">
+                <UFormField
+                  :name="`users.${index}.email`"
+                  :label="t('configuration.user.fields.email')"
+                  required
+                >
+                  <UInput
+                    v-model="user.email"
+                    type="email"
+                    :placeholder="t('configuration.user.placeholders.email')"
+                    autocomplete="off"
+                    class="w-full"
+                  />
+                </UFormField>
+
+                <UFormField
+                  :name="`users.${index}.whatsapp`"
+                  :label="t('configuration.user.fields.whatsapp')"
+                  required
+                >
+                  <UInput
+                    v-model="user.whatsapp"
+                    type="tel"
+                    :placeholder="t('configuration.user.placeholders.whatsapp')"
+                    autocomplete="off"
+                    class="w-full"
+                  />
+                </UFormField>
               </div>
             </div>
           </div>
@@ -204,5 +250,10 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
         </div>
       </UForm>
     </UCard>
+
+    <UserBulkCreateResultModal
+      v-model="isResultModalOpen"
+      :credentials="createdCredentials"
+    />
   </div>
 </template>

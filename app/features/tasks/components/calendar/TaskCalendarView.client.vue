@@ -616,6 +616,7 @@ watch(
             :project-name="String(arg.event.extendedProps.projectName ?? '')"
             :status="String(arg.event.extendedProps.status ?? '')"
             :type="String(arg.event.extendedProps.type ?? '')"
+            :text-color="arg.event.textColor || 'var(--foreground)'"
             :show-badges="arg.isStart"
           />
         </template>
@@ -938,7 +939,7 @@ watch(
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.25;
-  color: var(--foreground);
+  color: inherit;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

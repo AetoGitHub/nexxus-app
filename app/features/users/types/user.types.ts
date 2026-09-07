@@ -55,6 +55,8 @@ export interface ChangePasswordVariables {
 
 export interface BulkCreateUserItem {
   username: string
+  first_name: string
+  last_name: string
   email: string
   whatsapp: string
 }
@@ -63,4 +65,9 @@ export interface BulkCreateUsersPayload {
   organization: number
   company: number
   users: BulkCreateUserItem[]
+}
+
+export interface BulkCreatedUserCredential {
+  username: string
+  password: string
 }
