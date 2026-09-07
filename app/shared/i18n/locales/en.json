@@ -763,6 +763,7 @@
         "usersTitle": "New users",
         "usersDescription": "All fields are required for each user.",
         "addUser": "Add another user",
+        "userNumber": "User {number}",
         "removeUser": "Remove user {number}",
         "submit": "Create users",
         "successTitle": "Users created",
@@ -773,6 +774,8 @@
         "validation": {
           "companyRequired": "Select a company.",
           "usernameRequired": "Username is required.",
+          "firstNameRequired": "First name is required.",
+          "lastNameRequired": "Last name is required.",
           "emailRequired": "Email is required.",
           "emailInvalid": "Enter a valid email.",
           "whatsappRequired": "WhatsApp is required.",

@@ -1,6 +1,8 @@
 interface BulkUserSchemaMessages {
   companyRequired: string
   userRequired: string
+  firstNameRequired: string
+  lastNameRequired: string
   emailRequired: string
   emailInvalid: string
   whatsappRequired: string
@@ -17,6 +19,12 @@ export function createBulkUserSchema(messages: BulkUserSchemaMessages) {
         .trim()
         .min(1, messages.userRequired)
         .transform(value => value.toLocaleUpperCase()),
+      first_name: z.string({ error: messages.firstNameRequired })
+        .trim()
+        .min(1, messages.firstNameRequired),
+      last_name: z.string({ error: messages.lastNameRequired })
+        .trim()
+        .min(1, messages.lastNameRequired),
       email: z.string({ error: messages.emailRequired })
         .trim()
         .min(1, messages.emailRequired)
