@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/vue-query'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { UserProfile } from '~/features/users/types/user.types'
 
-const USERS_ENDPOINT = '/api/auth/profiles/'
+const USERS_ENDPOINT = '/api/auth/profiles/?all=true'
 
 function toRelativeApiUrl(url: string): string {
   try {
