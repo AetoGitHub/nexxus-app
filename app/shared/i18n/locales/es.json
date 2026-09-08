@@ -98,6 +98,8 @@
     "filterOverdue": "Vencidas",
     "filterCompleted": "Completadas",
     "filterMultipleClose": "Cierre múltiple",
+    "adminView": "Admin",
+    "groupManagerView": "Mi grupo",
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
@@ -140,9 +142,11 @@
     "loadingMore": "Cargando más tareas",
     "sections": {
       "all": "Todas",
+      "backlog": "Backlog",
       "urgent": "Urgentes",
       "today": "Hoy",
-      "upcoming": "Próximas"
+      "upcoming": "Próximas",
+      "archived": "Archivados"
     },
     "groupBy": {
       "all": "Todas",
@@ -175,11 +179,13 @@
     },
     "kanban": {
       "columns": {
+        "backlog": "Backlog",
         "pending": "Pendiente",
         "wip": "En progreso",
         "inReview": "En revisión",
         "rejected": "Rechazada",
-        "complete": "Completado"
+        "complete": "Completado",
+        "archived": "Archivadas"
       },
       "createTask": "Crear tarea",
       "dropHere": "Suelta aquí",
@@ -292,6 +298,18 @@
       "successDescription": "La tarea se archivó correctamente.",
       "errorTitle": "No se pudo archivar la tarea"
     },
+    "processUnarchive": {
+      "submit": "Desarchivar",
+      "modalTitle": "Desarchivar tarea",
+      "modalDescription": "¿Estás seguro de que quieres desarchivar esta tarea?",
+      "comment": "Comentario",
+      "commentPlaceholder": "Motivo del desarchivado",
+      "optional": "Opcional",
+      "confirm": "Desarchivar",
+      "successTitle": "Tarea desarchivada",
+      "successDescription": "La tarea se desarchivó correctamente.",
+      "errorTitle": "No se pudo desarchivar la tarea"
+    },
     "due": {
       "today": "Hoy",
       "tomorrow": "Mañana",
@@ -319,6 +337,7 @@
       "unknown": "Otro"
     },
     "form": {
+      "backlogToggle": "Crear task en backlog",
       "taskType": "Tipo de Tarea",
       "name": "Nombre",
       "namePlaceholder": "¿Qué hay que hacer?",
@@ -467,6 +486,7 @@
       "reconnecting": "Reconectando",
       "offline": "Sin conexión",
       "connectionErrorTitle": "No se pudo conectar al chat en tiempo real",
+      "archivedNotice": "Esta tarea está archivada. No se pueden enviar mensajes.",
       "system": {
         "taskCreated": "Tarea creada.",
         "taskUpdated": "Tarea actualizada.",

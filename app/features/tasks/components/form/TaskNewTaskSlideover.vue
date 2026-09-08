@@ -9,12 +9,14 @@ import type {
   TaskView,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
+import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
+import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
@@ -23,6 +25,7 @@ import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartPro
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatConfigFields.vue'
 import {
+  buildCreateBacklogTaskPayload,
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
   defaultTaskReviewers,
@@ -87,6 +90,7 @@ const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const reopenProcessModalOpen = ref(false)
 const archiveProcessModalOpen = ref(false)
+const unarchiveProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
@@ -95,6 +99,8 @@ const isEditing = ref(false)
 const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
 /** En mobile: panel visible (mensajes o detalle). En sm+ se muestran ambos. */
 const mobilePanel = ref<'detail' | 'messages'>('detail')
+/** Modo creación rápida en backlog: solo name/description/project, type fijo en manual. */
+const isBacklog = ref(false)
 
 /** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
 const minDueDate = computed(() => {
@@ -106,10 +112,14 @@ const minDueDate = computed(() => {
 })
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
+const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
-const isSaving = computed(() => isPending.value || isUpdating.value)
+const isSaving = computed(() => isPending.value || isCreatingBacklog.value || isUpdating.value)
+
+/** Backlog: solo aplica al crear (no en detalle/edición). */
+const isBacklogMode = computed(() => !isDetailView.value && isBacklog.value)
 
 /** Campos obligatorios listos para crear/guardar. */
 const canSubmit = computed(() => {
@@ -118,6 +128,9 @@ const canSubmit = computed(() => {
   }
   if (state.project == null) {
     return false
+  }
+  if (isBacklogMode.value) {
+    return true
   }
   if (!state.assignedTo.length) {
     return false
@@ -159,21 +172,26 @@ const hasUserAlreadyAuthorized = computed(() => userCloseApproval.value?.closed 
 /** En accepted solo se muestra Close; en el resto Rejected + Authorize. */
 const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'accepted')
 
+/** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
+const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
+
 /** Acciones Rejected/Authorize en pending-approval (todas las secciones menos accepted). */
 const showAuthorizeActions = computed(() =>
   props.authorizeMode
   && isDetailView.value
   && !isEditing.value
-  && !isAcceptedToUpdateSection.value,
+  && !isAcceptedToUpdateSection.value
+  && !isArchived.value,
 )
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
 
-/** Detalle con acciones de proceso (fuera de pending-approval). */
+/** Detalle con acciones de proceso (fuera de pending-approval; ninguna si está archivada). */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
   && !props.authorizeMode
+  && !isArchived.value
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -237,12 +255,20 @@ const showArchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
   && taskDetailQuery.data.value != null
-  && taskDetailQuery.data.value.status !== 'archived',
+  && !isArchived.value,
 )
 
-/** Completada: sin lápiz; solo se edita tras reabrir. */
+/** Detalle: desarchivar (solo si ya está archivada). */
+const showUnarchiveProcess = computed(() =>
+  isDetailView.value
+  && !isEditing.value
+  && isArchived.value,
+)
+
+/** Completada o archivada: sin lápiz; solo se edita tras reabrir/desarchivar. */
 const canEditTask = computed(() =>
-  taskDetailQuery.data.value?.status !== 'complete',
+  taskDetailQuery.data.value?.status !== 'complete'
+  && !isArchived.value,
 )
 
 const state = reactive<NewTaskFormState>({
@@ -273,6 +299,13 @@ const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: s
   { value: 'volume', icon: 'i-lucide-chart-bar', descriptionKey: 'tasks.form.typeDescriptions.volume' },
   { value: 'multiple_close', icon: 'i-lucide-users', descriptionKey: 'tasks.form.typeDescriptions.multiple_close' },
 ]
+
+/** En backlog el único tipo disponible es Manual. */
+const visibleTaskTypeOptions = computed(() =>
+  isBacklogMode.value
+    ? taskTypeOptions.filter(option => option.value === 'manual')
+    : taskTypeOptions,
+)
 
 const effortOptions: { value: TaskEffort, icon: string, labelKey: string, hintKey: string }[] = [
   { value: 'quick', icon: 'i-lucide-zap', labelKey: 'tasks.form.effortQuick', hintKey: 'tasks.form.effortQuickHint' },
@@ -323,8 +356,20 @@ function withSelectedItems<T extends { value: string | number }>(
   return extras.length ? [...extras, ...items] : items
 }
 
+/** Fallback inmediato para el usuario logueado, mientras el dropdown de usuarios aún no cargó. */
+const currentUserFallbackItems = computed(() => {
+  if (user.value?.id == null) {
+    return []
+  }
+  return [{ label: user.value.username, value: user.value.id }]
+})
+
 const userItems = computed(() =>
-  withSelectedItems(fetchedUserItems.value, state.assignedTo, allUserItems.value),
+  withSelectedItems(
+    fetchedUserItems.value,
+    state.assignedTo,
+    [...allUserItems.value, ...currentUserFallbackItems.value],
+  ),
 )
 
 const userSelectItems = computed(() =>
@@ -408,6 +453,7 @@ function resetForm() {
   state.repeatConfig = createDefaultRepeatConfig()
   state.setAsMaster = false
   state.applyToAll = false
+  isBacklog.value = false
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -512,6 +558,10 @@ function openArchiveProcessModal() {
   archiveProcessModalOpen.value = true
 }
 
+function openUnarchiveProcessModal() {
+  unarchiveProcessModalOpen.value = true
+}
+
 function onProcessStarted() {
   close()
 }
@@ -529,6 +579,10 @@ function onProcessReopened() {
 }
 
 function onProcessArchived() {
+  close()
+}
+
+function onProcessUnarchived() {
   close()
 }
 
@@ -581,6 +635,13 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       return
     }
 
+    if (isBacklogMode.value) {
+      const payload = buildCreateBacklogTaskPayload(state)
+      await createBacklogTask(payload)
+      close()
+      return
+    }
+
     const payload = buildCreateTaskPayload(state, user.value?.id)
     await createTask(payload)
     close()
@@ -614,6 +675,12 @@ watch(() => state.type, (type) => {
   }
 })
 
+watch(isBacklog, (isOn) => {
+  if (isOn) {
+    state.type = 'manual'
+  }
+})
+
 watch(() => state.urgent, (isUrgent) => {
   if (isReadOnly.value) {
     return
@@ -634,6 +701,7 @@ watch(open, (isOpen) => {
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
     archiveProcessModalOpen.value = false
+    unarchiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
     mobilePanel.value = 'detail'
@@ -643,6 +711,12 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
+    if (!state.assignedTo.length && user.value?.id != null) {
+      state.assignedTo = [user.value.id]
+    }
+    if (!state.dueDate) {
+      state.dueDate = minDueDate.value
+    }
   }
 })
 
@@ -714,6 +788,7 @@ const slideoverUi = computed(() => {
         >
           <TaskMessenger
             :task-id="taskId"
+            :readonly="isArchived"
             class="h-full"
           >
             <template #header-actions>
@@ -760,14 +835,29 @@ const slideoverUi = computed(() => {
                 :text="t('tasks.processArchive.submit')"
               >
                 <UButton
-                  icon="i-lucide-archive"
+                  icon="i-lucide-trash-2"
                   color="error"
-                  variant="ghost"
+                  variant="soft"
                   size="md"
                   square
                   class="shrink-0"
                   :aria-label="t('tasks.processArchive.submit')"
                   @click="openArchiveProcessModal"
+                />
+              </UTooltip>
+              <UTooltip
+                v-if="showUnarchiveProcess"
+                :text="t('tasks.processUnarchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-archive-restore"
+                  color="primary"
+                  variant="ghost"
+                  size="md"
+                  square
+                  class="shrink-0"
+                  :aria-label="t('tasks.processUnarchive.submit')"
+                  @click="openUnarchiveProcessModal"
                 />
               </UTooltip>
               <UBadge
@@ -860,13 +950,26 @@ const slideoverUi = computed(() => {
               />
 
               <template v-if="!isDetailView || taskDetailQuery.data.value">
+          <UFormField
+            v-if="!isDetailView"
+            name="backlog"
+          >
+            <USwitch
+              v-model="isBacklog"
+              :label="t('tasks.form.backlogToggle')"
+            />
+          </UFormField>
+
           <div class="space-y-2">
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.taskType') }}
             </p>
-            <div class="grid grid-cols-2 gap-2">
+            <div
+              class="grid gap-2"
+              :class="isBacklogMode ? 'grid-cols-1' : 'grid-cols-2'"
+            >
               <button
-                v-for="option in taskTypeOptions"
+                v-for="option in visibleTaskTypeOptions"
                 :key="option.value"
                 type="button"
                 class="rounded-lg border p-3 text-left transition-colors"
@@ -1045,6 +1148,7 @@ const slideoverUi = computed(() => {
               :label="t('tasks.form.project')"
               name="project"
               :required="!isReadOnly"
+              :class="isBacklogMode ? 'sm:col-span-2' : ''"
             >
               <USelectMenu
                 :model-value="state.project"
@@ -1066,6 +1170,7 @@ const slideoverUi = computed(() => {
             </UFormField>
 
             <UFormField
+              v-if="!isBacklogMode"
               :label="t('tasks.form.dueDate')"
               name="dueDate"
               :required="!isReadOnly"
@@ -1078,7 +1183,10 @@ const slideoverUi = computed(() => {
             </UFormField>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div
+            v-if="!isBacklogMode"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          >
             <UFormField
               :label="t('tasks.form.assignedTo')"
               name="assignedTo"
@@ -1117,7 +1225,10 @@ const slideoverUi = computed(() => {
             </UFormField>
           </div>
 
-          <UFormField name="urgent">
+          <UFormField
+            v-if="!isBacklogMode"
+            name="urgent"
+          >
             <USwitch
               v-model="state.urgent"
               :label="t('tasks.form.markUrgent')"
@@ -1126,6 +1237,7 @@ const slideoverUi = computed(() => {
           </UFormField>
 
           <div
+            v-if="!isBacklogMode"
             class="space-y-2"
             :class="!isReadOnly && state.urgent ? 'opacity-50 pointer-events-none' : ''"
           >
@@ -1315,7 +1427,7 @@ const slideoverUi = computed(() => {
           :label="t('tasks.form.cancel')"
           color="neutral"
           variant="ghost"
-          :disabled="isPending"
+          :disabled="isSaving"
           @click="close"
         />
         <UButton
@@ -1323,8 +1435,8 @@ const slideoverUi = computed(() => {
           :color="canSubmit ? 'primary' : 'neutral'"
           type="submit"
           :form="formId"
-          :loading="isPending"
-          :disabled="isPending || !canSubmit"
+          :loading="isSaving"
+          :disabled="isSaving || !canSubmit"
           class="disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
@@ -1366,6 +1478,13 @@ const slideoverUi = computed(() => {
     v-model:open="archiveProcessModalOpen"
     :task-id="taskId"
     @success="onProcessArchived"
+  />
+
+  <TaskUnarchiveProcessModal
+    v-if="taskId != null"
+    v-model:open="unarchiveProcessModalOpen"
+    :task-id="taskId"
+    @success="onProcessUnarchived"
   />
 
   <TaskAuthorizeCloseModal

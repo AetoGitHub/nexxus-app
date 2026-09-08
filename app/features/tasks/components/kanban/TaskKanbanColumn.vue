@@ -98,9 +98,7 @@ function onDrop(event: DragEvent) {
 
     <div
       class="flex flex-1 min-h-0 flex-col rounded-xl bg-kanban-column transition-colors"
-      :class="isDropTarget
-        ? 'ring-2 ring-aeto-teal/40'
-        : ''"
+      :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
       @dragover="onDragOver"
       @drop="onDrop"
     >

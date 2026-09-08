@@ -48,13 +48,27 @@ export function useUsersDropdown(
 
   const remoteList = computed(() => extractResults(remoteUsers.data.value))
 
-  const list = computed(() => {
-    const byId = new Map(initialList.value.map(user => [user.id, user]))
-    for (const user of remoteList.value) {
-      byId.set(user.id, user)
+  /**
+   * Cache acumulado de todos los usuarios vistos en la sesión (página inicial +
+   * cada búsqueda remota). `remoteList` solo refleja la última búsqueda, así que
+   * sin acumular se perdía el label (y group_id/group_name) de un usuario ya
+   * seleccionado en cuanto se hacía otra búsqueda que no lo incluyera.
+   */
+  const knownUsersById = ref(new Map<number, UserDropdown>())
+
+  watch(initialList, (fetchedUsers) => {
+    for (const fetchedUser of fetchedUsers) {
+      knownUsersById.value.set(fetchedUser.id, fetchedUser)
     }
-    return [...byId.values()]
-  })
+  }, { immediate: true })
+
+  watch(remoteList, (fetchedUsers) => {
+    for (const fetchedUser of fetchedUsers) {
+      knownUsersById.value.set(fetchedUser.id, fetchedUser)
+    }
+  }, { immediate: true })
+
+  const list = computed(() => [...knownUsersById.value.values()])
 
   const remoteItems = computed(() =>
     remoteList.value.map(user => ({
@@ -63,13 +77,12 @@ export function useUsersDropdown(
     })),
   )
 
-  const allItems = computed(() => {
-    const byId = new Map(initialItems.value.map(item => [item.value, item]))
-    for (const item of remoteItems.value) {
-      byId.set(item.value, item)
-    }
-    return [...byId.values()]
-  })
+  const allItems = computed(() =>
+    list.value.map(user => ({
+      label: user.username,
+      value: user.id,
+    })),
+  )
 
   const items = computed(() =>
     remoteSearch.value ? remoteItems.value : filteredLocal.value,

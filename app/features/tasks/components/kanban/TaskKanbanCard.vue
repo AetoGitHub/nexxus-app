@@ -8,10 +8,12 @@ const props = withDefaults(
     columnId: string | number
     selected?: boolean
     dragging?: boolean
+    draggable?: boolean
   }>(),
   {
     selected: false,
     dragging: false,
+    draggable: true,
   },
 )
 
@@ -46,6 +48,10 @@ function onSelect() {
 }
 
 function onDragStart(event: DragEvent) {
+  if (!props.draggable) {
+    event.preventDefault()
+    return
+  }
   didDrag.value = true
   if (!event.dataTransfer) {
     return
@@ -63,9 +69,8 @@ function onDragEnd() {
 
 <template>
   <div
-    draggable="true"
-    class="cursor-grab active:cursor-grabbing"
-    :class="dragging ? 'opacity-40' : ''"
+    :draggable="draggable"
+    :class="[draggable ? 'cursor-grab active:cursor-grabbing' : '', dragging ? 'opacity-40' : '']"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >

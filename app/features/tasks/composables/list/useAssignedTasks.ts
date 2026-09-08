@@ -22,9 +22,13 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   const { selectedCompanyId: companyId } = useAuth()
   const hasCompany = computed(() => companyId.value != null)
 
+  const { adminQuery } = useTaskAdminView()
   const usersBase = '/api/tools/dropdown/users'
   const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/assigned`)
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
 
   const users = useQuery({
     queryKey: ['tasks', 'users', 'dropdown'],

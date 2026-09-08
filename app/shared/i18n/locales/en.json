@@ -98,6 +98,8 @@
     "filterOverdue": "Overdue",
     "filterCompleted": "Completed",
     "filterMultipleClose": "Multiple close",
+    "adminView": "Admin",
+    "groupManagerView": "My group",
     "newTask": "New task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",
@@ -140,9 +142,11 @@
     "loadingMore": "Loading more tasks",
     "sections": {
       "all": "All",
+      "backlog": "Backlog",
       "urgent": "Urgent",
       "today": "Today",
-      "upcoming": "Upcoming"
+      "upcoming": "Upcoming",
+      "archived": "Archived"
     },
     "groupBy": {
       "all": "All",
@@ -175,11 +179,13 @@
     },
     "kanban": {
       "columns": {
+        "backlog": "Backlog",
         "pending": "Pending",
         "wip": "In progress",
         "inReview": "In review",
         "rejected": "Rejected",
-        "complete": "Complete"
+        "complete": "Complete",
+        "archived": "Archived"
       },
       "createTask": "Create task",
       "dropHere": "Drop here",
@@ -292,6 +298,18 @@
       "successDescription": "The task was archived successfully.",
       "errorTitle": "Could not archive the task"
     },
+    "processUnarchive": {
+      "submit": "Unarchive",
+      "modalTitle": "Unarchive task",
+      "modalDescription": "Are you sure you want to unarchive this task?",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for unarchiving",
+      "optional": "Optional",
+      "confirm": "Unarchive",
+      "successTitle": "Task unarchived",
+      "successDescription": "The task was unarchived successfully.",
+      "errorTitle": "Could not unarchive the task"
+    },
     "due": {
       "today": "Today",
       "tomorrow": "Tomorrow",
@@ -319,6 +337,7 @@
       "unknown": "Other"
     },
     "form": {
+      "backlogToggle": "Create task in backlog",
       "taskType": "Task type",
       "name": "Name",
       "namePlaceholder": "What needs to be done?",
@@ -467,6 +486,7 @@
       "reconnecting": "Reconnecting",
       "offline": "Offline",
       "connectionErrorTitle": "Could not connect to the real-time chat",
+      "archivedNotice": "This task is archived. Messages can't be sent.",
       "system": {
         "taskCreated": "Task created.",
         "taskUpdated": "Task updated.",

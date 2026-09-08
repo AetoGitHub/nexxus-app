@@ -22,6 +22,15 @@ withDefaults(
 
 const { t } = useI18n()
 const { projects, items: projectItems } = useProjectsDropdown()
+const {
+  isSuperuser,
+  isGroupManager,
+  managedGroupName,
+  isAdminActive,
+  isGroupActive,
+  toggleAdmin,
+  toggleGroup,
+} = useTaskAdminView()
 
 type VisibleTaskType = Extract<TaskType, 'puesto' | 'manual' | 'repeat' | 'trigger'>
 
@@ -223,6 +232,38 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
           :ui="{ label: 'text-xs text-muted-foreground' }"
           @update:model-value="setBooleanFilter(booleanFilter.key, $event === true)"
         />
+      </div>
+
+      <div
+        v-if="isSuperuser || isGroupManager"
+        class="flex items-center gap-2"
+        :class="stacked ? 'w-full' : 'h-8'"
+      >
+        <UButton
+          v-if="isSuperuser"
+          icon="i-lucide-shield"
+          size="sm"
+          class="h-8 rounded-full px-3"
+          :color="isAdminActive ? 'primary' : 'neutral'"
+          :variant="isAdminActive ? 'solid' : 'outline'"
+          :aria-pressed="isAdminActive"
+          @click="toggleAdmin"
+        >
+          {{ t('tasks.adminView') }}
+        </UButton>
+
+        <UButton
+          v-if="isGroupManager"
+          icon="i-lucide-users"
+          size="sm"
+          class="h-8 rounded-full px-3"
+          :color="isGroupActive ? 'primary' : 'neutral'"
+          :variant="isGroupActive ? 'solid' : 'outline'"
+          :aria-pressed="isGroupActive"
+          @click="toggleGroup"
+        >
+          {{ managedGroupName ?? t('tasks.groupManagerView') }}
+        </UButton>
       </div>
 
       <div v-if="$slots.default" :class="stacked ? 'w-full pt-1' : 'max-w-full'">

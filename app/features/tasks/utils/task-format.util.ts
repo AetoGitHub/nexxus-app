@@ -96,6 +96,7 @@ export function taskPriorityMeta(priority: string): TaskPriorityMeta | null {
 }
 
 const STATUS_META: Record<string, TaskStatusMeta> = {
+  backlog: { labelKey: 'tasks.kanban.columns.backlog', color: 'neutral' },
   pending: { labelKey: 'tasks.kanban.columns.pending', color: 'warning' },
   wip: { labelKey: 'tasks.kanban.columns.wip', color: 'primary' },
   in_review: { labelKey: 'tasks.kanban.columns.inReview', color: 'warning' },

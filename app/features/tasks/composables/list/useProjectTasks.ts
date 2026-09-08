@@ -22,9 +22,13 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
   const { selectedCompanyId: companyId } = useAuth()
   const hasCompany = computed(() => companyId.value != null)
 
+  const { adminQuery } = useTaskAdminView()
   const projectsBase = computed(() => `/api/tools/dropdown/projects/company/${companyId.value}`)
   const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/project`)
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
 
   const projects = useQuery({
     queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),

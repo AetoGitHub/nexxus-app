@@ -53,6 +53,14 @@ export interface CreateTaskPayload {
   repeat_config?: TaskRepeatConfig
 }
 
+/** Payload de POST /api/tasks/backlog/create/. */
+export interface CreateBacklogTaskPayload {
+  short_description: string
+  long_description?: string
+  type: 'manual'
+  project: number
+}
+
 /** Payload de PATCH /api/tasks/:id/update/. */
 export interface UpdateTaskPayload {
   short_description: string
@@ -103,7 +111,12 @@ export interface CalendarDateRange {
   dateTo: string
 }
 
-export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
+export type TaskSectionKey = 'backlog' | 'urgent' | 'today' | 'upcoming' | 'archived'
+
+/** Respuesta genérica `{ total }` (GET .../archived/counts/, .../backlog/counts/). */
+export interface ArchivedCounts {
+  total: number
+}
 
 /** Filtros de query compartidos por listas y Kanban. */
 export interface TaskListFilters {
@@ -158,6 +171,10 @@ export interface Task {
   group?: number | null
   group_name?: string
   multiple_close: boolean
+  /** Independiente de `status`: la tarea puede archivarse en cualquier estado del workflow. */
+  archived?: boolean
+  /** true cuando status=backlog. */
+  backlog?: boolean
   start_date: string | null
   limit_date: string | null
   created_at: string
@@ -357,6 +374,12 @@ export interface ReopenTaskProcessPayload {
 
 /** Payload de POST /api/tasks/process/archive/. */
 export interface ArchiveTaskProcessPayload {
+  task: number
+  comment?: string
+}
+
+/** Payload de POST /api/tasks/process/unarchive/. */
+export interface UnarchiveTaskProcessPayload {
   task: number
   comment?: string
 }

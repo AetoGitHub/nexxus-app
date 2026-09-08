@@ -1,5 +1,5 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { KanbanColumn, KanbanCounts, TaskListFilters } from '~/features/tasks/types/task.types'
+import type { ArchivedCounts, KanbanColumn, KanbanCounts, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
@@ -7,13 +7,20 @@ import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util
 /**
  * Server state del Kanban (groupBy = all) vía TanStack Query.
  *
+ * Backlog es la primera columna del tablero (fuera del flujo pending→complete).
  * Rechazada: skeleton mientras cargan counts; se oculta solo si count === 0.
+ * Archivado no es una columna del tablero: ver `archivedBar` (barra full-width aparte).
  */
 export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const api = createCompanyTasksApi(filters)
   const scope = ['kanban']
 
   const counts = api.countsQuery<KanbanCounts>(scope, '/kanban/counts/')
+
+  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/')
+  const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
+  const backlog = api.listQuery(['backlog'], '/backlog/')
+
   const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/')
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')
   const inReview = api.listQuery([...scope, 'in_review'], '/kanban/in_review/')
@@ -27,10 +34,30 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     enabled: () => countsReady.value && rejectedCount.value > 0,
   })
 
+  const archivedCounts = api.countsQuery<ArchivedCounts>(['archived'], '/archived/counts/')
+  const archivedTotal = computed(() => archivedCounts.data.value?.total ?? 0)
+  const archivedCountsReady = computed(() => archivedCounts.isFetched.value)
+  const showArchived = computed(() => !archivedCountsReady.value || archivedTotal.value > 0)
+
+  const archived = api.listQuery(['archived'], '/archived/', {
+    enabled: () => archivedCountsReady.value && archivedTotal.value > 0,
+  })
+
   const columns = computed<KanbanColumn[]>(() => {
     const totals = counts.data.value
 
     const allColumns: KanbanColumn[] = [
+      {
+        id: 'backlog',
+        labelKey: 'tasks.kanban.columns.backlog',
+        color: '#8b5cf6',
+        count: backlogCountsReady.value ? backlogCounts.data.value?.total : undefined,
+        tasks: extractResults(backlog.data.value),
+        loading: !backlogCountsReady.value || backlog.isPending.value,
+        error: backlog.isError.value,
+        hasNextPage: backlog.hasNextPage.value,
+        isFetchingNextPage: backlog.isFetchingNextPage.value,
+      },
       {
         id: 'pending',
         labelKey: 'tasks.kanban.columns.pending',
@@ -91,13 +118,26 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     return allColumns.filter(column => column.id !== 'rejected' || showRejected.value)
   })
 
+  /** Archivado vive fuera del tablero (barra full-width colapsable, no columna). */
+  const archivedBar = computed(() => ({
+    count: archivedCountsReady.value ? archivedTotal.value : undefined,
+    tasks: extractResults(archived.data.value),
+    loading: !archivedCountsReady.value || archived.isPending.value,
+    error: archived.isError.value,
+    hasNextPage: archived.hasNextPage.value,
+    isFetchingNextPage: archived.isFetchingNextPage.value,
+    visible: showArchived.value,
+  }))
+
   function loadMore(columnId: string | number) {
     const queries = {
+      backlog,
       pending,
       wip,
       in_review: inReview,
       rejected,
       complete,
+      archived,
     } as const
     const query = queries[columnId as keyof typeof queries]
     if (query) {
@@ -105,5 +145,5 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     }
   }
 
-  return { counts, pending, wip, inReview, rejected, complete, columns, loadMore }
+  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, archivedCounts, archived, archivedBar, columns, loadMore }
 }

@@ -26,9 +26,13 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { selectedCompanyId: companyId } = useAuth()
   const hasCompany = computed(() => companyId.value != null)
 
+  const { adminQuery } = useTaskAdminView()
   const groupsBase = computed(() => `/api/tasks/company/${companyId.value}/groups`)
   const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/group`)
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
 
   const groups = useQuery({
     queryKey: computed(() => ['tasks', companyId.value, 'groups', 'list']),

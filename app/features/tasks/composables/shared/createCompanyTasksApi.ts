@@ -13,7 +13,11 @@ import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const { adminQuery } = useTaskAdminView()
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
   const hasCompany = computed(() => companyId.value != null)
 
   function companyPath(path: string): string {
