@@ -39,6 +39,7 @@ function onCreate(sectionId: TaskSectionKey) {
         :has-next-page="backlog.hasNextPage.value"
         :is-fetching-next-page="backlog.isFetchingNextPage.value"
         :selected-task-id="selectedTaskId"
+        :default-open="false"
         show-status
         @select="emit('select', $event)"
         @load-more="loadMore('backlog')"

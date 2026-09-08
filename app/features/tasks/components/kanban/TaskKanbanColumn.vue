@@ -32,6 +32,14 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const columnScroller = useTemplateRef<HTMLElement>('columnScroller')
 
+/** Columnas `collapsible` (ej. Backlog) arrancan colapsadas como pestaña angosta. */
+const collapsed = ref(props.column.collapsible === true)
+const columnTitle = computed(() => props.column.title ?? (props.column.labelKey ? t(props.column.labelKey) : ''))
+
+function toggleCollapsed() {
+  collapsed.value = !collapsed.value
+}
+
 useInfiniteScroll(
   columnScroller,
   () => emit('loadMore', props.column.id),
@@ -81,8 +89,44 @@ function onDrop(event: DragEvent) {
 </script>
 
 <template>
-  <section class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
+  <section
+    v-if="collapsed"
+    class="flex h-full min-h-0 w-12 shrink-0 flex-col"
+  >
+    <button
+      type="button"
+      class="flex h-full w-12 flex-col items-center gap-3 rounded-xl bg-kanban-column py-3 text-muted-foreground transition-colors hover:text-foreground"
+      :aria-label="t('tasks.kanban.expandColumn', { title: columnTitle })"
+      @click="toggleCollapsed"
+    >
+      <UIcon name="i-lucide-chevron-right" class="h-4 w-4 shrink-0" />
+      <UBadge
+        v-if="column.count !== undefined"
+        :label="column.count.toString()"
+        size="sm"
+        class="text-white ring-0 shrink-0"
+        :style="{ backgroundColor: column.color }"
+      />
+      <TaskSectionBadgeFallback v-else />
+      <span class="min-h-0 flex-1 truncate text-xs font-semibold text-foreground [writing-mode:vertical-rl]">
+        {{ columnTitle }}
+      </span>
+    </button>
+  </section>
+
+  <section v-else class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
     <header class="flex items-center gap-2 mb-3 px-1 shrink-0">
+      <UButton
+        v-if="column.collapsible"
+        icon="i-lucide-chevron-left"
+        variant="ghost"
+        color="neutral"
+        size="xs"
+        square
+        class="shrink-0"
+        :aria-label="t('tasks.kanban.collapseColumn', { title: columnTitle })"
+        @click="toggleCollapsed"
+      />
       <UBadge
         v-if="column.count !== undefined"
         :label="column.count.toString()"
@@ -92,7 +136,7 @@ function onDrop(event: DragEvent) {
       />
       <TaskSectionBadgeFallback v-else />
       <h3 class="text-sm font-semibold text-foreground flex-1 min-w-0 truncate">
-        {{ column.title ?? (column.labelKey ? t(column.labelKey) : '') }}
+        {{ columnTitle }}
       </h3>
     </header>
 

@@ -190,6 +190,8 @@
       "createTask": "Create task",
       "dropHere": "Drop here",
       "dropHint": "You can drop tasks here",
+      "collapseColumn": "Collapse {title}",
+      "expandColumn": "Expand {title}",
       "moveNotAllowedTitle": "Move not allowed",
       "moveNotAllowedDescription": "That status transition is not available for this task.",
       "dueMove": {

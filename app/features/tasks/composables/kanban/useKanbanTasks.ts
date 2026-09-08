@@ -57,6 +57,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         error: backlog.isError.value,
         hasNextPage: backlog.hasNextPage.value,
         isFetchingNextPage: backlog.isFetchingNextPage.value,
+        collapsible: true,
       },
       {
         id: 'pending',

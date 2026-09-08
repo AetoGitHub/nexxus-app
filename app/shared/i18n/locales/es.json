@@ -190,6 +190,8 @@
       "createTask": "Crear tarea",
       "dropHere": "Suelta aquí",
       "dropHint": "Puedes soltar tareas aquí",
+      "collapseColumn": "Colapsar {title}",
+      "expandColumn": "Expandir {title}",
       "moveNotAllowedTitle": "Movimiento no permitido",
       "moveNotAllowedDescription": "Esa transición de estado no está disponible para esta tarea.",
       "dueMove": {

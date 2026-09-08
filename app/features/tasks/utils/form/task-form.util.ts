@@ -60,7 +60,7 @@ export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
     description: detail.long_description ?? '',
     project: detail.project ?? undefined,
     group: detail.group ?? undefined,
-    assignedTo: [...(detail.assigned_to ?? [])],
+    assignedTo: (detail.assigned_to ?? []).map(assignee => assignee.id),
     taskReviewer: detail.close_approvals?.map(approval => approval.profile) ?? [],
     dueDate: isoToDateInput(detail.limit_date),
     urgent,
