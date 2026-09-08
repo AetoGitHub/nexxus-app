@@ -16,6 +16,9 @@ export function useAuth() {
   const token = computed(() => session.value?.token ?? null)
   const isLoggedIn = computed(() => session.value?.token != null)
   const selectedCompanyId = computed(() => user.value?.selected_company?.id ?? null)
+  const isSuperuser = computed(() => user.value?.is_superuser === true)
+  const managedGroupId = computed(() => user.value?.managed_group_id ?? null)
+  const managedGroupName = computed(() => user.value?.group_name ?? null)
 
   async function login(username: string, password: string) {
     const body: AuthLoginRequest = {
@@ -64,6 +67,9 @@ export function useAuth() {
     token,
     isLoggedIn,
     selectedCompanyId,
+    isSuperuser,
+    managedGroupId,
+    managedGroupName,
     login,
     logout,
   }

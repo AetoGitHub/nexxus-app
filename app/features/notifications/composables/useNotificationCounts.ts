@@ -6,10 +6,11 @@ import { notificationCountsQueryKey } from '~/features/notifications/utils/notif
 export function useNotificationCounts() {
   const { $api } = useNuxtApp()
   const { isLoggedIn } = useAuth()
+  const { adminQuery } = useTaskAdminView()
 
   const query = useQuery({
-    queryKey: notificationCountsQueryKey,
-    queryFn: () => $api<NotificationCounts>('/api/notifications/counts/'),
+    queryKey: computed(() => [...notificationCountsQueryKey, adminQuery.value]),
+    queryFn: () => $api<NotificationCounts>('/api/notifications/counts/', { query: adminQuery.value }),
     enabled: computed(() => isLoggedIn.value),
   })
 

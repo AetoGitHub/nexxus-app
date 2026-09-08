@@ -98,6 +98,8 @@
     "filterOverdue": "Overdue",
     "filterCompleted": "Completed",
     "filterMultipleClose": "Multiple close",
+    "adminView": "Admin",
+    "groupManagerView": "My group",
     "newTask": "New task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",

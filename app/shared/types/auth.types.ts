@@ -12,6 +12,9 @@ export interface AuthOrganization {
 export interface AuthUser {
   id: number
   username: string
+  is_superuser: boolean
+  managed_group_id: number | null
+  group_name: string | null
   selected_company: AuthCompany | null
 }
 
