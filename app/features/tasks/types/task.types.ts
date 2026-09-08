@@ -329,6 +329,8 @@ export interface KanbanColumn {
   comingSoon?: boolean
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
+  /** Puede colapsarse a una pestaña angosta (ej. Backlog); colapsada por defecto. */
+  collapsible?: boolean
 }
 
 /** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */
