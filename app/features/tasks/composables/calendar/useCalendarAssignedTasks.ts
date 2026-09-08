@@ -48,9 +48,13 @@ export function useCalendarAssignedTasks(
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
 
+  const { adminQuery } = useTaskAdminView()
   const usersBase = '/api/tools/dropdown/users'
   const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/assigned`)
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
   const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
   const users = useQuery({

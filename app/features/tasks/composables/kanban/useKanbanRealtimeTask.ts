@@ -39,6 +39,7 @@ export function useKanbanRealtimeTask() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
   const { selectedCompanyId: companyId } = useAuth()
+  const { adminQuery } = useTaskAdminView()
 
   async function locateCreatedTasks<TColumnId extends string | number>(
     columns: ReadonlyArray<{ id: TColumnId, path: string }>,
@@ -53,7 +54,7 @@ export function useKanbanRealtimeTask() {
         columnId: column.id,
         data: await $api<PaginatedResponse<Task>>(
           `/api/tasks/company/${companyId.value}${column.path}`,
-          { query: { pk: taskPk } },
+          { query: { pk: taskPk, ...adminQuery.value } },
         ),
       })),
     )

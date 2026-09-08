@@ -29,6 +29,7 @@ export function useListRealtimeTask() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
   const { selectedCompanyId: companyId } = useAuth()
+  const { adminQuery } = useTaskAdminView()
 
   async function insertCreatedListTask(taskPk: number): Promise<boolean> {
     if (companyId.value == null) {
@@ -40,7 +41,7 @@ export function useListRealtimeTask() {
         ...section,
         data: await $api<PaginatedResponse<Task>>(
           `/api/tasks/company/${companyId.value}${section.path}`,
-          { query: { pk: taskPk } },
+          { query: { pk: taskPk, ...adminQuery.value } },
         ),
       })),
     )

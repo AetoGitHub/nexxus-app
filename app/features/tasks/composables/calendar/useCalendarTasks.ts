@@ -26,6 +26,7 @@ export function useCalendarTasks(
 ) {
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
+  const { adminQuery } = useTaskAdminView()
 
   const range = computed(() => calendarVisibleRange(toValue(period)))
   const resolvedPhase = computed(() => toValue(phase))
@@ -34,6 +35,7 @@ export function useCalendarTasks(
     date_from: range.value.dateFrom,
     date_to: range.value.dateTo,
     ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
   }))
 
   const path = computed(() => {

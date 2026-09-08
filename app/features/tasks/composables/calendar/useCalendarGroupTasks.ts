@@ -44,9 +44,13 @@ export function useCalendarGroupTasks(
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
 
+  const { adminQuery } = useTaskAdminView()
   const groupsBase = computed(() => `/api/tasks/company/${companyId.value}/groups`)
   const tasksBase = computed(() => `/api/tasks/company/${companyId.value}/group`)
-  const query = computed(() => toTaskListQuery(toValue(filters)))
+  const query = computed(() => ({
+    ...toTaskListQuery(toValue(filters)),
+    ...adminQuery.value,
+  }))
   const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
   const groups = useQuery({
