@@ -15,6 +15,7 @@ import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDr
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
+import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
@@ -87,6 +88,7 @@ const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const reopenProcessModalOpen = ref(false)
 const archiveProcessModalOpen = ref(false)
+const unarchiveProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
@@ -159,21 +161,26 @@ const hasUserAlreadyAuthorized = computed(() => userCloseApproval.value?.closed 
 /** En accepted solo se muestra Close; en el resto Rejected + Authorize. */
 const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'accepted')
 
+/** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
+const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
+
 /** Acciones Rejected/Authorize en pending-approval (todas las secciones menos accepted). */
 const showAuthorizeActions = computed(() =>
   props.authorizeMode
   && isDetailView.value
   && !isEditing.value
-  && !isAcceptedToUpdateSection.value,
+  && !isAcceptedToUpdateSection.value
+  && !isArchived.value,
 )
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
 
-/** Detalle con acciones de proceso (fuera de pending-approval). */
+/** Detalle con acciones de proceso (fuera de pending-approval; ninguna si está archivada). */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
   && !props.authorizeMode
+  && !isArchived.value
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -237,12 +244,20 @@ const showArchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
   && taskDetailQuery.data.value != null
-  && taskDetailQuery.data.value.status !== 'archived',
+  && !isArchived.value,
 )
 
-/** Completada: sin lápiz; solo se edita tras reabrir. */
+/** Detalle: desarchivar (solo si ya está archivada). */
+const showUnarchiveProcess = computed(() =>
+  isDetailView.value
+  && !isEditing.value
+  && isArchived.value,
+)
+
+/** Completada o archivada: sin lápiz; solo se edita tras reabrir/desarchivar. */
 const canEditTask = computed(() =>
-  taskDetailQuery.data.value?.status !== 'complete',
+  taskDetailQuery.data.value?.status !== 'complete'
+  && !isArchived.value,
 )
 
 const state = reactive<NewTaskFormState>({
@@ -524,6 +539,10 @@ function openArchiveProcessModal() {
   archiveProcessModalOpen.value = true
 }
 
+function openUnarchiveProcessModal() {
+  unarchiveProcessModalOpen.value = true
+}
+
 function onProcessStarted() {
   close()
 }
@@ -541,6 +560,10 @@ function onProcessReopened() {
 }
 
 function onProcessArchived() {
+  close()
+}
+
+function onProcessUnarchived() {
   close()
 }
 
@@ -646,6 +669,7 @@ watch(open, (isOpen) => {
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
     archiveProcessModalOpen.value = false
+    unarchiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
     mobilePanel.value = 'detail'
@@ -732,6 +756,7 @@ const slideoverUi = computed(() => {
         >
           <TaskMessenger
             :task-id="taskId"
+            :readonly="isArchived"
             class="h-full"
           >
             <template #header-actions>
@@ -778,14 +803,29 @@ const slideoverUi = computed(() => {
                 :text="t('tasks.processArchive.submit')"
               >
                 <UButton
-                  icon="i-lucide-archive"
+                  icon="i-lucide-trash-2"
                   color="error"
-                  variant="ghost"
+                  variant="soft"
                   size="md"
                   square
                   class="shrink-0"
                   :aria-label="t('tasks.processArchive.submit')"
                   @click="openArchiveProcessModal"
+                />
+              </UTooltip>
+              <UTooltip
+                v-if="showUnarchiveProcess"
+                :text="t('tasks.processUnarchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-archive-restore"
+                  color="primary"
+                  variant="ghost"
+                  size="md"
+                  square
+                  class="shrink-0"
+                  :aria-label="t('tasks.processUnarchive.submit')"
+                  @click="openUnarchiveProcessModal"
                 />
               </UTooltip>
               <UBadge
@@ -1384,6 +1424,13 @@ const slideoverUi = computed(() => {
     v-model:open="archiveProcessModalOpen"
     :task-id="taskId"
     @success="onProcessArchived"
+  />
+
+  <TaskUnarchiveProcessModal
+    v-if="taskId != null"
+    v-model:open="unarchiveProcessModalOpen"
+    :task-id="taskId"
+    @success="onProcessUnarchived"
   />
 
   <TaskAuthorizeCloseModal

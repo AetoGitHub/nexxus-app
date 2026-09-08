@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
+import TaskKanbanArchivedBar from '~/features/tasks/components/kanban/TaskKanbanArchivedBar.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
@@ -21,7 +22,7 @@ const emit = defineEmits<{
   create: [column: KanbanCreateColumn]
 }>()
 
-const { columns, loadMore } = useKanbanTasks(() => props.filters)
+const { columns, archivedBar, loadMore } = useKanbanTasks(() => props.filters)
 const {
   pendingTaskId,
   startProcessModalOpen,
@@ -48,17 +49,33 @@ function onMove(payload: KanbanTaskMove) {
 </script>
 
 <template>
-  <TaskKanbanBoard
-    class="h-full"
-    :columns="columns"
-    :selected-task-id="selectedTaskId"
-    confirm-before-move
-    :create-column-ids="['pending']"
-    @select="emit('select', $event)"
-    @create="emit('create', $event)"
-    @move="onMove"
-    @load-more="loadMore"
-  />
+  <div class="flex h-full min-h-0 flex-col">
+    <TaskKanbanBoard
+      class="min-h-0 flex-1"
+      :columns="columns"
+      :selected-task-id="selectedTaskId"
+      confirm-before-move
+      :create-column-ids="['pending']"
+      @select="emit('select', $event)"
+      @create="emit('create', $event)"
+      @move="onMove"
+      @load-more="loadMore"
+    />
+
+    <TaskKanbanArchivedBar
+      v-if="archivedBar.visible"
+      class="mt-3 shrink-0"
+      :tasks="archivedBar.tasks"
+      :count="archivedBar.count"
+      :loading="archivedBar.loading"
+      :error="archivedBar.error"
+      :selected-task-id="selectedTaskId"
+      :has-next-page="archivedBar.hasNextPage"
+      :is-fetching-next-page="archivedBar.isFetchingNextPage"
+      @select="emit('select', $event)"
+      @load-more="loadMore('archived')"
+    />
+  </div>
 
   <TaskStartProcessModal
     v-if="pendingTaskId != null"

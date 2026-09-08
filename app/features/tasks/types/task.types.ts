@@ -103,7 +103,12 @@ export interface CalendarDateRange {
   dateTo: string
 }
 
-export type TaskSectionKey = 'urgent' | 'today' | 'upcoming'
+export type TaskSectionKey = 'urgent' | 'today' | 'upcoming' | 'archived'
+
+/** Respuesta de GET /api/tasks/company/:id/archived/counts/ */
+export interface ArchivedCounts {
+  total: number
+}
 
 /** Filtros de query compartidos por listas y Kanban. */
 export interface TaskListFilters {
@@ -158,6 +163,8 @@ export interface Task {
   group?: number | null
   group_name?: string
   multiple_close: boolean
+  /** Independiente de `status`: la tarea puede archivarse en cualquier estado del workflow. */
+  archived?: boolean
   start_date: string | null
   limit_date: string | null
   created_at: string
@@ -357,6 +364,12 @@ export interface ReopenTaskProcessPayload {
 
 /** Payload de POST /api/tasks/process/archive/. */
 export interface ArchiveTaskProcessPayload {
+  task: number
+  comment?: string
+}
+
+/** Payload de POST /api/tasks/process/unarchive/. */
+export interface UnarchiveTaskProcessPayload {
   task: number
   comment?: string
 }

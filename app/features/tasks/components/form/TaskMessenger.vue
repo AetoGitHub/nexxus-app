@@ -18,9 +18,16 @@ const AVATAR_COLORS = [
   '#ec4899',
 ] as const
 
-const props = defineProps<{
-  taskId: number
-}>()
+const props = withDefaults(
+  defineProps<{
+    taskId: number
+    /** Tarea archivada: solo lectura, sin composer de mensajes. */
+    readonly?: boolean
+  }>(),
+  {
+    readonly: false,
+  },
+)
 
 const { t, locale } = useI18n()
 const { user } = useAuth()
@@ -362,7 +369,16 @@ watch(
     </div>
 
     <template #footer>
-      <div class="flex items-end gap-2">
+      <p
+        v-if="props.readonly"
+        class="text-center text-xs text-muted-foreground"
+      >
+        {{ t('tasks.messenger.archivedNotice') }}
+      </p>
+      <div
+        v-else
+        class="flex items-end gap-2"
+      >
         <UTextarea
           v-model="draft"
           :placeholder="t('tasks.messenger.placeholder')"

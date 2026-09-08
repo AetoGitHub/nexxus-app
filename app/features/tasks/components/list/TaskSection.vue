@@ -18,6 +18,10 @@ const props = withDefaults(
     showCreate?: boolean
     hasNextPage?: boolean
     isFetchingNextPage?: boolean
+    /** Estado inicial del collapsible. Las secciones secundarias (ej. archivado) inician cerradas. */
+    defaultOpen?: boolean
+    /** Trigger apagado tipo footer (chevron + texto), en vez del header con badge de color. */
+    minimal?: boolean
   }>(),
   {
     count: undefined,
@@ -28,6 +32,8 @@ const props = withDefaults(
     showCreate: false,
     hasNextPage: false,
     isFetchingNextPage: false,
+    defaultOpen: true,
+    minimal: false,
   },
 )
 
@@ -48,9 +54,27 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
 </script>
 
 <template>
-  <UCollapsible :default-open="true">
+  <UCollapsible :default-open="defaultOpen">
     <template #default="{ open }">
+      <div
+        v-if="minimal"
+        class="pt-4 border-t border-border"
+      >
+        <button
+          type="button"
+          class="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <UIcon
+            name="i-lucide-chevron-down"
+            class="h-3.5 w-3.5 transition-transform"
+            :class="{ '-rotate-90': !open }"
+          />
+          {{ title }} ({{ count ?? 0 }})
+        </button>
+      </div>
+
       <button
+        v-else
         type="button"
         class="mb-2 w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[#EDEDED] transition-colors dark:hover:bg-muted/50"
       >
