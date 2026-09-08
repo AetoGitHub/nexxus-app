@@ -142,6 +142,7 @@
     "loadingMore": "Loading more tasks",
     "sections": {
       "all": "All",
+      "backlog": "Backlog",
       "urgent": "Urgent",
       "today": "Today",
       "upcoming": "Upcoming",
@@ -178,6 +179,7 @@
     },
     "kanban": {
       "columns": {
+        "backlog": "Backlog",
         "pending": "Pending",
         "wip": "In progress",
         "inReview": "In review",

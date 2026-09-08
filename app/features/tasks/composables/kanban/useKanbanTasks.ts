@@ -7,6 +7,7 @@ import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util
 /**
  * Server state del Kanban (groupBy = all) vía TanStack Query.
  *
+ * Backlog es la primera columna del tablero (fuera del flujo pending→complete).
  * Rechazada: skeleton mientras cargan counts; se oculta solo si count === 0.
  * Archivado no es una columna del tablero: ver `archivedBar` (barra full-width aparte).
  */
@@ -15,6 +16,11 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
   const scope = ['kanban']
 
   const counts = api.countsQuery<KanbanCounts>(scope, '/kanban/counts/')
+
+  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/')
+  const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
+  const backlog = api.listQuery(['backlog'], '/backlog/')
+
   const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/')
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')
   const inReview = api.listQuery([...scope, 'in_review'], '/kanban/in_review/')
@@ -41,6 +47,17 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     const totals = counts.data.value
 
     const allColumns: KanbanColumn[] = [
+      {
+        id: 'backlog',
+        labelKey: 'tasks.kanban.columns.backlog',
+        color: '#8b5cf6',
+        count: backlogCountsReady.value ? backlogCounts.data.value?.total : undefined,
+        tasks: extractResults(backlog.data.value),
+        loading: !backlogCountsReady.value || backlog.isPending.value,
+        error: backlog.isError.value,
+        hasNextPage: backlog.hasNextPage.value,
+        isFetchingNextPage: backlog.isFetchingNextPage.value,
+      },
       {
         id: 'pending',
         labelKey: 'tasks.kanban.columns.pending',
@@ -114,6 +131,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   function loadMore(columnId: string | number) {
     const queries = {
+      backlog,
       pending,
       wip,
       in_review: inReview,
@@ -127,5 +145,5 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     }
   }
 
-  return { counts, pending, wip, inReview, rejected, complete, archivedCounts, archived, archivedBar, columns, loadMore }
+  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, archivedCounts, archived, archivedBar, columns, loadMore }
 }

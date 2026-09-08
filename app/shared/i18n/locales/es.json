@@ -142,6 +142,7 @@
     "loadingMore": "Cargando más tareas",
     "sections": {
       "all": "Todas",
+      "backlog": "Backlog",
       "urgent": "Urgentes",
       "today": "Hoy",
       "upcoming": "Próximas",
@@ -178,6 +179,7 @@
     },
     "kanban": {
       "columns": {
+        "backlog": "Backlog",
         "pending": "Pendiente",
         "wip": "En progreso",
         "inReview": "En revisión",

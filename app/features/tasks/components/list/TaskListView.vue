@@ -19,7 +19,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { counts, urgent, today, upcoming, archivedCounts, archived, loadMore } = useTasks(() => props.filters)
+const { counts, backlogCounts, backlog, urgent, today, upcoming, archivedCounts, archived, loadMore } = useTasks(() => props.filters)
 
 function onCreate(sectionId: TaskSectionKey) {
   emit('create', { id: sectionId })
@@ -29,6 +29,21 @@ function onCreate(sectionId: TaskSectionKey) {
 <template>
   <div>
     <div class="space-y-6">
+      <TaskSection
+        :title="t('tasks.sections.backlog')"
+        dot-color="#8b5cf6"
+        :count="backlogCounts.data.value?.total"
+        :tasks="extractResults(backlog.data.value)"
+        :loading="backlog.isPending.value"
+        :error="backlog.isError.value"
+        :has-next-page="backlog.hasNextPage.value"
+        :is-fetching-next-page="backlog.isFetchingNextPage.value"
+        :selected-task-id="selectedTaskId"
+        show-status
+        @select="emit('select', $event)"
+        @load-more="loadMore('backlog')"
+      />
+
       <TaskSection
         :title="t('tasks.sections.urgent')"
         dot-color="#dc2626"

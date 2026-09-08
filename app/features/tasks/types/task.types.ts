@@ -111,9 +111,9 @@ export interface CalendarDateRange {
   dateTo: string
 }
 
-export type TaskSectionKey = 'urgent' | 'today' | 'upcoming' | 'archived'
+export type TaskSectionKey = 'backlog' | 'urgent' | 'today' | 'upcoming' | 'archived'
 
-/** Respuesta de GET /api/tasks/company/:id/archived/counts/ */
+/** Respuesta genérica `{ total }` (GET .../archived/counts/, .../backlog/counts/). */
 export interface ArchivedCounts {
   total: number
 }
@@ -173,6 +173,8 @@ export interface Task {
   multiple_close: boolean
   /** Independiente de `status`: la tarea puede archivarse en cualquier estado del workflow. */
   archived?: boolean
+  /** true cuando status=backlog. */
+  backlog?: boolean
   start_date: string | null
   limit_date: string | null
   created_at: string
