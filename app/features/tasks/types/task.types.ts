@@ -204,11 +204,20 @@ export type TaskChannelEvent =
   | CreateMultipleTasksChannelEvent
   | UnknownTaskChannelEvent
 
+/**
+ * Asignado en el detalle: incluye username para poder mostrar el label
+ * aunque el id no esté (aún) en el catálogo del dropdown de usuarios.
+ */
+export interface TaskDetailAssignee {
+  id: number
+  username: string
+}
+
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   long_description: string
   effort: TaskEffort | string | null
-  assigned_to: number[]
+  assigned_to: TaskDetailAssignee[]
   recurrence: boolean
   repeat_config?: TaskRepeatConfig | null
   /** Id de la tarea maestra; null si esta es la original. */

@@ -43,7 +43,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
     <template #default="{ open }">
       <button
         type="button"
-        class="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/25 px-3 py-2 text-left text-muted-foreground opacity-80 transition-colors hover:border-muted-foreground/40 hover:text-foreground hover:opacity-100"
+        class="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left text-muted-foreground transition-colors hover:text-foreground"
       >
         <UIcon
           name="i-lucide-chevron-down"
@@ -65,7 +65,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
     </template>
 
     <template #content>
-      <div class="mt-2 max-h-64 overflow-y-auto rounded-xl border-2 border-dashed border-muted-foreground/25 p-2">
+      <div class="mt-2 max-h-64 overflow-y-auto rounded-lg border border-border bg-card p-2">
         <div v-if="loading" class="space-y-1.5">
           <USkeleton v-for="n in 3" :key="n" class="h-11 w-full rounded-lg" />
         </div>

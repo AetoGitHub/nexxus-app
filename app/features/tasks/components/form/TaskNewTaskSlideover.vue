@@ -364,11 +364,23 @@ const currentUserFallbackItems = computed(() => {
   return [{ label: user.value.username, value: user.value.id }]
 })
 
+/**
+ * Fallback con los asignados que ya vienen en el detalle (id + username).
+ * El dropdown de usuarios está paginado/buscado: un asignado del detalle puede
+ * no estar en su catálogo, y sin este fallback el SelectMenu mostraba el ID crudo.
+ */
+const detailAssignedToFallbackItems = computed(() =>
+  (taskDetailQuery.data.value?.assigned_to ?? []).map(assignee => ({
+    label: assignee.username,
+    value: assignee.id,
+  })),
+)
+
 const userItems = computed(() =>
   withSelectedItems(
     fetchedUserItems.value,
     state.assignedTo,
-    [...allUserItems.value, ...currentUserFallbackItems.value],
+    [...allUserItems.value, ...currentUserFallbackItems.value, ...detailAssignedToFallbackItems.value],
   ),
 )
 
@@ -381,11 +393,24 @@ const userSelectItems = computed(() =>
 /** Valor especial: no es un proyecto, redirige a crear uno. */
 const CREATE_PROJECT_VALUE = '__create_project__'
 
+/**
+ * Fallback con el proyecto del detalle (id + project_name). El dropdown de
+ * proyectos está paginado/buscado: el proyecto del detalle puede no estar en
+ * su catálogo, y sin este fallback el SelectMenu mostraba el ID crudo.
+ */
+const detailProjectFallbackItems = computed(() => {
+  const detail = taskDetailQuery.data.value
+  if (detail?.project == null) {
+    return []
+  }
+  return [{ label: detail.project_name || String(detail.project), value: detail.project }]
+})
+
 const projectItems = computed(() => {
   const items = withSelectedItems(
     fetchedProjectItems.value,
     [state.project],
-    allProjectItems.value,
+    [...allProjectItems.value, ...detailProjectFallbackItems.value],
   )
   if (!projectsQuery.isPending.value && !isSearchingProjects.value && fetchedProjectItems.value.length === 0) {
     return [{
