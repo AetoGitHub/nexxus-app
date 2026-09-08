@@ -335,6 +335,7 @@
       "unknown": "Other"
     },
     "form": {
+      "backlogToggle": "Create task in backlog",
       "taskType": "Task type",
       "name": "Name",
       "namePlaceholder": "What needs to be done?",

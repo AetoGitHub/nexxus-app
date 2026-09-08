@@ -1,5 +1,6 @@
 import type {
   ApiTaskPriority,
+  CreateBacklogTaskPayload,
   CreateTaskPayload,
   NewTaskFormType,
   TaskCloseApproval,
@@ -156,6 +157,25 @@ export function buildCreateTaskPayload(
   }
 
   return payload
+}
+
+/** Payload de POST /api/tasks/backlog/create/: solo name/description/project, type fijo en manual. */
+export function buildCreateBacklogTaskPayload(
+  form: Pick<NewTaskFormInput, 'name' | 'description' | 'project'>,
+): CreateBacklogTaskPayload {
+  if (!form.name.trim()) {
+    throw new Error('name_required')
+  }
+  if (form.project == null) {
+    throw new Error('project_required')
+  }
+
+  return {
+    short_description: form.name.trim(),
+    long_description: form.description.trim(),
+    type: 'manual',
+    project: form.project,
+  }
 }
 
 /** Flags de update para series repetitivas (instancia generada vs maestra). */

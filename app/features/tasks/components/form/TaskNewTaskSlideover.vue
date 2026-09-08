@@ -9,6 +9,7 @@ import type {
   TaskView,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
+import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
@@ -24,6 +25,7 @@ import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartPro
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatConfigFields.vue'
 import {
+  buildCreateBacklogTaskPayload,
   buildCreateTaskPayload,
   buildUpdateTaskPayload,
   defaultTaskReviewers,
@@ -97,6 +99,8 @@ const isEditing = ref(false)
 const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
 /** En mobile: panel visible (mensajes o detalle). En sm+ se muestran ambos. */
 const mobilePanel = ref<'detail' | 'messages'>('detail')
+/** Modo creación rápida en backlog: solo name/description/project, type fijo en manual. */
+const isBacklog = ref(false)
 
 /** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
 const minDueDate = computed(() => {
@@ -108,10 +112,14 @@ const minDueDate = computed(() => {
 })
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
+const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
-const isSaving = computed(() => isPending.value || isUpdating.value)
+const isSaving = computed(() => isPending.value || isCreatingBacklog.value || isUpdating.value)
+
+/** Backlog: solo aplica al crear (no en detalle/edición). */
+const isBacklogMode = computed(() => !isDetailView.value && isBacklog.value)
 
 /** Campos obligatorios listos para crear/guardar. */
 const canSubmit = computed(() => {
@@ -120,6 +128,9 @@ const canSubmit = computed(() => {
   }
   if (state.project == null) {
     return false
+  }
+  if (isBacklogMode.value) {
+    return true
   }
   if (!state.assignedTo.length) {
     return false
@@ -289,6 +300,13 @@ const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: s
   { value: 'multiple_close', icon: 'i-lucide-users', descriptionKey: 'tasks.form.typeDescriptions.multiple_close' },
 ]
 
+/** En backlog el único tipo disponible es Manual. */
+const visibleTaskTypeOptions = computed(() =>
+  isBacklogMode.value
+    ? taskTypeOptions.filter(option => option.value === 'manual')
+    : taskTypeOptions,
+)
+
 const effortOptions: { value: TaskEffort, icon: string, labelKey: string, hintKey: string }[] = [
   { value: 'quick', icon: 'i-lucide-zap', labelKey: 'tasks.form.effortQuick', hintKey: 'tasks.form.effortQuickHint' },
   { value: 'normal', icon: 'i-lucide-clock', labelKey: 'tasks.form.effortNormal', hintKey: 'tasks.form.effortNormalHint' },
@@ -435,6 +453,7 @@ function resetForm() {
   state.repeatConfig = createDefaultRepeatConfig()
   state.setAsMaster = false
   state.applyToAll = false
+  isBacklog.value = false
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -616,6 +635,13 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       return
     }
 
+    if (isBacklogMode.value) {
+      const payload = buildCreateBacklogTaskPayload(state)
+      await createBacklogTask(payload)
+      close()
+      return
+    }
+
     const payload = buildCreateTaskPayload(state, user.value?.id)
     await createTask(payload)
     close()
@@ -646,6 +672,12 @@ watch(() => state.type, (type) => {
   }
   if (type === 'multiple_close') {
     ensureCurrentUserInReviewers()
+  }
+})
+
+watch(isBacklog, (isOn) => {
+  if (isOn) {
+    state.type = 'manual'
   }
 })
 
@@ -918,13 +950,26 @@ const slideoverUi = computed(() => {
               />
 
               <template v-if="!isDetailView || taskDetailQuery.data.value">
+          <UFormField
+            v-if="!isDetailView"
+            name="backlog"
+          >
+            <USwitch
+              v-model="isBacklog"
+              :label="t('tasks.form.backlogToggle')"
+            />
+          </UFormField>
+
           <div class="space-y-2">
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.taskType') }}
             </p>
-            <div class="grid grid-cols-2 gap-2">
+            <div
+              class="grid gap-2"
+              :class="isBacklogMode ? 'grid-cols-1' : 'grid-cols-2'"
+            >
               <button
-                v-for="option in taskTypeOptions"
+                v-for="option in visibleTaskTypeOptions"
                 :key="option.value"
                 type="button"
                 class="rounded-lg border p-3 text-left transition-colors"
@@ -1103,6 +1148,7 @@ const slideoverUi = computed(() => {
               :label="t('tasks.form.project')"
               name="project"
               :required="!isReadOnly"
+              :class="isBacklogMode ? 'sm:col-span-2' : ''"
             >
               <USelectMenu
                 :model-value="state.project"
@@ -1124,6 +1170,7 @@ const slideoverUi = computed(() => {
             </UFormField>
 
             <UFormField
+              v-if="!isBacklogMode"
               :label="t('tasks.form.dueDate')"
               name="dueDate"
               :required="!isReadOnly"
@@ -1136,7 +1183,10 @@ const slideoverUi = computed(() => {
             </UFormField>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div
+            v-if="!isBacklogMode"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          >
             <UFormField
               :label="t('tasks.form.assignedTo')"
               name="assignedTo"
@@ -1175,7 +1225,10 @@ const slideoverUi = computed(() => {
             </UFormField>
           </div>
 
-          <UFormField name="urgent">
+          <UFormField
+            v-if="!isBacklogMode"
+            name="urgent"
+          >
             <USwitch
               v-model="state.urgent"
               :label="t('tasks.form.markUrgent')"
@@ -1184,6 +1237,7 @@ const slideoverUi = computed(() => {
           </UFormField>
 
           <div
+            v-if="!isBacklogMode"
             class="space-y-2"
             :class="!isReadOnly && state.urgent ? 'opacity-50 pointer-events-none' : ''"
           >
@@ -1373,7 +1427,7 @@ const slideoverUi = computed(() => {
           :label="t('tasks.form.cancel')"
           color="neutral"
           variant="ghost"
-          :disabled="isPending"
+          :disabled="isSaving"
           @click="close"
         />
         <UButton
@@ -1381,8 +1435,8 @@ const slideoverUi = computed(() => {
           :color="canSubmit ? 'primary' : 'neutral'"
           type="submit"
           :form="formId"
-          :loading="isPending"
-          :disabled="isPending || !canSubmit"
+          :loading="isSaving"
+          :disabled="isSaving || !canSubmit"
           class="disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>

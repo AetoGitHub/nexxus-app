@@ -53,6 +53,14 @@ export interface CreateTaskPayload {
   repeat_config?: TaskRepeatConfig
 }
 
+/** Payload de POST /api/tasks/backlog/create/. */
+export interface CreateBacklogTaskPayload {
+  short_description: string
+  long_description?: string
+  type: 'manual'
+  project: number
+}
+
 /** Payload de PATCH /api/tasks/:id/update/. */
 export interface UpdateTaskPayload {
   short_description: string
