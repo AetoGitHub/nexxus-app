@@ -85,6 +85,9 @@ export default defineNuxtConfig({
       apiAuthPath: process.env.NUXT_PUBLIC_API_AUTH_PATH ?? "/api/auth/login/",
       apiAuthLogoutPath:
         process.env.NUXT_PUBLIC_API_AUTH_LOGOUT_PATH ?? "/auth/logout/",
+      n8nUploadUrl:
+        process.env.NUXT_PUBLIC_N8N_UPLOAD_URL
+        ?? "https://n8n.srv1137762.hstgr.cloud/webhook/upload-firebase-general",
     },
   },
 

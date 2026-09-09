@@ -454,10 +454,14 @@ export interface TaskMessage {
   type: TaskMessageType
   read: boolean
   created_at: string
+  /** URLs de Firebase Storage (subidas por el front vía webhook n8n antes de crear el mensaje). */
+  files?: string[]
 }
 
 /** Payload de POST /api/tasks/messages/create/. */
 export interface CreateTaskMessagePayload {
   task: number
   content: string
+  /** URLs ya subidas a Firebase Storage; ver useFirebaseUpload. */
+  files?: string[]
 }

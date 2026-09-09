@@ -492,6 +492,12 @@
       "offline": "Sin conexión",
       "connectionErrorTitle": "No se pudo conectar al chat en tiempo real",
       "archivedNotice": "Esta tarea está archivada. No se pueden enviar mensajes.",
+      "attachments": {
+        "add": "Adjuntar archivo",
+        "remove": "Quitar archivo",
+        "uploadErrorTitle": "No se pudo subir el archivo",
+        "missingContext": "No se pudo determinar la organización o empresa para subir el archivo."
+      },
       "system": {
         "taskCreated": "Tarea creada.",
         "taskUpdated": "Tarea actualizada.",

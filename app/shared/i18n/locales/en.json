@@ -492,6 +492,12 @@
       "offline": "Offline",
       "connectionErrorTitle": "Could not connect to the real-time chat",
       "archivedNotice": "This task is archived. Messages can't be sent.",
+      "attachments": {
+        "add": "Attach file",
+        "remove": "Remove file",
+        "uploadErrorTitle": "Could not upload the file",
+        "missingContext": "Could not determine the organization or company to upload the file."
+      },
       "system": {
         "taskCreated": "Task created.",
         "taskUpdated": "Task updated.",

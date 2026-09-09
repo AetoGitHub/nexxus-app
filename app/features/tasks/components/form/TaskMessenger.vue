@@ -3,7 +3,16 @@ import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreat
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
-import { resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
+import {
+  fileNameFromUrl,
+  isImageFileUrl,
+  resolveTaskMessageContent,
+} from '~/features/tasks/utils/form/task-message.util'
+import {
+  buildTaskMessageUploadDirectory,
+  buildTaskUploadFileName,
+} from '~/features/tasks/utils/form/task-file-upload.util'
+import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
@@ -30,7 +39,9 @@ const props = withDefaults(
 )
 
 const { t, locale } = useI18n()
-const { user } = useAuth()
+const { user, organization, selectedCompanyId } = useAuth()
+const { uploadFile } = useFirebaseUpload()
+const toast = useToast()
 
 const {
   messages,
@@ -45,8 +56,15 @@ const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessag
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
 const contentEl = ref<HTMLElement | null>(null)
+const fileInputEl = ref<HTMLInputElement | null>(null)
+/** Archivos elegidos, pendientes de subir a Firebase al enviar el mensaje. */
+const pendingFiles = ref<File[]>([])
+const isUploadingFiles = ref(false)
 /** Mientras el usuario esté al final, la vista queda anclada al mensaje más reciente. */
 const isPinnedToBottom = ref(true)
+
+const isBusy = computed(() => isSending.value || isUploadingFiles.value)
+const canSend = computed(() => (draft.value.trim().length > 0 || pendingFiles.value.length > 0) && !isBusy.value)
 
 const messageCount = computed(() =>
   messages.value.filter(message => !isSystemMessage(message.type)).length,
@@ -171,17 +189,73 @@ function onListScroll() {
   isPinnedToBottom.value = distance <= 80
 }
 
+function openFilePicker() {
+  fileInputEl.value?.click()
+}
+
+function onFilesSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = input.files ? Array.from(input.files) : []
+  pendingFiles.value = [...pendingFiles.value, ...files]
+  input.value = ''
+}
+
+function removePendingFile(index: number) {
+  pendingFiles.value = pendingFiles.value.filter((_, i) => i !== index)
+}
+
+/** Sube los adjuntos pendientes a Firebase (vía n8n) y devuelve sus URLs finales. */
+async function uploadPendingFiles(): Promise<string[]> {
+  const organizationId = organization.value?.id
+  const companyId = selectedCompanyId.value
+  if (organizationId == null || companyId == null) {
+    throw new Error('missing_upload_context')
+  }
+
+  const directory = buildTaskMessageUploadDirectory(organizationId, companyId, props.taskId)
+
+  isUploadingFiles.value = true
+  try {
+    return await Promise.all(
+      pendingFiles.value.map(file =>
+        uploadFile(file, directory, buildTaskUploadFileName(file.name)),
+      ),
+    )
+  }
+  finally {
+    isUploadingFiles.value = false
+  }
+}
+
 async function sendMessage() {
   const content = draft.value.trim()
-  if (!content || isSending.value) {
+  if ((!content && pendingFiles.value.length === 0) || isBusy.value) {
+    return
+  }
+
+  let files: string[] | undefined
+  try {
+    files = pendingFiles.value.length ? await uploadPendingFiles() : undefined
+  }
+  catch (error) {
+    const isMissingContext = error instanceof Error && error.message === 'missing_upload_context'
+    toast.add({
+      title: t('tasks.messenger.attachments.uploadErrorTitle'),
+      description: isMissingContext
+        ? t('tasks.messenger.attachments.missingContext')
+        : parseFetchError(error),
+      color: 'error',
+    })
     return
   }
 
   await createMessage({
     task: props.taskId,
     content,
+    files,
   })
   draft.value = ''
+  pendingFiles.value = []
   isPinnedToBottom.value = true
   await scrollToLatestAfterRender()
 }
@@ -214,6 +288,7 @@ watch(
   () => props.taskId,
   () => {
     isPinnedToBottom.value = true
+    pendingFiles.value = []
   },
 )
 </script>
@@ -322,9 +397,42 @@ watch(
             v-else-if="isOwnMessage(message.profile, message.profile_username)"
             class="max-w-[85%] rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white"
           >
-            <p class="whitespace-pre-wrap wrap-break-word">
+            <p
+              v-if="messageContent(message)"
+              class="whitespace-pre-wrap wrap-break-word"
+            >
               {{ messageContent(message) }}
             </p>
+            <div
+              v-if="message.files?.length"
+              class="mt-1.5 flex flex-wrap gap-1.5"
+            >
+              <a
+                v-for="fileUrl in message.files"
+                :key="fileUrl"
+                :href="fileUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block"
+              >
+                <img
+                  v-if="isImageFileUrl(fileUrl)"
+                  :src="fileUrl"
+                  loading="lazy"
+                  class="max-h-40 max-w-full rounded-lg border border-white/20 object-cover"
+                >
+                <span
+                  v-else
+                  class="flex items-center gap-1.5 rounded-lg bg-white/10 px-2 py-1.5 text-xs underline-offset-2 hover:underline"
+                >
+                  <UIcon
+                    name="i-lucide-paperclip"
+                    class="h-3.5 w-3.5 shrink-0"
+                  />
+                  <span class="truncate">{{ fileNameFromUrl(fileUrl) }}</span>
+                </span>
+              </a>
+            </div>
             <p class="mt-1 text-right text-[10px] text-white/80">
               {{ formatTime(message.created_at) }}
             </p>
@@ -356,9 +464,42 @@ watch(
               >
                 {{ message.profile_username }}
               </p>
-              <p class="whitespace-pre-wrap wrap-break-word">
+              <p
+                v-if="messageContent(message)"
+                class="whitespace-pre-wrap wrap-break-word"
+              >
                 {{ messageContent(message) }}
               </p>
+              <div
+                v-if="message.files?.length"
+                class="mt-1.5 flex flex-wrap gap-1.5"
+              >
+                <a
+                  v-for="fileUrl in message.files"
+                  :key="fileUrl"
+                  :href="fileUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block"
+                >
+                  <img
+                    v-if="isImageFileUrl(fileUrl)"
+                    :src="fileUrl"
+                    loading="lazy"
+                    class="max-h-40 max-w-full rounded-lg border border-border object-cover"
+                  >
+                  <span
+                    v-else
+                    class="flex items-center gap-1.5 rounded-lg bg-background px-2 py-1.5 text-xs underline-offset-2 hover:underline"
+                  >
+                    <UIcon
+                      name="i-lucide-paperclip"
+                      class="h-3.5 w-3.5 shrink-0"
+                    />
+                    <span class="truncate">{{ fileNameFromUrl(fileUrl) }}</span>
+                  </span>
+                </a>
+              </div>
               <p class="mt-1 text-right text-[10px] text-muted-foreground">
                 {{ formatTime(message.created_at) }}
               </p>
@@ -377,28 +518,74 @@ watch(
       </p>
       <div
         v-else
-        class="flex items-end gap-2"
+        class="flex flex-col gap-2"
       >
-        <UTextarea
-          v-model="draft"
-          :placeholder="t('tasks.messenger.placeholder')"
-          :rows="1"
-          autoresize
-          :disabled="isSending"
-          class="min-w-0 flex-1"
-          :ui="{ base: 'max-h-28' }"
-          @keydown="onKeydown"
-        />
-        <UButton
-          icon="i-lucide-send"
-          color="primary"
-          size="md"
-          square
-          :loading="isSending"
-          :disabled="!draft.trim() || isSending"
-          :aria-label="t('tasks.messenger.send')"
-          @click="sendMessage"
-        />
+        <ul
+          v-if="pendingFiles.length"
+          class="flex flex-wrap gap-1.5"
+        >
+          <li
+            v-for="(file, index) in pendingFiles"
+            :key="`${file.name}-${index}`"
+            class="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
+          >
+            <UIcon
+              name="i-lucide-paperclip"
+              class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+            />
+            <span class="max-w-40 truncate">{{ file.name }}</span>
+            <UButton
+              icon="i-lucide-x"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              :disabled="isBusy"
+              :aria-label="t('tasks.messenger.attachments.remove')"
+              @click="removePendingFile(index)"
+            />
+          </li>
+        </ul>
+
+        <div class="flex items-end gap-2">
+          <input
+            ref="fileInputEl"
+            type="file"
+            multiple
+            class="hidden"
+            @change="onFilesSelected"
+          >
+          <UButton
+            icon="i-lucide-paperclip"
+            color="neutral"
+            variant="ghost"
+            size="md"
+            square
+            :disabled="isBusy"
+            :aria-label="t('tasks.messenger.attachments.add')"
+            @click="openFilePicker"
+          />
+          <UTextarea
+            v-model="draft"
+            :placeholder="t('tasks.messenger.placeholder')"
+            :rows="1"
+            autoresize
+            :disabled="isBusy"
+            class="min-w-0 flex-1"
+            :ui="{ base: 'max-h-28' }"
+            @keydown="onKeydown"
+          />
+          <UButton
+            icon="i-lucide-send"
+            color="primary"
+            size="md"
+            square
+            :loading="isBusy"
+            :disabled="!canSend"
+            :aria-label="t('tasks.messenger.send')"
+            @click="sendMessage"
+          />
+        </div>
       </div>
     </template>
   </UCard>
