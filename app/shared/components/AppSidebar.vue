@@ -4,7 +4,7 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 const { t, locale, setLocale } = useI18n()
 const { user, logout } = useAuth()
 const { collapsed } = useSidebar()
-const { tasksItems, masterItems, isActive, navigate } = useAppNav()
+const { tasksItems, isActive, navigate } = useAppNav()
 const { indicator: realtimeIndicator } = useRealtimeStatus()
 
 // TODO: sustituir por el nombre/rol reales cuando el modelo de usuario los exponga.
@@ -62,6 +62,10 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
     },
   ],
 ])
+
+function backToHub() {
+  void navigateTo('/')
+}
 </script>
 
 <template>
@@ -129,43 +133,25 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
           </button>
         </UTooltip>
       </div>
-
-      <div v-if="!collapsed" class="px-3 pt-5 pb-2">
-        <div class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {{ t('sidebar.sectionMaster') }}
-        </div>
-      </div>
-      <div v-else class="my-3 mx-2 border-t border-sidebar-border" />
-
-      <div class="space-y-0.5">
-        <UTooltip
-          v-for="item in masterItems"
-          :key="item.labelKey"
-          :text="collapsed ? t(item.labelKey) : undefined"
-          :content="{ side: 'right', sideOffset: 8 }"
-        >
-          <button
-            type="button"
-            :aria-label="t(item.labelKey)"
-            class="w-full flex items-center py-2 text-sm rounded-md transition-colors relative"
-            :class="[
-              collapsed ? 'justify-center px-0' : 'gap-3 px-3',
-              isActive(item)
-                ? 'bg-aeto-teal-light text-aeto-teal-dark font-medium'
-                : 'text-sidebar-foreground hover:bg-muted',
-            ]"
-            @click="navigate(item)"
-          >
-            <span
-              v-if="isActive(item)"
-              class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-aeto-teal"
-            />
-            <UIcon :name="item.icon" class="h-4 w-4 shrink-0" />
-            <span v-if="!collapsed" class="flex-1 text-left">{{ t(item.labelKey) }}</span>
-          </button>
-        </UTooltip>
-      </div>
     </nav>
+
+    <div class="p-2 border-t border-sidebar-border">
+      <UTooltip
+        :text="collapsed ? t('sidebar.backToHub') : undefined"
+        :content="{ side: 'right', sideOffset: 8 }"
+      >
+        <button
+          type="button"
+          :aria-label="t('sidebar.backToHub')"
+          class="w-full flex items-center py-2 text-sm rounded-md transition-colors text-sidebar-foreground hover:bg-muted"
+          :class="collapsed ? 'justify-center px-0' : 'gap-3 px-3'"
+          @click="backToHub"
+        >
+          <UIcon name="i-lucide-arrow-left" class="h-4 w-4 shrink-0" />
+          <span v-if="!collapsed" class="flex-1 text-left">{{ t('sidebar.backToHub') }}</span>
+        </button>
+      </UTooltip>
+    </div>
 
     <div class="p-2 border-t border-sidebar-border">
       <UDropdownMenu

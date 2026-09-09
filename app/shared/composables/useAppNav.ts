@@ -34,13 +34,9 @@ export function useAppNav() {
     { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
   ])
 
-  const masterItems: AppNavItem[] = [
-    { labelKey: 'sidebar.masterSettings', icon: 'i-lucide-settings-2', to: '/settings' },
-  ]
-
   /** Ítems planos para la bottom nav (sin indentación; máx. ~6 para que quepan). */
   const bottomNavItems = computed<AppNavItem[]>(() =>
-    [...tasksItems.value, ...masterItems].filter(item => item.bottomNav !== false),
+    tasksItems.value.filter(item => item.bottomNav !== false),
   )
 
   function isActive(item: AppNavItem): boolean {
@@ -62,7 +58,6 @@ export function useAppNav() {
 
   return {
     tasksItems,
-    masterItems,
     bottomNavItems,
     isActive,
     navigate,

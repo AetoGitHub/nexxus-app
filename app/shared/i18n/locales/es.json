@@ -35,14 +35,13 @@
   },
   "sidebar": {
     "sectionTasks": "Tasks",
-    "sectionMaster": "Configuración master",
     "reporteCeo": "Reporte CEO",
     "dashboard": "Dashboard",
     "tasks": "Tareas",
     "toAccept": "Por aceptar",
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
-    "masterSettings": "Configuración",
+    "backToHub": "Volver al hub",
     "bottomNav": "Navegación principal"
   },
   "toolbar": {
@@ -578,12 +577,20 @@
     "openModule": "Abrir módulo",
     "tasksTitle": "Nexxus Tasks",
     "tasksDescription": "Gestiona y da seguimiento a tus tareas.",
-    "configurationTitle": "Configuración",
+    "configurationTitle": "Configuración master",
     "configurationDescription": "Administra organización, compañía y usuarios."
   },
   "configuration": {
     "title": "Configuración",
     "subtitle": "Elige qué quieres configurar",
+    "navTitle": "Configuración master",
+    "navSubtitle": "Organización, compañía y usuarios",
+    "backToHub": "Volver al hub",
+    "nav": {
+      "organization": "Organización",
+      "company": "Compañía",
+      "user": "Usuarios"
+    },
     "organization": {
       "title": "Organización",
       "description": "Estructura y datos de tu organización.",

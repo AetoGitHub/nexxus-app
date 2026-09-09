@@ -10,7 +10,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
   {
     label: t('configuration.user.list.title'),
     icon: 'i-lucide-users',
-    to: '/configuration/user',
+    to: '/configuration?section=user',
   },
   {
     label: t('configuration.user.bulkCreate.title'),

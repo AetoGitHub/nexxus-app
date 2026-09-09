@@ -90,7 +90,7 @@ async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
 }
 
 watch(isResultModalOpen, (isOpenValue) => {
-  if (!isOpenValue) navigateTo('/configuration/user')
+  if (!isOpenValue) navigateTo('/configuration?section=user')
 })
 </script>
 
