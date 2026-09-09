@@ -66,6 +66,7 @@ function onSectionCreate(
       selectedTaskId,
       openTask,
       openNewTask,
+      openTaskFromBacklog,
       setCalendarMonth,
     }">
       <TaskListView
@@ -109,6 +110,7 @@ function onSectionCreate(
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"
+        @promote-backlog="openTaskFromBacklog"
         @create="onSectionCreate(groupBy, $event, openNewTask)"
       />
       <TaskDueKanbanView

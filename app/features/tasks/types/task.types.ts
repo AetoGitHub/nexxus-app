@@ -61,6 +61,26 @@ export interface CreateBacklogTaskPayload {
   project: number
 }
 
+/**
+ * Payload de POST /api/tasks/process/backlog/complete/ para promover una
+ * tarea de backlog (arrastrada a Pendiente) a una tarea completa: `task` es
+ * el id de la tarea de backlog, más el resto de los campos de una tarea normal.
+ */
+export interface PromoteBacklogTaskPayload {
+  task: number
+  short_description: string
+  long_description: string
+  type: NewTaskFormType
+  priority: ApiTaskPriority
+  start_date: string
+  limit_date: string
+  project: number
+  group: number | null
+  assigned_to: number[]
+  task_reviewer?: number[]
+  repeat_config?: TaskRepeatConfig
+}
+
 /** Payload de PATCH /api/tasks/:id/update/. */
 export interface UpdateTaskPayload {
   short_description: string

@@ -36,11 +36,13 @@ const {
   selectedTaskId,
   newTaskDefaults,
   toUpdateSection,
+  promotingBacklogTaskId,
   listFilters,
   activeGroupByLabel,
   setCalendarMonth,
   openNewTask,
   openTask,
+  openTaskFromBacklog,
 } = useTaskWorkspaceState({
   excludeViews: () => props.excludeViews,
 })
@@ -210,6 +212,7 @@ function closeMobileFilters() {
         :selected-task-id="selectedTaskId"
         :open-task="openTask"
         :open-new-task="openNewTask"
+        :open-task-from-backlog="openTaskFromBacklog"
       />
     </div>
 
@@ -283,6 +286,7 @@ function closeMobileFilters() {
       :initial-defaults="newTaskDefaults"
       :authorize-mode="props.authorizeMode"
       :to-update-section="toUpdateSection"
+      :promoting-backlog-task-id="promotingBacklogTaskId"
     />
   </div>
 </template>

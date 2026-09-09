@@ -20,6 +20,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   select: [taskId: number]
   create: [column: KanbanCreateColumn]
+  /** Drag Backlog → Pendiente: se abre el detalle en vez del flujo de proceso. */
+  promoteBacklog: [taskId: number]
 }>()
 
 const { columns, archivedBar, loadMore } = useKanbanTasks(() => props.filters)
@@ -41,6 +43,11 @@ function onMove(payload: KanbanTaskMove) {
     .find(item => item.id === payload.taskId)
 
   if (!task) {
+    return
+  }
+
+  if (payload.fromColumnId === 'backlog' && payload.toColumnId === 'pending') {
+    emit('promoteBacklog', payload.taskId)
     return
   }
 
