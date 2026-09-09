@@ -10,6 +10,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
+import { usePromoteBacklogTask } from '~/features/tasks/composables/form/usePromoteBacklogTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
@@ -27,6 +28,7 @@ import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatC
 import {
   buildCreateBacklogTaskPayload,
   buildCreateTaskPayload,
+  buildPromoteBacklogTaskPayload,
   buildUpdateTaskPayload,
   defaultTaskReviewers,
   findCloseApprovalForUser,
@@ -68,6 +70,8 @@ const props = withDefaults(
     authorizeMode?: boolean
     /** Sección de pending-approval desde la que se abrió el detalle. */
     toUpdateSection?: ToUpdateSectionId | null
+    /** Id de la tarea cuando el detalle se abrió arrastrando Backlog → Pendiente en Kanban. */
+    promotingBacklogTaskId?: number | null
   }>(),
   {
     view: 'list',
@@ -75,6 +79,7 @@ const props = withDefaults(
     initialDefaults: null,
     authorizeMode: false,
     toUpdateSection: null,
+    promotingBacklogTaskId: null,
   },
 )
 
@@ -95,6 +100,12 @@ const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
 const isEditing = ref(false)
+/** Detalle abierto por drag Backlog → Pendiente: arranca en edición, footer con "Enviar a pendiente". */
+const isPromotingBacklog = computed(() =>
+  props.promotingBacklogTaskId != null && props.promotingBacklogTaskId === taskId.value,
+)
+/** Evita que el watcher de hidratación pise ediciones en curso tras el primer prefill. */
+const hasHydratedDetail = ref(false)
 /** Campos bloqueados: detalle sin edición activa. */
 const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
 /** En mobile: panel visible (mensajes o detalle). En sm+ se muestran ambos. */
@@ -113,10 +124,13 @@ const minDueDate = computed(() => {
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
 const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()
+const { mutateAsync: promoteBacklogTask, isPending: isPromotingBacklogTask } = usePromoteBacklogTask()
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
-const isSaving = computed(() => isPending.value || isCreatingBacklog.value || isUpdating.value)
+const isSaving = computed(() =>
+  isPending.value || isCreatingBacklog.value || isPromotingBacklogTask.value || isUpdating.value,
+)
 
 /** Backlog: solo aplica al crear (no en detalle/edición). */
 const isBacklogMode = computed(() => !isDetailView.value && isBacklog.value)
@@ -644,6 +658,13 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
   submitError.value = ''
 
   try {
+    if (isPromotingBacklog.value && taskId.value != null) {
+      const payload = buildPromoteBacklogTaskPayload(state, taskId.value, user.value?.id)
+      await promoteBacklogTask(payload)
+      close()
+      return
+    }
+
     if (isEditing.value && taskId.value != null) {
       const payload = buildUpdateTaskPayload(
         state,
@@ -731,6 +752,7 @@ watch(open, (isOpen) => {
     isEditing.value = false
     mobilePanel.value = 'detail'
     taskId.value = null
+    hasHydratedDetail.value = false
     return
   }
 
@@ -743,15 +765,23 @@ watch(open, (isOpen) => {
       state.dueDate = minDueDate.value
     }
   }
+  else if (isPromotingBacklog.value) {
+    isEditing.value = true
+  }
 })
 
 watch(
   () => taskDetailQuery.data.value,
   (detail) => {
-    if (!open.value || !detail || taskId.value == null || isEditing.value) {
+    if (!open.value || !detail || taskId.value == null) {
+      return
+    }
+    // Ya se hidrató una vez: no pisar una edición en curso con un refetch en segundo plano.
+    if (isEditing.value && hasHydratedDetail.value) {
       return
     }
     applyFormInput(taskDetailToFormInput(detail))
+    hasHydratedDetail.value = true
   },
 )
 
@@ -918,7 +948,7 @@ const slideoverUi = computed(() => {
                 @click="startEditing"
               />
               <UButton
-                v-else-if="isEditing"
+                v-else-if="isEditing && !isPromotingBacklog"
                 icon="i-lucide-x"
                 color="neutral"
                 variant="ghost"
@@ -1357,7 +1387,25 @@ const slideoverUi = computed(() => {
             v-if="isDetailView"
             class="flex shrink-0 items-center justify-end gap-2 border-t border-border px-4 py-3"
           >
-            <template v-if="isEditing">
+            <template v-if="isPromotingBacklog">
+              <UButton
+                :label="t('tasks.form.cancel')"
+                color="neutral"
+                variant="ghost"
+                :disabled="isSaving"
+                @click="close"
+              />
+              <UButton
+                :label="t('tasks.form.promoteToPending')"
+                :color="canSubmit ? 'primary' : 'neutral'"
+                type="submit"
+                :form="formId"
+                :loading="isSaving"
+                :disabled="isSaving || !canSubmit"
+                class="disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </template>
+            <template v-else-if="isEditing">
               <UButton
                 :label="t('tasks.form.save')"
                 :color="canSubmit ? 'primary' : 'neutral'"

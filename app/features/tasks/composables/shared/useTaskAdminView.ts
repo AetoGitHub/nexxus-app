@@ -3,6 +3,10 @@
  * (y `group` cuando aplica) a los endpoints de tareas/notificaciones.
  * Estado global (vía useState) para que persista entre vistas (lista,
  * kanban, calendario) sin necesidad de pasarlo por props.
+ *
+ * `isAdminActive`/`isGroupActive` los activa la propia página de ruta
+ * dedicada (`/tasks/admin`, futuro `/tasks/group`) al montarse, y los apaga
+ * al desmontarse; no hay botón de toggle en la barra de filtros.
  */
 export function useTaskAdminView() {
   const { isSuperuser, managedGroupId, managedGroupName } = useAuth()
@@ -30,16 +34,6 @@ export function useTaskAdminView() {
     return {}
   })
 
-  function toggleAdmin() {
-    if (!isSuperuser.value) return
-    isAdminActive.value = !isAdminActive.value
-  }
-
-  function toggleGroup() {
-    if (!isGroupManager.value) return
-    isGroupActive.value = !isGroupActive.value
-  }
-
   return {
     isSuperuser,
     isGroupManager,
@@ -47,7 +41,5 @@ export function useTaskAdminView() {
     isAdminActive,
     isGroupActive,
     adminQuery,
-    toggleAdmin,
-    toggleGroup,
   }
 }

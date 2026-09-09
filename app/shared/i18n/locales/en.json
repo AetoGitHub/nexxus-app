@@ -35,14 +35,14 @@
   },
   "sidebar": {
     "sectionTasks": "Tasks",
-    "sectionMaster": "Master settings",
     "reporteCeo": "CEO Report",
     "dashboard": "Dashboard",
-    "tasks": "Tasks",
+    "myTasks": "My tasks",
+    "adminTasks": "Admin tasks",
     "toAccept": "To accept",
     "toUpdate": "Pending approval",
     "settings": "Settings",
-    "masterSettings": "Settings",
+    "backToHub": "Back to hub",
     "bottomNav": "Main navigation"
   },
   "toolbar": {
@@ -98,8 +98,6 @@
     "filterOverdue": "Overdue",
     "filterCompleted": "Completed",
     "filterMultipleClose": "Multiple close",
-    "adminView": "Admin",
-    "groupManagerView": "My group",
     "newTask": "New task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",
@@ -370,9 +368,13 @@
       "edit": "Edit task",
       "cancelEdit": "Cancel editing",
       "save": "Save",
+      "promoteToPending": "Send to pending",
       "createSuccessTitle": "Task created",
       "createSuccessDescription": "The task was created successfully.",
       "createError": "Could not create the task",
+      "promoteSuccessTitle": "Task sent to pending",
+      "promoteSuccessDescription": "The task was moved from backlog to pending successfully.",
+      "promoteError": "Could not send the task to pending",
       "updateSuccessTitle": "Task updated",
       "updateSuccessDescription": "Your changes were saved successfully.",
       "updateErrorTitle": "Could not update the task",
@@ -489,6 +491,12 @@
       "offline": "Offline",
       "connectionErrorTitle": "Could not connect to the real-time chat",
       "archivedNotice": "This task is archived. Messages can't be sent.",
+      "attachments": {
+        "add": "Attach file",
+        "remove": "Remove file",
+        "uploadErrorTitle": "Could not upload the file",
+        "missingContext": "Could not determine the organization or company to upload the file."
+      },
       "system": {
         "taskCreated": "Task created.",
         "taskUpdated": "Task updated.",
@@ -574,12 +582,20 @@
     "openModule": "Open module",
     "tasksTitle": "Nexxus Tasks",
     "tasksDescription": "Manage and track your tasks.",
-    "configurationTitle": "Configuration",
+    "configurationTitle": "Master settings",
     "configurationDescription": "Manage organization, company, and users."
   },
   "configuration": {
     "title": "Configuration",
     "subtitle": "Choose what you want to configure",
+    "navTitle": "Master settings",
+    "navSubtitle": "Organization, company, and users",
+    "backToHub": "Back to hub",
+    "nav": {
+      "organization": "Organization",
+      "company": "Company",
+      "user": "Users"
+    },
     "organization": {
       "title": "Organization",
       "description": "Structure and details of your organization.",

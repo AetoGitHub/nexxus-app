@@ -32,3 +32,23 @@ export function resolveTaskMessageContent(
 
   return t(i18nKey, message.system_params ?? {})
 }
+
+const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'])
+
+/** Nombre original del archivo a partir de la URL de Firebase (quita el prefijo {timestamp}_). */
+export function fileNameFromUrl(url: string): string {
+  try {
+    const pathname = decodeURIComponent(new URL(url).pathname)
+    const lastSegment = pathname.split('/').pop() ?? url
+    return lastSegment.replace(/^\d+_/, '')
+  } catch {
+    return url
+  }
+}
+
+/** Heurística por extensión para decidir si un adjunto se previsualiza como imagen. */
+export function isImageFileUrl(url: string): boolean {
+  const name = fileNameFromUrl(url).toLowerCase()
+  const extension = name.split('.').pop() ?? ''
+  return IMAGE_EXTENSIONS.has(extension)
+}

@@ -16,31 +16,39 @@ export interface AppNavItem {
 export function useAppNav() {
   const route = useRoute()
   const { actionableCount } = useToUpdateCounts()
+  const { isSuperuser } = useAuth()
 
-  const tasksItems = computed<AppNavItem[]>(() => [
-    { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
-    { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
-    { labelKey: 'sidebar.tasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
-    // Oculto de momento: aún no funciona
-    // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 },
-    {
-      labelKey: 'sidebar.toUpdate',
-      icon: 'i-lucide-refresh-cw',
-      indent: true,
-      to: '/tasks/pending-approval',
-      badge: actionableCount.value,
-      bottomNav: false,
-    },
-    { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
-  ])
+  const tasksItems = computed<AppNavItem[]>(() => {
+    const items: AppNavItem[] = [
+      { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
+      { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
+      { labelKey: 'sidebar.myTasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
+    ]
 
-  const masterItems: AppNavItem[] = [
-    { labelKey: 'sidebar.masterSettings', icon: 'i-lucide-settings-2', to: '/settings' },
-  ]
+    if (isSuperuser.value) {
+      items.push({ labelKey: 'sidebar.adminTasks', icon: 'i-lucide-shield', to: '/tasks/admin' })
+    }
+
+    items.push(
+      // Oculto de momento: aún no funciona
+      // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 },
+      {
+        labelKey: 'sidebar.toUpdate',
+        icon: 'i-lucide-refresh-cw',
+        indent: true,
+        to: '/tasks/pending-approval',
+        badge: actionableCount.value,
+        bottomNav: false,
+      },
+      { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
+    )
+
+    return items
+  })
 
   /** Ítems planos para la bottom nav (sin indentación; máx. ~6 para que quepan). */
   const bottomNavItems = computed<AppNavItem[]>(() =>
-    [...tasksItems.value, ...masterItems].filter(item => item.bottomNav !== false),
+    tasksItems.value.filter(item => item.bottomNav !== false),
   )
 
   function isActive(item: AppNavItem): boolean {
@@ -62,7 +70,6 @@ export function useAppNav() {
 
   return {
     tasksItems,
-    masterItems,
     bottomNavItems,
     isActive,
     navigate,

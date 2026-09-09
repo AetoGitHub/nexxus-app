@@ -3,6 +3,7 @@ import type {
   CreateBacklogTaskPayload,
   CreateTaskPayload,
   NewTaskFormType,
+  PromoteBacklogTaskPayload,
   TaskCloseApproval,
   TaskDetail,
   TaskEffort,
@@ -176,6 +177,65 @@ export function buildCreateBacklogTaskPayload(
     type: 'manual',
     project: form.project,
   }
+}
+
+/**
+ * Payload de POST /api/tasks/process/backlog/complete/ para promover una
+ * tarea de backlog a Pendiente (drag Kanban Backlog → Pendiente). A diferencia
+ * de `buildCreateTaskPayload`, `group` no es obligatorio (se envía `null` si
+ * no hay asignado con grupo).
+ */
+export function buildPromoteBacklogTaskPayload(
+  form: NewTaskFormInput,
+  taskId: number,
+  currentUserId?: number,
+): PromoteBacklogTaskPayload {
+  if (!form.name.trim()) {
+    throw new Error('name_required')
+  }
+  if (form.project == null) {
+    throw new Error('project_required')
+  }
+  if (!form.assignedTo.length) {
+    throw new Error('assigned_to_required')
+  }
+  if (!form.dueDate) {
+    throw new Error('due_date_required')
+  }
+
+  const payload: PromoteBacklogTaskPayload = {
+    task: taskId,
+    short_description: form.name.trim(),
+    long_description: form.description.trim(),
+    type: form.type,
+    priority: resolveTaskPriority(form.urgent, form.effort),
+    start_date: new Date().toISOString(),
+    limit_date: dateInputToLimitISO(form.dueDate),
+    project: form.project,
+    group: form.group ?? null,
+    assigned_to: form.assignedTo,
+  }
+
+  if (form.type === 'multiple_close') {
+    const reviewers = form.taskReviewer.length
+      ? form.taskReviewer
+      : (currentUserId != null ? [currentUserId] : [])
+
+    if (!reviewers.length) {
+      throw new Error('task_reviewer_required')
+    }
+
+    payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
+  }
+
+  if (form.type === 'repeat') {
+    if (!isRepeatConfigComplete(form.repeatConfig)) {
+      throw new Error('repeat_config_required')
+    }
+    payload.repeat_config = normalizeRepeatConfig(form.repeatConfig)
+  }
+
+  return payload
 }
 
 /** Flags de update para series repetitivas (instancia generada vs maestra). */

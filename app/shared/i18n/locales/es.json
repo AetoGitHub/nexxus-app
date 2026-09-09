@@ -35,14 +35,14 @@
   },
   "sidebar": {
     "sectionTasks": "Tasks",
-    "sectionMaster": "Configuración master",
     "reporteCeo": "Reporte CEO",
     "dashboard": "Dashboard",
-    "tasks": "Tareas",
+    "myTasks": "Mis tareas",
+    "adminTasks": "Tareas administrativas",
     "toAccept": "Por aceptar",
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
-    "masterSettings": "Configuración",
+    "backToHub": "Volver al hub",
     "bottomNav": "Navegación principal"
   },
   "toolbar": {
@@ -98,8 +98,6 @@
     "filterOverdue": "Vencidas",
     "filterCompleted": "Completadas",
     "filterMultipleClose": "Cierre múltiple",
-    "adminView": "Admin",
-    "groupManagerView": "Mi grupo",
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
@@ -370,9 +368,13 @@
       "edit": "Editar tarea",
       "cancelEdit": "Cancelar edición",
       "save": "Guardar",
+      "promoteToPending": "Enviar a pendiente",
       "createSuccessTitle": "Tarea creada",
       "createSuccessDescription": "La tarea se creó correctamente.",
       "createError": "No se pudo crear la tarea",
+      "promoteSuccessTitle": "Tarea enviada a pendiente",
+      "promoteSuccessDescription": "La tarea se movió de backlog a pendiente correctamente.",
+      "promoteError": "No se pudo enviar la tarea a pendiente",
       "updateSuccessTitle": "Tarea actualizada",
       "updateSuccessDescription": "Los cambios se guardaron correctamente.",
       "updateErrorTitle": "No se pudo actualizar la tarea",
@@ -489,6 +491,12 @@
       "offline": "Sin conexión",
       "connectionErrorTitle": "No se pudo conectar al chat en tiempo real",
       "archivedNotice": "Esta tarea está archivada. No se pueden enviar mensajes.",
+      "attachments": {
+        "add": "Adjuntar archivo",
+        "remove": "Quitar archivo",
+        "uploadErrorTitle": "No se pudo subir el archivo",
+        "missingContext": "No se pudo determinar la organización o empresa para subir el archivo."
+      },
       "system": {
         "taskCreated": "Tarea creada.",
         "taskUpdated": "Tarea actualizada.",
@@ -574,12 +582,20 @@
     "openModule": "Abrir módulo",
     "tasksTitle": "Nexxus Tasks",
     "tasksDescription": "Gestiona y da seguimiento a tus tareas.",
-    "configurationTitle": "Configuración",
+    "configurationTitle": "Configuración master",
     "configurationDescription": "Administra organización, compañía y usuarios."
   },
   "configuration": {
     "title": "Configuración",
     "subtitle": "Elige qué quieres configurar",
+    "navTitle": "Configuración master",
+    "navSubtitle": "Organización, compañía y usuarios",
+    "backToHub": "Volver al hub",
+    "nav": {
+      "organization": "Organización",
+      "company": "Compañía",
+      "user": "Usuarios"
+    },
     "organization": {
       "title": "Organización",
       "description": "Estructura y datos de tu organización.",

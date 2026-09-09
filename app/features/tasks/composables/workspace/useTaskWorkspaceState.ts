@@ -158,6 +158,8 @@ export function useTaskWorkspaceState(options: {
   const newTaskDefaults = ref<NewTaskFormDefaults | null>(null)
   /** Sección de pending-approval desde la que se abrió el detalle. */
   const toUpdateSection = ref<ToUpdateSectionId | null>(null)
+  /** Id de la tarea cuando el detalle se abrió arrastrando Backlog → Pendiente en Kanban. */
+  const promotingBacklogTaskId = ref<number | null>(null)
 
   const debouncedSearch = refDebounced(search, 300)
   const listFilters = ref<TaskListFilters>({})
@@ -179,6 +181,7 @@ export function useTaskWorkspaceState(options: {
 
     newTaskDefaults.value = null
     toUpdateSection.value = null
+    promotingBacklogTaskId.value = null
 
     if (import.meta.server || route.query.task == null) {
       return
@@ -289,6 +292,16 @@ export function useTaskWorkspaceState(options: {
   function openTask(taskId: number, section?: ToUpdateSectionId | null) {
     selectedTaskId.value = taskId
     toUpdateSection.value = section ?? null
+    promotingBacklogTaskId.value = null
+    newTaskDefaults.value = null
+    newTaskOpen.value = true
+  }
+
+  /** Abre el detalle en modo "promover de Backlog": arranca en edición con botón "Enviar a pendiente". */
+  function openTaskFromBacklog(taskId: number) {
+    selectedTaskId.value = taskId
+    toUpdateSection.value = null
+    promotingBacklogTaskId.value = taskId
     newTaskDefaults.value = null
     newTaskOpen.value = true
   }
@@ -307,10 +320,12 @@ export function useTaskWorkspaceState(options: {
     selectedTaskId,
     newTaskDefaults,
     toUpdateSection,
+    promotingBacklogTaskId,
     listFilters,
     activeGroupByLabel,
     setCalendarMonth,
     openNewTask,
     openTask,
+    openTaskFromBacklog,
   }
 }
