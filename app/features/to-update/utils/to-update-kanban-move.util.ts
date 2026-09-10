@@ -3,6 +3,9 @@ import { TO_UPDATE_SECTION_ORDER } from '~/features/to-update/utils/to-update-se
 
 const SECTION_SET = new Set<string>(TO_UPDATE_SECTION_ORDER)
 
+/** "Sin atender" queda fuera de la cadena de autorización (igual que Backlog en Mis tareas). */
+const LINEAR_ORDER = TO_UPDATE_SECTION_ORDER.filter(id => id !== 'unattended')
+
 function isToUpdateSectionId(id: string | number): id is ToUpdateSectionId {
   return typeof id === 'string' && SECTION_SET.has(id)
 }
@@ -19,8 +22,8 @@ export function isToUpdateLinearMove(
     return false
   }
 
-  const fromIndex = TO_UPDATE_SECTION_ORDER.indexOf(fromColumnId)
-  const toIndex = TO_UPDATE_SECTION_ORDER.indexOf(toColumnId)
+  const fromIndex = LINEAR_ORDER.indexOf(fromColumnId)
+  const toIndex = LINEAR_ORDER.indexOf(toColumnId)
 
   return fromIndex >= 0 && toIndex === fromIndex + 1
 }

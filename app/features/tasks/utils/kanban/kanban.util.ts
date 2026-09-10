@@ -14,6 +14,7 @@ export interface KanbanSectionSource {
   comingSoon?: boolean
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
+  collapsible?: boolean
 }
 
 /** Normaliza secciones de lista al contrato Kanban. */
@@ -30,5 +31,6 @@ export function sectionsToKanbanColumns(sections: KanbanSectionSource[]): Kanban
     comingSoon: section.comingSoon,
     hasNextPage: section.hasNextPage,
     isFetchingNextPage: section.isFetchingNextPage,
+    collapsible: section.collapsible,
   }))
 }
