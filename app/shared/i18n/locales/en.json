@@ -495,7 +495,8 @@
         "add": "Attach file",
         "remove": "Remove file",
         "uploadErrorTitle": "Could not upload the file",
-        "missingContext": "Could not determine the organization or company to upload the file."
+        "missingContext": "Could not determine the organization or company to upload the file.",
+        "dropHint": "Drop the file to attach it"
       },
       "system": {
         "taskCreated": "Task created.",
