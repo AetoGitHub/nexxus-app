@@ -45,7 +45,8 @@
     "toUpdate": "Pending approval",
     "settings": "Settings",
     "backToHub": "Back to hub",
-    "bottomNav": "Main navigation"
+    "bottomNav": "Main navigation",
+    "more": "More"
   },
   "toolbar": {
     "module": "Module",

@@ -45,7 +45,8 @@
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
     "backToHub": "Volver al hub",
-    "bottomNav": "Navegación principal"
+    "bottomNav": "Navegación principal",
+    "more": "Más"
   },
   "toolbar": {
     "module": "Módulo",

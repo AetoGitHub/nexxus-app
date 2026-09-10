@@ -33,7 +33,13 @@ export function useAppNav() {
     ]
 
     if (isSuperuser.value) {
-      items.push({ labelKey: 'sidebar.adminTasks', icon: 'i-lucide-shield', to: '/tasks/admin' })
+      items.push({
+        labelKey: 'sidebar.adminTasks',
+        icon: 'i-lucide-shield',
+        to: '/tasks/admin',
+        // Vive en la hoja "Más" mobile, junto con Tareas por grupo/proyecto.
+        bottomNav: false,
+      })
     }
 
     if (isGroupManager.value) {
@@ -72,7 +78,12 @@ export function useAppNav() {
         badge: actionableCount.value,
         bottomNav: false,
       },
-      { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', to: '/tasks/settings' },
+      {
+        labelKey: 'sidebar.settings',
+        icon: 'i-lucide-settings',
+        to: '/tasks/settings',
+        bottomNav: false,
+      },
     )
 
     return items
