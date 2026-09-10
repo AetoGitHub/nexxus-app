@@ -109,6 +109,7 @@
       "title": "Pendiente de aprobación",
       "placeholder": "Aquí se mostrarán las tareas pendientes de aprobación. El contenido se maquetará próximamente.",
       "sections": {
+        "unattended": "Sin atender",
         "pending": "Pendiente",
         "urgent": "Urgente",
         "delayed": "Retraso",
@@ -496,7 +497,8 @@
         "remove": "Quitar archivo",
         "uploadErrorTitle": "No se pudo subir el archivo",
         "missingContext": "No se pudo determinar la organización o empresa para subir el archivo.",
-        "dropHint": "Suelta el archivo para adjuntarlo"
+        "dropHint": "Suelta el archivo para adjuntarlo",
+        "download": "Descargar"
       },
       "system": {
         "taskCreated": "Tarea creada.",

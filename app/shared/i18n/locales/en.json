@@ -109,6 +109,7 @@
       "title": "Pending approval",
       "placeholder": "Tasks pending approval will appear here. Content will be laid out soon.",
       "sections": {
+        "unattended": "Unattended",
         "pending": "Pending",
         "urgent": "Urgent",
         "delayed": "Delayed",
@@ -496,7 +497,8 @@
         "remove": "Remove file",
         "uploadErrorTitle": "Could not upload the file",
         "missingContext": "Could not determine the organization or company to upload the file.",
-        "dropHint": "Drop the file to attach it"
+        "dropHint": "Drop the file to attach it",
+        "download": "Download"
       },
       "system": {
         "taskCreated": "Task created.",

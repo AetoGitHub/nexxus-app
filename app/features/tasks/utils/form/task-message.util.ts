@@ -34,6 +34,7 @@ export function resolveTaskMessageContent(
 }
 
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'])
+const AUDIO_EXTENSIONS = new Set(['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'])
 
 /** Nombre original del archivo a partir de la URL de Firebase (quita el prefijo {timestamp}_). */
 export function fileNameFromUrl(url: string): string {
@@ -53,6 +54,11 @@ function extensionOf(fileName: string): string {
 /** Heurística por extensión para decidir si un adjunto se previsualiza como imagen. */
 export function isImageFileUrl(url: string): boolean {
   return IMAGE_EXTENSIONS.has(extensionOf(fileNameFromUrl(url)))
+}
+
+/** Heurística por extensión para decidir si un adjunto se reproduce como audio. */
+export function isAudioFileUrl(url: string): boolean {
+  return AUDIO_EXTENSIONS.has(extensionOf(fileNameFromUrl(url)))
 }
 
 const ICON_BY_EXTENSION: Record<string, string> = {
