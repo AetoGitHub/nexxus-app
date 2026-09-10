@@ -1,32 +1,48 @@
 /**
- * Modo admin/manager de grupo para las vistas de tareas: agrega `admin`
- * (y `group` cuando aplica) a los endpoints de tareas/notificaciones.
- * Estado global (vía useState) para que persista entre vistas (lista,
- * kanban, calendario) sin necesidad de pasarlo por props.
+ * Modo admin/manager de grupo/proyecto para las vistas de tareas: agrega
+ * `admin=true` en modo admin, `group=<id>` en modo por grupo, o
+ * `admin_project=<id>` en modo por proyecto (mutuamente excluyentes) a los
+ * endpoints de tareas/notificaciones.
  *
- * `isAdminActive`/`isGroupActive` los activa la propia página de ruta
- * dedicada (`/tasks/admin`, futuro `/tasks/group`) al montarse, y los apaga
- * al desmontarse; no hay botón de toggle en la barra de filtros.
+ * Todo se deriva de la ruta actual (`/tasks/admin`, `/tasks/group/:groupId`,
+ * `/tasks/project/:projectId`) en vez de un estado mutable: así cualquier
+ * composable, sin importar dónde se use, ve siempre el valor correcto de
+ * forma síncrona, sin depender de que una página lo active/desactive en su
+ * ciclo de vida (eso causaba un parpadeo donde algunas queries alcanzaban a
+ * salir sin el parámetro justo después de montar la página).
  */
 export function useTaskAdminView() {
-  const { isSuperuser, managedGroupId, managedGroupName } = useAuth()
+  const route = useRoute()
+  const { isSuperuser, managedGroups, isGroupManager, userProjects } = useAuth()
 
-  const isGroupManager = computed(() => managedGroupId.value != null)
+  const isAdminActive = computed(() => isSuperuser.value && route.path.startsWith('/tasks/admin'))
 
-  const isAdminActive = useState('task-admin-view-admin-active', () => false)
-  const isGroupActive = useState('task-admin-view-group-active', () => false)
-
-  // Si la sesión cambia y el usuario deja de tener el rol, apagamos el toggle.
-  watch(isSuperuser, (value) => {
-    if (!value) isAdminActive.value = false
+  const activeGroupId = computed(() => {
+    if (!route.path.startsWith('/tasks/group/')) {
+      return null
+    }
+    const id = Number(route.params.groupId)
+    return managedGroups.value.some(group => group.id === id) ? id : null
   })
-  watch(isGroupManager, (value) => {
-    if (!value) isGroupActive.value = false
-  })
+  const isGroupActive = computed(() => activeGroupId.value != null)
 
-  const adminQuery = computed<{ admin?: true, group?: number }>(() => {
-    if (isGroupActive.value && managedGroupId.value != null) {
-      return { admin: true, group: managedGroupId.value }
+  const activeProjectId = computed(() => {
+    if (!route.path.startsWith('/tasks/project/')) {
+      return null
+    }
+    const id = Number(route.params.projectId)
+    return userProjects.value.some(project => project.id === id) ? id : null
+  })
+  const isProjectActive = computed(() => activeProjectId.value != null)
+
+  const hasProjects = computed(() => userProjects.value.length > 0)
+
+  const adminQuery = computed<{ admin?: true, group?: number, admin_project?: number }>(() => {
+    if (isGroupActive.value && activeGroupId.value != null) {
+      return { group: activeGroupId.value }
+    }
+    if (isProjectActive.value && activeProjectId.value != null) {
+      return { admin_project: activeProjectId.value }
     }
     if (isAdminActive.value) {
       return { admin: true }
@@ -37,9 +53,14 @@ export function useTaskAdminView() {
   return {
     isSuperuser,
     isGroupManager,
-    managedGroupName,
+    managedGroups,
+    activeGroupId,
+    hasProjects,
+    userProjects,
+    activeProjectId,
     isAdminActive,
     isGroupActive,
+    isProjectActive,
     adminQuery,
   }
 }

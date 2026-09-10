@@ -9,12 +9,22 @@ export interface AuthOrganization {
   companies: AuthCompany[]
 }
 
+export interface AuthManagedGroup {
+  id: number
+  name: string
+}
+
+export interface AuthProject {
+  id: number
+  name: string
+}
+
 export interface AuthUser {
   id: number
   username: string
   is_superuser: boolean
-  managed_group_id: number | null
-  group_name: string | null
+  managed_groups: AuthManagedGroup[]
+  projects: AuthProject[]
   selected_company: AuthCompany | null
 }
 

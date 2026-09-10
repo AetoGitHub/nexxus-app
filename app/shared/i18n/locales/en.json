@@ -39,6 +39,8 @@
     "dashboard": "Dashboard",
     "myTasks": "My tasks",
     "adminTasks": "Admin tasks",
+    "groupTasks": "Group tasks",
+    "projectTasks": "Project tasks",
     "toAccept": "To accept",
     "toUpdate": "Pending approval",
     "settings": "Settings",

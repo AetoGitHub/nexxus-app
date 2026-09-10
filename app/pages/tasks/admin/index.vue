@@ -4,18 +4,9 @@ import TaskWorkspacePage from '~/features/tasks/components/workspace/TaskWorkspa
 definePageMeta({ middleware: ['auth', 'admin'] })
 
 const { t } = useI18n()
-const { isAdminActive } = useTaskAdminView()
 
 useSeoMeta({
   title: () => t('sidebar.adminTasks'),
-})
-
-// Se activa aquí (setup del padre, antes de montar los hijos) para que las
-// queries iniciales de TaskWorkspacePage ya salgan con admin=true.
-isAdminActive.value = true
-
-onUnmounted(() => {
-  isAdminActive.value = false
 })
 </script>
 

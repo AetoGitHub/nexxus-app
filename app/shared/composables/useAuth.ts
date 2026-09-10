@@ -1,6 +1,6 @@
 import type { AuthLoginRequest, AuthLoginResponse, AuthSession } from '~/shared/types/auth.types'
 
-export type { AuthUser, AuthOrganization, AuthCompany, AuthSession } from '~/shared/types/auth.types'
+export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedGroup, AuthProject } from '~/shared/types/auth.types'
 
 export function useAuth() {
   const apiBaseUrl = useApiBaseUrl()
@@ -17,8 +17,9 @@ export function useAuth() {
   const isLoggedIn = computed(() => session.value?.token != null)
   const selectedCompanyId = computed(() => user.value?.selected_company?.id ?? null)
   const isSuperuser = computed(() => user.value?.is_superuser === true)
-  const managedGroupId = computed(() => user.value?.managed_group_id ?? null)
-  const managedGroupName = computed(() => user.value?.group_name ?? null)
+  const managedGroups = computed(() => user.value?.managed_groups ?? [])
+  const isGroupManager = computed(() => managedGroups.value.length > 0)
+  const userProjects = computed(() => user.value?.projects ?? [])
 
   async function login(username: string, password: string) {
     const body: AuthLoginRequest = {
@@ -68,8 +69,9 @@ export function useAuth() {
     isLoggedIn,
     selectedCompanyId,
     isSuperuser,
-    managedGroupId,
-    managedGroupName,
+    managedGroups,
+    isGroupManager,
+    userProjects,
     login,
     logout,
   }
