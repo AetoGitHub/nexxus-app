@@ -135,6 +135,9 @@ const isSaving = computed(() =>
 /** Backlog: solo aplica al crear (no en detalle/edición). */
 const isBacklogMode = computed(() => !isDetailView.value && isBacklog.value)
 
+/** El tipo se puede elegir al crear, y también al promover un backlog a pendiente. */
+const canEditTaskType = computed(() => !isDetailView.value || isPromotingBacklog.value)
+
 /** Campos obligatorios listos para crear/guardar. */
 const canSubmit = computed(() => {
   if (!state.name.trim()) {
@@ -1032,12 +1035,12 @@ const slideoverUi = computed(() => {
                   state.type === option.value
                     ? 'border-aeto-teal bg-aeto-teal-light'
                     : 'border-border bg-card',
-                  isDetailView
-                    ? 'cursor-default opacity-90'
-                    : 'hover:border-muted-foreground/40',
+                  canEditTaskType
+                    ? 'hover:border-muted-foreground/40'
+                    : 'cursor-default opacity-90',
                 ]"
-                :disabled="isDetailView"
-                @click="!isDetailView && (state.type = option.value)"
+                :disabled="!canEditTaskType"
+                @click="canEditTaskType && (state.type = option.value)"
               >
                 <UIcon
                   :name="option.icon"

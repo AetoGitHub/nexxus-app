@@ -1,5 +1,10 @@
 import { useToUpdateCounts } from '~/features/to-update/composables/useToUpdateCounts'
 
+export interface AppNavChild {
+  label: string
+  to: string
+}
+
 export interface AppNavItem {
   labelKey: string
   icon: string
@@ -8,6 +13,8 @@ export interface AppNavItem {
   badge?: number
   /** Si es false, no aparece en la bottom nav mobile. Default true. */
   bottomNav?: boolean
+  /** Si tiene hijos, el ítem se renderiza como desplegable (ej. Tareas por grupo). */
+  children?: AppNavChild[]
 }
 
 /**
@@ -16,7 +23,7 @@ export interface AppNavItem {
 export function useAppNav() {
   const route = useRoute()
   const { actionableCount } = useToUpdateCounts()
-  const { isSuperuser } = useAuth()
+  const { isSuperuser, isGroupManager, managedGroups, userProjects } = useAuth()
 
   const tasksItems = computed<AppNavItem[]>(() => {
     const items: AppNavItem[] = [
@@ -29,18 +36,43 @@ export function useAppNav() {
       items.push({ labelKey: 'sidebar.adminTasks', icon: 'i-lucide-shield', to: '/tasks/admin' })
     }
 
+    if (isGroupManager.value) {
+      items.push({
+        labelKey: 'sidebar.groupTasks',
+        icon: 'i-lucide-users',
+        // Sin bottom nav: es un desplegable, no un link directo (aún no hay UI para esto en mobile).
+        bottomNav: false,
+        children: managedGroups.value.map(group => ({
+          label: group.name,
+          to: `/tasks/group/${group.id}`,
+        })),
+      })
+    }
+
+    if (userProjects.value.length > 0) {
+      items.push({
+        labelKey: 'sidebar.projectTasks',
+        icon: 'i-lucide-folder-kanban',
+        // Sin bottom nav: es un desplegable, no un link directo (aún no hay UI para esto en mobile).
+        bottomNav: false,
+        children: userProjects.value.map(project => ({
+          label: project.name,
+          to: `/tasks/project/${project.id}`,
+        })),
+      })
+    }
+
     items.push(
       // Oculto de momento: aún no funciona
-      // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', indent: true, badge: 1 },
+      // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', badge: 1 },
       {
         labelKey: 'sidebar.toUpdate',
         icon: 'i-lucide-refresh-cw',
-        indent: true,
         to: '/tasks/pending-approval',
         badge: actionableCount.value,
         bottomNav: false,
       },
-      { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', indent: true, to: '/tasks/settings' },
+      { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', to: '/tasks/settings' },
     )
 
     return items
@@ -52,6 +84,11 @@ export function useAppNav() {
   )
 
   function isActive(item: AppNavItem): boolean {
+    if (item.children?.length) {
+      return item.children.some(
+        child => route.path === child.to || route.path.startsWith(`${child.to}/`),
+      )
+    }
     if (!item.to) {
       return false
     }
@@ -68,10 +105,20 @@ export function useAppNav() {
     }
   }
 
+  function isChildActive(child: AppNavChild): boolean {
+    return route.path === child.to || route.path.startsWith(`${child.to}/`)
+  }
+
+  function navigateToChild(child: AppNavChild) {
+    void navigateTo(child.to)
+  }
+
   return {
     tasksItems,
     bottomNavItems,
     isActive,
     navigate,
+    isChildActive,
+    navigateToChild,
   }
 }

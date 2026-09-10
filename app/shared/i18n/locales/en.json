@@ -39,6 +39,8 @@
     "dashboard": "Dashboard",
     "myTasks": "My tasks",
     "adminTasks": "Admin tasks",
+    "groupTasks": "Group tasks",
+    "projectTasks": "Project tasks",
     "toAccept": "To accept",
     "toUpdate": "Pending approval",
     "settings": "Settings",
@@ -109,6 +111,7 @@
       "title": "Pending approval",
       "placeholder": "Tasks pending approval will appear here. Content will be laid out soon.",
       "sections": {
+        "unattended": "Unattended",
         "pending": "Pending",
         "urgent": "Urgent",
         "delayed": "Delayed",
@@ -495,7 +498,9 @@
         "add": "Attach file",
         "remove": "Remove file",
         "uploadErrorTitle": "Could not upload the file",
-        "missingContext": "Could not determine the organization or company to upload the file."
+        "missingContext": "Could not determine the organization or company to upload the file.",
+        "dropHint": "Drop the file to attach it",
+        "download": "Download"
       },
       "system": {
         "taskCreated": "Task created.",

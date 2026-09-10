@@ -3,8 +3,14 @@ import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.typ
 /** Definición estática de secciones (colores y labels). */
 export const TO_UPDATE_SECTION_META: Record<
   ToUpdateSectionId,
-  { labelKey: string, color: string }
+  { labelKey: string, color: string, defaultOpen?: boolean, collapsible?: boolean }
 > = {
+  unattended: {
+    labelKey: 'tasks.toUpdate.sections.unattended',
+    color: '#8b5cf6',
+    defaultOpen: false,
+    collapsible: true,
+  },
   pending: {
     labelKey: 'tasks.toUpdate.sections.pending',
     color: '#6b7280',
@@ -28,6 +34,7 @@ export const TO_UPDATE_SECTION_META: Record<
 }
 
 export const TO_UPDATE_SECTION_ORDER: ToUpdateSectionId[] = [
+  'unattended',
   'pending',
   'urgent',
   'delayed',

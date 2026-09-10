@@ -15,13 +15,14 @@ import { extractResults } from '~/shared/utils/paginated.util'
 /**
  * Server state de Pending approval (vista Lista) vía TanStack Query.
  *
- * Endpoints: /api/tasks/company/:id/close/{counts|pending|urgent|delayed|critical|accepted}/
+ * Endpoints: /api/tasks/company/:id/close/{counts|unattended|pending|urgent|delayed|critical|accepted}/
  */
 export function useToUpdateTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const api = createCompanyTasksApi(filters)
   const scope = ['close']
 
   const { counts } = useToUpdateCounts(filters)
+  const unattended = api.listQuery([...scope, 'unattended'], '/close/unattended/')
   const pending = api.listQuery([...scope, 'pending'], '/close/pending/')
   const urgent = api.listQuery([...scope, 'urgent'], '/close/urgent/')
   const delayed = api.listQuery([...scope, 'delayed'], '/close/delayed/')
@@ -29,6 +30,7 @@ export function useToUpdateTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   const accepted = api.listQuery([...scope, 'accepted'], '/close/accepted/')
 
   const sectionQueries: Record<ToUpdateSectionId, typeof pending> = {
+    unattended,
     pending,
     urgent,
     delayed,
@@ -51,9 +53,11 @@ export function useToUpdateTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
         tasks: extractResults(sectionQuery.data.value),
         loading: sectionQuery.isPending.value,
         error: sectionQuery.isError.value,
+        defaultOpen: meta.defaultOpen,
+        collapsible: meta.collapsible,
       }
     })
   })
 
-  return { counts, pending, urgent, delayed, critical, accepted, sections }
+  return { counts, unattended, pending, urgent, delayed, critical, accepted, sections }
 }

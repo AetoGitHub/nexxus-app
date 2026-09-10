@@ -33,6 +33,7 @@ const { sections } = useToUpdateTasks(() => props.filters)
       :loading="section.loading"
       :error="section.error"
       :selected-task-id="selectedTaskId"
+      :default-open="section.defaultOpen ?? true"
       @select="emit('select', $event, section.id)"
     />
   </div>

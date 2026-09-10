@@ -3,11 +3,8 @@ import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreat
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
-import {
-  fileNameFromUrl,
-  isImageFileUrl,
-  resolveTaskMessageContent,
-} from '~/features/tasks/utils/form/task-message.util'
+import { fileTypeIcon, resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
+import TaskMessageAttachments from '~/features/tasks/components/form/TaskMessageAttachments.vue'
 import {
   buildTaskMessageUploadDirectory,
   buildTaskUploadFileName,
@@ -57,9 +54,14 @@ const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
 const contentEl = ref<HTMLElement | null>(null)
 const fileInputEl = ref<HTMLInputElement | null>(null)
+const draftInput = useTemplateRef<{ textareaRef: HTMLTextAreaElement | null }>('draftInput')
 /** Archivos elegidos, pendientes de subir a Firebase al enviar el mensaje. */
 const pendingFiles = ref<File[]>([])
 const isUploadingFiles = ref(false)
+/** Overlay de drag & drop: activo mientras el usuario arrastra archivos sobre el chat. */
+const isDraggingFilesOver = ref(false)
+/** Cuenta dragenter/dragleave anidados (hijos del contenedor) para no parpadear el overlay. */
+let dragDepth = 0
 /** Mientras el usuario esté al final, la vista queda anclada al mensaje más reciente. */
 const isPinnedToBottom = ref(true)
 
@@ -204,6 +206,39 @@ function removePendingFile(index: number) {
   pendingFiles.value = pendingFiles.value.filter((_, i) => i !== index)
 }
 
+function isFileDrag(event: DragEvent) {
+  return Array.from(event.dataTransfer?.types ?? []).includes('Files')
+}
+
+function onDragEnter(event: DragEvent) {
+  if (props.readonly || !isFileDrag(event)) {
+    return
+  }
+  dragDepth += 1
+  isDraggingFilesOver.value = true
+}
+
+function onDragLeave() {
+  if (dragDepth > 0) {
+    dragDepth -= 1
+  }
+  if (dragDepth === 0) {
+    isDraggingFilesOver.value = false
+  }
+}
+
+function onFilesDropped(event: DragEvent) {
+  dragDepth = 0
+  isDraggingFilesOver.value = false
+  if (props.readonly) {
+    return
+  }
+  const files = event.dataTransfer?.files ? Array.from(event.dataTransfer.files) : []
+  if (files.length) {
+    pendingFiles.value = [...pendingFiles.value, ...files]
+  }
+}
+
 /** Sube los adjuntos pendientes a Firebase (vía n8n) y devuelve sus URLs finales. */
 async function uploadPendingFiles(): Promise<string[]> {
   const organizationId = organization.value?.id
@@ -258,6 +293,7 @@ async function sendMessage() {
   pendingFiles.value = []
   isPinnedToBottom.value = true
   await scrollToLatestAfterRender()
+  draftInput.value?.textareaRef?.focus()
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -294,16 +330,23 @@ watch(
 </script>
 
 <template>
-  <UCard
-    variant="outline"
-    class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-none"
-    :ui="{
-      root: 'divide-y divide-border',
-      header: 'px-4 py-3',
-      body: 'flex-1 min-h-0 overflow-hidden p-0',
-      footer: 'px-3 py-3',
-    }"
+  <div
+    class="relative flex h-full min-h-0 w-full flex-col"
+    @dragenter.prevent="onDragEnter"
+    @dragover.prevent
+    @dragleave.prevent="onDragLeave"
+    @drop.prevent="onFilesDropped"
   >
+    <UCard
+      variant="outline"
+      class="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-none"
+      :ui="{
+        root: 'divide-y divide-border',
+        header: 'px-4 py-3',
+        body: 'flex-1 min-h-0 overflow-hidden p-0',
+        footer: 'px-3 py-3',
+      }"
+    >
     <template #header>
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-1.5">
@@ -403,36 +446,11 @@ watch(
             >
               {{ messageContent(message) }}
             </p>
-            <div
+            <TaskMessageAttachments
               v-if="message.files?.length"
-              class="mt-1.5 flex flex-wrap gap-1.5"
-            >
-              <a
-                v-for="fileUrl in message.files"
-                :key="fileUrl"
-                :href="fileUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="block"
-              >
-                <img
-                  v-if="isImageFileUrl(fileUrl)"
-                  :src="fileUrl"
-                  loading="lazy"
-                  class="max-h-40 max-w-full rounded-lg border border-white/20 object-cover"
-                >
-                <span
-                  v-else
-                  class="flex items-center gap-1.5 rounded-lg bg-white/10 px-2 py-1.5 text-xs underline-offset-2 hover:underline"
-                >
-                  <UIcon
-                    name="i-lucide-paperclip"
-                    class="h-3.5 w-3.5 shrink-0"
-                  />
-                  <span class="truncate">{{ fileNameFromUrl(fileUrl) }}</span>
-                </span>
-              </a>
-            </div>
+              :files="message.files"
+              tone="own"
+            />
             <p class="mt-1 text-right text-[10px] text-white/80">
               {{ formatTime(message.created_at) }}
             </p>
@@ -470,36 +488,11 @@ watch(
               >
                 {{ messageContent(message) }}
               </p>
-              <div
+              <TaskMessageAttachments
                 v-if="message.files?.length"
-                class="mt-1.5 flex flex-wrap gap-1.5"
-              >
-                <a
-                  v-for="fileUrl in message.files"
-                  :key="fileUrl"
-                  :href="fileUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="block"
-                >
-                  <img
-                    v-if="isImageFileUrl(fileUrl)"
-                    :src="fileUrl"
-                    loading="lazy"
-                    class="max-h-40 max-w-full rounded-lg border border-border object-cover"
-                  >
-                  <span
-                    v-else
-                    class="flex items-center gap-1.5 rounded-lg bg-background px-2 py-1.5 text-xs underline-offset-2 hover:underline"
-                  >
-                    <UIcon
-                      name="i-lucide-paperclip"
-                      class="h-3.5 w-3.5 shrink-0"
-                    />
-                    <span class="truncate">{{ fileNameFromUrl(fileUrl) }}</span>
-                  </span>
-                </a>
-              </div>
+                :files="message.files"
+                tone="incoming"
+              />
               <p class="mt-1 text-right text-[10px] text-muted-foreground">
                 {{ formatTime(message.created_at) }}
               </p>
@@ -527,13 +520,16 @@ watch(
           <li
             v-for="(file, index) in pendingFiles"
             :key="`${file.name}-${index}`"
-            class="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
+            class="flex max-w-56 min-w-0 items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
           >
             <UIcon
-              name="i-lucide-paperclip"
+              :name="fileTypeIcon(file.name)"
               class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
             />
-            <span class="max-w-40 truncate">{{ file.name }}</span>
+            <span
+              class="min-w-0 truncate"
+              :title="file.name"
+            >{{ file.name }}</span>
             <UButton
               icon="i-lucide-x"
               color="neutral"
@@ -566,11 +562,11 @@ watch(
             @click="openFilePicker"
           />
           <UTextarea
+            ref="draftInput"
             v-model="draft"
             :placeholder="t('tasks.messenger.placeholder')"
             :rows="1"
             autoresize
-            :disabled="isBusy"
             class="min-w-0 flex-1"
             :ui="{ base: 'max-h-28' }"
             @keydown="onKeydown"
@@ -588,5 +584,19 @@ watch(
         </div>
       </div>
     </template>
-  </UCard>
+    </UCard>
+
+    <div
+      v-if="isDraggingFilesOver"
+      class="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary bg-primary/5 backdrop-blur-sm"
+    >
+      <UIcon
+        name="i-lucide-upload"
+        class="h-8 w-8 text-primary"
+      />
+      <p class="text-sm font-medium text-primary">
+        {{ t('tasks.messenger.attachments.dropHint') }}
+      </p>
+    </div>
+  </div>
 </template>

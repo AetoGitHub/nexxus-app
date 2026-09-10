@@ -39,6 +39,8 @@
     "dashboard": "Dashboard",
     "myTasks": "Mis tareas",
     "adminTasks": "Tareas administrativas",
+    "groupTasks": "Tareas por grupo",
+    "projectTasks": "Tareas por proyecto",
     "toAccept": "Por aceptar",
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
@@ -109,6 +111,7 @@
       "title": "Pendiente de aprobación",
       "placeholder": "Aquí se mostrarán las tareas pendientes de aprobación. El contenido se maquetará próximamente.",
       "sections": {
+        "unattended": "Sin atender",
         "pending": "Pendiente",
         "urgent": "Urgente",
         "delayed": "Retraso",
@@ -495,7 +498,9 @@
         "add": "Adjuntar archivo",
         "remove": "Quitar archivo",
         "uploadErrorTitle": "No se pudo subir el archivo",
-        "missingContext": "No se pudo determinar la organización o empresa para subir el archivo."
+        "missingContext": "No se pudo determinar la organización o empresa para subir el archivo.",
+        "dropHint": "Suelta el archivo para adjuntarlo",
+        "download": "Descargar"
       },
       "system": {
         "taskCreated": "Tarea creada.",
