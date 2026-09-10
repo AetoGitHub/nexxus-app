@@ -149,6 +149,9 @@ export function useNotificationsSocket() {
     const openTask = notification.task == null
       ? undefined
       : () => {
+          void queryClient.invalidateQueries({
+            queryKey: ['tasks', 'messages', notification.task],
+          })
           const currentQuery = route.path === '/tasks' ? route.query : {}
           void router.push({
             path: '/tasks',

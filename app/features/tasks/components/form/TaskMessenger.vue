@@ -54,6 +54,7 @@ const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
 const contentEl = ref<HTMLElement | null>(null)
 const fileInputEl = ref<HTMLInputElement | null>(null)
+const draftInput = useTemplateRef<{ textareaRef: HTMLTextAreaElement | null }>('draftInput')
 /** Archivos elegidos, pendientes de subir a Firebase al enviar el mensaje. */
 const pendingFiles = ref<File[]>([])
 const isUploadingFiles = ref(false)
@@ -292,6 +293,7 @@ async function sendMessage() {
   pendingFiles.value = []
   isPinnedToBottom.value = true
   await scrollToLatestAfterRender()
+  draftInput.value?.textareaRef?.focus()
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -560,11 +562,11 @@ watch(
             @click="openFilePicker"
           />
           <UTextarea
+            ref="draftInput"
             v-model="draft"
             :placeholder="t('tasks.messenger.placeholder')"
             :rows="1"
             autoresize
-            :disabled="isBusy"
             class="min-w-0 flex-1"
             :ui="{ base: 'max-h-28' }"
             @keydown="onKeydown"
