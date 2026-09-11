@@ -3,8 +3,9 @@ import type { AppNavChild, AppNavItem } from '~/shared/composables/useAppNav'
 
 /**
  * Lista de navegación de tareas (sidebar desktop colapsable, o expandida
- * dentro de la hoja "Más" en mobile). Ítems con `children` (ej. Tareas por
- * grupo/proyecto) se expanden en línea como acordeón, no como popover.
+ * dentro de la hoja "Más" en mobile). Cada sección (Tareas, Tareas
+ * administrativas, Tareas por grupo/proyecto) es su propio desplegable
+ * independiente: un ítem con `children` se expande en línea como acordeón.
  */
 withDefaults(
   defineProps<{
@@ -68,7 +69,6 @@ function onChildClick(child: AppNavChild) {
             isActive(item)
               ? 'bg-aeto-teal-light text-aeto-teal-dark font-medium'
               : 'text-sidebar-foreground hover:bg-muted',
-            !collapsed && item.indent && 'pl-9',
           ]"
           @click="onItemClick(item)"
         >
@@ -103,7 +103,10 @@ function onChildClick(child: AppNavChild) {
         </button>
       </UTooltip>
 
-      <template v-if="!collapsed && item.children?.length && isExpanded(item)">
+      <div
+        v-if="!collapsed && item.children?.length && isExpanded(item)"
+        class="mt-1 space-y-0.5"
+      >
         <button
           v-for="child in item.children"
           :key="child.to"
@@ -121,7 +124,7 @@ function onChildClick(child: AppNavChild) {
           />
           <span class="flex-1 text-left truncate">{{ child.label }}</span>
         </button>
-      </template>
+      </div>
     </template>
   </div>
 </template>
