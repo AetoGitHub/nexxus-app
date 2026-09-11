@@ -154,6 +154,7 @@
     },
     "groupBy": {
       "all": "Todas",
+      "status": "Estado",
       "due": "Vencimiento",
       "user": "Usuarios",
       "group": "Grupos",
