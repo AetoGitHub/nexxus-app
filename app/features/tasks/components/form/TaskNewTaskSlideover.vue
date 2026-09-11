@@ -192,13 +192,18 @@ const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'acce
 /** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
 const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
 
-/** Acciones Rejected/Authorize en pending-approval (todas las secciones menos accepted). */
+/**
+ * Acciones Rejected/Authorize en pending-approval (todas las secciones menos
+ * accepted). Solo aplican con la tarea en revisión: en cualquier otro status
+ * no hay nada que autorizar/rechazar todavía.
+ */
 const showAuthorizeActions = computed(() =>
   props.authorizeMode
   && isDetailView.value
   && !isEditing.value
   && !isAcceptedToUpdateSection.value
-  && !isArchived.value,
+  && !isArchived.value
+  && taskDetailQuery.data.value?.status === 'in_review',
 )
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
