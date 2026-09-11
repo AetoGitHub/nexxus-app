@@ -187,6 +187,7 @@ export function useTaskChannelSocket() {
   let stableTimer: ReturnType<typeof setTimeout> | null = null
   let resyncTimer: ReturnType<typeof setTimeout> | null = null
   let viewResyncTimer: ReturnType<typeof setTimeout> | null = null
+  let countsResyncTimer: ReturnType<typeof setTimeout> | null = null
   let reconnectAttempt = 0
   let ticketAuthRetryUsed = false
   let shouldResync = false
@@ -209,6 +210,10 @@ export function useTaskChannelSocket() {
     if (viewResyncTimer) {
       clearTimeout(viewResyncTimer)
       viewResyncTimer = null
+    }
+    if (countsResyncTimer) {
+      clearTimeout(countsResyncTimer)
+      countsResyncTimer = null
     }
   }
 
@@ -348,6 +353,34 @@ export function useTaskChannelSocket() {
     }, RESYNC_DEBOUNCE_MS)
   }
 
+  /**
+   * Contador de "Pendiente de aprobación" del sidebar: siempre está montado
+   * (fuera de la vista actual), así que se refresca aparte del resync de la
+   * vista/tablero activos, sin importar en qué página esté el usuario.
+   */
+  function resyncCounts() {
+    const companyId = selectedCompanyId.value
+    if (companyId == null) {
+      return
+    }
+
+    void queryClient.invalidateQueries({
+      queryKey: ['tasks', companyId, 'close', 'counts'],
+      type: 'active',
+    })
+  }
+
+  function scheduleCountsResync() {
+    if (countsResyncTimer) {
+      return
+    }
+
+    countsResyncTimer = setTimeout(() => {
+      countsResyncTimer = null
+      resyncCounts()
+    }, RESYNC_DEBOUNCE_MS)
+  }
+
   async function connect() {
     const currentGeneration = ++generation
     status.value = reconnectAttempt > 0 ? 'reconnecting' : 'connecting'
@@ -410,6 +443,8 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateTaskEvent(event)) {
+        scheduleCountsResync()
+
         const insertCreated = resolveCreatedTaskSync(event.task_pk)
         if (!insertCreated) {
           return
@@ -429,6 +464,7 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateMultipleTasksEvent(event)) {
+        scheduleCountsResync()
         scheduleCurrentViewResync()
         return
       }
