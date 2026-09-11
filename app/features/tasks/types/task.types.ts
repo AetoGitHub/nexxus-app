@@ -122,7 +122,7 @@ export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'no_date
 
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
-export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
+export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group' | 'status'
 
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'

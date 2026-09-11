@@ -154,6 +154,7 @@
     },
     "groupBy": {
       "all": "All",
+      "status": "Status",
       "due": "Due date",
       "user": "Users",
       "group": "Groups",

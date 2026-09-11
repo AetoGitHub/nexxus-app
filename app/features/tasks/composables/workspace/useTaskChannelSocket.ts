@@ -141,6 +141,11 @@ export function useTaskChannelSocket() {
       return insertCreatedUserTask(taskPk)
     }
 
+    // Estado usa las mismas columnas/caché que el Kanban (groupBy = all).
+    if (groupBy === 'status') {
+      return insertCreatedTask(taskPk)
+    }
+
     return groupBy === 'all' ? insertCreatedListTask(taskPk) : null
   }
 
@@ -305,7 +310,8 @@ export function useTaskChannelSocket() {
       return [['tasks', companyId, 'assigned']]
     }
 
-    if (view === 'kanban') {
+    // Estado (Lista) comparte caché con el Kanban (groupBy = all).
+    if (view === 'kanban' || groupBy === 'status') {
       return [['tasks', companyId, 'kanban']]
     }
 
