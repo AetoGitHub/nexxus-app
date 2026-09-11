@@ -456,6 +456,9 @@ export interface TaskMessage {
   created_at: string
   /** URLs de Firebase Storage (subidas por el front vía webhook n8n antes de crear el mensaje). */
   files?: string[]
+  edited_by: number | null
+  edited_by_username: string | null
+  edited_at: string | null
 }
 
 /** Payload de POST /api/tasks/messages/create/. */
@@ -463,5 +466,13 @@ export interface CreateTaskMessagePayload {
   task: number
   content: string
   /** URLs ya subidas a Firebase Storage; ver useFirebaseUpload. */
+  files?: string[]
+}
+
+/** Payload de PATCH /api/tasks/messages/:id/update/. */
+export interface UpdateTaskMessagePayload {
+  task: number
+  content: string
+  /** URLs finales del mensaje (existentes que se conservan + nuevas subidas a Firebase). */
   files?: string[]
 }

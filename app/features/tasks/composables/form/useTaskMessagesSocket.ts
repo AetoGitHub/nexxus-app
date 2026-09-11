@@ -89,18 +89,26 @@ export function useTaskMessagesSocket(
     }, delay)
   }
 
+  /** Upsert: un id ya existente (mensaje editado) reemplaza esa entrada en vez de ignorarse. */
   function appendMessage(id: number, message: TaskMessage) {
     queryClient.setQueryData<PaginatedResponse<TaskMessage>>(
       ['tasks', 'messages', id],
       (old) => {
-        if (!old || old.results.some(item => item.id === message.id)) {
+        if (!old) {
           return old
         }
 
-        return {
-          ...old,
-          results: [...old.results, message],
+        const index = old.results.findIndex(item => item.id === message.id)
+        if (index === -1) {
+          return {
+            ...old,
+            results: [...old.results, message],
+          }
         }
+
+        const results = [...old.results]
+        results[index] = message
+        return { ...old, results }
       },
     )
   }

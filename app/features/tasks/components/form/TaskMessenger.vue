@@ -2,8 +2,9 @@
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
+import { useUpdateTaskMessage } from '~/features/tasks/composables/form/useUpdateTaskMessage'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
-import { fileTypeIcon, resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
+import { fileNameFromUrl, fileTypeIcon, resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
 import TaskMessageAttachments from '~/features/tasks/components/form/TaskMessageAttachments.vue'
 import {
   buildTaskMessageUploadDirectory,
@@ -49,6 +50,18 @@ const {
 
 const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId)
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
+const { mutateAsync: updateMessage, isPending: isUpdating } = useUpdateTaskMessage()
+
+/** Ventana durante la que un mensaje propio puede editarse tras enviarse. */
+const EDIT_WINDOW_MS = 10 * 60 * 1000
+/** Se refresca periódicamente para que el botón de editar desaparezca solo al vencer la ventana. */
+const nowTick = ref(Date.now())
+let nowTickInterval: ReturnType<typeof setInterval> | null = null
+
+/** Mensaje que se está editando (null = composer en modo "nuevo mensaje"). */
+const editingMessage = ref<TaskMessage | null>(null)
+/** Adjuntos ya subidos del mensaje en edición; se conservan salvo que el usuario los quite. */
+const editingExistingFiles = ref<string[]>([])
 
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
@@ -65,8 +78,16 @@ let dragDepth = 0
 /** Mientras el usuario esté al final, la vista queda anclada al mensaje más reciente. */
 const isPinnedToBottom = ref(true)
 
-const isBusy = computed(() => isSending.value || isUploadingFiles.value)
-const canSend = computed(() => (draft.value.trim().length > 0 || pendingFiles.value.length > 0) && !isBusy.value)
+const isBusy = computed(() => isSending.value || isUpdating.value || isUploadingFiles.value)
+const canSend = computed(() => {
+  if (isBusy.value) {
+    return false
+  }
+  const hasContent = draft.value.trim().length > 0
+  const hasFiles = pendingFiles.value.length > 0
+    || (editingMessage.value != null && editingExistingFiles.value.length > 0)
+  return hasContent || hasFiles
+})
 
 const messageCount = computed(() =>
   messages.value.filter(message => !isSystemMessage(message.type)).length,
@@ -127,6 +148,44 @@ function isOwnMessage(profileId: number, username: string) {
 
 function isSystemMessage(type: string | undefined) {
   return type != null && type !== 'user'
+}
+
+function canEditMessage(message: TaskMessage) {
+  if (props.readonly || isSystemMessage(message.type)) {
+    return false
+  }
+  if (!isOwnMessage(message.profile, message.profile_username)) {
+    return false
+  }
+  const createdAt = new Date(message.created_at).getTime()
+  if (Number.isNaN(createdAt)) {
+    return false
+  }
+  return nowTick.value - createdAt < EDIT_WINDOW_MS
+}
+
+function startEditMessage(message: TaskMessage) {
+  if (isBusy.value) {
+    return
+  }
+  editingMessage.value = message
+  editingExistingFiles.value = [...(message.files ?? [])]
+  pendingFiles.value = []
+  draft.value = message.content
+  nextTick(() => {
+    draftInput.value?.textareaRef?.focus()
+  })
+}
+
+function cancelEditMessage() {
+  editingMessage.value = null
+  editingExistingFiles.value = []
+  draft.value = ''
+  pendingFiles.value = []
+}
+
+function removeEditingExistingFile(index: number) {
+  editingExistingFiles.value = editingExistingFiles.value.filter((_, i) => i !== index)
 }
 
 function resolveAvatarColor(userId: number) {
@@ -262,15 +321,13 @@ async function uploadPendingFiles(): Promise<string[]> {
   }
 }
 
-async function sendMessage() {
-  const content = draft.value.trim()
-  if ((!content && pendingFiles.value.length === 0) || isBusy.value) {
-    return
+/** Sube los adjuntos pendientes; en error muestra el toast y devuelve null (nada que enviar). */
+async function tryUploadPendingFiles(): Promise<string[] | null> {
+  if (!pendingFiles.value.length) {
+    return []
   }
-
-  let files: string[] | undefined
   try {
-    files = pendingFiles.value.length ? await uploadPendingFiles() : undefined
+    return await uploadPendingFiles()
   }
   catch (error) {
     const isMissingContext = error instanceof Error && error.message === 'missing_upload_context'
@@ -281,16 +338,67 @@ async function sendMessage() {
         : parseFetchError(error),
       color: 'error',
     })
+    return null
+  }
+}
+
+async function sendMessage() {
+  if (isBusy.value) {
+    return
+  }
+
+  if (editingMessage.value) {
+    await submitEdit()
+    return
+  }
+
+  const content = draft.value.trim()
+  if (!content && pendingFiles.value.length === 0) {
+    return
+  }
+
+  const uploaded = await tryUploadPendingFiles()
+  if (uploaded === null) {
     return
   }
 
   await createMessage({
     task: props.taskId,
     content,
-    files,
+    files: uploaded.length ? uploaded : undefined,
   })
   draft.value = ''
   pendingFiles.value = []
+  isPinnedToBottom.value = true
+  await scrollToLatestAfterRender()
+  draftInput.value?.textareaRef?.focus()
+}
+
+async function submitEdit() {
+  const message = editingMessage.value
+  if (!message) {
+    return
+  }
+
+  const content = draft.value.trim()
+  if (!content && pendingFiles.value.length === 0 && editingExistingFiles.value.length === 0) {
+    return
+  }
+
+  const uploaded = await tryUploadPendingFiles()
+  if (uploaded === null) {
+    return
+  }
+
+  await updateMessage({
+    id: message.id,
+    payload: {
+      task: props.taskId,
+      content,
+      files: [...editingExistingFiles.value, ...uploaded],
+    },
+  })
+  cancelEditMessage()
   isPinnedToBottom.value = true
   await scrollToLatestAfterRender()
   draftInput.value?.textareaRef?.focus()
@@ -325,8 +433,21 @@ watch(
   () => {
     isPinnedToBottom.value = true
     pendingFiles.value = []
+    cancelEditMessage()
   },
 )
+
+onMounted(() => {
+  nowTickInterval = setInterval(() => {
+    nowTick.value = Date.now()
+  }, 15_000)
+})
+
+onUnmounted(() => {
+  if (nowTickInterval) {
+    clearInterval(nowTickInterval)
+  }
+})
 </script>
 
 <template>
@@ -438,22 +559,39 @@ watch(
 
           <div
             v-else-if="isOwnMessage(message.profile, message.profile_username)"
-            class="max-w-[85%] rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white"
+            class="flex max-w-[85%] items-end gap-1"
           >
-            <p
-              v-if="messageContent(message)"
-              class="whitespace-pre-wrap wrap-break-word"
+            <div class="min-w-0 rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white">
+              <p
+                v-if="messageContent(message)"
+                class="whitespace-pre-wrap wrap-break-word"
+              >
+                {{ messageContent(message) }}
+              </p>
+              <TaskMessageAttachments
+                v-if="message.files?.length"
+                :files="message.files"
+                tone="own"
+              />
+              <p class="mt-1 text-right text-[10px] text-white/80">
+                {{ formatTime(message.created_at) }}
+              </p>
+            </div>
+            <UTooltip
+              v-if="canEditMessage(message)"
+              :text="t('tasks.messenger.editMessage')"
             >
-              {{ messageContent(message) }}
-            </p>
-            <TaskMessageAttachments
-              v-if="message.files?.length"
-              :files="message.files"
-              tone="own"
-            />
-            <p class="mt-1 text-right text-[10px] text-white/80">
-              {{ formatTime(message.created_at) }}
-            </p>
+              <UButton
+                icon="i-lucide-pencil"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                square
+                :disabled="isBusy"
+                :aria-label="t('tasks.messenger.editMessage')"
+                @click="startEditMessage(message)"
+              />
+            </UTooltip>
           </div>
 
           <div
@@ -513,6 +651,55 @@ watch(
         v-else
         class="flex flex-col gap-2"
       >
+        <div
+          v-if="editingMessage"
+          class="flex items-center justify-between gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground"
+        >
+          <span class="flex min-w-0 items-center gap-1.5">
+            <UIcon name="i-lucide-pencil" class="h-3.5 w-3.5 shrink-0" />
+            <span class="truncate">{{ t('tasks.messenger.editingMessage') }}</span>
+          </span>
+          <UButton
+            icon="i-lucide-x"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            square
+            :aria-label="t('tasks.messenger.cancelEdit')"
+            @click="cancelEditMessage"
+          />
+        </div>
+
+        <ul
+          v-if="editingExistingFiles.length"
+          class="flex flex-wrap gap-1.5"
+        >
+          <li
+            v-for="(fileUrl, index) in editingExistingFiles"
+            :key="fileUrl"
+            class="flex max-w-56 min-w-0 items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
+          >
+            <UIcon
+              :name="fileTypeIcon(fileUrl)"
+              class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+            />
+            <span
+              class="min-w-0 truncate"
+              :title="fileNameFromUrl(fileUrl)"
+            >{{ fileNameFromUrl(fileUrl) }}</span>
+            <UButton
+              icon="i-lucide-x"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              :disabled="isBusy"
+              :aria-label="t('tasks.messenger.attachments.remove')"
+              @click="removeEditingExistingFile(index)"
+            />
+          </li>
+        </ul>
+
         <ul
           v-if="pendingFiles.length"
           class="flex flex-wrap gap-1.5"
@@ -572,13 +759,13 @@ watch(
             @keydown="onKeydown"
           />
           <UButton
-            icon="i-lucide-send"
+            :icon="editingMessage ? 'i-lucide-check' : 'i-lucide-send'"
             color="primary"
             size="md"
             square
             :loading="isBusy"
             :disabled="!canSend"
-            :aria-label="t('tasks.messenger.send')"
+            :aria-label="editingMessage ? t('tasks.messenger.editMessage') : t('tasks.messenger.send')"
             @click="sendMessage"
           />
         </div>
