@@ -6,7 +6,7 @@ import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSl
 import TaskViewSwitcher from '~/features/tasks/components/workspace/TaskViewSwitcher.vue'
 import { useRefreshTaskWorkspace } from '~/features/tasks/composables/workspace/useRefreshTaskWorkspace'
 import { useTaskWorkspaceState } from '~/features/tasks/composables/workspace/useTaskWorkspaceState'
-import type { TaskView } from '~/features/tasks/types/task.types'
+import type { TaskGroupBy, TaskView } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
   defineProps<{
@@ -65,6 +65,17 @@ const activeFilterCount = computed(() => {
   if (f.completed === true) count += 1
   if (f.multiple_close === true) count += 1
   return count
+})
+
+/** Estado solo aplica a la vista Lista (Kanban ya lo muestra vía sus columnas). */
+const excludeGroupBy = computed<TaskGroupBy[]>(() => {
+  if (view.value === 'calendar') {
+    return ['due', 'status']
+  }
+  if (view.value === 'kanban') {
+    return ['status']
+  }
+  return []
 })
 
 const statusSummary = computed(() =>
@@ -147,7 +158,7 @@ function closeMobileFilters() {
       <TaskGroupByFilter
         v-model="groupBy"
         :hide-options="hideGroupBy"
-        :exclude="view === 'calendar' ? ['due'] : []"
+        :exclude="excludeGroupBy"
       >
         <div class="flex items-center gap-2">
           <UButton
@@ -232,7 +243,7 @@ function closeMobileFilters() {
           v-model="groupBy"
           stacked
           :hide-options="hideGroupBy"
-          :exclude="view === 'calendar' ? ['due'] : []"
+          :exclude="excludeGroupBy"
         />
 
         <TaskListFilters

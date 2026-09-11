@@ -37,7 +37,9 @@
     "sectionTasks": "Tasks",
     "reporteCeo": "Reporte CEO",
     "dashboard": "Dashboard",
+    "tasksGroup": "Tareas",
     "myTasks": "Mis tareas",
+    "adminTasksGroup": "Tareas administrativas",
     "adminTasks": "Tareas administrativas",
     "groupTasks": "Tareas por grupo",
     "projectTasks": "Tareas por proyecto",
@@ -45,7 +47,8 @@
     "toUpdate": "Pendiente de aprobación",
     "settings": "Configuración",
     "backToHub": "Volver al hub",
-    "bottomNav": "Navegación principal"
+    "bottomNav": "Navegación principal",
+    "more": "Más"
   },
   "toolbar": {
     "module": "Módulo",
@@ -151,6 +154,7 @@
     },
     "groupBy": {
       "all": "Todas",
+      "status": "Estado",
       "due": "Vencimiento",
       "user": "Usuarios",
       "group": "Grupos",
@@ -488,6 +492,10 @@
       "empty": "Aún no hay mensajes. Sé el primero en escribir.",
       "loadError": "No se pudieron cargar los mensajes",
       "sendErrorTitle": "No se pudo enviar el mensaje",
+      "editMessage": "Editar mensaje",
+      "editingMessage": "Editando mensaje",
+      "cancelEdit": "Cancelar edición",
+      "editErrorTitle": "No se pudo editar el mensaje",
       "connected": "Conectado",
       "connecting": "Conectando",
       "reconnecting": "Reconectando",

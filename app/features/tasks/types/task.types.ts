@@ -105,6 +105,13 @@ export interface UpdateTaskLimitDatePayload {
   limit_date: string
 }
 
+/** PATCH parcial de /api/tasks/:id/update/: solo los campos editables de una tarea de backlog. */
+export interface UpdateBacklogTaskPayload {
+  short_description: string
+  long_description: string
+  project: number
+}
+
 /** PATCH parcial para mover proyecto en Kanban Proyectos. */
 export interface UpdateTaskProjectPayload {
   project: number
@@ -115,7 +122,7 @@ export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'no_date
 
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
-export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group'
+export type TaskGroupBy = 'all' | 'due' | 'project' | 'user' | 'group' | 'status'
 
 /** Fase temporal del calendario: inicio, proceso o cierre. */
 export type TaskCalendarPhase = 'start' | 'process' | 'close'
@@ -456,6 +463,9 @@ export interface TaskMessage {
   created_at: string
   /** URLs de Firebase Storage (subidas por el front vía webhook n8n antes de crear el mensaje). */
   files?: string[]
+  edited_by: number | null
+  edited_by_username: string | null
+  edited_at: string | null
 }
 
 /** Payload de POST /api/tasks/messages/create/. */
@@ -463,5 +473,13 @@ export interface CreateTaskMessagePayload {
   task: number
   content: string
   /** URLs ya subidas a Firebase Storage; ver useFirebaseUpload. */
+  files?: string[]
+}
+
+/** Payload de PATCH /api/tasks/messages/:id/update/. */
+export interface UpdateTaskMessagePayload {
+  task: number
+  content: string
+  /** URLs finales del mensaje (existentes que se conservan + nuevas subidas a Firebase). */
   files?: string[]
 }

@@ -12,6 +12,7 @@ import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
 import { usePromoteBacklogTask } from '~/features/tasks/composables/form/usePromoteBacklogTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
+import { useUpdateBacklogTask } from '~/features/tasks/composables/form/useUpdateBacklogTask'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
@@ -29,6 +30,7 @@ import {
   buildCreateBacklogTaskPayload,
   buildCreateTaskPayload,
   buildPromoteBacklogTaskPayload,
+  buildUpdateBacklogTaskPayload,
   buildUpdateTaskPayload,
   defaultTaskReviewers,
   findCloseApprovalForUser,
@@ -100,10 +102,13 @@ const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
 const isEditing = ref(false)
-/** Detalle abierto por drag Backlog → Pendiente: arranca en edición, footer con "Enviar a pendiente". */
-const isPromotingBacklog = computed(() =>
-  props.promotingBacklogTaskId != null && props.promotingBacklogTaskId === taskId.value,
-)
+/**
+ * Modo "promover backlog a pendiente": edición completa con todos los campos
+ * y footer con "Enviar a pendiente" como submit. Arranca en true si el detalle
+ * se abrió por drag Backlog → Pendiente en Kanban; también se activa al dar
+ * clic en "Enviar a pendiente" desde el detalle normal de una tarea backlog.
+ */
+const isPromotingBacklog = ref(false)
 /** Evita que el watcher de hidratación pise ediciones en curso tras el primer prefill. */
 const hasHydratedDetail = ref(false)
 /** Campos bloqueados: detalle sin edición activa. */
@@ -126,14 +131,29 @@ const { mutateAsync: createTask, isPending } = useCreateTask()
 const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()
 const { mutateAsync: promoteBacklogTask, isPending: isPromotingBacklogTask } = usePromoteBacklogTask()
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
+const { mutateAsync: updateBacklogTask, isPending: isUpdatingBacklog } = useUpdateBacklogTask()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 
 const isSaving = computed(() =>
-  isPending.value || isCreatingBacklog.value || isPromotingBacklogTask.value || isUpdating.value,
+  isPending.value
+  || isCreatingBacklog.value
+  || isPromotingBacklogTask.value
+  || isUpdating.value
+  || isUpdatingBacklog.value,
 )
 
-/** Backlog: solo aplica al crear (no en detalle/edición). */
-const isBacklogMode = computed(() => !isDetailView.value && isBacklog.value)
+/** El detalle abierto es una tarea de backlog (aún no promovida a pendiente). */
+const isBacklogTask = computed(() => taskDetailQuery.data.value?.backlog === true)
+
+/**
+ * Backlog: al crear (toggle), o al ver/editar el detalle de una tarea de
+ * backlog existente que todavía no se está promoviendo a pendiente. En
+ * ambos casos solo aplican name/description/project.
+ */
+const isBacklogMode = computed(() =>
+  (!isDetailView.value && isBacklog.value)
+  || (isDetailView.value && isBacklogTask.value && !isPromotingBacklog.value),
+)
 
 /** El tipo se puede elegir al crear, y también al promover un backlog a pendiente. */
 const canEditTaskType = computed(() => !isDetailView.value || isPromotingBacklog.value)
@@ -192,13 +212,26 @@ const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'acce
 /** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
 const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
 
-/** Acciones Rejected/Authorize en pending-approval (todas las secciones menos accepted). */
+/** Backlog aún no promovida: el botón "Enviar a pendiente" se ofrece en vista y en edición. */
+const showPromoteBacklogButton = computed(() =>
+  isDetailView.value
+  && isBacklogTask.value
+  && !isPromotingBacklog.value
+  && !isArchived.value,
+)
+
+/**
+ * Acciones Rejected/Authorize en pending-approval (todas las secciones menos
+ * accepted). Solo aplican con la tarea en revisión: en cualquier otro status
+ * no hay nada que autorizar/rechazar todavía.
+ */
 const showAuthorizeActions = computed(() =>
   props.authorizeMode
   && isDetailView.value
   && !isEditing.value
   && !isAcceptedToUpdateSection.value
-  && !isArchived.value,
+  && !isArchived.value
+  && taskDetailQuery.data.value?.status === 'in_review',
 )
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
@@ -543,6 +576,14 @@ function startEditing() {
   isEditing.value = true
 }
 
+/** Pasa de detalle/edición limitada de un backlog a edición completa para promover a pendiente. */
+function startPromoteBacklog() {
+  submitError.value = ''
+  mobilePanel.value = 'detail'
+  isPromotingBacklog.value = true
+  isEditing.value = true
+}
+
 /** Tarea repetitiva autogenerada a partir de una maestra. */
 const generatedFromId = computed(() => {
   const value = taskDetailQuery.data.value?.generated_from
@@ -668,6 +709,13 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       return
     }
 
+    if (isEditing.value && taskId.value != null && isBacklogMode.value) {
+      const payload = buildUpdateBacklogTaskPayload(state)
+      await updateBacklogTask({ taskId: taskId.value, payload })
+      isEditing.value = false
+      return
+    }
+
     if (isEditing.value && taskId.value != null) {
       const payload = buildUpdateTaskPayload(
         state,
@@ -753,6 +801,7 @@ watch(open, (isOpen) => {
     unarchiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
+    isPromotingBacklog.value = false
     mobilePanel.value = 'detail'
     taskId.value = null
     hasHydratedDetail.value = false
@@ -768,7 +817,8 @@ watch(open, (isOpen) => {
       state.dueDate = minDueDate.value
     }
   }
-  else if (isPromotingBacklog.value) {
+  else if (props.promotingBacklogTaskId === taskId.value) {
+    isPromotingBacklog.value = true
     isEditing.value = true
   }
 })
@@ -1410,6 +1460,14 @@ const slideoverUi = computed(() => {
             </template>
             <template v-else-if="isEditing">
               <UButton
+                v-if="showPromoteBacklogButton"
+                :label="t('tasks.form.promoteToPending')"
+                color="primary"
+                variant="outline"
+                :disabled="isSaving"
+                @click="startPromoteBacklog"
+              />
+              <UButton
                 :label="t('tasks.form.save')"
                 :color="canSubmit ? 'primary' : 'neutral'"
                 type="submit"
@@ -1426,6 +1484,13 @@ const slideoverUi = computed(() => {
                 variant="ghost"
                 :disabled="isSaving"
                 @click="close"
+              />
+              <UButton
+                v-if="showPromoteBacklogButton"
+                :label="t('tasks.form.promoteToPending')"
+                color="primary"
+                :disabled="isSaving"
+                @click="startPromoteBacklog"
               />
               <template v-if="showAuthorizeActions">
                 <UButton

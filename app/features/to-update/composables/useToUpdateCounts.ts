@@ -16,7 +16,7 @@ export function useToUpdateCounts(
       return 0
     }
 
-    return value.pending + value.urgent + value.delayed + value.critical
+    return value.unattended + value.pending + value.urgent + value.delayed + value.critical
   })
 
   const errorMessage = computed(() =>

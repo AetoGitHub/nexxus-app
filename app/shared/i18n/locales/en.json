@@ -37,7 +37,9 @@
     "sectionTasks": "Tasks",
     "reporteCeo": "CEO Report",
     "dashboard": "Dashboard",
+    "tasksGroup": "Tasks",
     "myTasks": "My tasks",
+    "adminTasksGroup": "Admin tasks",
     "adminTasks": "Admin tasks",
     "groupTasks": "Group tasks",
     "projectTasks": "Project tasks",
@@ -45,7 +47,8 @@
     "toUpdate": "Pending approval",
     "settings": "Settings",
     "backToHub": "Back to hub",
-    "bottomNav": "Main navigation"
+    "bottomNav": "Main navigation",
+    "more": "More"
   },
   "toolbar": {
     "module": "Module",
@@ -151,6 +154,7 @@
     },
     "groupBy": {
       "all": "All",
+      "status": "Status",
       "due": "Due date",
       "user": "Users",
       "group": "Groups",
@@ -488,6 +492,10 @@
       "empty": "No messages yet. Be the first to write.",
       "loadError": "Could not load messages",
       "sendErrorTitle": "Could not send the message",
+      "editMessage": "Edit message",
+      "editingMessage": "Editing message",
+      "cancelEdit": "Cancel edit",
+      "editErrorTitle": "Could not edit the message",
       "connected": "Connected",
       "connecting": "Connecting",
       "reconnecting": "Reconnecting",

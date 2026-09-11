@@ -19,6 +19,9 @@ const TaskUserListView = defineAsyncComponent(
 const TaskGroupListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskGroupListView.vue'),
 )
+const TaskStatusListView = defineAsyncComponent(
+  () => import('~/features/tasks/components/list/TaskStatusListView.vue'),
+)
 const TaskKanbanView = defineAsyncComponent(
   () => import('~/features/tasks/components/kanban/TaskKanbanView.vue'),
 )
@@ -97,6 +100,13 @@ function onSectionCreate(
       />
       <TaskGroupListView
         v-else-if="view === 'list' && groupBy === 'group'"
+        :filters="filters"
+        :selected-task-id="selectedTaskId"
+        @select="openTask"
+        @create="onSectionCreate(groupBy, $event, openNewTask)"
+      />
+      <TaskStatusListView
+        v-else-if="view === 'list' && groupBy === 'status'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"

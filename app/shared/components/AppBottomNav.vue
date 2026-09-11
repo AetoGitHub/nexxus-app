@@ -1,6 +1,17 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { bottomNavItems, isActive, navigate } = useAppNav()
+const { tasksItems, bottomNavItems, isActive, navigate } = useAppNav()
+
+const moreOpen = ref(false)
+
+/** Resalta "Más" cuando la ruta activa vive solo dentro de la hoja (admin, grupo, proyecto, ajustes...). */
+const isMoreActive = computed(() =>
+  tasksItems.value.some(item => item.bottomNav === false && isActive(item)),
+)
+
+function closeMore() {
+  moreOpen.value = false
+}
 </script>
 
 <template>
@@ -41,5 +52,35 @@ const { bottomNavItems, isActive, navigate } = useAppNav()
         aria-hidden="true"
       />
     </button>
+
+    <button
+      type="button"
+      class="relative flex-1 flex flex-col items-center justify-center gap-1 py-1.5 rounded-md transition-colors min-w-0"
+      :class="isMoreActive ? 'text-aeto-teal-dark' : 'text-muted-foreground'"
+      :aria-label="t('sidebar.more')"
+      :aria-current="isMoreActive ? 'page' : undefined"
+      @click="moreOpen = true"
+    >
+      <UIcon name="i-lucide-menu" class="h-5 w-5" />
+      <span class="text-[10px] leading-none font-medium truncate max-w-full px-0.5">
+        {{ t('sidebar.more') }}
+      </span>
+      <span
+        v-if="isMoreActive"
+        class="absolute top-0 left-3 right-3 h-0.5 rounded-b bg-aeto-teal"
+        aria-hidden="true"
+      />
+    </button>
   </nav>
+
+  <USlideover
+    v-model:open="moreOpen"
+    side="bottom"
+    :title="t('sidebar.more')"
+    :ui="{ content: 'max-h-[80dvh] rounded-t-xl' }"
+  >
+    <template #body>
+      <AppNavList @navigate="closeMore" />
+    </template>
+  </USlideover>
 </template>

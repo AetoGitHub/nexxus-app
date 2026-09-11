@@ -9,11 +9,10 @@ export interface AppNavItem {
   labelKey: string
   icon: string
   to?: string
-  indent?: boolean
   badge?: number
   /** Si es false, no aparece en la bottom nav mobile. Default true. */
   bottomNav?: boolean
-  /** Si tiene hijos, el ítem se renderiza como desplegable (ej. Tareas por grupo). */
+  /** Si tiene hijos, el ítem se renderiza como desplegable (ej. Tareas, Tareas por grupo). */
   children?: AppNavChild[]
 }
 
@@ -22,6 +21,7 @@ export interface AppNavItem {
  */
 export function useAppNav() {
   const route = useRoute()
+  const { t } = useI18n()
   const { actionableCount } = useToUpdateCounts()
   const { isSuperuser, isGroupManager, managedGroups, userProjects } = useAuth()
 
@@ -29,11 +29,22 @@ export function useAppNav() {
     const items: AppNavItem[] = [
       { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
       { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
-      { labelKey: 'sidebar.myTasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
+      {
+        labelKey: 'sidebar.tasksGroup',
+        icon: 'i-lucide-square-check-big',
+        bottomNav: false,
+        children: [{ label: t('sidebar.myTasks'), to: '/tasks' }],
+      },
     ]
 
     if (isSuperuser.value) {
-      items.push({ labelKey: 'sidebar.adminTasks', icon: 'i-lucide-shield', to: '/tasks/admin' })
+      items.push({
+        labelKey: 'sidebar.adminTasksGroup',
+        icon: 'i-lucide-shield',
+        // Vive en la hoja "Más" mobile, junto con Tareas por grupo/proyecto.
+        bottomNav: false,
+        children: [{ label: t('sidebar.adminTasks'), to: '/tasks/admin' }],
+      })
     }
 
     if (isGroupManager.value) {
@@ -72,7 +83,12 @@ export function useAppNav() {
         badge: actionableCount.value,
         bottomNav: false,
       },
-      { labelKey: 'sidebar.settings', icon: 'i-lucide-settings', to: '/tasks/settings' },
+      {
+        labelKey: 'sidebar.settings',
+        icon: 'i-lucide-settings',
+        to: '/tasks/settings',
+        bottomNav: false,
+      },
     )
 
     return items
@@ -83,16 +99,21 @@ export function useAppNav() {
     tasksItems.value.filter(item => item.bottomNav !== false),
   )
 
+  function isChildActive(child: AppNavChild): boolean {
+    // /tasks no debe activarse en /tasks/settings, /tasks/admin, etc.
+    if (child.to === '/tasks') {
+      return route.path === '/tasks'
+    }
+    return route.path === child.to || route.path.startsWith(`${child.to}/`)
+  }
+
   function isActive(item: AppNavItem): boolean {
     if (item.children?.length) {
-      return item.children.some(
-        child => route.path === child.to || route.path.startsWith(`${child.to}/`),
-      )
+      return item.children.some(child => isChildActive(child))
     }
     if (!item.to) {
       return false
     }
-    // /tasks no debe activarse en /tasks/settings
     if (item.to === '/tasks') {
       return route.path === '/tasks'
     }
@@ -103,10 +124,6 @@ export function useAppNav() {
     if (item.to) {
       void navigateTo(item.to)
     }
-  }
-
-  function isChildActive(child: AppNavChild): boolean {
-    return route.path === child.to || route.path.startsWith(`${child.to}/`)
   }
 
   function navigateToChild(child: AppNavChild) {

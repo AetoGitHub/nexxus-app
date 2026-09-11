@@ -141,6 +141,11 @@ export function useTaskChannelSocket() {
       return insertCreatedUserTask(taskPk)
     }
 
+    // Estado usa las mismas columnas/caché que el Kanban (groupBy = all).
+    if (groupBy === 'status') {
+      return insertCreatedTask(taskPk)
+    }
+
     return groupBy === 'all' ? insertCreatedListTask(taskPk) : null
   }
 
@@ -187,6 +192,7 @@ export function useTaskChannelSocket() {
   let stableTimer: ReturnType<typeof setTimeout> | null = null
   let resyncTimer: ReturnType<typeof setTimeout> | null = null
   let viewResyncTimer: ReturnType<typeof setTimeout> | null = null
+  let countsResyncTimer: ReturnType<typeof setTimeout> | null = null
   let reconnectAttempt = 0
   let ticketAuthRetryUsed = false
   let shouldResync = false
@@ -209,6 +215,10 @@ export function useTaskChannelSocket() {
     if (viewResyncTimer) {
       clearTimeout(viewResyncTimer)
       viewResyncTimer = null
+    }
+    if (countsResyncTimer) {
+      clearTimeout(countsResyncTimer)
+      countsResyncTimer = null
     }
   }
 
@@ -300,7 +310,8 @@ export function useTaskChannelSocket() {
       return [['tasks', companyId, 'assigned']]
     }
 
-    if (view === 'kanban') {
+    // Estado (Lista) comparte caché con el Kanban (groupBy = all).
+    if (view === 'kanban' || groupBy === 'status') {
       return [['tasks', companyId, 'kanban']]
     }
 
@@ -345,6 +356,34 @@ export function useTaskChannelSocket() {
     resyncTimer = setTimeout(() => {
       resyncTimer = null
       resyncBoard()
+    }, RESYNC_DEBOUNCE_MS)
+  }
+
+  /**
+   * Contador de "Pendiente de aprobación" del sidebar: siempre está montado
+   * (fuera de la vista actual), así que se refresca aparte del resync de la
+   * vista/tablero activos, sin importar en qué página esté el usuario.
+   */
+  function resyncCounts() {
+    const companyId = selectedCompanyId.value
+    if (companyId == null) {
+      return
+    }
+
+    void queryClient.invalidateQueries({
+      queryKey: ['tasks', companyId, 'close', 'counts'],
+      type: 'active',
+    })
+  }
+
+  function scheduleCountsResync() {
+    if (countsResyncTimer) {
+      return
+    }
+
+    countsResyncTimer = setTimeout(() => {
+      countsResyncTimer = null
+      resyncCounts()
     }, RESYNC_DEBOUNCE_MS)
   }
 
@@ -410,6 +449,8 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateTaskEvent(event)) {
+        scheduleCountsResync()
+
         const insertCreated = resolveCreatedTaskSync(event.task_pk)
         if (!insertCreated) {
           return
@@ -429,6 +470,7 @@ export function useTaskChannelSocket() {
       }
 
       if (isCreateMultipleTasksEvent(event)) {
+        scheduleCountsResync()
         scheduleCurrentViewResync()
         return
       }

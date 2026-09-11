@@ -12,7 +12,7 @@ import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.typ
 import { useProfileConfigurationStore } from '~/features/auth/composables/useProfileConfigurationStore'
 
 const VALID_VIEWS: TaskView[] = ['list', 'kanban', 'calendar']
-const VALID_GROUP_BY: TaskGroupBy[] = ['all', 'due', 'project', 'user', 'group']
+const VALID_GROUP_BY: TaskGroupBy[] = ['all', 'due', 'project', 'user', 'group', 'status']
 const VALID_PHASES: TaskCalendarPhase[] = ['start', 'process', 'close']
 
 function parseView(value: unknown): TaskView | null {
@@ -212,6 +212,10 @@ export function useTaskWorkspaceState(options: {
 
   watch([view, groupBy], ([value, selectedGroupBy]) => {
     if (value === 'calendar' && selectedGroupBy === 'due') {
+      groupBy.value = 'all'
+    }
+    // Estado solo aplica a la vista Lista (Kanban ya lo muestra vía sus columnas).
+    if (value !== 'list' && selectedGroupBy === 'status') {
       groupBy.value = 'all'
     }
   }, { immediate: true })
