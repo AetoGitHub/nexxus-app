@@ -8,6 +8,7 @@ import type {
   TaskDetail,
   TaskEffort,
   TaskRepeatConfig,
+  UpdateBacklogTaskPayload,
   UpdateTaskPayload,
 } from '~/features/tasks/types/task.types'
 import {
@@ -175,6 +176,24 @@ export function buildCreateBacklogTaskPayload(
     short_description: form.name.trim(),
     long_description: form.description.trim(),
     type: 'manual',
+    project: form.project,
+  }
+}
+
+/** Payload de PATCH /api/tasks/:id/update/ para editar un backlog existente: solo name/description/project. */
+export function buildUpdateBacklogTaskPayload(
+  form: Pick<NewTaskFormInput, 'name' | 'description' | 'project'>,
+): UpdateBacklogTaskPayload {
+  if (!form.name.trim()) {
+    throw new Error('name_required')
+  }
+  if (form.project == null) {
+    throw new Error('project_required')
+  }
+
+  return {
+    short_description: form.name.trim(),
+    long_description: form.description.trim(),
     project: form.project,
   }
 }

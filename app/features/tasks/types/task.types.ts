@@ -105,6 +105,13 @@ export interface UpdateTaskLimitDatePayload {
   limit_date: string
 }
 
+/** PATCH parcial de /api/tasks/:id/update/: solo los campos editables de una tarea de backlog. */
+export interface UpdateBacklogTaskPayload {
+  short_description: string
+  long_description: string
+  project: number
+}
+
 /** PATCH parcial para mover proyecto en Kanban Proyectos. */
 export interface UpdateTaskProjectPayload {
   project: number
