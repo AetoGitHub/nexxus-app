@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
@@ -6,6 +7,7 @@ import { useUpdateTaskMessage } from '~/features/tasks/composables/form/useUpdat
 import type { TaskMessage } from '~/features/tasks/types/task.types'
 import { fileNameFromUrl, fileTypeIcon, resolveTaskMessageContent } from '~/features/tasks/utils/form/task-message.util'
 import TaskMessageAttachments from '~/features/tasks/components/form/TaskMessageAttachments.vue'
+import TaskMessageDeleteConfirmModal from '~/features/tasks/components/form/TaskMessageDeleteConfirmModal.vue'
 import {
   buildTaskMessageUploadDirectory,
   buildTaskUploadFileName,
@@ -62,6 +64,10 @@ let nowTickInterval: ReturnType<typeof setInterval> | null = null
 const editingMessage = ref<TaskMessage | null>(null)
 /** Adjuntos ya subidos del mensaje en edición; se conservan salvo que el usuario los quite. */
 const editingExistingFiles = ref<string[]>([])
+
+/** Mensaje pendiente de confirmar eliminación (null = modal cerrado). */
+const deletingMessageId = ref<number | null>(null)
+const deleteConfirmOpen = ref(false)
 
 const draft = ref('')
 const listEl = ref<HTMLElement | null>(null)
@@ -186,6 +192,49 @@ function cancelEditMessage() {
 
 function removeEditingExistingFile(index: number) {
   editingExistingFiles.value = editingExistingFiles.value.filter((_, i) => i !== index)
+}
+
+function isMessageEdited(message: TaskMessage) {
+  return message.edited_at != null || message.edited_by != null || message.edited_by_username != null
+}
+
+/** Menú de opciones (editar/eliminar): solo en mensajes propios, no eliminados. */
+function canShowMessageMenu(message: TaskMessage) {
+  if (props.readonly || isSystemMessage(message.type) || message.deleted) {
+    return false
+  }
+  return isOwnMessage(message.profile, message.profile_username)
+}
+
+function requestDeleteMessage(message: TaskMessage) {
+  deletingMessageId.value = message.id
+  deleteConfirmOpen.value = true
+}
+
+function onMessageDeleted() {
+  if (editingMessage.value?.id === deletingMessageId.value) {
+    cancelEditMessage()
+  }
+  deletingMessageId.value = null
+}
+
+function messageMenuItems(message: TaskMessage): DropdownMenuItem[][] {
+  return [
+    [
+      {
+        label: t('tasks.messenger.editMessage'),
+        icon: 'i-lucide-pencil',
+        disabled: !canEditMessage(message),
+        onSelect: () => startEditMessage(message),
+      },
+      {
+        label: t('tasks.messenger.deleteMessage'),
+        icon: 'i-lucide-trash-2',
+        color: 'error',
+        onSelect: () => requestDeleteMessage(message),
+      },
+    ],
+  ]
 }
 
 function resolveAvatarColor(userId: number) {
@@ -434,6 +483,8 @@ watch(
     isPinnedToBottom.value = true
     pendingFiles.value = []
     cancelEditMessage()
+    deleteConfirmOpen.value = false
+    deletingMessageId.value = null
   },
 )
 
@@ -559,39 +610,51 @@ onUnmounted(() => {
 
           <div
             v-else-if="isOwnMessage(message.profile, message.profile_username)"
-            class="flex max-w-[85%] items-end gap-1"
+            class="group flex max-w-[85%] items-end gap-1"
           >
             <div class="min-w-0 rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white">
               <p
-                v-if="messageContent(message)"
-                class="whitespace-pre-wrap wrap-break-word"
+                v-if="message.deleted"
+                class="flex items-center gap-1.5 italic text-white/70"
               >
-                {{ messageContent(message) }}
+                <UIcon name="i-lucide-ban" class="h-3.5 w-3.5 shrink-0" />
+                {{ t('tasks.messenger.deletedMessage') }}
               </p>
-              <TaskMessageAttachments
-                v-if="message.files?.length"
-                :files="message.files"
-                tone="own"
-              />
-              <p class="mt-1 text-right text-[10px] text-white/80">
+              <template v-else>
+                <p
+                  v-if="messageContent(message)"
+                  class="whitespace-pre-wrap wrap-break-word"
+                >
+                  {{ messageContent(message) }}
+                </p>
+                <TaskMessageAttachments
+                  v-if="message.files?.length"
+                  :files="message.files"
+                  tone="own"
+                />
+              </template>
+              <p class="mt-1 flex items-center justify-end gap-1 text-[10px] text-white/80">
+                <span v-if="isMessageEdited(message)">{{ t('tasks.messenger.edited') }} ·</span>
                 {{ formatTime(message.created_at) }}
               </p>
             </div>
-            <UTooltip
-              v-if="canEditMessage(message)"
-              :text="t('tasks.messenger.editMessage')"
+            <UDropdownMenu
+              v-if="canShowMessageMenu(message)"
+              :items="messageMenuItems(message)"
+              :content="{ align: 'end', sideOffset: 4 }"
             >
               <UButton
-                icon="i-lucide-pencil"
+                icon="i-lucide-ellipsis"
                 color="neutral"
                 variant="ghost"
                 size="xs"
                 square
+                class="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
                 :disabled="isBusy"
-                :aria-label="t('tasks.messenger.editMessage')"
-                @click="startEditMessage(message)"
+                :aria-label="t('tasks.messenger.messageOptions')"
+                @click.stop
               />
-            </UTooltip>
+            </UDropdownMenu>
           </div>
 
           <div
@@ -621,17 +684,27 @@ onUnmounted(() => {
                 {{ message.profile_username }}
               </p>
               <p
-                v-if="messageContent(message)"
-                class="whitespace-pre-wrap wrap-break-word"
+                v-if="message.deleted"
+                class="flex items-center gap-1.5 italic text-muted-foreground"
               >
-                {{ messageContent(message) }}
+                <UIcon name="i-lucide-ban" class="h-3.5 w-3.5 shrink-0" />
+                {{ t('tasks.messenger.deletedMessage') }}
               </p>
-              <TaskMessageAttachments
-                v-if="message.files?.length"
-                :files="message.files"
-                tone="incoming"
-              />
-              <p class="mt-1 text-right text-[10px] text-muted-foreground">
+              <template v-else>
+                <p
+                  v-if="messageContent(message)"
+                  class="whitespace-pre-wrap wrap-break-word"
+                >
+                  {{ messageContent(message) }}
+                </p>
+                <TaskMessageAttachments
+                  v-if="message.files?.length"
+                  :files="message.files"
+                  tone="incoming"
+                />
+              </template>
+              <p class="mt-1 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
+                <span v-if="isMessageEdited(message)">{{ t('tasks.messenger.edited') }} ·</span>
                 {{ formatTime(message.created_at) }}
               </p>
             </div>
@@ -785,5 +858,13 @@ onUnmounted(() => {
         {{ t('tasks.messenger.attachments.dropHint') }}
       </p>
     </div>
+
+    <TaskMessageDeleteConfirmModal
+      v-if="deletingMessageId != null"
+      v-model:open="deleteConfirmOpen"
+      :message-id="deletingMessageId"
+      :task-id="taskId"
+      @success="onMessageDeleted"
+    />
   </div>
 </template>

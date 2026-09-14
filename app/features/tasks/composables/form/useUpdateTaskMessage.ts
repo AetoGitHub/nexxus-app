@@ -32,7 +32,9 @@ export function useUpdateTaskMessage() {
           }
           return {
             ...old,
-            results: old.results.map(item => item.id === message.id ? message : item),
+            // Merge, no reemplazo: si la respuesta viniera parcial se perderían
+            // campos como profile/profile_username y rompería la burbuja.
+            results: old.results.map(item => item.id === message.id ? { ...item, ...message } : item),
           }
         },
       )

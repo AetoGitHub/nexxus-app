@@ -422,6 +422,12 @@ export interface UnarchiveTaskProcessPayload {
   comment?: string
 }
 
+/** Payload de POST /api/tasks/process/delete/. */
+export interface DeleteTaskProcessPayload {
+  task: number
+  comment?: string
+}
+
 /** Payload de drop entre columnas Kanban.
  * En groupBy=all dispara el flujo de proceso (modal + start/close/reject).
  * En groupBy=due dispara el flujo de cambio de limit_date.
@@ -466,6 +472,10 @@ export interface TaskMessage {
   edited_by: number | null
   edited_by_username: string | null
   edited_at: string | null
+  deleted: boolean
+  deleted_by: number | null
+  deleted_by_username: string | null
+  deleted_at: string | null
 }
 
 /** Payload de POST /api/tasks/messages/create/. */

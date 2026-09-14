@@ -86,7 +86,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { user, managedGroups } = useAuth()
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -481,13 +481,29 @@ function onProjectSelect(value: string | number | undefined | null) {
   state.project = typeof value === 'number' ? value : undefined
 }
 
-/** Grupo: del asignado, del detalle, o prefill Kanban (group-id + group-name). */
+/**
+ * El usuario logueado administra grupo pero no trae `group_id` en el
+ * dropdown de usuarios (ej. autoasignado al promover un backlog): usa el
+ * primer grupo que administra según el token de sesión (`managed_groups`).
+ */
+const selfManagedGroupFallback = computed(() => {
+  const currentUserId = user.value?.id
+  if (currentUserId == null || !state.assignedTo.includes(currentUserId)) {
+    return null
+  }
+  return managedGroups.value[0] ?? null
+})
+
+/** Grupo: del asignado, del manager logueado (fallback), del detalle, o prefill Kanban. */
 const selectedGroupLabel = computed(() => {
   for (const id of state.assignedTo) {
     const match = usersList.value.find(user => user.id === id)
     if (match?.group_name) {
       return match.group_name
     }
+  }
+  if (selfManagedGroupFallback.value) {
+    return selfManagedGroupFallback.value.name
   }
   return taskDetailQuery.data.value?.group_name
     ?? props.initialDefaults?.groupName
@@ -503,8 +519,8 @@ watch(
     const match = ids
       .map(id => usersList.value.find(user => user.id === id))
       .find(user => user?.group_id != null)
-    // Prioriza el grupo del asignado; si no hay, conserva el prefill de Kanban
-    state.group = match?.group_id ?? props.initialDefaults?.group ?? undefined
+    // Prioriza el grupo del asignado; si no hay, el que administra (fallback); si no, conserva el prefill de Kanban.
+    state.group = match?.group_id ?? selfManagedGroupFallback.value?.id ?? props.initialDefaults?.group ?? undefined
   },
 )
 
@@ -576,12 +592,26 @@ function startEditing() {
   isEditing.value = true
 }
 
+/**
+ * Al promover Backlog -> Pendiente, precarga asignado (yo) y vencimiento
+ * (hoy) si vienen vacíos, para no obligar a llenarlos a mano en el caso común.
+ */
+function applyPromoteBacklogDefaults() {
+  if (!state.assignedTo.length && user.value?.id != null) {
+    state.assignedTo = [user.value.id]
+  }
+  if (!state.dueDate) {
+    state.dueDate = minDueDate.value
+  }
+}
+
 /** Pasa de detalle/edición limitada de un backlog a edición completa para promover a pendiente. */
 function startPromoteBacklog() {
   submitError.value = ''
   mobilePanel.value = 'detail'
   isPromotingBacklog.value = true
   isEditing.value = true
+  applyPromoteBacklogDefaults()
 }
 
 /** Tarea repetitiva autogenerada a partir de una maestra. */
@@ -834,6 +864,9 @@ watch(
       return
     }
     applyFormInput(taskDetailToFormInput(detail))
+    if (isPromotingBacklog.value) {
+      applyPromoteBacklogDefaults()
+    }
     hasHydratedDetail.value = true
   },
 )

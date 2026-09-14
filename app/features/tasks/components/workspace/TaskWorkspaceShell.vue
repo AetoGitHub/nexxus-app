@@ -92,6 +92,12 @@ function openMobileFilters() {
 function closeMobileFilters() {
   mobileFiltersOpen.value = false
 }
+
+/** Atajo mobile: de Kanban directo a la Lista agrupada por Estado. */
+function goToStatusList() {
+  view.value = 'list'
+  groupBy.value = 'status'
+}
 </script>
 
 <template>
@@ -100,9 +106,14 @@ function closeMobileFilters() {
       {{ title }}
     </h1>
 
-    <!-- Mobile: barra compacta (búsqueda + filtros en sheet + nueva tarea) -->
-    <div class="shrink-0 space-y-2 md:hidden">
-      <div class="flex items-center gap-2">
+    <!-- Barra compacta (búsqueda + filtros en sheet + nueva tarea): se usa en
+         mobile por ancho, pero también en desktop cuando el alto disponible
+         es chico (celular acostado con ancho lógico >= 768px activa el
+         layout desktop, pero sigue sin alto para el panel de filtros completo).
+         Con poca altura además se funden las dos filas en una y se oculta el
+         resumen, para no dejar sin espacio vertical a la lista/kanban/calendario. -->
+    <div class="shrink-0 space-y-2 workspace-compact-bar landscape-compact-toolbar">
+      <div class="flex items-center gap-2 landscape-row">
         <!-- Oculto de momento: aún no funciona -->
         <UInput
           v-if="false"
@@ -129,9 +140,21 @@ function closeMobileFilters() {
             @click="openMobileFilters"
           />
         </UChip>
+
+        <!-- Atajo Kanban -> Lista agrupada por Estado (misma info, más legible en landscape). -->
+        <UButton
+          v-if="view === 'kanban'"
+          color="neutral"
+          variant="outline"
+          size="sm"
+          class="h-8 shrink-0"
+          icon="i-lucide-flag"
+          :label="t('tasks.groupBy.status')"
+          @click="goToStatusList"
+        />
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 landscape-row">
         <TaskViewSwitcher v-model="view" class="flex-1" :exclude="excludeViews" />
         <UButton
           v-if="showRefresh"
@@ -148,13 +171,13 @@ function closeMobileFilters() {
         />
       </div>
 
-      <p class="text-xs text-muted-foreground px-0.5 truncate">
+      <p class="text-xs text-muted-foreground px-0.5 truncate landscape-compact-summary">
         {{ statusSummary }}
       </p>
     </div>
 
-    <!-- Desktop: agrupación y filtros siempre visibles -->
-    <div class="hidden md:block shrink-0 space-y-2">
+    <!-- Desktop: agrupación y filtros siempre visibles (solo con alto suficiente). -->
+    <div class="hidden workspace-desktop-bar shrink-0 space-y-2">
       <TaskGroupByFilter
         v-model="groupBy"
         :hide-options="hideGroupBy"
@@ -275,7 +298,7 @@ function closeMobileFilters() {
       color="primary"
       size="xl"
       square
-      class="md:hidden fixed z-40 size-14 rounded-full shadow-lg right-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)] p-0!"
+      class="workspace-fab fixed z-40 size-14 rounded-full shadow-lg right-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)] p-0!"
       :ui="{
         base: 'inline-flex items-center justify-center gap-0',
         leadingIcon: 'hidden',
@@ -322,5 +345,63 @@ function closeMobileFilters() {
 
 .calendar-phase-panel {
   display: flex;
+}
+
+/**
+ * El panel de filtros "desktop" (agrupación + búsqueda + tipo + proyecto +
+ * switches, todo siempre visible) solo cabe con alto de sobra. Un celular
+ * acostado suele reportar un ancho lógico >= 768px (activa el layout
+ * desktop) pero con muy poco alto real, así que la condición para mostrar
+ * ese panel es ancho Y alto suficientes; si falta cualquiera de los dos,
+ * se usa la barra compacta (con los mismos filtros detrás del botón
+ * "Filtros" en una hoja) en su lugar.
+ */
+.workspace-compact-bar {
+  display: block;
+}
+
+.workspace-desktop-bar {
+  display: none;
+}
+
+.workspace-fab {
+  display: inline-flex;
+}
+
+@media (min-width: 768px) and (min-height: 601px) {
+  .workspace-compact-bar {
+    display: none;
+  }
+
+  .workspace-desktop-bar {
+    display: block;
+  }
+
+  .workspace-fab {
+    display: none;
+  }
+}
+
+/**
+ * Alto corto (celular acostado, con o sin el layout desktop activo): se
+ * funden las dos filas de controles en una sola (usando `display: contents`
+ * para que sus hijos pasen a ser ítems directos del flex del padre) y se
+ * oculta el resumen, liberando alto real para la lista/kanban/calendario.
+ */
+@media (max-height: 600px) {
+  .landscape-compact-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .landscape-compact-toolbar .landscape-row {
+    display: contents;
+  }
+
+  .landscape-compact-summary {
+    display: none;
+  }
 }
 </style>
