@@ -89,7 +89,13 @@ export function useTaskMessagesSocket(
     }, delay)
   }
 
-  /** Upsert: un id ya existente (mensaje editado) reemplaza esa entrada en vez de ignorarse. */
+  /**
+   * Upsert: un id ya existente (mensaje editado/eliminado) actualiza esa entrada
+   * en vez de ignorarse. Se mergea sobre el mensaje existente (no se reemplaza
+   * entero): algunos eventos (p. ej. delete) traen un payload parcial y un
+   * reemplazo completo perdería profile/profile_username, rompiendo la
+   * alineación/color de la burbuja hasta el próximo refetch.
+   */
   function appendMessage(id: number, message: TaskMessage) {
     queryClient.setQueryData<PaginatedResponse<TaskMessage>>(
       ['tasks', 'messages', id],
@@ -107,7 +113,7 @@ export function useTaskMessagesSocket(
         }
 
         const results = [...old.results]
-        results[index] = message
+        results[index] = { ...results[index], ...message }
         return { ...old, results }
       },
     )

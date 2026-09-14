@@ -36,13 +36,17 @@ export function useDeleteTaskMessage() {
               if (item.id !== variables.id) {
                 return item
               }
-              // El endpoint debería devolver el mensaje actualizado; si no, marcamos localmente.
-              return message ?? {
+              // Merge sobre el mensaje existente: si el endpoint devuelve un
+              // payload parcial (sin profile/profile_username), un reemplazo
+              // entero rompería la alineación/color de la burbuja hasta el
+              // próximo refetch.
+              return {
                 ...item,
+                ...message,
                 deleted: true,
-                deleted_by: user.value?.id ?? null,
-                deleted_by_username: user.value?.username ?? null,
-                deleted_at: new Date().toISOString(),
+                deleted_by: message?.deleted_by ?? user.value?.id ?? null,
+                deleted_by_username: message?.deleted_by_username ?? user.value?.username ?? null,
+                deleted_at: message?.deleted_at ?? new Date().toISOString(),
               }
             }),
           }
