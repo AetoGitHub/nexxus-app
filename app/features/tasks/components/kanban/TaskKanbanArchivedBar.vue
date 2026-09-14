@@ -25,6 +25,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   select: [taskId: number]
+  delete: [taskId: number]
   loadMore: []
 }>()
 
@@ -94,6 +95,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
               :task="task"
               :selected="selectedTaskId === task.id"
               @select="emit('select', $event)"
+              @delete="emit('delete', $event)"
             />
           </TransitionGroup>
 

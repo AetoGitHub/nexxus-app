@@ -422,6 +422,12 @@ export interface UnarchiveTaskProcessPayload {
   comment?: string
 }
 
+/** Payload de POST /api/tasks/process/delete/. */
+export interface DeleteTaskProcessPayload {
+  task: number
+  comment?: string
+}
+
 /** Payload de drop entre columnas Kanban.
  * En groupBy=all dispara el flujo de proceso (modal + start/close/reject).
  * En groupBy=due dispara el flujo de cambio de limit_date.
