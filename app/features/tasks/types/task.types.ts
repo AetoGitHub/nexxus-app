@@ -466,6 +466,10 @@ export interface TaskMessage {
   edited_by: number | null
   edited_by_username: string | null
   edited_at: string | null
+  deleted: boolean
+  deleted_by: number | null
+  deleted_by_username: string | null
+  deleted_at: string | null
 }
 
 /** Payload de POST /api/tasks/messages/create/. */
