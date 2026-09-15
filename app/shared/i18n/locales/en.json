@@ -647,7 +647,8 @@
       },
       "filters": {
         "organization": "Organization",
-        "organizationPlaceholder": "All organizations"
+        "organizationPlaceholder": "Select an organization",
+        "selectPrompt": "Select an organization to view its information."
       },
       "create": {
         "toolbarButton": "Create",

@@ -39,9 +39,36 @@ const { items: companyFilterItems, isPending: companyFilterItemsPending } = useC
   organizationId: () => organizationFilterId.value,
   searchTerm: debouncedCompanyNameSearch,
 })
-const selectedCompanyName = computed(() =>
-  companyFilterItems.value.find(item => item.value === companyFilterId.value)?.label ?? '',
-)
+
+/**
+ * El select resetea el término de búsqueda al elegir una opción, lo que
+ * dispara un refetch (sin ese filtro) que puede dejar de incluir la
+ * compañía recién elegida — y entonces el select cae a mostrar el ID crudo.
+ * Este cache conserva su {label, value} para que siga mostrando el nombre
+ * (y alimentando el filtro de la tabla) sin depender de la búsqueda vigente.
+ */
+const selectedCompanyItem = ref<{ label: string, value: number } | null>(null)
+
+watch(companyFilterId, (id) => {
+  if (id == null) {
+    selectedCompanyItem.value = null
+    return
+  }
+  const match = companyFilterItems.value.find(item => item.value === id)
+  if (match) {
+    selectedCompanyItem.value = match
+  }
+})
+
+const companySelectItems = computed(() => {
+  const selected = selectedCompanyItem.value
+  if (selected && !companyFilterItems.value.some(item => item.value === selected.value)) {
+    return [selected, ...companyFilterItems.value]
+  }
+  return companyFilterItems.value
+})
+
+const selectedCompanyName = computed(() => selectedCompanyItem.value?.label ?? '')
 
 /** Preselecciona en el bulk-create la organización/compañía ya elegidas acá (si las hay). */
 const bulkCreateTo = computed(() => {
@@ -118,9 +145,22 @@ useSeoMeta({
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
             <OrganizationListTable
+              v-if="organizationFilterId != null"
               class="min-h-0 flex-1"
               :organization-id="organizationFilterId"
             />
+            <div
+              v-else
+              class="flex flex-1 flex-col items-center justify-center py-12 text-center"
+            >
+              <UIcon
+                name="i-lucide-building-2"
+                class="mb-2 text-4xl text-dimmed"
+              />
+              <h3 class="text-lg font-semibold text-highlighted">
+                {{ t('configuration.organization.filters.selectPrompt') }}
+              </h3>
+            </div>
             <OrganizationUpdateDialog />
           </main>
         </template>
@@ -145,7 +185,7 @@ useSeoMeta({
               <USelectMenu
                 v-model="companyFilterId"
                 v-model:search-term="companyNameSearch"
-                :items="companyFilterItems"
+                :items="companySelectItems"
                 :loading="companyFilterItemsPending"
                 value-key="value"
                 :placeholder="t('configuration.company.filters.companyPlaceholder')"
