@@ -4,6 +4,11 @@ import type { ComponentPublicInstance } from 'vue'
 import type { UserProfile } from '~/features/users/types/user.types'
 import { LIST_TABLE_UI_CLASS } from '~/shared/constants/list-table'
 
+const props = defineProps<{
+  /** Filtra por organización (select del toolbar). */
+  organizationId?: number | null
+}>()
+
 const { t } = useI18n()
 const {
   openEditDialog,
@@ -23,7 +28,7 @@ const {
   isFetchingNextPage,
   isPending,
   refetch,
-} = useUsers()
+} = useUsers({ organizationId: () => props.organizationId })
 
 function displayCell(value: unknown): string {
   if (typeof value !== 'string' || !value.trim()) {

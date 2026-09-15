@@ -70,10 +70,6 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
     },
   ],
 ])
-
-function backToHub() {
-  void navigateTo('/')
-}
 </script>
 
 <template>
@@ -130,17 +126,6 @@ function backToHub() {
           @click="emit('select', item.id)"
         />
       </nav>
-
-      <div class="p-2 border-t border-border">
-        <button
-          type="button"
-          class="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          @click="backToHub"
-        >
-          <UIcon name="i-lucide-arrow-left" class="h-4 w-4 shrink-0" />
-          <span class="flex-1 text-left">{{ t('configuration.backToHub') }}</span>
-        </button>
-      </div>
 
       <div class="p-2 border-t border-border">
         <UDropdownMenu

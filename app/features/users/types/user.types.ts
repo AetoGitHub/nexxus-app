@@ -28,6 +28,8 @@ export interface UserProfileDetail {
 export interface CreateUserPayload {
   username: string
   password: string
+  organization: number
+  company: number
   first_name: string
   last_name: string
   email: string
@@ -35,7 +37,14 @@ export interface CreateUserPayload {
   whatsapp: string
 }
 
-export type UpdateUserPayload = Omit<CreateUserPayload, 'password'>
+export interface UpdateUserPayload {
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+  corporate_email: string
+  whatsapp: string
+}
 
 export interface UpdateUserVariables {
   id: number

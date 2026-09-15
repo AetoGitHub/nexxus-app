@@ -4,6 +4,13 @@ import type { ComponentPublicInstance } from 'vue'
 import type { Company } from '~/features/companies/types/company.types'
 import { LIST_TABLE_UI_CLASS } from '~/shared/constants/list-table'
 
+const props = defineProps<{
+  /** Filtra por organización (select del toolbar). */
+  organizationId?: number | null
+  /** Filtra por nombre (búsqueda del select de company). */
+  nameSearch?: string
+}>()
+
 const { t, locale } = useI18n()
 const { openDialog } = useCompanyDialog()
 
@@ -17,7 +24,10 @@ const {
   isFetchingNextPage,
   isPending,
   refetch,
-} = useCompanies()
+} = useCompanies({
+  organizationId: () => props.organizationId,
+  name: () => props.nameSearch,
+})
 
 const dateFormatter = computed(() =>
   new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }),

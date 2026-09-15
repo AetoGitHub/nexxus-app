@@ -76,7 +76,19 @@ function backToHub() {
       class="h-16 flex items-center border-b border-sidebar-border"
       :class="collapsed ? 'justify-center px-0' : 'px-5'"
     >
-      <NexxusLogo :collapsed="collapsed" class="h-9" />
+      <UTooltip
+        :text="t('sidebar.backToHub')"
+        :content="{ side: 'right', sideOffset: 8 }"
+      >
+        <button
+          type="button"
+          :aria-label="t('sidebar.backToHub')"
+          class="inline-flex items-center rounded-md transition-opacity hover:opacity-80"
+          @click="backToHub"
+        >
+          <NexxusLogo :collapsed="collapsed" class="h-9" />
+        </button>
+      </UTooltip>
     </div>
 
     <div v-if="!collapsed" class="px-5 pt-4 pb-2">
@@ -89,24 +101,6 @@ function backToHub() {
     <nav class="flex-1 overflow-y-auto px-3">
       <AppNavList :collapsed="collapsed" />
     </nav>
-
-    <div class="p-2 border-t border-sidebar-border">
-      <UTooltip
-        :text="collapsed ? t('sidebar.backToHub') : undefined"
-        :content="{ side: 'right', sideOffset: 8 }"
-      >
-        <button
-          type="button"
-          :aria-label="t('sidebar.backToHub')"
-          class="w-full flex items-center py-2 text-sm rounded-md transition-colors text-sidebar-foreground hover:bg-muted"
-          :class="collapsed ? 'justify-center px-0' : 'gap-3 px-3'"
-          @click="backToHub"
-        >
-          <UIcon name="i-lucide-arrow-left" class="h-4 w-4 shrink-0" />
-          <span v-if="!collapsed" class="flex-1 text-left">{{ t('sidebar.backToHub') }}</span>
-        </button>
-      </UTooltip>
-    </div>
 
     <div class="p-2 border-t border-sidebar-border">
       <UDropdownMenu

@@ -623,7 +623,6 @@
     "subtitle": "Choose what you want to configure",
     "navTitle": "Master settings",
     "navSubtitle": "Organization, company, and users",
-    "backToHub": "Back to hub",
     "nav": {
       "organization": "Organization",
       "company": "Company",
@@ -645,6 +644,10 @@
           "name": "Name",
           "createdAt": "Registration date"
         }
+      },
+      "filters": {
+        "organization": "Organization",
+        "organizationPlaceholder": "All organizations"
       },
       "create": {
         "toolbarButton": "Create",
@@ -695,6 +698,12 @@
           "phone": "Phone",
           "createdAt": "Registration date"
         }
+      },
+      "filters": {
+        "organization": "Organization",
+        "organizationPlaceholder": "All organizations",
+        "company": "Company",
+        "companyPlaceholder": "Search company..."
       },
       "create": {
         "toolbarButton": "Create",
@@ -779,9 +788,15 @@
           "context": "Context"
         }
       },
+      "filters": {
+        "organization": "Organization",
+        "organizationPlaceholder": "All organizations"
+      },
       "fields": {
         "username": "Username",
         "password": "Password",
+        "organization": "Organization",
+        "company": "Company",
         "firstName": "First name",
         "lastName": "Last name",
         "email": "Personal email",
@@ -791,6 +806,8 @@
       "placeholders": {
         "username": "E.g. tuco_salamanca",
         "password": "Enter a secure password",
+        "organization": "Select an organization",
+        "company": "Select a company",
         "firstName": "E.g. John",
         "lastName": "E.g. Smith",
         "email": "E.g. john{'@'}personal.com",
@@ -806,6 +823,8 @@
         "passwordUppercase": "Password must include at least one uppercase letter.",
         "emailInvalid": "Enter a valid personal email.",
         "corporateEmailInvalid": "Enter a valid corporate email.",
+        "organizationRequired": "Select an organization.",
+        "companyRequired": "Select a company.",
         "currentPasswordRequired": "Current password is required.",
         "confirmationRequired": "Confirm the new password.",
         "passwordsMismatch": "The new passwords do not match."
@@ -840,9 +859,8 @@
         "successTitle": "Users created",
         "successDescription": "The users were created successfully.",
         "errorTitle": "Users could not be created",
-        "organizationUnavailableTitle": "Organization unavailable",
-        "organizationUnavailableDescription": "No active organization was found to create the users.",
         "validation": {
+          "organizationRequired": "Select an organization.",
           "companyRequired": "Select a company.",
           "usernameRequired": "Username is required.",
           "firstNameRequired": "First name is required.",
