@@ -21,7 +21,6 @@ export interface AppNavItem {
  */
 export function useAppNav() {
   const route = useRoute()
-  const { t } = useI18n()
   const { actionableCount } = useToUpdateCounts()
   const { isSuperuser, isGroupManager, managedGroups, userProjects } = useAuth()
 
@@ -29,21 +28,16 @@ export function useAppNav() {
     const items: AppNavItem[] = [
       { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
       { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
-      {
-        labelKey: 'sidebar.tasksGroup',
-        icon: 'i-lucide-square-check-big',
-        bottomNav: false,
-        children: [{ label: t('sidebar.myTasks'), to: '/tasks' }],
-      },
+      { labelKey: 'sidebar.myTasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
     ]
 
     if (isSuperuser.value) {
       items.push({
-        labelKey: 'sidebar.adminTasksGroup',
+        labelKey: 'sidebar.adminTasks',
         icon: 'i-lucide-shield',
+        to: '/tasks/admin',
         // Vive en la hoja "Más" mobile, junto con Tareas por grupo/proyecto.
         bottomNav: false,
-        children: [{ label: t('sidebar.adminTasks'), to: '/tasks/admin' }],
       })
     }
 
