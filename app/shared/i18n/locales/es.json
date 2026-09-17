@@ -80,6 +80,7 @@
     },
     "preview": {
       "title": "Notificaciones",
+      "viewAll": "Ver todas",
       "unreadCount": "{count} sin leer",
       "empty": "No hay notificaciones",
       "loadError": "No se pudieron cargar las notificaciones",

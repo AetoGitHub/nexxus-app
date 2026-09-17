@@ -36,6 +36,11 @@ const isLoading = computed(
   () => notificationsQuery.isFetching.value && notificationsQuery.data.value == null,
 )
 
+function goToAllNotifications() {
+  isOpen.value = false
+  void navigateTo({ path: '/tasks/settings', query: { section: 'notifications' } })
+}
+
 function openTask(taskId: number) {
   const currentQuery = route.path === '/tasks' ? route.query : {}
   void navigateTo({
@@ -103,13 +108,23 @@ async function onOpen(notification: AppNotification) {
         <p class="text-sm font-semibold text-foreground">
           {{ t('notifications.preview.title') }}
         </p>
-        <UBadge
-          v-if="unreadCount > 0"
-          color="error"
-          variant="subtle"
-          size="sm"
-          :label="t('notifications.preview.unreadCount', { count: unreadCount })"
-        />
+        <div class="flex items-center gap-2 shrink-0">
+          <UButton
+            color="neutral"
+            variant="link"
+            size="xs"
+            class="px-0"
+            :label="t('notifications.preview.viewAll')"
+            @click="goToAllNotifications"
+          />
+          <UBadge
+            v-if="unreadCount > 0"
+            color="error"
+            variant="subtle"
+            size="sm"
+            :label="t('notifications.preview.unreadCount', { count: unreadCount })"
+          />
+        </div>
       </div>
 
       <div
