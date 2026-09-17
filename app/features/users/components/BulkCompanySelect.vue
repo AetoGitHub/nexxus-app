@@ -2,8 +2,11 @@
 const companyId = defineModel<number | undefined>({ required: true })
 const props = withDefaults(defineProps<{
   excludedCompanyIds?: number[]
+  /** Filtra las compañías a las de esta organización. */
+  organizationId?: number | null
 }>(), {
   excludedCompanyIds: () => [],
+  organizationId: null,
 })
 const { t } = useI18n()
 
@@ -14,7 +17,7 @@ const {
   isError,
   isFetchingNextPage,
   isPending,
-} = useCompanies()
+} = useCompanies({ organizationId: () => props.organizationId })
 
 const items = computed(() =>
   companies.value.map(company => ({
@@ -43,6 +46,7 @@ useInfiniteScroll(
     ref="selectMenu"
     v-model="companyId"
     :items="items"
+    :disabled="organizationId == null"
     value-key="id"
     label-key="name"
     icon="i-lucide-building-2"

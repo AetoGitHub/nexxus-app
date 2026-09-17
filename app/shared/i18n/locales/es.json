@@ -37,10 +37,8 @@
     "sectionTasks": "Tasks",
     "reporteCeo": "Reporte CEO",
     "dashboard": "Dashboard",
-    "tasksGroup": "Tareas",
     "myTasks": "Mis tareas",
-    "adminTasksGroup": "Tareas administrativas",
-    "adminTasks": "Tareas administrativas",
+    "adminTasks": "Vista Total",
     "groupTasks": "Tareas por grupo",
     "projectTasks": "Tareas por proyecto",
     "toAccept": "Por aceptar",
@@ -53,6 +51,8 @@
   "toolbar": {
     "module": "Módulo",
     "moduleName": "Tareas",
+    "groupModuleName": "Grupo {name}",
+    "projectModuleName": "Proyecto {name}",
     "searchPlaceholder": "Buscar tareas...",
     "showMenu": "Mostrar menú",
     "hideMenu": "Ocultar menú",
@@ -625,7 +625,6 @@
     "subtitle": "Elige qué quieres configurar",
     "navTitle": "Configuración master",
     "navSubtitle": "Organización, compañía y usuarios",
-    "backToHub": "Volver al hub",
     "nav": {
       "organization": "Organización",
       "company": "Compañía",
@@ -647,6 +646,11 @@
           "name": "Nombre",
           "createdAt": "Fecha de registro"
         }
+      },
+      "filters": {
+        "organization": "Organización",
+        "organizationPlaceholder": "Selecciona una organización",
+        "selectPrompt": "Selecciona una organización para ver su información."
       },
       "create": {
         "toolbarButton": "Crear",
@@ -697,6 +701,12 @@
           "phone": "Teléfono",
           "createdAt": "Fecha de registro"
         }
+      },
+      "filters": {
+        "organization": "Organización",
+        "organizationPlaceholder": "Todas las organizaciones",
+        "company": "Compañía",
+        "companyPlaceholder": "Buscar compañía..."
       },
       "create": {
         "toolbarButton": "Crear",
@@ -781,9 +791,15 @@
           "context": "Contexto"
         }
       },
+      "filters": {
+        "organization": "Organización",
+        "organizationPlaceholder": "Todas las organizaciones"
+      },
       "fields": {
         "username": "Nombre de usuario",
         "password": "Contraseña",
+        "organization": "Organización",
+        "company": "Compañía",
         "firstName": "Nombre",
         "lastName": "Apellidos",
         "email": "Correo personal",
@@ -793,6 +809,8 @@
       "placeholders": {
         "username": "Ej. tuco_salamanca",
         "password": "Ingresa una contraseña segura",
+        "organization": "Selecciona una organización",
+        "company": "Selecciona una compañía",
         "firstName": "Ej. Juan",
         "lastName": "Ej. Pérez",
         "email": "Ej. juan{'@'}personal.com",
@@ -808,6 +826,8 @@
         "passwordUppercase": "La contraseña debe incluir al menos una mayúscula.",
         "emailInvalid": "Ingresa un correo personal válido.",
         "corporateEmailInvalid": "Ingresa un correo corporativo válido.",
+        "organizationRequired": "Selecciona una organización.",
+        "companyRequired": "Selecciona una compañía.",
         "currentPasswordRequired": "La contraseña actual es obligatoria.",
         "confirmationRequired": "Confirma la contraseña nueva.",
         "passwordsMismatch": "Las contraseñas nuevas no coinciden."
@@ -842,9 +862,8 @@
         "successTitle": "Usuarios creados",
         "successDescription": "Los usuarios se crearon correctamente.",
         "errorTitle": "No se pudieron crear los usuarios",
-        "organizationUnavailableTitle": "Organización no disponible",
-        "organizationUnavailableDescription": "No se encontró una organización activa para crear los usuarios.",
         "validation": {
+          "organizationRequired": "Selecciona una organización.",
           "companyRequired": "Selecciona una compañía.",
           "usernameRequired": "El nombre de usuario es obligatorio.",
           "firstNameRequired": "El nombre es obligatorio.",

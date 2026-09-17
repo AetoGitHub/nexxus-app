@@ -13,6 +13,8 @@ import UserCreateDialog from '~/features/users/components/UserCreateDialog.vue'
 import UserListTable from '~/features/users/components/UserListTable.vue'
 import UserUpdateDialog from '~/features/users/components/UserUpdateDialog.vue'
 import ConfigurationNavSidebar from '~/features/configuration/components/shared/ConfigurationNavSidebar.vue'
+import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
+import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
 import type { ConfigurationNavItem, ConfigurationSectionId } from '~/features/configuration/types/configuration.types'
 
 definePageMeta({ middleware: 'auth', layout: false })
@@ -20,6 +22,65 @@ definePageMeta({ middleware: 'auth', layout: false })
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+
+/** Compartido entre Organización y Compañía: filtra ambas tablas por organización. */
+const organizationFilterId = ref<number | null>(null)
+const { items: organizationFilterItems } = useOrganizationsDropdown()
+
+/**
+ * Solo aplica en la sección Compañía. `companyNameSearch` alimenta las
+ * sugerencias del select (mientras se escribe); la tabla solo se filtra al
+ * elegir una opción (`companyFilterId` -> nombre de esa opción).
+ */
+const companyFilterId = ref<number | null>(null)
+const companyNameSearch = ref('')
+const debouncedCompanyNameSearch = refDebounced(companyNameSearch, 300)
+const { items: companyFilterItems, isPending: companyFilterItemsPending } = useCompaniesDropdown({
+  organizationId: () => organizationFilterId.value,
+  searchTerm: debouncedCompanyNameSearch,
+})
+
+/**
+ * El select resetea el término de búsqueda al elegir una opción, lo que
+ * dispara un refetch (sin ese filtro) que puede dejar de incluir la
+ * compañía recién elegida — y entonces el select cae a mostrar el ID crudo.
+ * Este cache conserva su {label, value} para que siga mostrando el nombre
+ * (y alimentando el filtro de la tabla) sin depender de la búsqueda vigente.
+ */
+const selectedCompanyItem = ref<{ label: string, value: number } | null>(null)
+
+watch(companyFilterId, (id) => {
+  if (id == null) {
+    selectedCompanyItem.value = null
+    return
+  }
+  const match = companyFilterItems.value.find(item => item.value === id)
+  if (match) {
+    selectedCompanyItem.value = match
+  }
+})
+
+const companySelectItems = computed(() => {
+  const selected = selectedCompanyItem.value
+  if (selected && !companyFilterItems.value.some(item => item.value === selected.value)) {
+    return [selected, ...companyFilterItems.value]
+  }
+  return companyFilterItems.value
+})
+
+const selectedCompanyName = computed(() => selectedCompanyItem.value?.label ?? '')
+
+/** Preselecciona en el bulk-create la organización/compañía ya elegidas acá (si las hay). */
+const bulkCreateTo = computed(() => {
+  const query: Record<string, string> = {}
+  if (organizationFilterId.value != null) {
+    query.organization = String(organizationFilterId.value)
+  }
+  if (companyFilterId.value != null) {
+    query.company = String(companyFilterId.value)
+  }
+  return { path: '/configuration/user/bulk-create', query }
+})
 
 function parseSection(value: unknown): ConfigurationSectionId {
   return value === 'company' || value === 'user' ? value : 'organization'
@@ -49,7 +110,7 @@ useSeoMeta({
 
 <template>
   <div class="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-    <AppHubHeader home-to="/configuration" />
+    <AppHubHeader />
 
     <div class="flex min-h-0 flex-1 flex-col md:flex-row md:overflow-hidden">
       <ConfigurationNavSidebar
@@ -62,16 +123,44 @@ useSeoMeta({
         <template v-if="activeSection === 'organization'">
           <UDashboardToolbar
             :ui="{
+              left: 'flex min-w-0 flex-1 items-center gap-2',
               right: 'flex min-w-0 flex-1 items-center justify-end gap-2',
             }"
           >
+            <template #left>
+              <USelectMenu
+                v-model="organizationFilterId"
+                :items="organizationFilterItems"
+                value-key="value"
+                :placeholder="t('configuration.organization.filters.organizationPlaceholder')"
+                icon="i-lucide-building-2"
+                clear
+                class="w-full sm:w-56"
+              />
+            </template>
             <template #right>
               <OrganizationCreateDialog />
             </template>
           </UDashboardToolbar>
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
-            <OrganizationListTable class="min-h-0 flex-1" />
+            <OrganizationListTable
+              v-if="organizationFilterId != null"
+              class="min-h-0 flex-1"
+              :organization-id="organizationFilterId"
+            />
+            <div
+              v-else
+              class="flex flex-1 flex-col items-center justify-center py-12 text-center"
+            >
+              <UIcon
+                name="i-lucide-building-2"
+                class="mb-2 text-4xl text-dimmed"
+              />
+              <h3 class="text-lg font-semibold text-highlighted">
+                {{ t('configuration.organization.filters.selectPrompt') }}
+              </h3>
+            </div>
             <OrganizationUpdateDialog />
           </main>
         </template>
@@ -79,16 +168,45 @@ useSeoMeta({
         <template v-else-if="activeSection === 'company'">
           <UDashboardToolbar
             :ui="{
+              left: 'flex min-w-0 flex-1 flex-wrap items-center gap-2',
               right: 'flex min-w-0 flex-1 items-center justify-end gap-2',
             }"
           >
+            <template #left>
+              <USelectMenu
+                v-model="organizationFilterId"
+                :items="organizationFilterItems"
+                value-key="value"
+                :placeholder="t('configuration.company.filters.organizationPlaceholder')"
+                icon="i-lucide-building-2"
+                clear
+                class="w-full sm:w-56"
+              />
+              <USelectMenu
+                v-model="companyFilterId"
+                v-model:search-term="companyNameSearch"
+                :items="companySelectItems"
+                :loading="companyFilterItemsPending"
+                value-key="value"
+                :placeholder="t('configuration.company.filters.companyPlaceholder')"
+                icon="i-lucide-search"
+                ignore-filter
+                clear
+                class="w-full sm:w-56"
+                @clear="companyNameSearch = ''"
+              />
+            </template>
             <template #right>
               <CompanyCreateDialog />
             </template>
           </UDashboardToolbar>
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
-            <CompanyListTable class="min-h-0 flex-1" />
+            <CompanyListTable
+              class="min-h-0 flex-1"
+              :organization-id="organizationFilterId"
+              :name-search="selectedCompanyName"
+            />
             <CompanyUpdateDialog />
           </main>
         </template>
@@ -96,12 +214,24 @@ useSeoMeta({
         <template v-else>
           <UDashboardToolbar
             :ui="{
+              left: 'flex min-w-0 flex-1 items-center gap-2',
               right: 'flex min-w-0 flex-1 items-center justify-end gap-2',
             }"
           >
+            <template #left>
+              <USelectMenu
+                v-model="organizationFilterId"
+                :items="organizationFilterItems"
+                value-key="value"
+                :placeholder="t('configuration.user.filters.organizationPlaceholder')"
+                icon="i-lucide-building-2"
+                clear
+                class="w-full sm:w-56"
+              />
+            </template>
             <template #right>
               <UButton
-                to="/configuration/user/bulk-create"
+                :to="bulkCreateTo"
                 color="neutral"
                 variant="outline"
                 icon="i-lucide-users"
@@ -112,7 +242,10 @@ useSeoMeta({
           </UDashboardToolbar>
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
-            <UserListTable class="min-h-0 flex-1" />
+            <UserListTable
+              class="min-h-0 flex-1"
+              :organization-id="organizationFilterId"
+            />
             <UserUpdateDialog />
             <UserChangePasswordDialog />
             <CompanyMembershipCreateDialog />

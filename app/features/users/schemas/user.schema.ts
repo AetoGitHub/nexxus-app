@@ -7,6 +7,8 @@ interface UserSchemaMessages {
   passwordUppercase: string
   emailInvalid: string
   corporateEmailInvalid: string
+  organizationRequired: string
+  companyRequired: string
 }
 
 interface ChangePasswordSchemaMessages {
@@ -39,12 +41,17 @@ function strongPassword(messages: Pick<
 const optionalEmail = (message: string) =>
   z.string().trim().email(message).or(z.literal(''))
 
+const requiredId = (message: string) =>
+  z.number({ error: message }).int().positive(message)
+
 export function createUserSchema(messages: UserSchemaMessages) {
   return z.object({
     username: z.string({ error: messages.usernameRequired })
       .trim()
       .min(1, messages.usernameRequired),
     password: strongPassword(messages),
+    organization: requiredId(messages.organizationRequired),
+    company: requiredId(messages.companyRequired),
     first_name: z.string().trim(),
     last_name: z.string().trim(),
     email: optionalEmail(messages.emailInvalid),

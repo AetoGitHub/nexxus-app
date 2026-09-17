@@ -2,6 +2,8 @@
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
 import UserPasswordStrengthField from '~/features/users/components/UserPasswordStrengthField.vue'
 import type { CreateUserSchema } from '~/features/users/schemas/user.schema'
+import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
+import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
 
 const { t } = useI18n()
 const createUser = useCreateUser()
@@ -17,12 +19,21 @@ const schema = computed(() => createUserSchema({
   passwordUppercase: t('configuration.user.validation.passwordUppercase'),
   emailInvalid: t('configuration.user.validation.emailInvalid'),
   corporateEmailInvalid: t('configuration.user.validation.corporateEmailInvalid'),
+  organizationRequired: t('configuration.user.validation.organizationRequired'),
+  companyRequired: t('configuration.user.validation.companyRequired'),
 }))
 
-function createInitialState(): CreateUserSchema {
+type UserCreateFormState = Omit<CreateUserSchema, 'organization' | 'company'> & {
+  organization: number | undefined
+  company: number | undefined
+}
+
+function createInitialState(): UserCreateFormState {
   return {
     username: '',
     password: '',
+    organization: undefined,
+    company: undefined,
     first_name: '',
     last_name: '',
     email: '',
@@ -31,13 +42,25 @@ function createInitialState(): CreateUserSchema {
   }
 }
 
-const state = reactive<CreateUserSchema>(createInitialState())
+const state = reactive<UserCreateFormState>(createInitialState())
+
+const { items: organizationItems } = useOrganizationsDropdown()
+const { items: companyItems, isPending: companyItemsPending } = useCompaniesDropdown({
+  organizationId: () => state.organization,
+})
 
 const usernameModel = computed({
   get: () => state.username,
   set: (value: string) => {
     state.username = value.toLocaleUpperCase()
   },
+})
+
+/** Al cambiar de organización, la compañía elegida puede dejar de pertenecerle. */
+watch(() => state.organization, () => {
+  if (!companyItems.value.some(item => item.value === state.company)) {
+    state.company = undefined
+  }
 })
 
 function resetForm() {
@@ -104,6 +127,38 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
           :label="t('configuration.user.fields.password')"
           :placeholder="t('configuration.user.placeholders.password')"
         />
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UFormField
+            name="organization"
+            :label="t('configuration.user.fields.organization')"
+            required
+          >
+            <USelectMenu
+              v-model="state.organization"
+              :items="organizationItems"
+              value-key="value"
+              :placeholder="t('configuration.user.placeholders.organization')"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField
+            name="company"
+            :label="t('configuration.user.fields.company')"
+            required
+          >
+            <USelectMenu
+              v-model="state.company"
+              :items="companyItems"
+              :loading="companyItemsPending"
+              :disabled="state.organization == null"
+              value-key="value"
+              :placeholder="t('configuration.user.placeholders.company')"
+              class="w-full"
+            />
+          </UFormField>
+        </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <UFormField

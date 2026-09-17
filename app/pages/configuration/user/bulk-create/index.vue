@@ -24,7 +24,7 @@ useSeoMeta({
 
 <template>
   <div class="min-h-dvh bg-background text-foreground">
-    <AppHubHeader home-to="/configuration" />
+    <AppHubHeader />
 
     <main class="px-3 py-5 sm:px-4 lg:px-5">
       <div class="mx-auto max-w-6xl space-y-5">

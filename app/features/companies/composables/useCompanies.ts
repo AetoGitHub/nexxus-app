@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/vue-query'
+import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { Company } from '~/features/companies/types/company.types'
 
@@ -14,14 +15,39 @@ function toRelativeApiUrl(url: string): string {
   }
 }
 
-export function useCompanies() {
+export function useCompanies(
+  options: {
+    /** Filtra por organización (select del toolbar) vía `?organization=`. */
+    organizationId?: MaybeRefOrGetter<number | null | undefined>
+    /** Filtra por nombre (búsqueda del select de company) vía `?name=`. */
+    name?: MaybeRefOrGetter<string | null | undefined>
+  } = {},
+) {
   const { $api } = useNuxtApp()
 
+  const filters = computed(() => ({
+    organizationId: toValue(options.organizationId) ?? null,
+    name: toValue(options.name)?.trim() || null,
+  }))
+
   const companiesQuery = useInfiniteQuery({
-    queryKey: ['enterprise-companies'],
-    initialPageParam: COMPANIES_ENDPOINT,
-    queryFn: ({ pageParam }) =>
-      $api<PaginatedResponse<Company>>(pageParam),
+    queryKey: computed(() => ['enterprise-companies', filters.value]),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) => {
+      if (pageParam) {
+        return $api<PaginatedResponse<Company>>(pageParam)
+      }
+      const query: Record<string, string | number> = {}
+      if (filters.value.organizationId != null) {
+        query.organization = filters.value.organizationId
+      }
+      if (filters.value.name) {
+        query.name = filters.value.name
+      }
+      return $api<PaginatedResponse<Company>>(COMPANIES_ENDPOINT, {
+        query: Object.keys(query).length ? query : undefined,
+      })
+    },
     getNextPageParam: lastPage =>
       lastPage.next ? toRelativeApiUrl(lastPage.next) : undefined,
   })

@@ -2,21 +2,31 @@
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
 import BulkCompanySelect from '~/features/users/components/BulkCompanySelect.vue'
 import UserBulkCreateResultModal from '~/features/users/components/UserBulkCreateResultModal.vue'
+import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
 import type { BulkUserSchema } from '~/features/users/schemas/bulk-user.schema'
 import type { BulkCreatedUserCredential, BulkCreateUserItem } from '~/features/users/types/user.types'
 
 interface BulkUserFormState {
+  organization?: number
   company?: number
   users: BulkCreateUserItem[]
 }
 
+/** `?organization=`/`?company=` de Master (preselección desde Organización/Compañía/Usuarios). */
+function parsePositiveIntQuery(value: unknown): number | undefined {
+  const raw = Array.isArray(value) ? value[0] : value
+  const id = Number(raw)
+  return Number.isInteger(id) && id > 0 ? id : undefined
+}
+
 const { t } = useI18n()
-const { organization } = useAuth()
-const toast = useToast()
+const route = useRoute()
 const bulkCreate = useBulkCreateUsers()
 const form = useTemplateRef<Form<BulkUserSchema>>('form')
+const { items: organizationItems } = useOrganizationsDropdown()
 
 const schema = computed(() => createBulkUserSchema({
+  organizationRequired: t('configuration.user.bulkCreate.validation.organizationRequired'),
   companyRequired: t('configuration.user.bulkCreate.validation.companyRequired'),
   userRequired: t('configuration.user.bulkCreate.validation.usernameRequired'),
   firstNameRequired: t('configuration.user.bulkCreate.validation.firstNameRequired'),
@@ -28,7 +38,8 @@ const schema = computed(() => createBulkUserSchema({
 }))
 
 const state = reactive<BulkUserFormState>({
-  company: undefined,
+  organization: parsePositiveIntQuery(route.query.organization),
+  company: parsePositiveIntQuery(route.query.company),
   users: [createEmptyUser()],
 })
 
@@ -62,22 +73,15 @@ function updateUsername(index: number, value: string | number) {
   }
 }
 
+/** Al cambiar de organización, la compañía elegida puede dejar de pertenecerle. */
+watch(() => state.organization, () => {
+  state.company = undefined
+})
+
 async function onSubmit(event: FormSubmitEvent<BulkUserSchema>) {
-  const organizationId = organization.value?.id
-
-  if (!organizationId) {
-    toast.add({
-      title: t('configuration.user.bulkCreate.organizationUnavailableTitle'),
-      description: t('configuration.user.bulkCreate.organizationUnavailableDescription'),
-      color: 'error',
-      icon: 'i-lucide-circle-alert',
-    })
-    return
-  }
-
   try {
     const credentials = await bulkCreate.mutateAsync({
-      organization: organizationId,
+      organization: event.data.organization,
       company: event.data.company,
       users: event.data.users,
     })
@@ -112,13 +116,32 @@ watch(isResultModalOpen, (isOpenValue) => {
         class="space-y-8"
         @submit="onSubmit"
       >
-        <UFormField
-          name="company"
-          :label="t('configuration.user.bulkCreate.company')"
-          required
-        >
-          <BulkCompanySelect v-model="state.company" />
-        </UFormField>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UFormField
+            name="organization"
+            :label="t('configuration.user.fields.organization')"
+            required
+          >
+            <USelectMenu
+              v-model="state.organization"
+              :items="organizationItems"
+              value-key="value"
+              :placeholder="t('configuration.user.placeholders.organization')"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField
+            name="company"
+            :label="t('configuration.user.bulkCreate.company')"
+            required
+          >
+            <BulkCompanySelect
+              v-model="state.company"
+              :organization-id="state.organization"
+            />
+          </UFormField>
+        </div>
 
         <section class="space-y-4">
           <div class="flex flex-wrap items-start justify-between gap-3">

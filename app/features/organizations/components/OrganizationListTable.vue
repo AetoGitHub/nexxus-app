@@ -4,6 +4,11 @@ import type { ComponentPublicInstance } from 'vue'
 import type { Organization } from '~/features/organizations/types/organization.types'
 import { LIST_TABLE_UI_CLASS } from '~/shared/constants/list-table'
 
+const props = defineProps<{
+  /** Filtra a una sola organización (select del toolbar). */
+  organizationId?: number | null
+}>()
+
 const { t, locale } = useI18n()
 const { openDialog } = useOrganizationDialog()
 
@@ -17,7 +22,7 @@ const {
   isFetchingNextPage,
   isPending,
   refetch,
-} = useOrganizations()
+} = useOrganizations({ organizationId: () => props.organizationId })
 
 const dateFormatter = computed(() =>
   new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }),

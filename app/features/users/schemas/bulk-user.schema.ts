@@ -1,4 +1,5 @@
 interface BulkUserSchemaMessages {
+  organizationRequired: string
   companyRequired: string
   userRequired: string
   firstNameRequired: string
@@ -11,6 +12,9 @@ interface BulkUserSchemaMessages {
 
 export function createBulkUserSchema(messages: BulkUserSchemaMessages) {
   return z.object({
+    organization: z.number({ error: messages.organizationRequired })
+      .int()
+      .positive(messages.organizationRequired),
     company: z.number({ error: messages.companyRequired })
       .int()
       .positive(messages.companyRequired),
