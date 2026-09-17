@@ -16,13 +16,10 @@ export function useTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const today = api.listQuery(['today'], '/due_today/')
   const upcoming = api.listQuery(['upcoming'], '/upcoming/')
 
-  const archivedCounts = api.countsQuery<ArchivedCounts>(['archived'], '/archived/counts/')
-  const archived = api.listQuery(['archived'], '/archived/')
-
   function loadMore(sectionId: TaskSectionKey) {
-    const queries = { backlog, urgent, today, upcoming, archived } as const
+    const queries = { backlog, urgent, today, upcoming } as const
     fetchTaskListNextPage(queries[sectionId])
   }
 
-  return { counts, backlogCounts, backlog, urgent, today, upcoming, archivedCounts, archived, loadMore }
+  return { counts, backlogCounts, backlog, urgent, today, upcoming, loadMore }
 }

@@ -24,7 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { columns, archivedBar, loadMore } = useKanbanTasks(() => props.filters)
+const { columns, loadMore } = useKanbanTasks(() => props.filters)
 
 /** Solo Pendiente permite crear, igual que en el tablero Kanban. */
 function canCreate(columnId: string | number): boolean {
@@ -52,24 +52,6 @@ function canCreate(columnId: string | number): boolean {
       @select="emit('select', $event)"
       @create="emit('create', { id: column.id, title: column.labelKey ? t(column.labelKey) : column.title })"
       @load-more="loadMore(column.id)"
-    />
-
-    <TaskSection
-      v-if="archivedBar.visible"
-      :title="t('tasks.kanban.columns.archived')"
-      dot-color="#9ca3af"
-      :count="archivedBar.count"
-      :tasks="archivedBar.tasks"
-      :loading="archivedBar.loading"
-      :error="archivedBar.error"
-      :has-next-page="archivedBar.hasNextPage"
-      :is-fetching-next-page="archivedBar.isFetchingNextPage"
-      :selected-task-id="selectedTaskId"
-      :default-open="false"
-      minimal
-      show-status
-      @select="emit('select', $event)"
-      @load-more="loadMore('archived')"
     />
   </div>
 </template>

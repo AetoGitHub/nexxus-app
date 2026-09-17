@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
-import TaskKanbanArchivedBar from '~/features/tasks/components/kanban/TaskKanbanArchivedBar.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
-import TaskDeleteProcessModal from '~/features/tasks/components/form/TaskDeleteProcessModal.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
@@ -25,7 +23,7 @@ const emit = defineEmits<{
   promoteBacklog: [taskId: number]
 }>()
 
-const { columns, archivedBar, loadMore } = useKanbanTasks(() => props.filters)
+const { columns, loadMore } = useKanbanTasks(() => props.filters)
 const {
   pendingTaskId,
   startProcessModalOpen,
@@ -37,15 +35,6 @@ const {
   requestMove,
   onProcessSuccess,
 } = useKanbanProcessMove()
-
-/** Eliminar tarea archivada: acción del botón en cada fila, no relacionada al DnD. */
-const deletingTaskId = ref<number | null>(null)
-const deleteProcessModalOpen = ref(false)
-
-function onDeleteArchivedTask(taskId: number) {
-  deletingTaskId.value = taskId
-  deleteProcessModalOpen.value = true
-}
 
 function onMove(payload: KanbanTaskMove) {
   const task = columns.value
@@ -78,21 +67,6 @@ function onMove(payload: KanbanTaskMove) {
       @move="onMove"
       @load-more="loadMore"
     />
-
-    <TaskKanbanArchivedBar
-      v-if="archivedBar.visible"
-      class="mt-3 shrink-0"
-      :tasks="archivedBar.tasks"
-      :count="archivedBar.count"
-      :loading="archivedBar.loading"
-      :error="archivedBar.error"
-      :selected-task-id="selectedTaskId"
-      :has-next-page="archivedBar.hasNextPage"
-      :is-fetching-next-page="archivedBar.isFetchingNextPage"
-      @select="emit('select', $event)"
-      @delete="onDeleteArchivedTask"
-      @load-more="loadMore('archived')"
-    />
   </div>
 
   <TaskStartProcessModal
@@ -123,12 +97,5 @@ function onMove(payload: KanbanTaskMove) {
     v-model:open="reopenProcessModalOpen"
     :task-id="pendingTaskId"
     @success="onProcessSuccess"
-  />
-
-  <TaskDeleteProcessModal
-    v-if="deletingTaskId != null"
-    v-model:open="deleteProcessModalOpen"
-    :task-id="deletingTaskId"
-    @success="deletingTaskId = null"
   />
 </template>

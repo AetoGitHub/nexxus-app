@@ -108,6 +108,8 @@
     "refreshSuccessTitle": "Data updated",
     "refreshSuccessDescription": "The visible lists were refreshed successfully.",
     "refreshErrorTitle": "Could not refresh",
+    "showArchived": "Show archived tasks",
+    "hideArchived": "Back to the current view",
     "taskDetail": "Task detail",
     "editTask": "Edit task",
     "toUpdate": {

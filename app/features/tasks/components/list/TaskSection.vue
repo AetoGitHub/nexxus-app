@@ -22,6 +22,8 @@ const props = withDefaults(
     defaultOpen?: boolean
     /** Trigger apagado tipo footer (chevron + texto), en vez del header con badge de color. */
     minimal?: boolean
+    /** Botón de eliminar (hover) en cada fila, p. ej. en la vista de archivadas. */
+    deletable?: boolean
   }>(),
   {
     count: undefined,
@@ -34,11 +36,13 @@ const props = withDefaults(
     isFetchingNextPage: false,
     defaultOpen: true,
     minimal: false,
+    deletable: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  delete: [taskId: number]
   create: []
   loadMore: []
 }>()
@@ -126,7 +130,9 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
             :task="task"
             :selected="selectedTaskId === task.id"
             :show-status="showStatus"
+            :deletable="deletable"
             @select="emit('select', $event)"
+            @delete="emit('delete', $event)"
           />
         </TransitionGroup>
 

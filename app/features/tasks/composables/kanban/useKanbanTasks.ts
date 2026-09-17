@@ -9,7 +9,7 @@ import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util
  *
  * Backlog es la primera columna del tablero (fuera del flujo pending→complete).
  * Rechazada: skeleton mientras cargan counts; se oculta solo si count === 0.
- * Archivado no es una columna del tablero: ver `archivedBar` (barra full-width aparte).
+ * Archivado vive en su propia vista independiente: ver `useArchivedTasks`.
  */
 export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const api = createCompanyTasksApi(filters)
@@ -32,15 +32,6 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   const rejected = api.listQuery([...scope, 'rejected'], '/kanban/rejected/', {
     enabled: () => countsReady.value && rejectedCount.value > 0,
-  })
-
-  const archivedCounts = api.countsQuery<ArchivedCounts>(['archived'], '/archived/counts/')
-  const archivedTotal = computed(() => archivedCounts.data.value?.total ?? 0)
-  const archivedCountsReady = computed(() => archivedCounts.isFetched.value)
-  const showArchived = computed(() => !archivedCountsReady.value || archivedTotal.value > 0)
-
-  const archived = api.listQuery(['archived'], '/archived/', {
-    enabled: () => archivedCountsReady.value && archivedTotal.value > 0,
   })
 
   const columns = computed<KanbanColumn[]>(() => {
@@ -119,17 +110,6 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     return allColumns.filter(column => column.id !== 'rejected' || showRejected.value)
   })
 
-  /** Archivado vive fuera del tablero (barra full-width colapsable, no columna). */
-  const archivedBar = computed(() => ({
-    count: archivedCountsReady.value ? archivedTotal.value : undefined,
-    tasks: extractResults(archived.data.value),
-    loading: !archivedCountsReady.value || archived.isPending.value,
-    error: archived.isError.value,
-    hasNextPage: archived.hasNextPage.value,
-    isFetchingNextPage: archived.isFetchingNextPage.value,
-    visible: showArchived.value,
-  }))
-
   function loadMore(columnId: string | number) {
     const queries = {
       backlog,
@@ -138,7 +118,6 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
       in_review: inReview,
       rejected,
       complete,
-      archived,
     } as const
     const query = queries[columnId as keyof typeof queries]
     if (query) {
@@ -146,5 +125,5 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     }
   }
 
-  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, archivedCounts, archived, archivedBar, columns, loadMore }
+  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, columns, loadMore }
 }
