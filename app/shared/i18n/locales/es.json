@@ -51,6 +51,8 @@
   "toolbar": {
     "module": "Módulo",
     "moduleName": "Tareas",
+    "groupModuleName": "Grupo {name}",
+    "projectModuleName": "Proyecto {name}",
     "searchPlaceholder": "Buscar tareas...",
     "showMenu": "Mostrar menú",
     "hideMenu": "Ocultar menú",

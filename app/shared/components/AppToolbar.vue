@@ -10,6 +10,16 @@ const route = useRoute()
 const displayName = computed(() => user.value?.username ?? t('user.fallback'))
 const initials = computed(() => getInitials(displayName.value))
 
+const { activeGroupId, managedGroups, activeProjectId, userProjects } = useTaskAdminView()
+
+const activeGroupName = computed(() =>
+  managedGroups.value.find(group => group.id === activeGroupId.value)?.name ?? null,
+)
+
+const activeProjectName = computed(() =>
+  userProjects.value.find(project => project.id === activeProjectId.value)?.name ?? null,
+)
+
 const moduleName = computed(() => {
   if (route.path.startsWith('/dashboard')) {
     return t('sidebar.dashboard')
@@ -22,6 +32,22 @@ const moduleName = computed(() => {
   }
   if (route.path.startsWith('/tasks/pending-approval')) {
     return t('tasks.toUpdate.title')
+  }
+  if (route.path.startsWith('/tasks/admin')) {
+    return t('sidebar.adminTasks')
+  }
+  if (route.path.startsWith('/tasks/group')) {
+    return activeGroupName.value
+      ? t('toolbar.groupModuleName', { name: activeGroupName.value })
+      : t('sidebar.groupTasks')
+  }
+  if (route.path.startsWith('/tasks/project')) {
+    return activeProjectName.value
+      ? t('toolbar.projectModuleName', { name: activeProjectName.value })
+      : t('sidebar.projectTasks')
+  }
+  if (route.path === '/tasks') {
+    return t('sidebar.myTasks')
   }
   if (route.path.startsWith('/settings')) {
     return t('settings.title')

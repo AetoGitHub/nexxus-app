@@ -51,6 +51,8 @@
   "toolbar": {
     "module": "Module",
     "moduleName": "Tasks",
+    "groupModuleName": "Group {name}",
+    "projectModuleName": "Project {name}",
     "searchPlaceholder": "Search tasks...",
     "showMenu": "Show menu",
     "hideMenu": "Hide menu",
