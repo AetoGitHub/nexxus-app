@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { CreateTaskPayload } from '~/features/tasks/types/task.types'
+import type { CreateTaskPayload, TaskDetail } from '~/features/tasks/types/task.types'
 
 /**
  * Crea una tarea vía POST /api/tasks/create/ e invalida las queries del módulo.
+ * Devuelve el detalle creado (con `id`) para poder adjuntar documentos justo después.
  */
 export function useCreateTask() {
   const { $api } = useNuxtApp()
@@ -12,7 +13,7 @@ export function useCreateTask() {
 
   return useMutation({
     mutationFn: (payload: CreateTaskPayload) =>
-      $api('/api/tasks/create/', {
+      $api<TaskDetail>('/api/tasks/create/', {
         method: 'POST',
         body: payload,
       }),

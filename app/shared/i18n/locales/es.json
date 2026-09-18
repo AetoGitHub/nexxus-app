@@ -402,6 +402,18 @@
       "updateSuccessTitle": "Tarea actualizada",
       "updateSuccessDescription": "Los cambios se guardaron correctamente.",
       "updateErrorTitle": "No se pudo actualizar la tarea",
+      "attachments": {
+        "label": "Adjuntos",
+        "optional": "opcional",
+        "dropHintPrefix": "Arrastra archivos aquí o",
+        "browse": "busca en tu equipo",
+        "hint": "PDF, imágenes, Word, Excel — cualquier tipo, hasta 25 MB c/u",
+        "remove": "Quitar archivo",
+        "tooLargeTitle": "Archivo demasiado grande",
+        "tooLargeDescription": "{name} supera el límite de 25 MB",
+        "uploadErrorTitle": "No se pudieron adjuntar los archivos",
+        "missingContext": "Falta información de organización o compañía para subir archivos"
+      },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
         "projectRequired": "Selecciona un proyecto",

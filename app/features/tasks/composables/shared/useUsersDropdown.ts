@@ -5,6 +5,12 @@ import type { UserDropdown } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { useLocalFirstSearch } from '~/features/tasks/composables/shared/useLocalFirstSearch'
 
+/** Nombre y apellidos concatenados; cae a username si el backend no los trae. */
+function userDisplayName(user: UserDropdown): string {
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
+  return fullName || user.username
+}
+
 /**
  * Dropdown de usuarios vía GET /api/tools/dropdown/users/.
  * Cada usuario puede traer group_id / group_name.
@@ -27,7 +33,7 @@ export function useUsersDropdown(
 
   const initialItems = computed(() =>
     initialList.value.map(user => ({
-      label: user.username,
+      label: userDisplayName(user),
       value: user.id,
     })),
   )
@@ -72,14 +78,14 @@ export function useUsersDropdown(
 
   const remoteItems = computed(() =>
     remoteList.value.map(user => ({
-      label: user.username,
+      label: userDisplayName(user),
       value: user.id,
     })),
   )
 
   const allItems = computed(() =>
     list.value.map(user => ({
-      label: user.username,
+      label: userDisplayName(user),
       value: user.id,
     })),
   )

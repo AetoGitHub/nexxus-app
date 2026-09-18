@@ -105,6 +105,15 @@ export interface UpdateTaskLimitDatePayload {
   limit_date: string
 }
 
+/**
+ * PATCH parcial para adjuntar documentos (TaskFile) a la tarea.
+ * Reemplaza la lista completa: para agregar uno solo hay que mandar
+ * existentes + nuevo (ver contrato de Firebase Storage para `documents/`).
+ */
+export interface UpdateTaskFilesPayload {
+  files: string[]
+}
+
 /** PATCH parcial de /api/tasks/:id/update/: solo los campos editables de una tarea de backlog. */
 export interface UpdateBacklogTaskPayload {
   short_description: string
@@ -252,6 +261,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   finish_at: string | null
   updated_at: string
   process_tasks: TaskProcessEntry[]
+  /** URLs de Firebase Storage de documentos generales (TaskFile), separados del chat. */
+  files?: string[]
 }
 
 export interface TaskCounts {
@@ -314,6 +325,8 @@ export interface TaskBoardSection {
 export interface UserDropdown {
   id: number
   username: string
+  first_name?: string
+  last_name?: string
   group_id?: number | null
   group_name?: string | null
 }
