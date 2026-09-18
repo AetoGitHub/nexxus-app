@@ -325,6 +325,8 @@ export interface TaskBoardSection {
 export interface UserDropdown {
   id: number
   username: string
+  first_name?: string
+  last_name?: string
   group_id?: number | null
   group_name?: string | null
 }
