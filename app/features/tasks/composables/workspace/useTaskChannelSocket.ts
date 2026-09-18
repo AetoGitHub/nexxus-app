@@ -1,12 +1,9 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
-import { useCalendarRealtimeTask } from '~/features/tasks/composables/calendar/useCalendarRealtimeTask'
-import { useKanbanRealtimeTask } from '~/features/tasks/composables/kanban/useKanbanRealtimeTask'
-import { useListRealtimeTask } from '~/features/tasks/composables/list/useListRealtimeTask'
+import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type {
   CreateMultipleTasksChannelEvent,
   CreateTaskChannelEvent,
-  TaskCalendarPhase,
 } from '~/features/tasks/types/task.types'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
@@ -28,6 +25,19 @@ function isCreateTaskEvent(value: unknown): value is CreateTaskChannelEvent {
 
 function isPositiveTaskId(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0
+}
+
+/**
+ * El eco de la propia acción del usuario (creador/actor incluido siempre en
+ * el broadcast de la company) — ya se aplicó al recibir la respuesta de su
+ * propia mutación, así que este evento no tiene nada nuevo que hacer aquí.
+ */
+function isSelfActorEvent(value: unknown, currentUserId: number | undefined): boolean {
+  if (currentUserId == null || typeof value !== 'object' || value == null) {
+    return false
+  }
+  const actorId = (value as { actor_id?: unknown }).actor_id
+  return typeof actorId === 'number' && actorId === currentUserId
 }
 
 function isCreateMultipleTasksEvent(
@@ -55,136 +65,15 @@ export function useTaskChannelSocket() {
   const queryClient = useQueryClient()
   const wsBaseUrl = useWsBaseUrl()
   const { requestTicket } = useWsTicket()
-  const { isLoggedIn, selectedCompanyId } = useAuth()
+  const { isLoggedIn, selectedCompanyId, user } = useAuth()
   const { status, isConnected } = useRealtimeStatus()
-  const {
-    insertCreatedTask,
-    insertCreatedDueTask,
-    insertCreatedProjectTask,
-    insertCreatedGroupTask,
-    insertCreatedUserTask,
-  } = useKanbanRealtimeTask()
-  const { refreshCreatedCalendarTask } = useCalendarRealtimeTask()
-  const { insertCreatedListTask } = useListRealtimeTask()
+  const { syncCreatedTask } = useTaskCreatedSync()
   const route = useRoute()
 
   function queryParam(key: string) {
     const value = route.query[key]
     const raw = Array.isArray(value) ? value[0] : value
     return typeof raw === 'string' ? raw : null
-  }
-
-  const isTasksKanbanActive = computed(() =>
-    route.path === '/tasks' && queryParam('view') === 'kanban',
-  )
-
-  const kanbanGroupBy = computed(() => queryParam('groupBy') ?? 'all')
-
-  function resolveCalendarRefresh(taskPk: number) {
-    if (route.path !== '/tasks' || queryParam('view') !== 'calendar') {
-      return null
-    }
-
-    const groupBy = queryParam('groupBy') ?? 'all'
-
-    if (groupBy === 'project') {
-      return insertCreatedProjectTask(taskPk)
-    }
-
-    if (groupBy === 'group') {
-      return insertCreatedGroupTask(taskPk)
-    }
-
-    if (groupBy === 'user') {
-      return insertCreatedUserTask(taskPk)
-    }
-
-    // Due no aplica al calendario.
-    if (groupBy !== 'all') {
-      return null
-    }
-
-    const year = Number(queryParam('year'))
-    const month = Number(queryParam('month'))
-    const rawPhase = queryParam('phase')
-    const phase: TaskCalendarPhase = rawPhase === 'process' || rawPhase === 'close'
-      ? rawPhase
-      : 'start'
-
-    if (!Number.isInteger(year) || year < 1 || !Number.isInteger(month) || month < 1 || month > 12) {
-      return null
-    }
-
-    return refreshCreatedCalendarTask({ year, month }, phase)
-  }
-
-  function resolveListInsert(taskPk: number) {
-    if (route.path !== '/tasks' || queryParam('view') !== 'list') {
-      return null
-    }
-
-    const groupBy = queryParam('groupBy') ?? 'all'
-
-    if (groupBy === 'due') {
-      return insertCreatedDueTask(taskPk)
-    }
-
-    if (groupBy === 'project') {
-      return insertCreatedProjectTask(taskPk)
-    }
-
-    if (groupBy === 'group') {
-      return insertCreatedGroupTask(taskPk)
-    }
-
-    if (groupBy === 'user') {
-      return insertCreatedUserTask(taskPk)
-    }
-
-    // Estado usa las mismas columnas/caché que el Kanban (groupBy = all).
-    if (groupBy === 'status') {
-      return insertCreatedTask(taskPk)
-    }
-
-    return groupBy === 'all' ? insertCreatedListTask(taskPk) : null
-  }
-
-  function resolveCreatedTaskSync(taskPk: number) {
-    const calendarRefresh = resolveCalendarRefresh(taskPk)
-    if (calendarRefresh) {
-      return calendarRefresh
-    }
-
-    const listInsert = resolveListInsert(taskPk)
-    if (listInsert) {
-      return listInsert
-    }
-
-    if (!isTasksKanbanActive.value) {
-      return null
-    }
-
-    if (kanbanGroupBy.value === 'due') {
-      return insertCreatedDueTask(taskPk)
-    }
-
-    if (kanbanGroupBy.value === 'project') {
-      return insertCreatedProjectTask(taskPk)
-    }
-
-    if (kanbanGroupBy.value === 'group') {
-      return insertCreatedGroupTask(taskPk)
-    }
-
-    if (kanbanGroupBy.value === 'user') {
-      return insertCreatedUserTask(taskPk)
-    }
-
-    if (kanbanGroupBy.value === 'all') {
-      return insertCreatedTask(taskPk)
-    }
-
-    return null
   }
 
   let socket: WebSocket | null = null
@@ -448,15 +337,14 @@ export function useTaskChannelSocket() {
         return
       }
 
+      if (isSelfActorEvent(event, user.value?.id)) {
+        return
+      }
+
       if (isCreateTaskEvent(event)) {
         scheduleCountsResync()
 
-        const insertCreated = resolveCreatedTaskSync(event.task_pk)
-        if (!insertCreated) {
-          return
-        }
-
-        void insertCreated
+        void syncCreatedTask(event.task_pk)
           .then((found) => {
             if (!found) {
               scheduleBoardResync()

@@ -18,7 +18,7 @@ export function useProjectsDropdown(
   const enabled = computed(() => companyId.value != null && toValue(options.enabled ?? true))
 
   const projects = useQuery({
-    queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),
+    queryKey: computed(() => ['dropdowns', 'projects', companyId.value]),
     queryFn: () =>
       $api<PaginatedResponse<ProjectDropdown>>(
         `/api/tools/dropdown/projects/company/${companyId.value}/`,
@@ -41,10 +41,9 @@ export function useProjectsDropdown(
 
   const remoteProjects = useQuery({
     queryKey: computed(() => [
-      'tasks',
-      companyId.value,
+      'dropdowns',
       'projects',
-      'dropdown',
+      companyId.value,
       'search',
       remoteSearch.value,
     ]),

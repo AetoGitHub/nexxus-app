@@ -31,7 +31,7 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
   }))
 
   const projects = useQuery({
-    queryKey: computed(() => ['tasks', companyId.value, 'projects', 'dropdown']),
+    queryKey: computed(() => ['dropdowns', 'projects', companyId.value]),
     queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase.value}/`),
     enabled: hasCompany,
   })

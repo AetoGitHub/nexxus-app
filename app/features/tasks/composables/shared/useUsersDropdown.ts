@@ -23,7 +23,7 @@ export function useUsersDropdown(
   const isEnabled = computed(() => toValue(enabled))
 
   const users = useQuery({
-    queryKey: ['tasks', 'users', 'dropdown'],
+    queryKey: ['dropdowns', 'users'],
     queryFn: () =>
       $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/'),
     enabled: isEnabled,
@@ -44,7 +44,7 @@ export function useUsersDropdown(
   )
 
   const remoteUsers = useQuery({
-    queryKey: computed(() => ['tasks', 'users', 'dropdown', 'search', remoteSearch.value]),
+    queryKey: computed(() => ['dropdowns', 'users', 'search', remoteSearch.value]),
     queryFn: () =>
       $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/', {
         query: { username: remoteSearch.value },

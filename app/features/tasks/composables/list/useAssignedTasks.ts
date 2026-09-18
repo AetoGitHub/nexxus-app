@@ -31,7 +31,7 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   }))
 
   const users = useQuery({
-    queryKey: ['tasks', 'users', 'dropdown'],
+    queryKey: ['dropdowns', 'users'],
     queryFn: () => $api<PaginatedResponse<UserDropdown>>(`${usersBase}/`),
   })
 
