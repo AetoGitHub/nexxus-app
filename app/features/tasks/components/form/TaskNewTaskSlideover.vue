@@ -13,9 +13,12 @@ import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreat
 import { usePromoteBacklogTask } from '~/features/tasks/composables/form/usePromoteBacklogTask'
 import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useUpdateBacklogTask } from '~/features/tasks/composables/form/useUpdateBacklogTask'
+import { useUpdateTaskFiles } from '~/features/tasks/composables/form/useUpdateTaskFiles'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
+import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -46,6 +49,10 @@ import {
   createDefaultRepeatConfig,
   isRepeatConfigComplete,
 } from '~/features/tasks/utils/form/repeat-config.util'
+import {
+  buildTaskDocumentsUploadDirectory,
+  buildTaskUploadFileName,
+} from '~/features/tasks/utils/form/task-file-upload.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 interface NewTaskFormState extends NewTaskFormInput {
@@ -86,7 +93,8 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user, managedGroups } = useAuth()
+const { user, managedGroups, organization, selectedCompanyId } = useAuth()
+const toast = useToast()
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -132,14 +140,23 @@ const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCrea
 const { mutateAsync: promoteBacklogTask, isPending: isPromotingBacklogTask } = usePromoteBacklogTask()
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const { mutateAsync: updateBacklogTask, isPending: isUpdatingBacklog } = useUpdateBacklogTask()
+const { mutateAsync: updateTaskFiles } = useUpdateTaskFiles()
+const { uploadFile } = useFirebaseUpload()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
+
+/** Documentos (TaskFile) locales aún no subidos a Firebase; se suben al confirmar el submit. */
+const pendingAttachments = ref<File[]>([])
+/** URLs ya subidas a Firebase (documentos existentes al editar una tarea). */
+const existingAttachments = ref<string[]>([])
+const isAttachingFiles = ref(false)
 
 const isSaving = computed(() =>
   isPending.value
   || isCreatingBacklog.value
   || isPromotingBacklogTask.value
   || isUpdating.value
-  || isUpdatingBacklog.value,
+  || isUpdatingBacklog.value
+  || isAttachingFiles.value,
 )
 
 /** El detalle abierto es una tarea de backlog (aún no promovida a pendiente). */
@@ -638,7 +655,9 @@ function cancelEditing() {
   const detail = taskDetailQuery.data.value
   if (detail) {
     applyFormInput(taskDetailToFormInput(detail))
+    existingAttachments.value = [...(detail.files ?? [])]
   }
+  pendingAttachments.value = []
 }
 
 function showMobileMessages() {
@@ -711,6 +730,51 @@ function onAuthorizeSuccess() {
   close()
 }
 
+/**
+ * Sube los documentos pendientes a Firebase y adjunta la lista completa
+ * (existentes + nuevos) a la tarea. No lanza: si algo falla, avisa por toast
+ * y deja los archivos en `pendingAttachments` (el submit del resto de la
+ * tarea ya se completó y no debe bloquearse por esto).
+ */
+async function attachPendingFiles(taskId: number) {
+  if (!pendingAttachments.value.length) {
+    return
+  }
+
+  isAttachingFiles.value = true
+  try {
+    const organizationId = organization.value?.id
+    const companyId = selectedCompanyId.value
+    if (organizationId == null || companyId == null) {
+      throw new Error('missing_upload_context')
+    }
+
+    const directory = buildTaskDocumentsUploadDirectory(organizationId, companyId, taskId)
+    const uploaded = await Promise.all(
+      pendingAttachments.value.map(file =>
+        uploadFile(file, directory, buildTaskUploadFileName(file.name)),
+      ),
+    )
+    const files = [...existingAttachments.value, ...uploaded]
+    await updateTaskFiles({ taskId, payload: { files } })
+    existingAttachments.value = files
+    pendingAttachments.value = []
+  }
+  catch (error) {
+    const isMissingContext = error instanceof Error && error.message === 'missing_upload_context'
+    toast.add({
+      title: t('tasks.form.attachments.uploadErrorTitle'),
+      description: isMissingContext
+        ? t('tasks.form.attachments.missingContext')
+        : parseFetchError(error),
+      color: 'error',
+    })
+  }
+  finally {
+    isAttachingFiles.value = false
+  }
+}
+
 function validationMessage(code: string): string {
   const messages: Record<string, string> = {
     name_required: t('tasks.form.validation.nameRequired'),
@@ -758,6 +822,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
         },
       )
       await updateTask({ taskId: taskId.value, payload })
+      await attachPendingFiles(taskId.value)
       isEditing.value = false
       return
     }
@@ -770,7 +835,8 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
     }
 
     const payload = buildCreateTaskPayload(state, user.value?.id)
-    await createTask(payload)
+    const created = await createTask(payload)
+    await attachPendingFiles(created.id)
     close()
   }
   catch (error) {
@@ -835,6 +901,8 @@ watch(open, (isOpen) => {
     mobilePanel.value = 'detail'
     taskId.value = null
     hasHydratedDetail.value = false
+    pendingAttachments.value = []
+    existingAttachments.value = []
     return
   }
 
@@ -864,6 +932,7 @@ watch(
       return
     }
     applyFormInput(taskDetailToFormInput(detail))
+    existingAttachments.value = [...(detail.files ?? [])]
     if (isPromotingBacklog.value) {
       applyPromoteBacklogDefaults()
     }
@@ -1283,6 +1352,13 @@ const slideoverUi = computed(() => {
               class="w-full"
             />
           </UFormField>
+
+          <TaskAttachmentsField
+            v-if="!isBacklogMode"
+            v-model:pending-files="pendingAttachments"
+            v-model:existing-files="existingAttachments"
+            :disabled="isReadOnly"
+          />
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <UFormField
