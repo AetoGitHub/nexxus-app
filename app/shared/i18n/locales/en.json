@@ -80,6 +80,7 @@
     },
     "preview": {
       "title": "Notifications",
+      "viewAll": "View all",
       "unreadCount": "{count} unread",
       "empty": "There are no notifications",
       "loadError": "Could not load notifications",
@@ -108,6 +109,8 @@
     "refreshSuccessTitle": "Data updated",
     "refreshSuccessDescription": "The visible lists were refreshed successfully.",
     "refreshErrorTitle": "Could not refresh",
+    "showArchived": "Show archived tasks",
+    "hideArchived": "Back to the current view",
     "taskDetail": "Task detail",
     "editTask": "Edit task",
     "toUpdate": {

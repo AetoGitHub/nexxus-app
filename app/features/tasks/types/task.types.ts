@@ -138,7 +138,7 @@ export interface CalendarDateRange {
   dateTo: string
 }
 
-export type TaskSectionKey = 'backlog' | 'urgent' | 'today' | 'upcoming' | 'archived'
+export type TaskSectionKey = 'backlog' | 'urgent' | 'today' | 'upcoming'
 
 /** Respuesta genérica `{ total }` (GET .../archived/counts/, .../backlog/counts/). */
 export interface ArchivedCounts {

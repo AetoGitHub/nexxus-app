@@ -22,6 +22,9 @@ const TaskGroupListView = defineAsyncComponent(
 const TaskStatusListView = defineAsyncComponent(
   () => import('~/features/tasks/components/list/TaskStatusListView.vue'),
 )
+const TaskArchivedListView = defineAsyncComponent(
+  () => import('~/features/tasks/components/list/TaskArchivedListView.vue'),
+)
 const TaskKanbanView = defineAsyncComponent(
   () => import('~/features/tasks/components/kanban/TaskKanbanView.vue'),
 )
@@ -69,9 +72,16 @@ function onSectionCreate(
       openNewTask,
       openTaskFromBacklog,
       setCalendarMonth,
+      showArchivedOnly,
     }">
+      <TaskArchivedListView
+        v-if="showArchivedOnly"
+        :filters="filters"
+        :selected-task-id="selectedTaskId"
+        @select="openTask"
+      />
       <TaskListView
-        v-if="view === 'list' && groupBy === 'all'"
+        v-else-if="view === 'list' && groupBy === 'all'"
         :filters="filters"
         :selected-task-id="selectedTaskId"
         @select="openTask"

@@ -44,8 +44,19 @@ const { t } = useI18n()
 const toast = useToast()
 const { $api } = useNuxtApp()
 const queryClient = useQueryClient()
+const route = useRoute()
 
-const activeSection = ref<TaskSettingsSectionId>('projects')
+const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'nexxtep', 'videoCalls', 'notifications', 'general']
+
+function initialSection(): TaskSettingsSectionId {
+  const section = route.query.section
+  return VALID_SECTIONS.includes(section as TaskSettingsSectionId)
+    ? (section as TaskSettingsSectionId)
+    : 'projects'
+}
+
+/** Permite deep-link (p. ej. desde "Ver todas" en el preview de notificaciones) vía ?section=. */
+const activeSection = ref<TaskSettingsSectionId>(initialSection())
 const projectsTab = ref<TaskSettingsProjectTab>('all')
 const projectModalOpen = ref(false)
 const projectForm = ref<ProjectFormState>(createEmptyProjectForm())

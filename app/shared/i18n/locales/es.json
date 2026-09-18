@@ -80,6 +80,7 @@
     },
     "preview": {
       "title": "Notificaciones",
+      "viewAll": "Ver todas",
       "unreadCount": "{count} sin leer",
       "empty": "No hay notificaciones",
       "loadError": "No se pudieron cargar las notificaciones",
@@ -108,6 +109,8 @@
     "refreshSuccessTitle": "Datos actualizados",
     "refreshSuccessDescription": "Las listas visibles se actualizaron correctamente.",
     "refreshErrorTitle": "No se pudo actualizar",
+    "showArchived": "Ver tareas archivadas",
+    "hideArchived": "Volver a la vista actual",
     "taskDetail": "Detalle de tarea",
     "editTask": "Editar tarea",
     "toUpdate": {

@@ -8,15 +8,19 @@ const props = withDefaults(
     selected?: boolean
     /** Badge de status de la tarea. */
     showStatus?: boolean
+    /** Botón de eliminar (hover), p. ej. en la vista de archivadas. */
+    deletable?: boolean
   }>(),
   {
     selected: false,
     showStatus: false,
+    deletable: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  delete: [taskId: number]
 }>()
 
 const { t } = useI18n()
@@ -143,5 +147,21 @@ function onSelect() {
     >
       {{ dueLabel }}
     </span>
+
+    <UTooltip
+      v-if="deletable"
+      :text="t('tasks.processDelete.submit')"
+    >
+      <UButton
+        icon="i-lucide-trash-2"
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        square
+        class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        :aria-label="t('tasks.processDelete.submit')"
+        @click.stop="emit('delete', task.id)"
+      />
+    </UTooltip>
   </div>
 </template>

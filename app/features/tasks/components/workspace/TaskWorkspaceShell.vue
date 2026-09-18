@@ -51,6 +51,20 @@ const { refresh, isRefreshing } = useRefreshTaskWorkspace()
 
 const showRefresh = computed(() => view.value === 'list' || view.value === 'kanban')
 
+/** Toggle "vista independiente de archivadas": reemplaza el contenido activo (lista/kanban). */
+const showArchivedOnly = ref(false)
+
+function toggleArchivedOnly() {
+  showArchivedOnly.value = !showArchivedOnly.value
+}
+
+// Fuera de list/kanban el botón no está visible: no dejar el toggle prendido de fondo.
+watch(showRefresh, (visible) => {
+  if (!visible) {
+    showArchivedOnly.value = false
+  }
+})
+
 /** Sheet de filtros solo en mobile (independiente del panel desktop). */
 const mobileFiltersOpen = ref(false)
 
@@ -158,6 +172,17 @@ function goToStatusList() {
         <TaskViewSwitcher v-model="view" class="flex-1" :exclude="excludeViews" />
         <UButton
           v-if="showRefresh"
+          icon="i-lucide-archive"
+          :color="showArchivedOnly ? 'primary' : 'neutral'"
+          :variant="showArchivedOnly ? 'subtle' : 'outline'"
+          size="sm"
+          square
+          class="h-8 w-8 shrink-0"
+          :aria-label="showArchivedOnly ? t('tasks.hideArchived') : t('tasks.showArchived')"
+          @click="toggleArchivedOnly"
+        />
+        <UButton
+          v-if="showRefresh"
           icon="i-lucide-refresh-cw"
           color="neutral"
           variant="outline"
@@ -184,6 +209,17 @@ function goToStatusList() {
         :exclude="excludeGroupBy"
       >
         <div class="flex items-center gap-2">
+          <UButton
+            v-if="showRefresh"
+            icon="i-lucide-archive"
+            :color="showArchivedOnly ? 'primary' : 'neutral'"
+            :variant="showArchivedOnly ? 'subtle' : 'outline'"
+            size="sm"
+            square
+            class="h-8 shrink-0"
+            :aria-label="showArchivedOnly ? t('tasks.hideArchived') : t('tasks.showArchived')"
+            @click="toggleArchivedOnly"
+          />
           <UButton
             v-if="showRefresh"
             icon="i-lucide-refresh-cw"
@@ -247,6 +283,7 @@ function goToStatusList() {
         :open-task="openTask"
         :open-new-task="openNewTask"
         :open-task-from-backlog="openTaskFromBacklog"
+        :show-archived-only="showArchivedOnly"
       />
     </div>
 
