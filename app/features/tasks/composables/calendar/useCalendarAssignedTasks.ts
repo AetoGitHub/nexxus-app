@@ -58,7 +58,7 @@ export function useCalendarAssignedTasks(
   const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
   const users = useQuery({
-    queryKey: ['tasks', 'users', 'dropdown'],
+    queryKey: ['dropdowns', 'users'],
     queryFn: () => $api<PaginatedResponse<UserDropdown>>(`${usersBase}/`),
     enabled: isEnabled,
   })

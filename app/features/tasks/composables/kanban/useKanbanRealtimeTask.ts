@@ -190,7 +190,7 @@ export function useKanbanRealtimeTask() {
     }
 
     const projects = await queryClient.ensureQueryData({
-      queryKey: ['tasks', companyId.value, 'projects', 'dropdown'],
+      queryKey: ['dropdowns', 'projects', companyId.value],
       queryFn: () =>
         $api<PaginatedResponse<ProjectDropdown>>(
           `/api/tools/dropdown/projects/company/${companyId.value}/`,
@@ -285,7 +285,7 @@ export function useKanbanRealtimeTask() {
 
   async function insertCreatedUserTask(taskPk: number): Promise<boolean> {
     const users = await queryClient.ensureQueryData({
-      queryKey: ['tasks', 'users', 'dropdown'],
+      queryKey: ['dropdowns', 'users'],
       queryFn: () =>
         $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/'),
     })

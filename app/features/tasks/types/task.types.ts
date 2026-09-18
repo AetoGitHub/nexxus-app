@@ -222,12 +222,16 @@ export interface CreateTaskChannelEvent {
   event: 'create_task'
   task_pk: number
   user: number[]
+  /** Id del profile que originó la acción; permite ignorar el propio eco. */
+  actor_id?: number | null
 }
 
 export interface CreateMultipleTasksChannelEvent {
   event: 'create_multiple_tasks'
   task_pks: number[]
   user: number[]
+  /** Id del profile que originó la acción; permite ignorar el propio eco. */
+  actor_id?: number | null
 }
 
 export interface UnknownTaskChannelEvent {
