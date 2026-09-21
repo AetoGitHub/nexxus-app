@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { CloseTaskProcessPayload } from '~/features/tasks/types/task.types'
 
 function buildCloseProcessBody(payload: CloseTaskProcessPayload): FormData | Record<string, unknown> {
@@ -32,6 +33,7 @@ function buildCloseProcessBody(payload: CloseTaskProcessPayload): FormData | Rec
 export function useCloseTaskProcess() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { syncMovedTask } = useTaskCreatedSync()
   const toast = useToast()
   const { t } = useI18n()
 
@@ -42,7 +44,9 @@ export function useCloseTaskProcess() {
         body: buildCloseProcessBody(payload),
       }),
     onSuccess: async (_data, variables) => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      if (!await syncMovedTask(variables.task)) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      }
       toast.add({
         title: t('tasks.processClose.successTitle'),
         description: variables.status === 'complete'

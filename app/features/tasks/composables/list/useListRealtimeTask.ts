@@ -2,7 +2,7 @@ import type { InfiniteData } from '@tanstack/vue-query'
 import { useQueryClient } from '@tanstack/vue-query'
 import type { Task, TaskCounts } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
-import { prependTaskToInfiniteData } from '~/features/tasks/utils/task-infinite.util'
+import { prependTaskToInfiniteData, removeTaskFromInfiniteData } from '~/features/tasks/utils/task-infinite.util'
 
 const REALTIME_LIST_SECTIONS = [
   {
@@ -96,5 +96,55 @@ export function useListRealtimeTask() {
     return true
   }
 
-  return { insertCreatedListTask }
+  /** Quita la tarea de las 3 secciones (urgent/today/upcoming), decrementando sus contadores. */
+  function removeTaskFromListSections(taskId: number) {
+    if (companyId.value == null) {
+      return
+    }
+
+    const decrementedCounts = new Set<ListCountKey>()
+
+    for (const section of REALTIME_LIST_SECTIONS) {
+      queryClient.setQueriesData<InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task>>(
+        {
+          queryKey: ['tasks', companyId.value, section.cacheId],
+          type: 'active',
+        },
+        (current) => {
+          const next = removeTaskFromInfiniteData(current, taskId)
+          if (next !== current) {
+            decrementedCounts.add(section.countKey)
+          }
+          return next
+        },
+      )
+    }
+
+    if (decrementedCounts.size) {
+      queryClient.setQueriesData<TaskCounts>(
+        { queryKey: ['tasks', companyId.value, 'counts'], type: 'active' },
+        (current) => {
+          if (!current) {
+            return current
+          }
+          const next = { ...current }
+          for (const countKey of decrementedCounts) {
+            next[countKey] = Math.max(0, next[countKey] - 1)
+          }
+          return next
+        },
+      )
+    }
+  }
+
+  /**
+   * La tarea `taskPk` cambió de status: la saca de la sección de Lista en
+   * la que estuviera y la reinserta en la que le corresponde ahora.
+   */
+  async function moveTaskInList(taskPk: number): Promise<boolean> {
+    removeTaskFromListSections(taskPk)
+    return insertCreatedListTask(taskPk)
+  }
+
+  return { insertCreatedListTask, moveTaskInList }
 }

@@ -12,7 +12,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import { extractResults } from '~/shared/utils/paginated.util'
-import { prependTaskToInfiniteData } from '~/features/tasks/utils/task-infinite.util'
+import { prependTaskToInfiniteData, removeTaskFromInfiniteData } from '~/features/tasks/utils/task-infinite.util'
 
 const REALTIME_KANBAN_COLUMNS = [
   { id: 'pending', path: '/kanban/pending/' },
@@ -114,6 +114,51 @@ export function useKanbanRealtimeTask() {
     )
   }
 
+  function decrementKanbanCounts(columnId: RealtimeKanbanColumnId) {
+    queryClient.setQueriesData<KanbanCounts>(
+      {
+        queryKey: ['tasks', companyId.value, 'kanban', 'counts'],
+        type: 'active',
+      },
+      current => current
+        ? {
+            ...current,
+            [columnId]: Math.max(0, current[columnId] - 1),
+            total: current.total == null ? undefined : Math.max(0, current.total - 1),
+          }
+        : current,
+    )
+  }
+
+  /**
+   * Quita una tarea de cualquier columna del Kanban activo donde esté (sin
+   * saber de antemano cuál), decrementando el contador de esa columna.
+   * Usado cuando la tarea cambia de status: ya no basta con insertarla en
+   * la nueva columna, también hay que sacarla de la anterior. Recorre las
+   * 4 columnas explícitamente para no tocar la query de `counts`, que
+   * comparte el mismo prefijo de caché.
+   */
+  function removeTaskFromKanbanColumns(taskId: number) {
+    for (const column of REALTIME_KANBAN_COLUMNS) {
+      const matches = queryClient.getQueriesData<InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task>>({
+        queryKey: ['tasks', companyId.value, 'kanban', column.id],
+        type: 'active',
+      })
+
+      for (const [queryKey, data] of matches) {
+        if (!data) {
+          continue
+        }
+        const next = removeTaskFromInfiniteData(data, taskId)
+        if (next === data) {
+          continue
+        }
+        queryClient.setQueryData(queryKey, next)
+        decrementKanbanCounts(column.id)
+      }
+    }
+  }
+
   function incrementDueCounts(columnId: RealtimeDueColumnId) {
     queryClient.setQueriesData<OverdueCounts>(
       {
@@ -140,6 +185,16 @@ export function useKanbanRealtimeTask() {
     }
 
     return true
+  }
+
+  /**
+   * La tarea `taskPk` cambió de status (iniciar/cerrar/rechazar/reabrir):
+   * la saca de la columna en la que estuviera y la reinserta en la que le
+   * corresponde ahora, sin refetchear el tablero completo.
+   */
+  async function moveTaskInKanban(taskPk: number): Promise<boolean> {
+    removeTaskFromKanbanColumns(taskPk)
+    return insertCreatedTask(taskPk)
   }
 
   async function insertCreatedDueTask(taskPk: number): Promise<boolean> {
@@ -322,5 +377,6 @@ export function useKanbanRealtimeTask() {
     insertCreatedProjectTask,
     insertCreatedGroupTask,
     insertCreatedUserTask,
+    moveTaskInKanban,
   }
 }
