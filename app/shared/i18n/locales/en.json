@@ -1025,6 +1025,9 @@
       "empty": "There are no notifications",
       "loadError": "Could not load notifications",
       "markReadErrorTitle": "Could not mark as read",
+      "markAllRead": "Mark all as read",
+      "markAllReadSuccessTitle": "All notifications were marked as read",
+      "markAllReadErrorTitle": "Could not mark all as read",
       "filterKey": "Type",
       "filterKeyAll": "All types",
       "tabs": {

@@ -1025,6 +1025,9 @@
       "empty": "No hay notificaciones",
       "loadError": "No se pudieron cargar las notificaciones",
       "markReadErrorTitle": "No se pudo marcar como leída",
+      "markAllRead": "Marcar todas como leídas",
+      "markAllReadSuccessTitle": "Todas las notificaciones se marcaron como leídas",
+      "markAllReadErrorTitle": "No se pudieron marcar todas como leídas",
       "filterKey": "Tipo",
       "filterKeyAll": "Todos los tipos",
       "tabs": {

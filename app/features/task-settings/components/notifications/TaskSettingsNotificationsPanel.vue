@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useMarkAllNotificationsRead } from '~/features/notifications/composables/useMarkAllNotificationsRead'
 import { useMarkNotificationRead } from '~/features/notifications/composables/useMarkNotificationRead'
 import { useNotifications } from '~/features/notifications/composables/useNotifications'
+import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
 import type {
   NotificationListFilters,
   NotificationReadTab,
@@ -10,6 +12,8 @@ import TaskSettingsNotificationCard from '~/features/task-settings/components/no
 
 const { t } = useI18n()
 const markRead = useMarkNotificationRead()
+const markAllRead = useMarkAllNotificationsRead()
+const { unreadCount } = useNotificationState()
 
 const readTab = ref<NotificationReadTab>('all')
 const selectedKey = ref<string>('all')
@@ -53,6 +57,10 @@ async function onSelect(notificationId: number, alreadyRead: boolean) {
   catch {
     // Toast de error lo maneja useMarkNotificationRead
   }
+}
+
+function onMarkAllRead() {
+  markAllRead.mutate()
 }
 
 function openTask(taskId: number) {
@@ -111,16 +119,28 @@ watch([readTab, selectedKey], () => {
         </div>
       </div>
 
-      <UFormField
-        :label="t('taskSettings.notificationsPanel.filterKey')"
-        class="sm:w-52"
-      >
-        <USelect
-          v-model="selectedKey"
-          :items="keyItems"
-          class="w-full"
+      <div class="flex items-end gap-3">
+        <UButton
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-check-check"
+          :label="t('taskSettings.notificationsPanel.markAllRead')"
+          :loading="markAllRead.isPending.value"
+          :disabled="unreadCount === 0"
+          @click="onMarkAllRead"
         />
-      </UFormField>
+
+        <UFormField
+          :label="t('taskSettings.notificationsPanel.filterKey')"
+          class="sm:w-52"
+        >
+          <USelect
+            v-model="selectedKey"
+            :items="keyItems"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
     </div>
 
     <div v-if="isLoading" class="space-y-2">
