@@ -414,6 +414,18 @@
         "uploadErrorTitle": "Could not attach the files",
         "missingContext": "Missing organization or company information to upload files"
       },
+      "subtasks": {
+        "label": "Subtasks",
+        "optional": "optional",
+        "add": "Add subtask",
+        "namePlaceholder": "Subtask description",
+        "assignPlaceholder": "Assign to...",
+        "addImage": "Add image",
+        "remove": "Remove subtask",
+        "removeImage": "Remove image",
+        "tooLargeTitle": "Image too large",
+        "tooLargeDescription": "{name} exceeds the 25 MB limit"
+      },
       "validation": {
         "nameRequired": "Name is required",
         "projectRequired": "Select a project",
@@ -421,7 +433,8 @@
         "assignedToRequired": "Select at least one assigned user",
         "dueDateRequired": "Select a due date",
         "taskReviewerRequired": "Select at least one collaborator who must confirm",
-        "repeatConfigRequired": "Complete the recurrence settings"
+        "repeatConfigRequired": "Complete the recurrence settings",
+        "subtaskAssignedToRequired": "Select an assignee for each subtask"
       },
       "typeDescriptions": {
         "manual": "Standard operational task",
@@ -1025,6 +1038,9 @@
       "empty": "There are no notifications",
       "loadError": "Could not load notifications",
       "markReadErrorTitle": "Could not mark as read",
+      "markAllRead": "Mark all as read",
+      "markAllReadSuccessTitle": "All notifications were marked as read",
+      "markAllReadErrorTitle": "Could not mark all as read",
       "filterKey": "Type",
       "filterKeyAll": "All types",
       "tabs": {

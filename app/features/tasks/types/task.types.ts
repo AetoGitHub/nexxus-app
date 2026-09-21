@@ -39,6 +39,13 @@ export type TaskEffort = 'quick' | 'normal' | 'complex'
 /** Prioridades aceptadas por el endpoint de creación. */
 export type ApiTaskPriority = 'low' | 'normal' | 'high' | 'urgent' | 'critical'
 
+/** Subtarea enviada dentro de POST /api/tasks/create/: un solo asignado + imágenes ya subidas. */
+export interface CreateTaskSubtaskPayload {
+  short_description: string
+  assigned_to: number
+  images: string[]
+}
+
 export interface CreateTaskPayload {
   short_description: string
   long_description: string
@@ -51,6 +58,7 @@ export interface CreateTaskPayload {
   assigned_to: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
+  subtasks?: CreateTaskSubtaskPayload[]
 }
 
 /** Payload de POST /api/tasks/backlog/create/. */

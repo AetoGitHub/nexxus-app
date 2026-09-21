@@ -2,6 +2,7 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type {
   CloseTaskProcessStatus,
+  CreateTaskSubtaskPayload,
   NewTaskFormType,
   ReviewDecisionStatus,
   TaskEffort,
@@ -19,6 +20,7 @@ import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDr
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
+import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -35,11 +37,13 @@ import {
   buildPromoteBacklogTaskPayload,
   buildUpdateBacklogTaskPayload,
   buildUpdateTaskPayload,
+  createEmptySubtaskRow,
   defaultTaskReviewers,
   findCloseApprovalForUser,
   findPendingCloseApproval,
   taskDetailToFormInput,
   type NewTaskFormInput,
+  type SubtaskFormRow,
 } from '~/features/tasks/utils/form/task-form.util'
 import {
   applyNewTaskFormDefaults,
@@ -51,6 +55,7 @@ import {
 } from '~/features/tasks/utils/form/repeat-config.util'
 import {
   buildTaskDocumentsUploadDirectory,
+  buildTaskSubtaskUploadDirectory,
   buildTaskUploadFileName,
 } from '~/features/tasks/utils/form/task-file-upload.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
@@ -150,13 +155,21 @@ const pendingAttachments = ref<File[]>([])
 const existingAttachments = ref<string[]>([])
 const isAttachingFiles = ref(false)
 
+/**
+ * Subtareas del formulario de creación. Solo aplican al crear (el backend no
+ * las soporta aún al editar/ver una tarea existente); ver `TaskSubtasksField`.
+ */
+const subtaskRows = ref<SubtaskFormRow[]>([])
+const isUploadingSubtaskImages = ref(false)
+
 const isSaving = computed(() =>
   isPending.value
   || isCreatingBacklog.value
   || isPromotingBacklogTask.value
   || isUpdating.value
   || isUpdatingBacklog.value
-  || isAttachingFiles.value,
+  || isAttachingFiles.value
+  || isUploadingSubtaskImages.value,
 )
 
 /** El detalle abierto es una tarea de backlog (aún no promovida a pendiente). */
@@ -784,8 +797,67 @@ function validationMessage(code: string): string {
     due_date_required: t('tasks.form.validation.dueDateRequired'),
     task_reviewer_required: t('tasks.form.validation.taskReviewerRequired'),
     repeat_config_required: t('tasks.form.validation.repeatConfigRequired'),
+    subtask_assigned_to_required: t('tasks.form.validation.subtaskAssignedToRequired'),
+    missing_upload_context: t('tasks.form.attachments.missingContext'),
   }
   return messages[code] ?? t('tasks.form.createError')
+}
+
+/** Cada fila con descripción necesita un responsable antes de subir nada. */
+function validateSubtaskRows() {
+  const hasIncompleteRow = subtaskRows.value.some(
+    row => row.shortDescription.trim().length > 0 && row.assignedTo == null,
+  )
+  if (hasIncompleteRow) {
+    throw new Error('subtask_assigned_to_required')
+  }
+}
+
+/**
+ * Sube a Firebase las imágenes pendientes de cada subtarea. A diferencia de
+ * `attachPendingFiles`, esto corre ANTES de crear la tarea: las URLs deben ir
+ * ya resueltas dentro del propio body de `POST /api/tasks/create/`, así que
+ * un fallo aquí sí debe abortar el submit completo.
+ */
+async function uploadPendingSubtaskImages() {
+  if (!subtaskRows.value.some(row => row.pendingImages.length)) {
+    return
+  }
+
+  isUploadingSubtaskImages.value = true
+  try {
+    const organizationId = organization.value?.id
+    const companyId = selectedCompanyId.value
+    if (organizationId == null || companyId == null) {
+      throw new Error('missing_upload_context')
+    }
+
+    for (const row of subtaskRows.value) {
+      if (!row.pendingImages.length) {
+        continue
+      }
+      const directory = buildTaskSubtaskUploadDirectory(organizationId, companyId, row.key)
+      const uploaded = await Promise.all(
+        row.pendingImages.map(file => uploadFile(file, directory, buildTaskUploadFileName(file.name))),
+      )
+      row.images = [...row.images, ...uploaded]
+      row.pendingImages = []
+    }
+  }
+  finally {
+    isUploadingSubtaskImages.value = false
+  }
+}
+
+/** Descarta filas sin descripción (vacías) y resuelve el shape que espera el API. */
+function buildSubtasksPayload(): CreateTaskSubtaskPayload[] {
+  return subtaskRows.value
+    .filter(row => row.shortDescription.trim().length > 0)
+    .map(row => ({
+      short_description: row.shortDescription.trim(),
+      assigned_to: row.assignedTo!,
+      images: row.images,
+    }))
 }
 
 async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
@@ -834,7 +906,9 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       return
     }
 
-    const payload = buildCreateTaskPayload(state, user.value?.id)
+    validateSubtaskRows()
+    await uploadPendingSubtaskImages()
+    const payload = buildCreateTaskPayload(state, user.value?.id, buildSubtasksPayload())
     const created = await createTask(payload)
     await attachPendingFiles(created.id)
     close()
@@ -903,6 +977,7 @@ watch(open, (isOpen) => {
     hasHydratedDetail.value = false
     pendingAttachments.value = []
     existingAttachments.value = []
+    subtaskRows.value = []
     return
   }
 
@@ -1358,6 +1433,13 @@ const slideoverUi = computed(() => {
             v-model:pending-files="pendingAttachments"
             v-model:existing-files="existingAttachments"
             :disabled="isReadOnly"
+          />
+
+          <TaskSubtasksField
+            v-if="!isBacklogMode && !isDetailView"
+            v-model:rows="subtaskRows"
+            :user-items="userSelectItems"
+            :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

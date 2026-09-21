@@ -414,6 +414,18 @@
         "uploadErrorTitle": "No se pudieron adjuntar los archivos",
         "missingContext": "Falta información de organización o compañía para subir archivos"
       },
+      "subtasks": {
+        "label": "Subtareas",
+        "optional": "opcional",
+        "add": "Agregar subtarea",
+        "namePlaceholder": "Descripción de la subtarea",
+        "assignPlaceholder": "Asignar a...",
+        "addImage": "Agregar imagen",
+        "remove": "Quitar subtarea",
+        "removeImage": "Quitar imagen",
+        "tooLargeTitle": "Imagen demasiado grande",
+        "tooLargeDescription": "{name} supera el límite de 25 MB"
+      },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
         "projectRequired": "Selecciona un proyecto",
@@ -421,7 +433,8 @@
         "assignedToRequired": "Selecciona al menos un usuario asignado",
         "dueDateRequired": "Selecciona una fecha límite",
         "taskReviewerRequired": "Selecciona al menos un colaborador que deba confirmar",
-        "repeatConfigRequired": "Completa la configuración de repetición"
+        "repeatConfigRequired": "Completa la configuración de repetición",
+        "subtaskAssignedToRequired": "Selecciona un responsable para cada subtarea"
       },
       "typeDescriptions": {
         "manual": "Tarea operativa estándar",
@@ -1025,6 +1038,9 @@
       "empty": "No hay notificaciones",
       "loadError": "No se pudieron cargar las notificaciones",
       "markReadErrorTitle": "No se pudo marcar como leída",
+      "markAllRead": "Marcar todas como leídas",
+      "markAllReadSuccessTitle": "Todas las notificaciones se marcaron como leídas",
+      "markAllReadErrorTitle": "No se pudieron marcar todas como leídas",
       "filterKey": "Tipo",
       "filterKeyAll": "Todos los tipos",
       "tabs": {
