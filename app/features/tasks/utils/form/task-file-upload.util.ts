@@ -29,3 +29,18 @@ export function buildTaskDocumentsUploadDirectory(
 export function buildTaskUploadFileName(originalName: string): string {
   return `${Date.now()}_${originalName}`
 }
+
+/**
+ * Directorio de Storage para imágenes de una subtarea creada junto con la tarea:
+ * erp/task/{organization_id}/{company_id}/subtasks/{subtask_key}
+ * Sin task_id porque las subtareas se suben antes de que la tarea exista
+ * (van dentro del propio body de POST /api/tasks/create/); `subtaskKey` es un
+ * identificador local generado en el formulario para esa fila.
+ */
+export function buildTaskSubtaskUploadDirectory(
+  organizationId: number,
+  companyId: number,
+  subtaskKey: string,
+): string {
+  return `erp/task/${organizationId}/${companyId}/subtasks/${subtaskKey}`
+}

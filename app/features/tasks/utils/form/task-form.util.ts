@@ -2,6 +2,7 @@ import type {
   ApiTaskPriority,
   CreateBacklogTaskPayload,
   CreateTaskPayload,
+  CreateTaskSubtaskPayload,
   NewTaskFormType,
   PromoteBacklogTaskPayload,
   TaskCloseApproval,
@@ -16,6 +17,33 @@ import {
   normalizeRepeatConfig,
   parseRepeatConfig,
 } from '~/features/tasks/utils/form/repeat-config.util'
+
+/**
+ * Fila de subtarea en el formulario de creación. Vive fuera de `NewTaskFormInput`
+ * (igual que los adjuntos generales) porque no es serializable tal cual: las
+ * imágenes locales (`pendingImages`) se suben a Firebase justo antes del submit
+ * y solo entonces se resuelve el payload final (`CreateTaskSubtaskPayload`).
+ */
+export interface SubtaskFormRow {
+  /** Id local (no del backend): agrupa las imágenes de esta fila en Storage antes de que la tarea exista. */
+  key: string
+  shortDescription: string
+  assignedTo: number | undefined
+  /** URLs ya subidas a Firebase. */
+  images: string[]
+  /** Archivos locales aún no subidos. */
+  pendingImages: File[]
+}
+
+export function createEmptySubtaskRow(): SubtaskFormRow {
+  return {
+    key: crypto.randomUUID(),
+    shortDescription: '',
+    assignedTo: undefined,
+    images: [],
+    pendingImages: [],
+  }
+}
 
 export interface NewTaskFormInput {
   type: NewTaskFormType
@@ -110,6 +138,7 @@ function normalizeTaskReviewers(reviewers: number[], currentUserId?: number): nu
 export function buildCreateTaskPayload(
   form: NewTaskFormInput,
   currentUserId?: number,
+  subtasks?: CreateTaskSubtaskPayload[],
 ): CreateTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -156,6 +185,10 @@ export function buildCreateTaskPayload(
       throw new Error('repeat_config_required')
     }
     payload.repeat_config = normalizeRepeatConfig(form.repeatConfig)
+  }
+
+  if (subtasks?.length) {
+    payload.subtasks = subtasks
   }
 
   return payload
