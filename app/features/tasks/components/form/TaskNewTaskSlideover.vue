@@ -1236,14 +1236,34 @@ const slideoverUi = computed(() => {
 
               <template v-if="!isDetailView || taskDetailQuery.data.value">
           <UFormField
-            v-if="!isDetailView"
-            name="backlog"
+            :label="t('tasks.form.name')"
+            name="name"
+            :required="!isReadOnly"
           >
-            <USwitch
-              v-model="isBacklog"
-              :label="t('tasks.form.backlogToggle')"
+            <UInput
+              v-model="state.name"
+              :placeholder="t('tasks.form.namePlaceholder')"
+              :disabled="isReadOnly"
+              class="w-full"
             />
           </UFormField>
+
+          <UFormField :label="t('tasks.form.description')" name="description">
+            <UTextarea
+              v-model="state.description"
+              :placeholder="t('tasks.form.descriptionPlaceholder')"
+              :rows="3"
+              :disabled="isReadOnly"
+              class="w-full"
+            />
+          </UFormField>
+
+          <TaskSubtasksField
+            v-if="!isBacklogMode && !isDetailView"
+            v-model:rows="subtaskRows"
+            :user-items="userSelectItems"
+            :users-loading="usersQuery.isPending.value || isSearchingUsers"
+          />
 
           <div class="space-y-2">
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -1283,6 +1303,16 @@ const slideoverUi = computed(() => {
               </button>
             </div>
           </div>
+
+          <UFormField
+            v-if="!isDetailView"
+            name="backlog"
+          >
+            <USwitch
+              v-model="isBacklog"
+              :label="t('tasks.form.backlogToggle')"
+            />
+          </UFormField>
 
           <div
             v-if="state.type === 'volume'"
@@ -1405,41 +1435,11 @@ const slideoverUi = computed(() => {
             />
           </div>
 
-          <UFormField
-            :label="t('tasks.form.name')"
-            name="name"
-            :required="!isReadOnly"
-          >
-            <UInput
-              v-model="state.name"
-              :placeholder="t('tasks.form.namePlaceholder')"
-              :disabled="isReadOnly"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField :label="t('tasks.form.description')" name="description">
-            <UTextarea
-              v-model="state.description"
-              :placeholder="t('tasks.form.descriptionPlaceholder')"
-              :rows="3"
-              :disabled="isReadOnly"
-              class="w-full"
-            />
-          </UFormField>
-
           <TaskAttachmentsField
             v-if="!isBacklogMode"
             v-model:pending-files="pendingAttachments"
             v-model:existing-files="existingAttachments"
             :disabled="isReadOnly"
-          />
-
-          <TaskSubtasksField
-            v-if="!isBacklogMode && !isDetailView"
-            v-model:rows="subtaskRows"
-            :user-items="userSelectItems"
-            :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
