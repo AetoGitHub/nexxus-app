@@ -105,3 +105,45 @@ export function prependTaskToInfiniteData(
     results: [task, ...current.results],
   }
 }
+
+/**
+ * Quita una tarea de la caché (todas las páginas). Devuelve la misma
+ * referencia si no estaba, para que el llamador sepa si de verdad se quitó.
+ */
+export function removeTaskFromInfiniteData(
+  current: InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task> | undefined,
+  taskId: number,
+): InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task> | undefined {
+  if (!current) {
+    return current
+  }
+
+  if (isInfiniteTaskData(current)) {
+    if (!current.pages.some(page => page.results.some(item => item.id === taskId))) {
+      return current
+    }
+
+    return {
+      ...current,
+      pages: current.pages.map(page => (
+        page.results.some(item => item.id === taskId)
+          ? {
+              ...page,
+              count: page.count == null ? undefined : Math.max(0, page.count - 1),
+              results: page.results.filter(item => item.id !== taskId),
+            }
+          : page
+      )),
+    }
+  }
+
+  if (!current.results.some(item => item.id === taskId)) {
+    return current
+  }
+
+  return {
+    ...current,
+    count: current.count == null ? undefined : Math.max(0, current.count - 1),
+    results: current.results.filter(item => item.id !== taskId),
+  }
+}

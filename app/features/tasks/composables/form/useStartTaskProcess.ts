@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { StartTaskProcessPayload } from '~/features/tasks/types/task.types'
 
 function buildStartProcessBody(payload: StartTaskProcessPayload): FormData | Record<string, unknown> {
@@ -30,6 +31,7 @@ function buildStartProcessBody(payload: StartTaskProcessPayload): FormData | Rec
 export function useStartTaskProcess() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { syncMovedTask } = useTaskCreatedSync()
   const toast = useToast()
   const { t } = useI18n()
 
@@ -39,8 +41,10 @@ export function useStartTaskProcess() {
         method: 'POST',
         body: buildStartProcessBody(payload),
       }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    onSuccess: async (_data, variables) => {
+      if (!await syncMovedTask(variables.task)) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      }
       toast.add({
         title: t('tasks.processStart.successTitle'),
         description: t('tasks.processStart.successDescription'),

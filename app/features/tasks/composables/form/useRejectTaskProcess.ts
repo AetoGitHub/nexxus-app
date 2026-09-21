@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { RejectTaskProcessPayload } from '~/features/tasks/types/task.types'
 
 function buildRejectProcessBody(payload: RejectTaskProcessPayload): FormData | Record<string, unknown> {
@@ -30,6 +31,7 @@ function buildRejectProcessBody(payload: RejectTaskProcessPayload): FormData | R
 export function useRejectTaskProcess() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { syncMovedTask } = useTaskCreatedSync()
   const toast = useToast()
   const { t } = useI18n()
 
@@ -39,8 +41,10 @@ export function useRejectTaskProcess() {
         method: 'POST',
         body: buildRejectProcessBody(payload),
       }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    onSuccess: async (_data, variables) => {
+      if (!await syncMovedTask(variables.task)) {
+        await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      }
       toast.add({
         title: t('tasks.processReview.rejectSuccessTitle'),
         description: t('tasks.processReview.rejectSuccessDescription'),

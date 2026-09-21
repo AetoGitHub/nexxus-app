@@ -20,9 +20,10 @@ export function useTaskCreatedSync() {
     insertCreatedProjectTask,
     insertCreatedGroupTask,
     insertCreatedUserTask,
+    moveTaskInKanban,
   } = useKanbanRealtimeTask()
   const { refreshCreatedCalendarTask } = useCalendarRealtimeTask()
-  const { insertCreatedListTask } = useListRealtimeTask()
+  const { insertCreatedListTask, moveTaskInList } = useListRealtimeTask()
   const route = useRoute()
 
   function queryParam(key: string) {
@@ -149,5 +150,33 @@ export function useTaskCreatedSync() {
     return false
   }
 
-  return { syncCreatedTask }
+  /**
+   * La tarea `taskPk` cambió de status (iniciar/cerrar/rechazar/reabrir):
+   * a diferencia de `syncCreatedTask`, hay que sacarla de la columna/sección
+   * donde estaba además de insertarla en la nueva. Solo cubre las vistas
+   * agrupadas por status (Kanban "Todas" y Lista "Todas"/"Estado", que
+   * comparten caché con el Kanban) — el resto de agrupaciones (proyecto,
+   * grupo, usuario, vencimiento, calendario) siguen sin lógica de "mover"
+   * dedicada; el llamador debe caer a un invalidate acotado en esos casos.
+   */
+  async function syncMovedTask(taskPk: number): Promise<boolean> {
+    if (route.path === '/tasks' && queryParam('view') === 'list') {
+      const groupBy = queryParam('groupBy') ?? 'all'
+      if (groupBy === 'status') {
+        return moveTaskInKanban(taskPk)
+      }
+      if (groupBy === 'all') {
+        return moveTaskInList(taskPk)
+      }
+      return false
+    }
+
+    if (isTasksKanbanActive.value && kanbanGroupBy.value === 'all') {
+      return moveTaskInKanban(taskPk)
+    }
+
+    return false
+  }
+
+  return { syncCreatedTask, syncMovedTask }
 }
