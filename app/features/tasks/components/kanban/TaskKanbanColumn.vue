@@ -115,31 +115,29 @@ function onDrop(event: DragEvent) {
   </section>
 
   <section v-else class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
-    <header class="flex flex-col gap-2 mb-3 px-1 shrink-0">
-      <div class="flex items-center gap-2">
-        <UButton
-          v-if="column.collapsible"
-          icon="i-lucide-chevron-left"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          square
-          class="shrink-0"
-          :aria-label="t('tasks.kanban.collapseColumn', { title: columnTitle })"
-          @click="toggleCollapsed"
-        />
-        <UBadge
-          v-if="column.count !== undefined"
-          :label="column.count.toString()"
-          size="md"
-          class="text-white ring-0 shrink-0"
-          :style="{ backgroundColor: column.color }"
-        />
-        <TaskSectionBadgeFallback v-else />
-        <h3 class="text-sm font-semibold text-foreground flex-1 min-w-0 truncate">
-          {{ columnTitle }}
-        </h3>
-      </div>
+    <header class="flex items-center gap-2 mb-3 px-1 shrink-0">
+      <UButton
+        v-if="column.collapsible"
+        icon="i-lucide-chevron-left"
+        variant="ghost"
+        color="neutral"
+        size="xs"
+        square
+        class="shrink-0"
+        :aria-label="t('tasks.kanban.collapseColumn', { title: columnTitle })"
+        @click="toggleCollapsed"
+      />
+      <UBadge
+        v-if="column.count !== undefined"
+        :label="column.count.toString()"
+        size="md"
+        class="text-white ring-0 shrink-0"
+        :style="{ backgroundColor: column.color }"
+      />
+      <TaskSectionBadgeFallback v-else />
+      <h3 class="text-sm font-semibold text-foreground flex-1 min-w-0 truncate">
+        {{ columnTitle }}
+      </h3>
       <slot name="header-extra" />
     </header>
 
