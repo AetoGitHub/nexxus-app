@@ -1241,21 +1241,39 @@ const slideoverUi = computed(() => {
             :required="!isReadOnly"
           >
             <UInput
+              v-if="!isReadOnly"
               v-model="state.name"
               :placeholder="t('tasks.form.namePlaceholder')"
-              :disabled="isReadOnly"
               class="w-full"
             />
+            <p
+              v-else
+              class="text-sm text-foreground whitespace-pre-wrap break-words"
+            >
+              {{ state.name }}
+            </p>
           </UFormField>
 
           <UFormField :label="t('tasks.form.description')" name="description">
             <UTextarea
+              v-if="!isReadOnly"
               v-model="state.description"
               :placeholder="t('tasks.form.descriptionPlaceholder')"
               :rows="3"
-              :disabled="isReadOnly"
               class="w-full"
             />
+            <p
+              v-else-if="state.description"
+              class="text-sm text-foreground whitespace-pre-wrap break-words"
+            >
+              {{ state.description }}
+            </p>
+            <p
+              v-else
+              class="text-sm text-muted-foreground italic"
+            >
+              {{ t('tasks.form.descriptionPlaceholder') }}
+            </p>
           </UFormField>
 
           <TaskSubtasksField
