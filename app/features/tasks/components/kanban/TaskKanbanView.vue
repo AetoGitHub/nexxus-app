@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
+import TaskKanbanCompleteFilter from '~/features/tasks/components/kanban/TaskKanbanCompleteFilter.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
@@ -23,7 +24,7 @@ const emit = defineEmits<{
   promoteBacklog: [taskId: number]
 }>()
 
-const { columns, loadMore } = useKanbanTasks(() => props.filters)
+const { columns, loadMore, completeFilter } = useKanbanTasks(() => props.filters)
 const {
   pendingTaskId,
   startProcessModalOpen,
@@ -66,7 +67,15 @@ function onMove(payload: KanbanTaskMove) {
       @create="emit('create', $event)"
       @move="onMove"
       @load-more="loadMore"
-    />
+    >
+      <template #column-header-extra="{ column }">
+        <TaskKanbanCompleteFilter
+          v-if="column.id === 'complete'"
+          v-model:mode="completeFilter.mode.value"
+          v-model:range="completeFilter.range.value"
+        />
+      </template>
+    </TaskKanbanBoard>
   </div>
 
   <TaskStartProcessModal

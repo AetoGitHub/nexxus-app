@@ -25,10 +25,22 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
     return `/api/tasks/company/${companyId.value}${normalized}`
   }
 
-  function countsQuery<T>(scope: string[], path: string) {
+  /**
+   * `extraQuery` se mezcla encima de `query` (filtros compartidos) pero, a
+   * diferencia de `filters`, solo entra en el queryKey/params de ESTA llamada
+   * — usado por la columna Completado para mandar date_from/date_to sin que
+   * el resto de las columnas del Kanban (que comparten `filters`) se vean
+   * afectadas ni se refetcheen de más.
+   */
+  function countsQuery<T>(
+    scope: string[],
+    path: string,
+    options: { extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined> } = {},
+  ) {
+    const extraQuery = computed(() => toValue(options.extraQuery))
     return useQuery({
-      queryKey: computed(() => ['tasks', companyId.value, ...scope, 'counts', query.value]),
-      queryFn: () => $api<T>(companyPath(path), { query: query.value }),
+      queryKey: computed(() => ['tasks', companyId.value, ...scope, 'counts', query.value, extraQuery.value]),
+      queryFn: () => $api<T>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
       enabled: hasCompany,
     })
   }
@@ -36,15 +48,19 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
   function listQuery(
     scope: string[],
     path: string,
-    options: { enabled?: MaybeRefOrGetter<boolean> } = {},
+    options: {
+      enabled?: MaybeRefOrGetter<boolean>
+      extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined>
+    } = {},
   ) {
+    const extraQuery = computed(() => toValue(options.extraQuery))
     return useInfiniteQuery({
-      queryKey: computed(() => ['tasks', companyId.value, ...scope, query.value]),
+      queryKey: computed(() => ['tasks', companyId.value, ...scope, query.value, extraQuery.value]),
       initialPageParam: undefined as string | undefined,
       queryFn: ({ pageParam }) =>
         pageParam
           ? $api<PaginatedResponse<Task>>(pageParam)
-          : $api<PaginatedResponse<Task>>(companyPath(path), { query: query.value }),
+          : $api<PaginatedResponse<Task>>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
       getNextPageParam: getPaginatedNextPageParam,
       enabled: computed(() =>
         hasCompany.value

@@ -200,6 +200,11 @@
       "dropHint": "Puedes soltar tareas aquí",
       "collapseColumn": "Colapsar {title}",
       "expandColumn": "Expandir {title}",
+      "completeFilter": {
+        "week": "Esta semana",
+        "range": "Rango de fechas",
+        "all": "Ver todas"
+      },
       "moveNotAllowedTitle": "Movimiento no permitido",
       "moveNotAllowedDescription": "Esa transición de estado no está disponible para esta tarea.",
       "dueMove": {
