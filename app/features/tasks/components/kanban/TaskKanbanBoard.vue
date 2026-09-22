@@ -120,7 +120,11 @@ function canCreateInColumn(columnId: string | number) {
         @drag-over-column="onDragOverColumn"
         @drop-task="onDropTask"
         @load-more="emit('loadMore', $event)"
-      />
+      >
+        <template #header-extra>
+          <slot name="column-header-extra" :column="column" />
+        </template>
+      </TaskKanbanColumn>
     </div>
   </div>
 </template>

@@ -1,6 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { ArchivedCounts, KanbanColumn, KanbanCounts, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
+import { useKanbanCompleteDateFilter } from '~/features/tasks/composables/kanban/useKanbanCompleteDateFilter'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
@@ -15,7 +16,9 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
   const api = createCompanyTasksApi(filters)
   const scope = ['kanban']
 
-  const counts = api.countsQuery<KanbanCounts>(scope, '/kanban/counts/')
+  const completeFilter = useKanbanCompleteDateFilter()
+
+  const counts = api.countsQuery<KanbanCounts>(scope, '/kanban/counts/', { extraQuery: completeFilter.query })
 
   const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/')
   const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
@@ -24,7 +27,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
   const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/')
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')
   const inReview = api.listQuery([...scope, 'in_review'], '/kanban/in_review/')
-  const complete = api.listQuery([...scope, 'complete'], '/kanban/complete/')
+  const complete = api.listQuery([...scope, 'complete'], '/kanban/complete/', { extraQuery: completeFilter.query })
 
   const rejectedCount = computed(() => counts.data.value?.rejected ?? 0)
   const countsReady = computed(() => counts.isFetched.value)
@@ -125,5 +128,5 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     }
   }
 
-  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, columns, loadMore }
+  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, columns, loadMore, completeFilter }
 }
