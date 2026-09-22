@@ -429,7 +429,13 @@
         "remove": "Quitar subtarea",
         "removeImage": "Quitar imagen",
         "tooLargeTitle": "Imagen demasiado grande",
-        "tooLargeDescription": "{name} supera el límite de 25 MB"
+        "tooLargeDescription": "{name} supera el límite de 25 MB",
+        "unassigned": "Sin asignar",
+        "empty": "Aún no hay subtareas",
+        "save": "Guardar subtarea",
+        "cancel": "Cancelar",
+        "completeErrorTitle": "No se pudo actualizar la subtarea",
+        "createErrorTitle": "No se pudo crear la subtarea"
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
