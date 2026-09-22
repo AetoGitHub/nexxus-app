@@ -1242,10 +1242,12 @@ const slideoverUi = computed(() => {
             name="name"
             :required="!isReadOnly"
           >
-            <UInput
+            <UTextarea
               v-if="!isReadOnly"
               v-model="state.name"
               :placeholder="t('tasks.form.namePlaceholder')"
+              :rows="1"
+              autoresize
               class="w-full"
             />
             <p
@@ -1292,6 +1294,7 @@ const slideoverUi = computed(() => {
             :task-id="taskId"
             :subtasks="taskDetailQuery.data.value?.subtasks ?? []"
             :disabled="!canEditTask"
+            :editing="isEditing"
             :user-items="userSelectItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
