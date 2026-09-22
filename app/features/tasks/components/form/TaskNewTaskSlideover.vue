@@ -21,6 +21,7 @@ import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
+import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -156,8 +157,9 @@ const existingAttachments = ref<string[]>([])
 const isAttachingFiles = ref(false)
 
 /**
- * Subtareas del formulario de creación. Solo aplican al crear (el backend no
- * las soporta aún al editar/ver una tarea existente); ver `TaskSubtasksField`.
+ * Subtareas del formulario de creación (viajan anidadas en el POST de la
+ * tarea); ver `TaskSubtasksField`. En el detalle de una tarea ya existente el
+ * checklist lo maneja `TaskSubtaskChecklist` con sus propios endpoints.
  */
 const subtaskRows = ref<SubtaskFormRow[]>([])
 const isUploadingSubtaskImages = ref(false)
@@ -1241,26 +1243,55 @@ const slideoverUi = computed(() => {
             :required="!isReadOnly"
           >
             <UInput
+              v-if="!isReadOnly"
               v-model="state.name"
               :placeholder="t('tasks.form.namePlaceholder')"
-              :disabled="isReadOnly"
               class="w-full"
             />
+            <p
+              v-else
+              class="text-sm text-foreground whitespace-pre-wrap break-words"
+            >
+              {{ state.name }}
+            </p>
           </UFormField>
 
           <UFormField :label="t('tasks.form.description')" name="description">
             <UTextarea
+              v-if="!isReadOnly"
               v-model="state.description"
               :placeholder="t('tasks.form.descriptionPlaceholder')"
               :rows="3"
-              :disabled="isReadOnly"
+              :maxrows="20"
+              autoresize
               class="w-full"
             />
+            <p
+              v-else-if="state.description"
+              class="text-sm text-foreground whitespace-pre-wrap break-words"
+            >
+              {{ state.description }}
+            </p>
+            <p
+              v-else
+              class="text-sm text-muted-foreground italic"
+            >
+              {{ t('tasks.form.descriptionPlaceholder') }}
+            </p>
           </UFormField>
 
           <TaskSubtasksField
             v-if="!isBacklogMode && !isDetailView"
             v-model:rows="subtaskRows"
+            :user-items="userSelectItems"
+            :users-loading="usersQuery.isPending.value || isSearchingUsers"
+          />
+
+          <TaskSubtaskChecklist
+            v-if="isDetailView && !isBacklogMode && taskId != null"
+            :task-id="taskId"
+            :subtasks="taskDetailQuery.data.value?.subtasks ?? []"
+            :disabled="!canEditTask"
             :user-items="userSelectItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />

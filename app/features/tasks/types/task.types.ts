@@ -46,6 +46,38 @@ export interface CreateTaskSubtaskPayload {
   images: string[]
 }
 
+/**
+ * Subtarea tal como viene dentro de GET /api/tasks/:id/ (`_SubTaskInlineSr`
+ * del backend). `assigned_to` es el id del profile (`assigned_to_id`).
+ */
+export interface SubTaskDetail {
+  id: number
+  short_description: string
+  assigned_to: number | null
+  assigned_to_name: string | null
+  completed: boolean
+  images: string[]
+}
+
+/**
+ * Payload de POST /api/tasks/subtasks/create/: agrega una subtarea a una tarea
+ * que YA existe (desde el detalle). No confundir con `CreateTaskSubtaskPayload`,
+ * que viaja anidado dentro del create de la tarea.
+ */
+export interface CreateSubtaskPayload {
+  task: number
+  short_description: string
+  long_description?: string
+  comment?: string
+  assigned_to?: number | null
+  images?: string[]
+}
+
+/** Payload de PATCH /api/tasks/subtasks/:id/complete/. */
+export interface CompleteSubtaskPayload {
+  completed: boolean
+}
+
 export interface CreateTaskPayload {
   short_description: string
   long_description: string
@@ -275,6 +307,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   process_tasks: TaskProcessEntry[]
   /** URLs de Firebase Storage de documentos generales (TaskFile), separados del chat. */
   files?: string[]
+  /** Checklist de subtareas de la tarea (ver `TaskSubtaskChecklist`). */
+  subtasks?: SubTaskDetail[]
 }
 
 export interface TaskCounts {

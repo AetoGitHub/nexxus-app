@@ -46,7 +46,7 @@ function openRangePicker() {
 </script>
 
 <template>
-  <div class="flex items-center gap-1">
+  <div class="flex items-center gap-1 shrink-0">
     <UTooltip :text="t('tasks.kanban.completeFilter.week')">
       <UButton
         icon="i-lucide-calendar-days"
@@ -92,10 +92,5 @@ function openRangePicker() {
         @click="mode = 'all'"
       />
     </UTooltip>
-
-    <span
-      v-if="mode === 'range' && rangeLabel"
-      class="truncate text-xs text-muted-foreground"
-    >{{ rangeLabel }}</span>
   </div>
 </template>
