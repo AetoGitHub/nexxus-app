@@ -78,6 +78,19 @@ export interface CompleteSubtaskPayload {
   completed: boolean
 }
 
+/**
+ * Payload de PATCH /api/tasks/subtasks/:id/update/: reemplazo completo de los
+ * campos editables (no incluye `images` para conservar las existentes, ya que
+ * esta vista no las administra).
+ */
+export interface UpdateSubtaskPayload {
+  task: number
+  short_description: string
+  long_description: string
+  comment: string
+  assigned_to: number | null
+}
+
 export interface CreateTaskPayload {
   short_description: string
   long_description: string
@@ -253,6 +266,8 @@ export interface Task {
   backlog?: boolean
   start_date: string | null
   limit_date: string | null
+  /** Fecha real de cierre (status=complete). No la manda el backend en listas aún. */
+  finish_at?: string | null
   created_at: string
   close_approvals: TaskCloseApproval[]
   assigned_to?: TaskAssignee[]

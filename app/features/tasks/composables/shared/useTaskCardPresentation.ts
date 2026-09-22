@@ -21,8 +21,16 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
   const assignees = computed(() => current.value.assigned_to ?? [])
   const projectName = computed(() => current.value.project_name?.trim() ?? '')
 
-  const dueDiff = computed(() => diffInDays(current.value.limit_date))
-  const isOverdue = computed(() => dueDiff.value !== null && dueDiff.value < 0)
+  const isComplete = computed(() => current.value.status === 'complete')
+
+  /** Completada: se muestra la fecha real de cierre (finish_at) en vez del vencimiento. */
+  const dueDate = computed(() =>
+    isComplete.value ? (current.value.finish_at ?? current.value.limit_date) : current.value.limit_date,
+  )
+
+  const dueDiff = computed(() => diffInDays(dueDate.value))
+  /** Completada nunca se marca "vencida": esa fecha ya pasó por diseño, no es un problema. */
+  const isOverdue = computed(() => !isComplete.value && dueDiff.value !== null && dueDiff.value < 0)
 
   const dueLabel = computed(() => {
     const diff = dueDiff.value
@@ -41,7 +49,7 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
     if (diff > 1 && diff <= 30) {
       return t('tasks.due.inDays', { n: diff })
     }
-    return formatShortDate(current.value.limit_date, locale.value)
+    return formatShortDate(dueDate.value, locale.value)
   })
 
   return {
