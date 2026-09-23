@@ -3,6 +3,7 @@ import type { SelectItem } from '@nuxt/ui'
 import type { SubTaskDetail } from '~/features/tasks/types/task.types'
 import { useCompleteSubtask } from '~/features/tasks/composables/form/useCompleteSubtask'
 import { useCreateSubtask } from '~/features/tasks/composables/form/useCreateSubtask'
+import { useDeleteSubtask } from '~/features/tasks/composables/form/useDeleteSubtask'
 import { useUpdateSubtask } from '~/features/tasks/composables/form/useUpdateSubtask'
 
 /**
@@ -37,6 +38,10 @@ const toast = useToast()
 const { mutateAsync: completeSubtask } = useCompleteSubtask()
 const { mutateAsync: createSubtask, isPending: isCreating } = useCreateSubtask()
 const { mutateAsync: updateSubtask, isPending: isUpdating } = useUpdateSubtask()
+const { mutateAsync: deleteSubtask } = useDeleteSubtask()
+
+/** Estado optimista mientras viaja el DELETE y se revalida el detalle. */
+const deletingIds = ref<Set<number>>(new Set())
 
 /** Estado optimista mientras viaja el PATCH y se revalida el detalle. */
 const pendingCompleted = ref<Record<number, boolean>>({})
@@ -170,6 +175,28 @@ async function submitEditSubtask() {
     })
   }
 }
+
+async function removeSubtask(subtaskId: number) {
+  deletingIds.value = new Set(deletingIds.value).add(subtaskId)
+  try {
+    await deleteSubtask({ subtaskId, taskId: props.taskId })
+    if (editingId.value === subtaskId) {
+      cancelEdit()
+    }
+  }
+  catch (error) {
+    toast.add({
+      title: t('tasks.form.subtasks.deleteErrorTitle'),
+      description: parseFetchError(error),
+      color: 'error',
+    })
+  }
+  finally {
+    const next = new Set(deletingIds.value)
+    next.delete(subtaskId)
+    deletingIds.value = next
+  }
+}
 </script>
 
 <template>
@@ -285,6 +312,18 @@ async function submitEditSubtask() {
             square
             :aria-label="t('tasks.form.subtasks.edit')"
             @click="openEditRow(row)"
+          />
+          <UButton
+            v-if="canManage"
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="ghost"
+            size="xs"
+            square
+            :loading="deletingIds.has(row.id)"
+            :disabled="deletingIds.has(row.id)"
+            :aria-label="t('tasks.form.subtasks.delete')"
+            @click="removeSubtask(row.id)"
           />
         </div>
       </li>

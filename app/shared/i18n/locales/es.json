@@ -437,7 +437,9 @@
         "completeErrorTitle": "No se pudo actualizar la subtarea",
         "createErrorTitle": "No se pudo crear la subtarea",
         "updateErrorTitle": "No se pudo editar la subtarea",
-        "edit": "Editar subtarea"
+        "edit": "Editar subtarea",
+        "delete": "Eliminar subtarea",
+        "deleteErrorTitle": "No se pudo eliminar la subtarea"
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",

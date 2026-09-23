@@ -437,7 +437,9 @@
         "completeErrorTitle": "Could not update the subtask",
         "createErrorTitle": "Could not create the subtask",
         "updateErrorTitle": "Could not edit the subtask",
-        "edit": "Edit subtask"
+        "edit": "Edit subtask",
+        "delete": "Delete subtask",
+        "deleteErrorTitle": "Could not delete the subtask"
       },
       "validation": {
         "nameRequired": "Name is required",
