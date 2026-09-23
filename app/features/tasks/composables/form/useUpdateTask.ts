@@ -22,11 +22,11 @@ export function useUpdateTask() {
         method: 'PATCH',
         body: payload,
       }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // El detalle ya está incluido en el prefijo 'tasks', invalidarlo aparte
+    // duplicaba la petición (GET /tasks/:id/ dos veces). No se espera la
+    // invalidación para no bloquear el cierre del formulario de edición.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
       toast.add({
         title: t('tasks.form.updateSuccessTitle'),
         description: t('tasks.form.updateSuccessDescription'),

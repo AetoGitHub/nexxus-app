@@ -22,11 +22,10 @@ export function useUpdateTaskFiles() {
         method: 'PATCH',
         body: payload,
       }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // Ver comentario en useUpdateTask.ts: el detalle ya está incluido en el
+    // prefijo 'tasks', invalidarlo aparte duplicaba la petición.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
 }
