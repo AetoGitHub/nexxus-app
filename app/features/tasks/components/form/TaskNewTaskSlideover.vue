@@ -59,6 +59,7 @@ import {
   buildTaskSubtaskUploadDirectory,
   buildTaskUploadFileName,
 } from '~/features/tasks/utils/form/task-file-upload.util'
+import { taskStatusMeta } from '~/features/tasks/utils/task-format.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 interface NewTaskFormState extends NewTaskFormInput {
@@ -243,6 +244,12 @@ const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'acce
 
 /** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
 const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
+
+/** Badge de status del header del detalle (pendiente/progreso/revisión/completada, con su color). */
+const statusMeta = computed(() => {
+  const status = taskDetailQuery.data.value?.status
+  return status ? taskStatusMeta(status) : null
+})
 
 /** Backlog aún no promovida: el botón "Enviar a pendiente" se ofrece en vista y en edición. */
 const showPromoteBacklogButton = computed(() =>
@@ -1102,14 +1109,10 @@ const slideoverUi = computed(() => {
             class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3"
           >
             <div class="flex items-center gap-2 min-w-0">
-              
               <UIcon
                 name="i-lucide-file-text"
                 class="h-5 w-5 text-foreground shrink-0"
               />
-              <h2 class="text-base font-semibold text-foreground truncate">
-                {{ t('tasks.taskDetail') }}
-              </h2>
               <UBadge
                 :label="t(`tasks.types.${state.type}`)"
                 color="neutral"
@@ -1117,36 +1120,14 @@ const slideoverUi = computed(() => {
                 size="sm"
                 class="uppercase tracking-wide shrink-0"
               />
-              <UTooltip
-                v-if="showArchiveProcess"
-                :text="t('tasks.processArchive.submit')"
-              >
-                <UButton
-                  icon="i-lucide-trash-2"
-                  color="error"
-                  variant="soft"
-                  size="md"
-                  square
-                  class="shrink-0"
-                  :aria-label="t('tasks.processArchive.submit')"
-                  @click="openArchiveProcessModal"
-                />
-              </UTooltip>
-              <UTooltip
-                v-if="showUnarchiveProcess"
-                :text="t('tasks.processUnarchive.submit')"
-              >
-                <UButton
-                  icon="i-lucide-archive-restore"
-                  color="primary"
-                  variant="ghost"
-                  size="md"
-                  square
-                  class="shrink-0"
-                  :aria-label="t('tasks.processUnarchive.submit')"
-                  @click="openUnarchiveProcessModal"
-                />
-              </UTooltip>
+              <UBadge
+                v-if="statusMeta"
+                :label="t(statusMeta.labelKey)"
+                :color="statusMeta.color"
+                variant="soft"
+                size="sm"
+                class="uppercase tracking-wide shrink-0"
+              />
               <UBadge
                 v-if="props.authorizeMode"
                 :label="t('tasks.toUpdate.authorize.label')"
@@ -1168,6 +1149,34 @@ const slideoverUi = computed(() => {
                 :aria-label="t('tasks.messenger.showMessages')"
                 @click="showMobileMessages"
               />
+              <UTooltip
+                v-if="showArchiveProcess"
+                :text="t('tasks.processArchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="soft"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.processArchive.submit')"
+                  @click="openArchiveProcessModal"
+                />
+              </UTooltip>
+              <UTooltip
+                v-if="showUnarchiveProcess"
+                :text="t('tasks.processUnarchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-archive-restore"
+                  color="primary"
+                  variant="ghost"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.processUnarchive.submit')"
+                  @click="openUnarchiveProcessModal"
+                />
+              </UTooltip>
               <UButton
                 v-if="!isEditing && canEditTask"
                 icon="i-lucide-pencil"

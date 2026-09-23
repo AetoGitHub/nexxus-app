@@ -17,17 +17,21 @@ import { extractResults } from '~/shared/utils/paginated.util'
  *
  * Endpoints: /api/tasks/company/:id/close/{counts|unattended|pending|urgent|delayed|critical|accepted}/
  */
-export function useToUpdateTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
+export function useToUpdateTasks(
+  filters: MaybeRefOrGetter<TaskListFilters> = {},
+  /** date_from/date_to del filtro de la columna Aceptadas (solo Kanban). */
+  acceptedQuery: MaybeRefOrGetter<Record<string, string> | undefined> = undefined,
+) {
   const api = createCompanyTasksApi(filters)
   const scope = ['close']
 
-  const { counts } = useToUpdateCounts(filters)
+  const { counts } = useToUpdateCounts(filters, acceptedQuery)
   const unattended = api.listQuery([...scope, 'unattended'], '/close/unattended/')
   const pending = api.listQuery([...scope, 'pending'], '/close/pending/')
   const urgent = api.listQuery([...scope, 'urgent'], '/close/urgent/')
   const delayed = api.listQuery([...scope, 'delayed'], '/close/delayed/')
   const critical = api.listQuery([...scope, 'critical'], '/close/critical/')
-  const accepted = api.listQuery([...scope, 'accepted'], '/close/accepted/')
+  const accepted = api.listQuery([...scope, 'accepted'], '/close/accepted/', { extraQuery: acceptedQuery })
 
   const sectionQueries: Record<ToUpdateSectionId, typeof pending> = {
     unattended,

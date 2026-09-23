@@ -6,9 +6,11 @@ import { createCompanyTasksApi } from '~/features/tasks/composables/shared/creat
 /** Conteos de tareas pendientes de aprobación para el perfil autenticado. */
 export function useToUpdateCounts(
   filters: MaybeRefOrGetter<TaskListFilters> = {},
+  /** date_from/date_to del filtro de la columna Aceptadas (solo Kanban); no afecta al resto de conteos. */
+  acceptedQuery: MaybeRefOrGetter<Record<string, string> | undefined> = undefined,
 ) {
   const api = createCompanyTasksApi(filters)
-  const counts = api.countsQuery<ToUpdateCounts>(['close'], '/close/counts/')
+  const counts = api.countsQuery<ToUpdateCounts>(['close'], '/close/counts/', { extraQuery: acceptedQuery })
 
   const actionableCount = computed(() => {
     const value = counts.data.value
