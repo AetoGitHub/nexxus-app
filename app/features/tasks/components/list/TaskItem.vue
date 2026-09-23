@@ -10,16 +10,26 @@ const props = withDefaults(
     showStatus?: boolean
     /** Botón de eliminar (hover), p. ej. en la vista de archivadas. */
     deletable?: boolean
+    /**
+     * Qué hace el círculo de check: abrir el detalle (default) o autorizar
+     * la tarea directamente, sin modal ni slideover (Pendiente de aprobación).
+     */
+    checkAction?: 'select' | 'approve'
+    /** Spinner en el check mientras se autoriza (solo checkAction="approve"). */
+    approveLoading?: boolean
   }>(),
   {
     selected: false,
     showStatus: false,
     deletable: false,
+    checkAction: 'select',
+    approveLoading: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  approve: [taskId: number]
   delete: [taskId: number]
 }>()
 
@@ -40,6 +50,14 @@ const {
 function onSelect() {
   emit('select', props.task.id)
 }
+
+function onCheckClick() {
+  if (props.checkAction === 'approve') {
+    emit('approve', props.task.id)
+    return
+  }
+  onSelect()
+}
 </script>
 
 <template>
@@ -59,15 +77,21 @@ function onSelect() {
     <button
       type="button"
       class="h-5 w-5 rounded-full border-2 shrink-0 transition-colors flex items-center justify-center"
-      :class="selected
+      :class="checkAction === 'select' && selected
         ? 'border-aeto-teal bg-aeto-teal text-white'
         : 'border-muted-foreground/40 hover:border-aeto-teal'"
-      :aria-label="t('tasks.complete')"
-      :aria-pressed="selected"
-      @click.stop="onSelect"
+      :disabled="checkAction === 'approve' && approveLoading"
+      :aria-label="checkAction === 'approve' ? t('tasks.toUpdate.authorize.submit') : t('tasks.complete')"
+      :aria-pressed="checkAction === 'select' && selected"
+      @click.stop="onCheckClick"
     >
       <UIcon
-        v-if="selected"
+        v-if="checkAction === 'approve' && approveLoading"
+        name="i-lucide-loader-circle"
+        class="h-3 w-3 animate-spin text-muted-foreground"
+      />
+      <UIcon
+        v-else-if="checkAction === 'select' && selected"
         name="i-lucide-check"
         class="h-3 w-3"
       />

@@ -11,11 +11,9 @@ export function useDeleteSubtask() {
   return useMutation({
     mutationFn: ({ subtaskId }: { subtaskId: number, taskId: number }) =>
       $api(`/api/tasks/subtasks/${subtaskId}/delete/`, { method: 'DELETE' }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // Ver comentario en useCompleteSubtask.ts: solo el detalle trae subtareas.
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId], exact: true })
     },
   })
 }

@@ -24,11 +24,13 @@ export function useCompleteSubtask() {
         method: 'PATCH',
         body: payload,
       }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // Solo el detalle de esta tarea trae subtareas: ninguna vista de lista/kanban
+    // ni los conteos muestran datos de subtareas, así que invalidar `['tasks']`
+    // completo (como se hacía antes) disparaba de más el refetch de todo el
+    // Kanban/Pendiente de aprobación por cada check. `exact: true` acota la
+    // invalidación a la query exacta del detalle.
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId], exact: true })
     },
   })
 }
