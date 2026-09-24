@@ -1,7 +1,7 @@
 import type { Task, TaskAssignee, TaskCloseApproval } from '~/features/tasks/types/task.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 
-const ASSIGNEE_AVATAR_COLORS = [
+export const ASSIGNEE_AVATAR_COLORS = [
   '#f59e0b',
   '#28ceab',
   '#4c6ef5',

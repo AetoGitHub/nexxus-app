@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
+import { useProfiles } from '~/features/auth/composables/useProfiles'
 
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
@@ -22,6 +23,23 @@ withDefaults(
 
 const { t } = useI18n()
 const { projects, items: projectItems } = useProjectsDropdown()
+const { organization } = useAuth()
+const { isAdminActive, isGroupActive, isProjectActive } = useTaskAdminView()
+
+/** Vista total / por grupo / por proyecto: únicas vistas donde admin/manager ve tareas de otros. */
+const showUserFilter = computed(() => isAdminActive.value || isGroupActive.value || isProjectActive.value)
+
+const { profiles: orgProfiles, profilesQuery: orgProfilesQuery } = useProfiles(
+  showUserFilter,
+  () => ({ organization: organization.value?.id }),
+)
+const userSelectItems = computed(() =>
+  withEmptySelectItems(
+    orgProfiles.value.map(profile => ({ label: profile.username, value: profile.id })),
+    t('common.noData'),
+    { pending: orgProfilesQuery.isPending.value },
+  ),
+)
 
 type VisibleTaskType = Extract<TaskType, 'puesto' | 'manual' | 'repeat' | 'trigger'>
 
@@ -49,6 +67,16 @@ const selectedProjects = computed({
     filters.value = {
       ...filters.value,
       project: value.length ? value : undefined,
+    }
+  },
+})
+
+const selectedUsers = computed({
+  get: () => filters.value.users ?? [],
+  set: (value: number[]) => {
+    filters.value = {
+      ...filters.value,
+      users: value.length ? value : undefined,
     }
   },
 })
@@ -189,6 +217,22 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
         :items="projectSelectItems"
         :placeholder="t('tasks.filterProjectPlaceholder')"
         :loading="projects.isPending.value"
+        size="sm"
+        :class="stacked ? 'w-full' : 'w-48'"
+      />
+    </UFormField>
+
+    <UFormField
+      v-if="showUserFilter"
+      :label="t('tasks.filterUsers')"
+      :class="stacked ? 'w-full' : 'min-w-36'"
+    >
+      <USelect
+        v-model="selectedUsers"
+        multiple
+        :items="userSelectItems"
+        :placeholder="t('tasks.filterUsersPlaceholder')"
+        :loading="orgProfilesQuery.isPending.value"
         size="sm"
         :class="stacked ? 'w-full' : 'w-48'"
       />

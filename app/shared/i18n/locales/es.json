@@ -101,6 +101,8 @@
     "filterTypePlaceholder": "Filtrar por tipo",
     "filterProject": "Proyecto",
     "filterProjectPlaceholder": "Filtrar por proyecto",
+    "filterUsers": "Usuarios",
+    "filterUsersPlaceholder": "Filtrar por usuario",
     "filterOverdue": "Vencidas",
     "filterCompleted": "Completadas",
     "filterMultipleClose": "Cierre múltiple",
@@ -377,6 +379,9 @@
       "assignedTo": "Asignado a",
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
       "assignedToSearchPlaceholder": "Buscar usuario...",
+      "assignSelfOnCreate": "Agregarme a mí",
+      "createdByLabel": "Creado por",
+      "createdByUnknown": "Usuario",
       "dueDate": "Fecha Límite",
       "datePlaceholder": "Selecciona una fecha",
       "markUrgent": "Marcar como urgente",
@@ -437,7 +442,9 @@
         "completeErrorTitle": "No se pudo actualizar la subtarea",
         "createErrorTitle": "No se pudo crear la subtarea",
         "updateErrorTitle": "No se pudo editar la subtarea",
-        "edit": "Editar subtarea"
+        "edit": "Editar subtarea",
+        "delete": "Eliminar subtarea",
+        "deleteErrorTitle": "No se pudo eliminar la subtarea"
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",

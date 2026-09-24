@@ -8,6 +8,7 @@ import type {
   TaskEffort,
   TaskGroupBy,
   TaskView,
+  UpdateTaskPayload,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
@@ -18,10 +19,12 @@ import { useUpdateTaskFiles } from '~/features/tasks/composables/form/useUpdateT
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
+import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -59,6 +62,7 @@ import {
   buildTaskSubtaskUploadDirectory,
   buildTaskUploadFileName,
 } from '~/features/tasks/utils/form/task-file-upload.util'
+import { taskStatusMeta } from '~/features/tasks/utils/task-format.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 
 interface NewTaskFormState extends NewTaskFormInput {
@@ -149,6 +153,20 @@ const { mutateAsync: updateBacklogTask, isPending: isUpdatingBacklog } = useUpda
 const { mutateAsync: updateTaskFiles } = useUpdateTaskFiles()
 const { uploadFile } = useFirebaseUpload()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
+/** Preferencia persistida del switch "Agregarme a mí" al crear una tarea. */
+const assignSelfOnCreate = useAssignSelfToNewTask()
+
+/** Sincroniza el switch con `state.assignedTo` mientras se crea una tarea. */
+function onToggleAssignSelf(value: boolean) {
+  assignSelfOnCreate.value = value
+  const currentUserId = user.value?.id
+  if (isDetailView.value || currentUserId == null) {
+    return
+  }
+  state.assignedTo = value
+    ? (state.assignedTo.includes(currentUserId) ? state.assignedTo : [...state.assignedTo, currentUserId])
+    : state.assignedTo.filter(id => id !== currentUserId)
+}
 
 /** Documentos (TaskFile) locales aún no subidos a Firebase; se suben al confirmar el submit. */
 const pendingAttachments = ref<File[]>([])
@@ -244,6 +262,12 @@ const isAcceptedToUpdateSection = computed(() => props.toUpdateSection === 'acce
 /** La tarea está archivada: solo lectura (sin editar, mensajes ni cambios de estado). */
 const isArchived = computed(() => taskDetailQuery.data.value?.archived === true)
 
+/** Badge de status del header del detalle (pendiente/progreso/revisión/completada, con su color). */
+const statusMeta = computed(() => {
+  const status = taskDetailQuery.data.value?.status
+  return status ? taskStatusMeta(status) : null
+})
+
 /** Backlog aún no promovida: el botón "Enviar a pendiente" se ofrece en vista y en edición. */
 const showPromoteBacklogButton = computed(() =>
   isDetailView.value
@@ -268,12 +292,34 @@ const showAuthorizeActions = computed(() =>
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
 
+/** Cierre múltiple: se detecta por type (y boolean de respaldo). */
+const isMultipleCloseTask = computed(() => {
+  const detail = taskDetailQuery.data.value
+  return detail?.type === 'multiple_close' || detail?.multiple_close === true
+})
+
+/**
+ * El usuario logueado está entre los asignados de la tarea. En vistas donde
+ * un admin/manager ve tareas de otros (vista total, por grupo, por
+ * proyecto), esto evita mostrarle botones de acción (iniciar, completar,
+ * reabrir) sobre tareas que no le pertenecen. Cierre múltiple es la
+ * excepción: varios usuarios participan aunque no estén en `assigned_to`.
+ */
+const isMyTask = computed(() => {
+  const currentUserId = user.value?.id
+  if (currentUserId == null) {
+    return false
+  }
+  return (taskDetailQuery.data.value?.assigned_to ?? []).some(assignee => assignee.id === currentUserId)
+})
+
 /** Detalle con acciones de proceso (fuera de pending-approval; ninguna si está archivada). */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
   && !props.authorizeMode
   && !isArchived.value
+  && (isMyTask.value || isMultipleCloseTask.value)
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -288,12 +334,6 @@ const showCloseProcess = computed(() =>
   showProcessActions.value
   && taskDetailQuery.data.value?.status === 'wip',
 )
-
-/** Cierre múltiple: se detecta por type (y boolean de respaldo). */
-const isMultipleCloseTask = computed(() => {
-  const detail = taskDetailQuery.data.value
-  return detail?.type === 'multiple_close' || detail?.multiple_close === true
-})
 
 /** multiple_close solo permite enviar a revisión (no complete directo). */
 const showCompleteAction = computed(() =>
@@ -862,6 +902,39 @@ function buildSubtasksPayload(): CreateTaskSubtaskPayload[] {
     }))
 }
 
+/**
+ * true si `payload` no cambia nada respecto a lo ya guardado: evita el PATCH
+ * de la tarea completa (y su invalidación amplia de listas/counts) cuando
+ * "Guardar" solo cierra el modo edición después de un cambio que ya viajó
+ * por su propio endpoint (p. ej. renombrar una subtarea).
+ */
+function isSameAsStoredTask(payload: UpdateTaskPayload): boolean {
+  const detail = taskDetailQuery.data.value
+  if (!detail || state.setAsMaster || state.applyToAll) {
+    return false
+  }
+  try {
+    const input = taskDetailToFormInput(detail)
+    // Misma regla de default que `applyFormInput`: si no hay reviewers
+    // guardados, el form precarga al usuario actual para el caso de cambiar
+    // a "cierre múltiple". Replicarla aquí evita un falso "cambió" en la
+    // comparación cuando el usuario no tocó nada.
+    const original = buildUpdateTaskPayload(
+      {
+        ...input,
+        taskReviewer: input.taskReviewer.length ? input.taskReviewer : defaultTaskReviewers(user.value?.id),
+      },
+      detail.start_date,
+      user.value?.id,
+      { generatedFrom: generatedFromId.value, setAsMaster: false, applyToAll: false },
+    )
+    return JSON.stringify(payload) === JSON.stringify(original)
+  }
+  catch {
+    return false
+  }
+}
+
 async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
   if (isDetailView.value && !isEditing.value) {
     return
@@ -895,6 +968,10 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
           applyToAll: state.applyToAll,
         },
       )
+      if (isSameAsStoredTask(payload) && !pendingAttachments.value.length) {
+        isEditing.value = false
+        return
+      }
       await updateTask({ taskId: taskId.value, payload })
       await attachPendingFiles(taskId.value)
       isEditing.value = false
@@ -985,7 +1062,7 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
-    if (!state.assignedTo.length && user.value?.id != null) {
+    if (assignSelfOnCreate.value && !state.assignedTo.length && user.value?.id != null) {
       state.assignedTo = [user.value.id]
     }
     if (!state.dueDate) {
@@ -1102,14 +1179,10 @@ const slideoverUi = computed(() => {
             class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3"
           >
             <div class="flex items-center gap-2 min-w-0">
-              
               <UIcon
                 name="i-lucide-file-text"
                 class="h-5 w-5 text-foreground shrink-0"
               />
-              <h2 class="text-base font-semibold text-foreground truncate">
-                {{ t('tasks.taskDetail') }}
-              </h2>
               <UBadge
                 :label="t(`tasks.types.${state.type}`)"
                 color="neutral"
@@ -1117,36 +1190,14 @@ const slideoverUi = computed(() => {
                 size="sm"
                 class="uppercase tracking-wide shrink-0"
               />
-              <UTooltip
-                v-if="showArchiveProcess"
-                :text="t('tasks.processArchive.submit')"
-              >
-                <UButton
-                  icon="i-lucide-trash-2"
-                  color="error"
-                  variant="soft"
-                  size="md"
-                  square
-                  class="shrink-0"
-                  :aria-label="t('tasks.processArchive.submit')"
-                  @click="openArchiveProcessModal"
-                />
-              </UTooltip>
-              <UTooltip
-                v-if="showUnarchiveProcess"
-                :text="t('tasks.processUnarchive.submit')"
-              >
-                <UButton
-                  icon="i-lucide-archive-restore"
-                  color="primary"
-                  variant="ghost"
-                  size="md"
-                  square
-                  class="shrink-0"
-                  :aria-label="t('tasks.processUnarchive.submit')"
-                  @click="openUnarchiveProcessModal"
-                />
-              </UTooltip>
+              <UBadge
+                v-if="statusMeta"
+                :label="t(statusMeta.labelKey)"
+                :color="statusMeta.color"
+                variant="soft"
+                size="sm"
+                class="uppercase tracking-wide shrink-0"
+              />
               <UBadge
                 v-if="props.authorizeMode"
                 :label="t('tasks.toUpdate.authorize.label')"
@@ -1154,6 +1205,10 @@ const slideoverUi = computed(() => {
                 variant="subtle"
                 size="sm"
                 class="uppercase tracking-wide shrink-0"
+              />
+              <TaskCreatedByBadge
+                v-if="taskDetailQuery.data.value?.created_by"
+                :created-by="taskDetailQuery.data.value.created_by"
               />
             </div>
             <div class="flex items-center gap-1 shrink-0">
@@ -1168,6 +1223,34 @@ const slideoverUi = computed(() => {
                 :aria-label="t('tasks.messenger.showMessages')"
                 @click="showMobileMessages"
               />
+              <UTooltip
+                v-if="showArchiveProcess"
+                :text="t('tasks.processArchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="soft"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.processArchive.submit')"
+                  @click="openArchiveProcessModal"
+                />
+              </UTooltip>
+              <UTooltip
+                v-if="showUnarchiveProcess"
+                :text="t('tasks.processUnarchive.submit')"
+              >
+                <UButton
+                  icon="i-lucide-archive-restore"
+                  color="primary"
+                  variant="ghost"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.processUnarchive.submit')"
+                  @click="openUnarchiveProcessModal"
+                />
+              </UTooltip>
               <UButton
                 v-if="!isEditing && canEditTask"
                 icon="i-lucide-pencil"
@@ -1542,6 +1625,13 @@ const slideoverUi = computed(() => {
                 }"
                 ignore-filter
                 class="w-full"
+              />
+              <USwitch
+                v-if="!isDetailView"
+                :model-value="assignSelfOnCreate"
+                :label="t('tasks.form.assignSelfOnCreate')"
+                class="mt-2"
+                @update:model-value="onToggleAssignSelf"
               />
             </UFormField>
 

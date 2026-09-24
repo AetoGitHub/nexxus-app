@@ -22,11 +22,9 @@ export function useCreateSubtask() {
         method: 'POST',
         body: payload,
       }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // Ver comentario en useCompleteSubtask.ts: solo el detalle trae subtareas.
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId], exact: true })
     },
   })
 }

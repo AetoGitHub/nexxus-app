@@ -24,6 +24,10 @@ const props = withDefaults(
     minimal?: boolean
     /** Botón de eliminar (hover) en cada fila, p. ej. en la vista de archivadas. */
     deletable?: boolean
+    /** Qué hace el check de cada fila: abrir el detalle (default) o autorizar directo. */
+    checkAction?: 'select' | 'approve'
+    /** Ids de tareas con la autorización en curso (solo checkAction="approve"). */
+    approvingIds?: Set<number>
   }>(),
   {
     count: undefined,
@@ -37,11 +41,14 @@ const props = withDefaults(
     defaultOpen: true,
     minimal: false,
     deletable: false,
+    checkAction: 'select',
+    approvingIds: () => new Set(),
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
+  approve: [taskId: number]
   delete: [taskId: number]
   create: []
   loadMore: []
@@ -131,7 +138,10 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
             :selected="selectedTaskId === task.id"
             :show-status="showStatus"
             :deletable="deletable"
+            :check-action="checkAction"
+            :approve-loading="approvingIds.has(task.id)"
             @select="emit('select', $event)"
+            @approve="emit('approve', $event)"
             @delete="emit('delete', $event)"
           />
         </TransitionGroup>

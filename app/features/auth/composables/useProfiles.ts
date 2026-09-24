@@ -6,6 +6,8 @@ import type { AuthProfile } from '~/features/auth/types/profile.types'
 export interface UseProfilesParams {
   /** Solo perfiles sin grupo asignado. */
   no_group?: boolean
+  /** Solo perfiles de esta organización. */
+  organization?: number
 }
 
 /** Catálogo de perfiles para selectores (miembros de tema, grupos, etc.). */
@@ -17,7 +19,14 @@ export function useProfiles(
 
   const queryParams = computed(() => {
     const value = toValue(params)
-    return value.no_group ? { no_group: true } : undefined
+    const query: Record<string, boolean | number> = {}
+    if (value.no_group) {
+      query.no_group = true
+    }
+    if (value.organization != null) {
+      query.organization = value.organization
+    }
+    return Object.keys(query).length ? query : undefined
   })
 
   const profilesQuery = useQuery({

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskLimitDatePayload } from '~/features/tasks/types/task.types'
+import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
 
 /**
  * Actualiza solo limit_date vía PATCH /api/tasks/:id/update/.
@@ -22,11 +23,10 @@ export function useUpdateTaskLimitDate() {
         method: 'PATCH',
         body: payload,
       }),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-        queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', variables.taskId] }),
-      ])
+    // Ver comentario en useUpdateTask.ts: el detalle ya está incluido en el
+    // prefijo 'tasks', invalidarlo aparte duplicaba la petición.
+    onSuccess: () => {
+      invalidateTaskQueries(queryClient)
       toast.add({
         title: t('tasks.kanban.dueMove.successTitle'),
         description: t('tasks.kanban.dueMove.successDescription'),
