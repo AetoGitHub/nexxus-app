@@ -1207,7 +1207,7 @@ const slideoverUi = computed(() => {
                 class="uppercase tracking-wide shrink-0"
               />
               <TaskCreatedByBadge
-                v-if="isBacklogTask && taskDetailQuery.data.value?.created_by"
+                v-if="taskDetailQuery.data.value?.created_by"
                 :created-by="taskDetailQuery.data.value.created_by"
               />
             </div>
