@@ -8,6 +8,7 @@ import type {
   TaskEffort,
   TaskGroupBy,
   TaskView,
+  UpdateTaskPayload,
 } from '~/features/tasks/types/task.types'
 import { useCreateTask } from '~/features/tasks/composables/form/useCreateTask'
 import { useCreateBacklogTask } from '~/features/tasks/composables/form/useCreateBacklogTask'
@@ -869,6 +870,39 @@ function buildSubtasksPayload(): CreateTaskSubtaskPayload[] {
     }))
 }
 
+/**
+ * true si `payload` no cambia nada respecto a lo ya guardado: evita el PATCH
+ * de la tarea completa (y su invalidación amplia de listas/counts) cuando
+ * "Guardar" solo cierra el modo edición después de un cambio que ya viajó
+ * por su propio endpoint (p. ej. renombrar una subtarea).
+ */
+function isSameAsStoredTask(payload: UpdateTaskPayload): boolean {
+  const detail = taskDetailQuery.data.value
+  if (!detail || state.setAsMaster || state.applyToAll) {
+    return false
+  }
+  try {
+    const input = taskDetailToFormInput(detail)
+    // Misma regla de default que `applyFormInput`: si no hay reviewers
+    // guardados, el form precarga al usuario actual para el caso de cambiar
+    // a "cierre múltiple". Replicarla aquí evita un falso "cambió" en la
+    // comparación cuando el usuario no tocó nada.
+    const original = buildUpdateTaskPayload(
+      {
+        ...input,
+        taskReviewer: input.taskReviewer.length ? input.taskReviewer : defaultTaskReviewers(user.value?.id),
+      },
+      detail.start_date,
+      user.value?.id,
+      { generatedFrom: generatedFromId.value, setAsMaster: false, applyToAll: false },
+    )
+    return JSON.stringify(payload) === JSON.stringify(original)
+  }
+  catch {
+    return false
+  }
+}
+
 async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
   if (isDetailView.value && !isEditing.value) {
     return
@@ -902,6 +936,10 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
           applyToAll: state.applyToAll,
         },
       )
+      if (isSameAsStoredTask(payload) && !pendingAttachments.value.length) {
+        isEditing.value = false
+        return
+      }
       await updateTask({ taskId: taskId.value, payload })
       await attachPendingFiles(taskId.value)
       isEditing.value = false
