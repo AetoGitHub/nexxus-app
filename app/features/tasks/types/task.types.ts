@@ -212,6 +212,7 @@ export interface TaskListFilters {
   short_description?: string
   type?: TaskType[]
   project?: number[]
+  users?: number[]
   overdue?: boolean
   completed?: boolean
   multiple_close?: boolean
@@ -308,6 +309,14 @@ export interface TaskDetailAssignee {
   username: string
 }
 
+/** Quién creó la tarea (solo lectura, viene con el detalle). */
+export interface TaskCreatedBy {
+  id: number
+  first_name: string
+  last_name: string
+  created_at: string
+}
+
 /** Detalle completo de GET /api/tasks/:id/ */
 export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   long_description: string
@@ -324,6 +333,7 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   files?: string[]
   /** Checklist de subtareas de la tarea (ver `TaskSubtaskChecklist`). */
   subtasks?: SubTaskDetail[]
+  created_by?: TaskCreatedBy | null
 }
 
 export interface TaskCounts {

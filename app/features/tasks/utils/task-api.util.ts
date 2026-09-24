@@ -17,6 +17,9 @@ export function toTaskListQuery(
   if (filters.project?.length) {
     query.project = filters.project.join(',')
   }
+  if (filters.users?.length) {
+    query.users = filters.users.join(',')
+  }
   // Booleanos: se envían explícitamente (true/false) una vez que el usuario
   // tocó el switch; si nunca se tocó, la clave no existe y se omite el param.
   if (filters.overdue !== undefined) {

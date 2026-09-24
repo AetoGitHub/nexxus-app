@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskPayload } from '~/features/tasks/types/task.types'
+import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
 
 /**
  * Actualiza una tarea vía PATCH /api/tasks/:id/update/.
@@ -26,7 +27,7 @@ export function useUpdateTask() {
     // duplicaba la petición (GET /tasks/:id/ dos veces). No se espera la
     // invalidación para no bloquear el cierre del formulario de edición.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      invalidateTaskQueries(queryClient)
       toast.add({
         title: t('tasks.form.updateSuccessTitle'),
         description: t('tasks.form.updateSuccessDescription'),

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskFilesPayload } from '~/features/tasks/types/task.types'
+import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
 
 /**
  * Adjunta documentos (TaskFile) a la tarea vía PATCH parcial /api/tasks/:id/update/.
@@ -25,7 +26,7 @@ export function useUpdateTaskFiles() {
     // Ver comentario en useUpdateTask.ts: el detalle ya está incluido en el
     // prefijo 'tasks', invalidarlo aparte duplicaba la petición.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      invalidateTaskQueries(queryClient)
     },
   })
 }

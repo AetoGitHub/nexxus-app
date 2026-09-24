@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskProjectPayload } from '~/features/tasks/types/task.types'
+import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
 
 /**
  * Actualiza solo project vía PATCH /api/tasks/:id/update/.
@@ -25,7 +26,7 @@ export function useUpdateTaskProject() {
     // Ver comentario en useUpdateTask.ts: el detalle ya está incluido en el
     // prefijo 'tasks', invalidarlo aparte duplicaba la petición.
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      invalidateTaskQueries(queryClient)
       toast.add({
         title: t('tasks.kanban.projectMove.successTitle'),
         description: t('tasks.kanban.projectMove.successDescription'),

@@ -19,10 +19,12 @@ import { useUpdateTaskFiles } from '~/features/tasks/composables/form/useUpdateT
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
+import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -151,6 +153,20 @@ const { mutateAsync: updateBacklogTask, isPending: isUpdatingBacklog } = useUpda
 const { mutateAsync: updateTaskFiles } = useUpdateTaskFiles()
 const { uploadFile } = useFirebaseUpload()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
+/** Preferencia persistida del switch "Agregarme a mí" al crear una tarea. */
+const assignSelfOnCreate = useAssignSelfToNewTask()
+
+/** Sincroniza el switch con `state.assignedTo` mientras se crea una tarea. */
+function onToggleAssignSelf(value: boolean) {
+  assignSelfOnCreate.value = value
+  const currentUserId = user.value?.id
+  if (isDetailView.value || currentUserId == null) {
+    return
+  }
+  state.assignedTo = value
+    ? (state.assignedTo.includes(currentUserId) ? state.assignedTo : [...state.assignedTo, currentUserId])
+    : state.assignedTo.filter(id => id !== currentUserId)
+}
 
 /** Documentos (TaskFile) locales aún no subidos a Firebase; se suben al confirmar el submit. */
 const pendingAttachments = ref<File[]>([])
@@ -276,12 +292,34 @@ const showAuthorizeActions = computed(() =>
 
 const canAuthorize = computed(() => pendingApprovalForUser.value != null)
 
+/** Cierre múltiple: se detecta por type (y boolean de respaldo). */
+const isMultipleCloseTask = computed(() => {
+  const detail = taskDetailQuery.data.value
+  return detail?.type === 'multiple_close' || detail?.multiple_close === true
+})
+
+/**
+ * El usuario logueado está entre los asignados de la tarea. En vistas donde
+ * un admin/manager ve tareas de otros (vista total, por grupo, por
+ * proyecto), esto evita mostrarle botones de acción (iniciar, completar,
+ * reabrir) sobre tareas que no le pertenecen. Cierre múltiple es la
+ * excepción: varios usuarios participan aunque no estén en `assigned_to`.
+ */
+const isMyTask = computed(() => {
+  const currentUserId = user.value?.id
+  if (currentUserId == null) {
+    return false
+  }
+  return (taskDetailQuery.data.value?.assigned_to ?? []).some(assignee => assignee.id === currentUserId)
+})
+
 /** Detalle con acciones de proceso (fuera de pending-approval; ninguna si está archivada). */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
   && !props.authorizeMode
   && !isArchived.value
+  && (isMyTask.value || isMultipleCloseTask.value)
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -296,12 +334,6 @@ const showCloseProcess = computed(() =>
   showProcessActions.value
   && taskDetailQuery.data.value?.status === 'wip',
 )
-
-/** Cierre múltiple: se detecta por type (y boolean de respaldo). */
-const isMultipleCloseTask = computed(() => {
-  const detail = taskDetailQuery.data.value
-  return detail?.type === 'multiple_close' || detail?.multiple_close === true
-})
 
 /** multiple_close solo permite enviar a revisión (no complete directo). */
 const showCompleteAction = computed(() =>
@@ -1030,7 +1062,7 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
-    if (!state.assignedTo.length && user.value?.id != null) {
+    if (assignSelfOnCreate.value && !state.assignedTo.length && user.value?.id != null) {
       state.assignedTo = [user.value.id]
     }
     if (!state.dueDate) {
@@ -1173,6 +1205,10 @@ const slideoverUi = computed(() => {
                 variant="subtle"
                 size="sm"
                 class="uppercase tracking-wide shrink-0"
+              />
+              <TaskCreatedByBadge
+                v-if="isBacklogTask && taskDetailQuery.data.value?.created_by"
+                :created-by="taskDetailQuery.data.value.created_by"
               />
             </div>
             <div class="flex items-center gap-1 shrink-0">
@@ -1589,6 +1625,13 @@ const slideoverUi = computed(() => {
                 }"
                 ignore-filter
                 class="w-full"
+              />
+              <USwitch
+                v-if="!isDetailView"
+                :model-value="assignSelfOnCreate"
+                :label="t('tasks.form.assignSelfOnCreate')"
+                class="mt-2"
+                @update:model-value="onToggleAssignSelf"
               />
             </UFormField>
 
