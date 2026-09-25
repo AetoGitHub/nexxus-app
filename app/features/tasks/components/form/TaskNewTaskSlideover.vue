@@ -302,8 +302,7 @@ const isMultipleCloseTask = computed(() => {
  * El usuario logueado está entre los asignados de la tarea. En vistas donde
  * un admin/manager ve tareas de otros (vista total, por grupo, por
  * proyecto), esto evita mostrarle botones de acción (iniciar, completar,
- * reabrir) sobre tareas que no le pertenecen. Cierre múltiple es la
- * excepción: varios usuarios participan aunque no estén en `assigned_to`.
+ * reabrir) sobre tareas que no le pertenecen.
  */
 const isMyTask = computed(() => {
   const currentUserId = user.value?.id
@@ -313,13 +312,20 @@ const isMyTask = computed(() => {
   return (taskDetailQuery.data.value?.assigned_to ?? []).some(assignee => assignee.id === currentUserId)
 })
 
-/** Detalle con acciones de proceso (fuera de pending-approval; ninguna si está archivada). */
+/** El usuario logueado está entre los que deben confirmar el cierre múltiple. */
+const isMultipleCloseReviewer = computed(() => userCloseApproval.value != null)
+
+/**
+ * Acciones reservadas al dueño de la tarea: iniciar, enviar a revisión/
+ * completar, reabrir. En cierre múltiple, un revisor que no es el dueño NO
+ * debe ver estas — solo el paso de confirmar (ver `canReviewTask`).
+ */
 const showProcessActions = computed(() =>
   isDetailView.value
   && !isEditing.value
   && !props.authorizeMode
   && !isArchived.value
-  && (isMyTask.value || isMultipleCloseTask.value)
+  && isMyTask.value
   && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar'),
 )
 
@@ -342,11 +348,25 @@ const showCompleteAction = computed(() =>
 )
 
 /**
+ * Puede ver el paso de revisión: el dueño de la tarea, o -en cierre
+ * múltiple- cualquier usuario que deba confirmar, aunque no sea el dueño.
+ * Si no soy dueño ni revisor de ningún modo, no veo nada aquí.
+ */
+const canReviewTask = computed(() =>
+  isDetailView.value
+  && !isEditing.value
+  && !props.authorizeMode
+  && !isArchived.value
+  && (props.view === 'list' || props.view === 'kanban' || props.view === 'calendar')
+  && (isMyTask.value || (isMultipleCloseTask.value && isMultipleCloseReviewer.value)),
+)
+
+/**
  * In review: rechazar / completar / autorizar.
  * Si el usuario ya autorizó en close_approvals, no se muestran acciones.
  */
 const showReviewDecision = computed(() =>
-  showProcessActions.value
+  canReviewTask.value
   && taskDetailQuery.data.value?.status === 'in_review'
   && !hasUserAlreadyAuthorized.value,
 )
