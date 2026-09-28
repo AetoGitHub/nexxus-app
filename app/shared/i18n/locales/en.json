@@ -1095,7 +1095,7 @@
     },
     "people": {
       "eyebrow": "Individual performance",
-      "title": "The people behind the result",
+      "title": "The people behind the result",
       "loadTitle": "Productive load distribution",
       "saturated": "{n} saturated",
       "goal": "Goal {n}%",

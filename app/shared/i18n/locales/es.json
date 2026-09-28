@@ -1095,7 +1095,7 @@
     },
     "people": {
       "eyebrow": "Desempeño individual",
-      "title": "Las personas detrás del resultado",
+      "title": "Las personas detrás del resultado",
       "loadTitle": "Distribución de carga productiva",
       "saturated": "{n} saturados",
       "goal": "Meta {n}%",
