@@ -1031,7 +1031,104 @@
   },
   "ceoReport": {
     "title": "CEO Report",
-    "placeholder": "The CEO report content will be laid out here."
+    "toolbar": {
+      "filters": "Filters",
+      "compare": "Compare {n} months",
+      "allTeams": "All teams",
+      "ai": "AI enabled",
+      "change": "Change",
+      "download": "Download PDF"
+    },
+    "toast": {
+      "pendingTitle": "Coming soon",
+      "pendingDescription": "This action will be enabled once the PDF service and the AI are connected."
+    },
+    "rating": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "regular": "Fair",
+      "critical": "Critical"
+    },
+    "footer": {
+      "brand": "Nexxus Tasks",
+      "confidential": "Confidential"
+    },
+    "cover": {
+      "kicker": "Productivity report",
+      "results": "Results",
+      "scope": "{scope} · {teams} teams · {tasks} tasks",
+      "verdict": "Period verdict",
+      "generated": "Generated: {date}",
+      "period": "Period: {period}",
+      "comparison": "Compared to: {value}",
+      "completion": "Overall completion"
+    },
+    "kpis": {
+      "eyebrow": "Period objectives",
+      "title": "Where are we heading?",
+      "mainIndicator": "Main indicator",
+      "completionRate": "Total Completion Rate",
+      "whatHappened": "What happened",
+      "whatItMeans": "What it means",
+      "continued": "Key indicators (continued)"
+    },
+    "insights": {
+      "eyebrow": "Narrative analysis · Nexxa AI",
+      "title": "What the numbers don't tell you"
+    },
+    "teams": {
+      "eyebrow": "Comparative diagnosis",
+      "title": "The state of each team",
+      "people": "{n} people",
+      "punctuality": "On time: {n}%",
+      "tasks": "{n} tasks",
+      "overdue": "{n} overdue",
+      "avg": "{value} avg",
+      "months": "6 months",
+      "continued": "The state of each team (continued)"
+    },
+    "categories": {
+      "eyebrow": "Work categories",
+      "title": "Where operations get stuck",
+      "overdue": "overdue",
+      "avg": "avg"
+    },
+    "people": {
+      "eyebrow": "Individual performance",
+      "title": "The people behind the result",
+      "loadTitle": "Productive load distribution",
+      "saturated": "{n} saturated",
+      "goal": "Goal {n}%",
+      "top": "Top 5 · Best performance of the month",
+      "bottom": "Need attention",
+      "punctuality": "On time: {n}%",
+      "tasks": "{n} tasks",
+      "overdue": "{n} overdue",
+      "privacy": "Visible only to the CEO and direct manager"
+    },
+    "nexxtep": {
+      "eyebrow": "AI agent",
+      "title": "Nexxtep in the period",
+      "executives": "Virtual executives",
+      "managements": "{n} handled",
+      "escalations": "{n} esc",
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
+    "closing": {
+      "eyebrow": "Executive summary",
+      "decisionsTitle": "What to do from today",
+      "assignedTo": "Assigned to",
+      "metric": "Metric",
+      "date": "Date",
+      "createTask": "Create as task"
+    },
+    "back": {
+      "title": "Productivity report"
+    }
   },
   "taskSettings": {
     "title": "Settings",

@@ -1031,7 +1031,104 @@
   },
   "ceoReport": {
     "title": "Reporte CEO",
-    "placeholder": "El contenido del reporte CEO se maquetará aquí."
+    "toolbar": {
+      "filters": "Filtros",
+      "compare": "Compara {n} meses",
+      "allTeams": "Todos los equipos",
+      "ai": "IA activa",
+      "change": "Cambiar",
+      "download": "Descargar PDF"
+    },
+    "toast": {
+      "pendingTitle": "Disponible próximamente",
+      "pendingDescription": "Esta acción se habilitará cuando el servicio de PDF y la IA estén conectados."
+    },
+    "rating": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "regular": "Regular",
+      "critical": "Crítico"
+    },
+    "footer": {
+      "brand": "Nexxus Tasks",
+      "confidential": "Confidencial"
+    },
+    "cover": {
+      "kicker": "Reporte de productividad",
+      "results": "Resultados",
+      "scope": "{scope} · {teams} equipos · {tasks} tareas",
+      "verdict": "Veredicto del período",
+      "generated": "Generado: {date}",
+      "period": "Período: {period}",
+      "comparison": "Comparativo: {value}",
+      "completion": "Completación global"
+    },
+    "kpis": {
+      "eyebrow": "Objetivos del período",
+      "title": "¿Hacia dónde nos dirigimos?",
+      "mainIndicator": "Indicador principal",
+      "completionRate": "Tasa de Completación Total",
+      "whatHappened": "Qué pasó",
+      "whatItMeans": "Qué significa",
+      "continued": "Indicadores clave (continuación)"
+    },
+    "insights": {
+      "eyebrow": "Análisis narrativo · Nexxa IA",
+      "title": "Lo que los números no te dicen"
+    },
+    "teams": {
+      "eyebrow": "Diagnóstico comparativo",
+      "title": "El estado de cada equipo",
+      "people": "{n} personas",
+      "punctuality": "Punt: {n}%",
+      "tasks": "{n} tareas",
+      "overdue": "{n} venc.",
+      "avg": "{value} prom",
+      "months": "6 meses",
+      "continued": "El estado de cada equipo (continuación)"
+    },
+    "categories": {
+      "eyebrow": "Categorías de trabajo",
+      "title": "Dónde se atora la operación",
+      "overdue": "vencidas",
+      "avg": "prom"
+    },
+    "people": {
+      "eyebrow": "Desempeño individual",
+      "title": "Las personas detrás del resultado",
+      "loadTitle": "Distribución de carga productiva",
+      "saturated": "{n} saturados",
+      "goal": "Meta {n}%",
+      "top": "Top 5 · Mejor desempeño del mes",
+      "bottom": "Requieren atención",
+      "punctuality": "Punt: {n}%",
+      "tasks": "{n} tareas",
+      "overdue": "{n} vencidas",
+      "privacy": "Visible solo para CEO y manager directo"
+    },
+    "nexxtep": {
+      "eyebrow": "Agente de IA",
+      "title": "Nexxtep en el período",
+      "executives": "Ejecutivos virtuales",
+      "managements": "{n} gest",
+      "escalations": "{n} esc",
+      "priority": {
+        "high": "Alta",
+        "medium": "Media",
+        "low": "Baja"
+      }
+    },
+    "closing": {
+      "eyebrow": "Cierre ejecutivo",
+      "decisionsTitle": "Qué hacer a partir de hoy",
+      "assignedTo": "Asignado a",
+      "metric": "Métrica",
+      "date": "Fecha",
+      "createTask": "Crear como tarea"
+    },
+    "back": {
+      "title": "Reporte de productividad"
+    }
   },
   "taskSettings": {
     "title": "Configuración",
