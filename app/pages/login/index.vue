@@ -47,6 +47,8 @@ const fields = computed<AuthFormField[]>(() => [
   },
 ])
 
+const sessionExpired = computed(() => route.query.reason === 'expired')
+
 const onSubmit = async (
   event: FormSubmitEvent<{ username: string, password: string }>,
 ) => {
@@ -94,6 +96,14 @@ useSeoMeta({
 
         <template #validation>
           <UAlert
+            v-if="sessionExpired && !isError"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-log-out"
+            :title="t('session_expired_title')"
+            :description="t('session_expired_description')"
+          />
+          <UAlert
             v-if="isError && loginErrorMessage"
             color="error"
             variant="subtle"
@@ -116,6 +126,8 @@ en:
   validation_username: Username is required
   validation_password: Password is required
   error_title: Sign-in error
+  session_expired_title: Your session ended
+  session_expired_description: It was closed on another device or is no longer valid. Sign in again to continue.
 es:
   title: Iniciar sesión
   tagline: Plataforma para la más alta eficiencia en transportes
@@ -124,4 +136,6 @@ es:
   validation_username: Usuario requerido
   validation_password: Contraseña requerida
   error_title: Error al acceder
+  session_expired_title: Tu sesión terminó
+  session_expired_description: Se cerró en otro dispositivo o ya no es válida. Inicia sesión de nuevo para continuar.
 </i18n>

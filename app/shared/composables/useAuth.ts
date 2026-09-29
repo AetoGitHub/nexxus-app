@@ -1,4 +1,4 @@
-import type { AuthLoginRequest, AuthLoginResponse, AuthSession } from '~/shared/types/auth.types'
+import type { AuthLoginRequest, AuthLoginResponse } from '~/shared/types/auth.types'
 
 export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedGroup, AuthProject } from '~/shared/types/auth.types'
 
@@ -6,10 +6,7 @@ export function useAuth() {
   const apiBaseUrl = useApiBaseUrl()
   const { public: { apiAuthPath, apiAuthLogoutPath } } = useRuntimeConfig()
 
-  const session = useCookie<AuthSession | null>('auth_session', {
-    default: () => null,
-    sameSite: 'lax',
-  })
+  const session = useAuthSession()
 
   const user = computed(() => session.value?.user ?? null)
   const organization = computed(() => session.value?.organization ?? null)
@@ -58,6 +55,8 @@ export function useAuth() {
     } finally {
       session.value = null
       await navigateTo('/login')
+      // Ya sin pantallas montadas: evita que el siguiente usuario vea datos en caché de esta sesión.
+      useNuxtApp().$queryClient.clear()
     }
   }
 
