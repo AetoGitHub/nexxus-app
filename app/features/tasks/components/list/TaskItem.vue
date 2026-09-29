@@ -64,7 +64,7 @@ function onCheckClick() {
   <div
     role="button"
     tabindex="0"
-    class="group relative flex items-center gap-3 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer"
+    class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -97,9 +97,9 @@ function onCheckClick() {
       />
     </button>
 
-    <div class="min-w-0 flex-1 flex items-center gap-2">
+    <div class="contents md:flex md:min-w-0 md:flex-1 md:items-center md:gap-2">
       <span
-        class="min-w-0 text-sm truncate transition-colors"
+        class="col-start-2 row-start-1 min-w-0 text-sm break-words max-md:line-clamp-2 md:truncate transition-colors"
         :class="selected
           ? 'text-muted-foreground line-through'
           : 'text-foreground'"
@@ -107,7 +107,7 @@ function onCheckClick() {
         {{ task.short_description }}
       </span>
 
-      <div class="flex items-center gap-1.5 shrink-0">
+      <div class="col-start-2 row-start-2 flex min-w-0 flex-wrap items-center gap-1.5 md:shrink-0 md:flex-nowrap">
         <UBadge
           v-if="projectName"
           icon="i-lucide-folder-kanban"
@@ -163,10 +163,13 @@ function onCheckClick() {
       </div>
     </div>
 
-    <TaskAssigneeAvatars :assignees="assignees" />
+    <TaskAssigneeAvatars
+      class="col-start-3 row-start-2 justify-self-end"
+      :assignees="assignees"
+    />
 
     <span
-      class="w-16 text-right text-xs font-mono tabular-nums shrink-0"
+      class="col-start-3 row-start-1 w-16 text-right text-xs font-mono tabular-nums shrink-0"
       :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
     >
       {{ dueLabel }}
