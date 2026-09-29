@@ -1196,12 +1196,13 @@ const slideoverUi = computed(() => {
         >
           <div
             v-if="isDetailView"
-            class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3"
+            class="flex shrink-0 flex-wrap items-center gap-x-1.5 gap-y-2 border-b border-border px-4 py-3 sm:flex-nowrap sm:justify-between sm:gap-2"
           >
-            <div class="flex items-center gap-2 min-w-0">
+            <!-- En mobile el grupo se "disuelve" (contents): chips y botones fluyen y saltan de línea sin encimarse. -->
+            <div class="contents sm:flex sm:min-w-0 sm:items-center sm:gap-2">
               <UIcon
                 name="i-lucide-file-text"
-                class="h-5 w-5 text-foreground shrink-0"
+                class="h-5 w-5 text-foreground shrink-0 max-sm:hidden"
               />
               <UBadge
                 :label="t(`tasks.types.${state.type}`)"
@@ -1231,7 +1232,7 @@ const slideoverUi = computed(() => {
                 :created-by="taskDetailQuery.data.value.created_by"
               />
             </div>
-            <div class="flex items-center gap-1 shrink-0">
+            <div class="ml-auto flex shrink-0 items-center gap-1">
               <UButton
                 v-if="!isEditing"
                 class="sm:hidden"
