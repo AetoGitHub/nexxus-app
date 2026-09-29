@@ -1035,10 +1035,10 @@
     "title": "CEO Report",
     "toolbar": {
       "filters": "Filters",
-      "compare": "Compare {n} months",
-      "allTeams": "All teams",
-      "ai": "AI enabled",
-      "change": "Change",
+      "period": "Period",
+      "periodPlaceholder": "Select a period",
+      "generate": "Generate report",
+      "recalculate": "Recalculate",
       "download": "Download PDF"
     },
     "toast": {
@@ -1058,12 +1058,14 @@
     "cover": {
       "kicker": "Productivity report",
       "results": "Results",
-      "scope": "{scope} · {teams} teams · {tasks} tasks",
+      "scope": "{scope} · {teams} · {tasks}",
       "verdict": "Period verdict",
       "generated": "Generated: {date}",
       "period": "Period: {period}",
       "comparison": "Compared to: {value}",
-      "completion": "Overall completion"
+      "completion": "Overall completion",
+      "teamsCount": "{n} team | {n} teams",
+      "tasksCount": "{n} task | {n} tasks"
     },
     "kpis": {
       "eyebrow": "Period objectives",
@@ -1072,7 +1074,11 @@
       "completionRate": "Total Completion Rate",
       "whatHappened": "What happened",
       "whatItMeans": "What it means",
-      "continued": "Key indicators (continued)"
+      "continued": "Key indicators (continued)",
+      "tct": "Total completion (TCT)",
+      "tc": "Punctuality (TC)",
+      "tpr": "Resolution time (TPR)",
+      "created": "Tasks created"
     },
     "insights": {
       "eyebrow": "Narrative analysis · Nexxa AI",
@@ -1083,17 +1089,19 @@
       "title": "The state of each team",
       "people": "{n} people",
       "punctuality": "On time: {n}%",
-      "tasks": "{n} tasks",
+      "tasks": "{n} task | {n} tasks",
       "overdue": "{n} overdue",
       "avg": "{value} avg",
       "months": "6 months",
-      "continued": "The state of each team (continued)"
+      "continued": "The state of each team (continued)",
+      "punctualityNone": "Punct: —"
     },
     "categories": {
-      "eyebrow": "Work categories",
-      "title": "Where operations get stuck",
+      "eyebrow": "Projects",
+      "title": "How each project is doing",
       "overdue": "overdue",
-      "avg": "avg"
+      "avg": "avg",
+      "continued": "How each project is doing (continued)"
     },
     "people": {
       "eyebrow": "Individual performance",
@@ -1101,12 +1109,13 @@
       "loadTitle": "Productive load distribution",
       "saturated": "{n} saturated",
       "goal": "Goal {n}%",
-      "top": "Top 5 · Best performance of the month",
+      "top": "Best performance of the period",
       "bottom": "Need attention",
       "punctuality": "On time: {n}%",
-      "tasks": "{n} tasks",
+      "tasks": "{n} task | {n} tasks",
       "overdue": "{n} overdue",
-      "privacy": "Visible only to the CEO and direct manager"
+      "privacy": "Visible only to the CEO and direct manager",
+      "punctualityNone": "Punct: —"
     },
     "nexxtep": {
       "eyebrow": "AI agent",
@@ -1130,6 +1139,62 @@
     },
     "back": {
       "title": "Productivity report"
+    },
+    "generate": {
+      "title": "Generate report",
+      "description": "Calculates your company metrics for the chosen period.",
+      "periodType": "Period type",
+      "start": "Start",
+      "end": "End",
+      "force": "Recalculate if a report with that start already exists",
+      "submit": "Generate",
+      "cancel": "Cancel",
+      "invalidRange": "The end date must be on or after the start date.",
+      "successTitle": "Report generated",
+      "recalculatedTitle": "Report recalculated",
+      "errorTitle": "Could not generate the report"
+    },
+    "periodTypes": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "states": {
+      "noCompany": "Select a company to see its reports.",
+      "emptyTitle": "No reports yet",
+      "emptyDescription": "Generate the first one for your company by choosing a period.",
+      "errorTitle": "Reports could not be loaded",
+      "retry": "Retry",
+      "noTasksTitle": "No tasks in this period",
+      "noTasksDescription": "No tasks were created in this period, so there are no metrics to show."
+    },
+    "scope": {
+      "company": "Company"
+    },
+    "confidentiality": "Confidential · CEO",
+    "comparison": {
+      "previous": "Previous period",
+      "none": "No previous period"
+    },
+    "delta": {
+      "stable": "unchanged vs previous",
+      "points": "{value}pp vs previous",
+      "days": "{value} d vs previous"
+    },
+    "units": {
+      "days": "{n} days"
+    },
+    "trend": {
+      "up": "Rising",
+      "down": "Falling",
+      "stable": "Stable"
+    },
+    "facts": {
+      "completion": "{completed} of {total} tasks completed.",
+      "punctuality": "Based on {base} completed tasks with a due date.",
+      "punctualityExcluded": "{n} without a due date are not counted.",
+      "resolution": "Average time from creation to close for completed tasks.",
+      "noData": "Not enough data in the period."
     }
   },
   "taskSettings": {

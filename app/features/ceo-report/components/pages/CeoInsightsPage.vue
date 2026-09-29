@@ -9,6 +9,7 @@ const { t } = useI18n()
 
 <template>
   <CeoReportPage
+    v-if="report.insights"
     dark
     :page-number="pageNumber"
     :period-label="report.meta.periodLabel"

@@ -33,13 +33,16 @@ const { t } = useI18n()
         <p class="cr-cover__scope">
           {{ t('ceoReport.cover.scope', {
             scope: report.meta.scopeLabel,
-            teams: report.meta.teamsCount,
-            tasks: report.meta.tasksCount,
+            teams: t('ceoReport.cover.teamsCount', { n: report.meta.teamsCount }, report.meta.teamsCount),
+            tasks: t('ceoReport.cover.tasksCount', { n: report.meta.tasksCount }, report.meta.tasksCount),
           }) }}
         </p>
       </div>
 
-      <div class="cr-cover__verdict">
+      <div
+        v-if="report.verdict"
+        class="cr-cover__verdict"
+      >
         <div class="cr-eyebrow">
           {{ t('ceoReport.cover.verdict') }}
         </div>
@@ -50,8 +53,10 @@ const { t } = useI18n()
         <div class="cr-cover__meta">
           {{ t('ceoReport.cover.generated', { date: report.meta.generatedAt }) }}
           · {{ t('ceoReport.cover.period', { period: report.meta.periodLabel }) }}
-          · {{ t('ceoReport.cover.comparison', { value: report.meta.comparisonLabel }) }}<br>
-          {{ report.meta.aiModel }}
+          · {{ t('ceoReport.cover.comparison', { value: report.meta.comparisonLabel }) }}
+          <template v-if="report.meta.aiModel">
+            <br>{{ report.meta.aiModel }}
+          </template>
         </div>
         <div class="cr-cover__pill">
           <span class="cr-cover__pill-dot" />

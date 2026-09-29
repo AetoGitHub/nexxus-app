@@ -10,6 +10,7 @@ const { t } = useI18n()
 
 <template>
   <CeoReportPage
+    v-if="report.nexxtep"
     :page-number="pageNumber"
     :period-label="report.meta.periodLabel"
   >

@@ -958,3 +958,9 @@
   .cr-page { box-shadow: none; margin: 0; }
   .cr-no-print { display: none !important; }
 }
+
+/* ---------- Variantes compactas (datos sin textos de IA: sin motivo, serie ni nota) ---------- */
+.cr-team--compact { grid-template-columns: 170px 150px 1fr; }
+.cr-cat--compact { grid-template-columns: 1fr 96px 96px; }
+.cr-person--compact,
+.cr-person--bottom.cr-person--compact { grid-template-columns: 22px 1fr 78px 70px; }
