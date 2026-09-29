@@ -47,11 +47,25 @@ const usernameModel = computed({
   },
 })
 
+const firstNameModel = computed({
+  get: () => state.first_name,
+  set: (value: string) => {
+    state.first_name = toNameCase(value)
+  },
+})
+
+const lastNameModel = computed({
+  get: () => state.last_name,
+  set: (value: string) => {
+    state.last_name = toNameCase(value)
+  },
+})
+
 function applyUser(detail: UserProfileDetail) {
   Object.assign(state, {
     username: detail.username.toLocaleUpperCase(),
-    first_name: detail.first_name,
-    last_name: detail.last_name,
+    first_name: toNameCase(detail.first_name),
+    last_name: toNameCase(detail.last_name),
     email: detail.email,
     corporate_email: detail.corporate_email,
     whatsapp: detail.whatsapp,
@@ -153,10 +167,11 @@ async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
             :label="t('configuration.user.fields.firstName')"
           >
             <UInput
-              v-model="state.first_name"
+              v-model="firstNameModel"
               :placeholder="t('configuration.user.placeholders.firstName')"
               autocomplete="given-name"
               class="w-full"
+              @input="normalizeNameInput"
             />
           </UFormField>
 
@@ -165,10 +180,11 @@ async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
             :label="t('configuration.user.fields.lastName')"
           >
             <UInput
-              v-model="state.last_name"
+              v-model="lastNameModel"
               :placeholder="t('configuration.user.placeholders.lastName')"
               autocomplete="family-name"
               class="w-full"
+              @input="normalizeNameInput"
             />
           </UFormField>
         </div>

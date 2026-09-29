@@ -25,10 +25,12 @@ export function createBulkUserSchema(messages: BulkUserSchemaMessages) {
         .transform(value => value.toLocaleUpperCase()),
       first_name: z.string({ error: messages.firstNameRequired })
         .trim()
-        .min(1, messages.firstNameRequired),
+        .min(1, messages.firstNameRequired)
+        .transform(toNameCase),
       last_name: z.string({ error: messages.lastNameRequired })
         .trim()
-        .min(1, messages.lastNameRequired),
+        .min(1, messages.lastNameRequired)
+        .transform(toNameCase),
       email: z.string({ error: messages.emailRequired })
         .trim()
         .min(1, messages.emailRequired)

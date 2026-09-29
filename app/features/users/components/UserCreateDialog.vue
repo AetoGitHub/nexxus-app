@@ -56,6 +56,20 @@ const usernameModel = computed({
   },
 })
 
+const firstNameModel = computed({
+  get: () => state.first_name,
+  set: (value: string) => {
+    state.first_name = toNameCase(value)
+  },
+})
+
+const lastNameModel = computed({
+  get: () => state.last_name,
+  set: (value: string) => {
+    state.last_name = toNameCase(value)
+  },
+})
+
 /** Al cambiar de organización, la compañía elegida puede dejar de pertenecerle. */
 watch(() => state.organization, () => {
   if (!companyItems.value.some(item => item.value === state.company)) {
@@ -166,10 +180,11 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
             :label="t('configuration.user.fields.firstName')"
           >
             <UInput
-              v-model="state.first_name"
+              v-model="firstNameModel"
               :placeholder="t('configuration.user.placeholders.firstName')"
               autocomplete="given-name"
               class="w-full"
+              @input="normalizeNameInput"
             />
           </UFormField>
 
@@ -178,10 +193,11 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
             :label="t('configuration.user.fields.lastName')"
           >
             <UInput
-              v-model="state.last_name"
+              v-model="lastNameModel"
               :placeholder="t('configuration.user.placeholders.lastName')"
               autocomplete="family-name"
               class="w-full"
+              @input="normalizeNameInput"
             />
           </UFormField>
         </div>

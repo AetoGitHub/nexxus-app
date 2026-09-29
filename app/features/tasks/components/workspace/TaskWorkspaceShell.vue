@@ -68,11 +68,10 @@ watch(showRefresh, (visible) => {
 /** Sheet de filtros solo en mobile (independiente del panel desktop). */
 const mobileFiltersOpen = ref(false)
 
-/** Contador de filtros activos (sin búsqueda; va aparte en la barra). */
+/** Contador de filtros activos (sin búsqueda ni «Ver por»; van aparte en la barra). */
 const activeFilterCount = computed(() => {
   const f = listFilters.value
   let count = 0
-  if (groupBy.value !== 'all') count += 1
   if (f.type?.length) count += 1
   if (f.project?.length) count += 1
   if (f.overdue === true) count += 1
@@ -154,6 +153,14 @@ function goToStatusList() {
             @click="openMobileFilters"
           />
         </UChip>
+
+        <!-- «Ver por» fuera del sheet de filtros, en el espacio libre de la barra. -->
+        <TaskGroupByFilter
+          v-if="!hideGroupBy"
+          v-model="groupBy"
+          compact
+          :exclude="excludeGroupBy"
+        />
 
         <!-- Atajo Kanban -> Lista agrupada por Estado (misma info, más legible en landscape). -->
         <UButton
@@ -299,13 +306,6 @@ function goToStatusList() {
       }"
     >
       <template #body>
-        <TaskGroupByFilter
-          v-model="groupBy"
-          stacked
-          :hide-options="hideGroupBy"
-          :exclude="excludeGroupBy"
-        />
-
         <TaskListFilters
           v-model="listFilters"
           v-model:search="search"

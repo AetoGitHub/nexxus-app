@@ -7,14 +7,14 @@ const props = withDefaults(
   defineProps<{
     /** Oculta el label y chips de «Ver por» (mantiene el contenedor y el slot). */
     hideOptions?: boolean
-    /** Layout vertical (sheet mobile). */
-    stacked?: boolean
+    /** Versión compacta (un solo select) para la barra mobile. */
+    compact?: boolean
     /** Opciones no aplicables a la vista activa. */
     exclude?: TaskGroupBy[]
   }>(),
   {
     hideOptions: false,
-    stacked: false,
+    compact: false,
     exclude: () => [],
   },
 )
@@ -33,18 +33,45 @@ const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
 const visibleOptions = computed(() =>
   options.filter(option => !props.exclude.includes(option.value)),
 )
+
+const selectItems = computed(() =>
+  visibleOptions.value.map(option => ({
+    label: t(option.labelKey),
+    value: option.value,
+    icon: option.icon,
+  })),
+)
+
+const activeOption = computed(() => options.find(option => option.value === groupBy.value))
 </script>
 
 <template>
+  <USelect
+    v-if="compact"
+    v-model="groupBy"
+    :items="selectItems"
+    :icon="activeOption?.icon"
+    size="sm"
+    class="h-8 min-w-0 flex-1"
+    :aria-label="t('tasks.viewBy')"
+  >
+    <template #default>
+      <span class="truncate">
+        <span class="text-muted-foreground">{{ t('tasks.viewBy') }}</span>
+        {{ activeOption ? t(activeOption.labelKey) : '' }}
+      </span>
+    </template>
+  </USelect>
+
   <div
-    class="rounded-lg border border-border bg-card px-3 py-2 flex gap-2"
-    :class="stacked ? 'flex-col items-stretch' : 'items-center flex-wrap'"
+    v-else
+    class="rounded-lg border border-border bg-card px-3 py-2 flex gap-2 items-center flex-wrap"
   >
     <template v-if="!hideOptions">
-      <span class="text-xs text-muted-foreground" :class="stacked ? '' : 'mr-1'">
+      <span class="text-xs text-muted-foreground mr-1">
         {{ t('tasks.viewBy') }}
       </span>
-      <div class="flex flex-wrap gap-2" :class="stacked ? '' : 'contents'">
+      <div class="contents">
         <UButton
           v-for="option in visibleOptions"
           :key="option.value"
@@ -61,7 +88,7 @@ const visibleOptions = computed(() =>
         />
       </div>
     </template>
-    <div :class="stacked ? 'pt-1' : 'ml-auto'">
+    <div class="ml-auto">
       <slot />
     </div>
   </div>
