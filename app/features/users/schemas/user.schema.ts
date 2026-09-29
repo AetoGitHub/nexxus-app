@@ -52,8 +52,8 @@ export function createUserSchema(messages: UserSchemaMessages) {
     password: strongPassword(messages),
     organization: requiredId(messages.organizationRequired),
     company: requiredId(messages.companyRequired),
-    first_name: z.string().trim(),
-    last_name: z.string().trim(),
+    first_name: z.string().trim().transform(toNameCase),
+    last_name: z.string().trim().transform(toNameCase),
     email: optionalEmail(messages.emailInvalid),
     corporate_email: optionalEmail(messages.corporateEmailInvalid),
     whatsapp: z.string().trim(),
@@ -67,8 +67,8 @@ export function createUpdateUserSchema(
     username: z.string({ error: messages.usernameRequired })
       .trim()
       .min(1, messages.usernameRequired),
-    first_name: z.string().trim(),
-    last_name: z.string().trim(),
+    first_name: z.string().trim().transform(toNameCase),
+    last_name: z.string().trim().transform(toNameCase),
     email: optionalEmail(messages.emailInvalid),
     corporate_email: optionalEmail(messages.corporateEmailInvalid),
     whatsapp: z.string().trim(),

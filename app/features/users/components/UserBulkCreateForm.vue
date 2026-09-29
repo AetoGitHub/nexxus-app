@@ -73,6 +73,13 @@ function updateUsername(index: number, value: string | number) {
   }
 }
 
+function updateName(index: number, field: 'first_name' | 'last_name', value: string | number) {
+  const user = state.users[index]
+  if (user) {
+    user[field] = toNameCase(String(value))
+  }
+}
+
 /** Al cambiar de organización, la compañía elegida puede dejar de pertenecerle. */
 watch(() => state.organization, () => {
   state.company = undefined
@@ -208,10 +215,12 @@ watch(isResultModalOpen, (isOpenValue) => {
                   required
                 >
                   <UInput
-                    v-model="user.first_name"
+                    :model-value="user.first_name"
                     :placeholder="t('configuration.user.placeholders.firstName')"
                     autocomplete="given-name"
                     class="w-full"
+                    @input="normalizeNameInput"
+                    @update:model-value="updateName(index, 'first_name', $event)"
                   />
                 </UFormField>
 
@@ -221,10 +230,12 @@ watch(isResultModalOpen, (isOpenValue) => {
                   required
                 >
                   <UInput
-                    v-model="user.last_name"
+                    :model-value="user.last_name"
                     :placeholder="t('configuration.user.placeholders.lastName')"
                     autocomplete="family-name"
                     class="w-full"
+                    @input="normalizeNameInput"
+                    @update:model-value="updateName(index, 'last_name', $event)"
                   />
                 </UFormField>
               </div>
