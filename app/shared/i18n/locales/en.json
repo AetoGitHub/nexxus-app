@@ -752,9 +752,10 @@
       },
       "filters": {
         "organization": "Organization",
-        "organizationPlaceholder": "All organizations",
+        "organizationPlaceholder": "Select an organization",
         "company": "Company",
-        "companyPlaceholder": "Search company..."
+        "companyPlaceholder": "Search company...",
+        "selectPrompt": "Select an organization to view its companies."
       },
       "create": {
         "toolbarButton": "Create",
@@ -841,7 +842,8 @@
       },
       "filters": {
         "organization": "Organization",
-        "organizationPlaceholder": "All organizations"
+        "organizationPlaceholder": "Select an organization",
+        "selectPrompt": "Select an organization to view its users."
       },
       "fields": {
         "username": "Username",

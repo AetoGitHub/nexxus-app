@@ -13,6 +13,7 @@ import UserCreateDialog from '~/features/users/components/UserCreateDialog.vue'
 import UserListTable from '~/features/users/components/UserListTable.vue'
 import UserUpdateDialog from '~/features/users/components/UserUpdateDialog.vue'
 import ConfigurationNavSidebar from '~/features/configuration/components/shared/ConfigurationNavSidebar.vue'
+import ConfigurationSelectOrganizationPrompt from '~/features/configuration/components/shared/ConfigurationSelectOrganizationPrompt.vue'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
 import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
 import type { ConfigurationNavItem, ConfigurationSectionId } from '~/features/configuration/types/configuration.types'
@@ -69,6 +70,14 @@ const companySelectItems = computed(() => {
 })
 
 const selectedCompanyName = computed(() => selectedCompanyItem.value?.label ?? '')
+
+/** Sin organización la tabla de compañías no se muestra: no debe quedar un filtro de compañía huérfano. */
+watch(organizationFilterId, (id) => {
+  if (id == null) {
+    companyFilterId.value = null
+    companyNameSearch.value = ''
+  }
+})
 
 /** Preselecciona en el bulk-create la organización/compañía ya elegidas acá (si las hay). */
 const bulkCreateTo = computed(() => {
@@ -149,18 +158,10 @@ useSeoMeta({
               class="min-h-0 flex-1"
               :organization-id="organizationFilterId"
             />
-            <div
+            <ConfigurationSelectOrganizationPrompt
               v-else
-              class="flex flex-1 flex-col items-center justify-center py-12 text-center"
-            >
-              <UIcon
-                name="i-lucide-building-2"
-                class="mb-2 text-4xl text-dimmed"
-              />
-              <h3 class="text-lg font-semibold text-highlighted">
-                {{ t('configuration.organization.filters.selectPrompt') }}
-              </h3>
-            </div>
+              :message="t('configuration.organization.filters.selectPrompt')"
+            />
             <OrganizationUpdateDialog />
           </main>
         </template>
@@ -187,6 +188,7 @@ useSeoMeta({
                 v-model:search-term="companyNameSearch"
                 :items="companySelectItems"
                 :loading="companyFilterItemsPending"
+                :disabled="organizationFilterId == null"
                 value-key="value"
                 :placeholder="t('configuration.company.filters.companyPlaceholder')"
                 icon="i-lucide-search"
@@ -203,9 +205,14 @@ useSeoMeta({
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
             <CompanyListTable
+              v-if="organizationFilterId != null"
               class="min-h-0 flex-1"
               :organization-id="organizationFilterId"
               :name-search="selectedCompanyName"
+            />
+            <ConfigurationSelectOrganizationPrompt
+              v-else
+              :message="t('configuration.company.filters.selectPrompt')"
             />
             <CompanyUpdateDialog />
           </main>
@@ -243,8 +250,13 @@ useSeoMeta({
 
           <main class="flex min-h-0 flex-1 flex-col px-3 py-4 sm:px-4 lg:px-5">
             <UserListTable
+              v-if="organizationFilterId != null"
               class="min-h-0 flex-1"
               :organization-id="organizationFilterId"
+            />
+            <ConfigurationSelectOrganizationPrompt
+              v-else
+              :message="t('configuration.user.filters.selectPrompt')"
             />
             <UserUpdateDialog />
             <UserChangePasswordDialog />
