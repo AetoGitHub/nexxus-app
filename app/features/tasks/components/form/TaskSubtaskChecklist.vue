@@ -232,11 +232,13 @@ async function removeSubtask(subtaskId: number) {
       >
         <div
           v-if="editingId === row.id"
-          class="flex flex-col gap-2 rounded-lg border border-border bg-card p-2 sm:flex-row sm:items-center"
+          class="flex flex-col gap-2 rounded-lg border border-border bg-card p-2 sm:flex-row sm:items-start"
         >
-          <UInput
+          <UTextarea
             v-model="editShortDescription"
             autofocus
+            :rows="1"
+            autoresize
             :placeholder="t('tasks.form.subtasks.namePlaceholder')"
             :disabled="isUpdating"
             class="w-full sm:flex-1"
@@ -279,21 +281,21 @@ async function removeSubtask(subtaskId: number) {
 
         <div
           v-else
-          class="flex items-center gap-2 rounded-md px-1.5 py-1.5 transition-colors hover:bg-muted/40"
+          class="flex items-start gap-2 rounded-md px-1.5 py-1.5 transition-colors hover:bg-muted/40"
         >
           <UCheckbox
             :model-value="row.completed"
             :disabled="disabled"
             color="success"
+            class="mt-0.5"
             :aria-label="row.short_description"
             @update:model-value="(value) => toggleCompleted(row.id, value)"
           />
           <span
-            class="min-w-0 flex-1 truncate text-sm transition-colors"
+            class="min-w-0 flex-1 whitespace-pre-wrap break-words text-sm transition-colors"
             :class="row.completed
               ? 'text-muted-foreground line-through'
               : 'text-foreground'"
-            :title="row.short_description"
           >{{ row.short_description }}</span>
           <span
             v-if="row.assigned_to_name"
@@ -348,11 +350,13 @@ async function removeSubtask(subtaskId: number) {
       />
       <div
         v-else
-        class="flex flex-col gap-2 rounded-lg border border-border bg-card p-2 sm:flex-row sm:items-center"
+        class="flex flex-col gap-2 rounded-lg border border-border bg-card p-2 sm:flex-row sm:items-start"
       >
-        <UInput
+        <UTextarea
           v-model="newShortDescription"
           autofocus
+          :rows="1"
+          autoresize
           :placeholder="t('tasks.form.subtasks.namePlaceholder')"
           :disabled="isCreating"
           class="w-full sm:flex-1"
