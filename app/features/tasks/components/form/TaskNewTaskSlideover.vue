@@ -312,6 +312,19 @@ const isMyTask = computed(() => {
   return (taskDetailQuery.data.value?.assigned_to ?? []).some(assignee => assignee.id === currentUserId)
 })
 
+/**
+ * Puede modificar esta tarea (editar, archivar, desarchivar). Quien no es parte de
+ * ella (asignado o revisor), p. ej. un manager que la ve desde Tareas por proyecto,
+ * solo la consulta.
+ */
+const canModifyThisTask = computed(() => {
+  if (!isDetailView.value) {
+    return true
+  }
+  const detail = taskDetailQuery.data.value
+  return detail != null && canModifyTask(detail, user.value?.id)
+})
+
 /** El usuario logueado está entre los que deben confirmar el cierre múltiple. */
 const isMultipleCloseReviewer = computed(() => userCloseApproval.value != null)
 
@@ -397,20 +410,27 @@ const showArchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
   && taskDetailQuery.data.value != null
-  && !isArchived.value,
+  && !isArchived.value
+  && canModifyThisTask.value,
 )
 
 /** Detalle: desarchivar (solo si ya está archivada). */
 const showUnarchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
-  && isArchived.value,
+  && isArchived.value
+  && canModifyThisTask.value,
 )
 
 /** Completada o archivada: sin lápiz; solo se edita tras reabrir/desarchivar. */
+const isTaskLocked = computed(() =>
+  taskDetailQuery.data.value?.status === 'complete'
+  || isArchived.value,
+)
+
 const canEditTask = computed(() =>
-  taskDetailQuery.data.value?.status !== 'complete'
-  && !isArchived.value,
+  !isTaskLocked.value
+  && canModifyThisTask.value,
 )
 
 const state = reactive<NewTaskFormState>({
@@ -1220,6 +1240,16 @@ const slideoverUi = computed(() => {
                 class="uppercase tracking-wide shrink-0"
               />
               <UBadge
+                v-if="isDetailView && taskDetailQuery.data.value && !canModifyThisTask"
+                :label="t('tasks.form.readOnly')"
+                :title="t('tasks.form.readOnlyHint')"
+                icon="i-lucide-eye"
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                class="uppercase tracking-wide shrink-0"
+              />
+              <UBadge
                 v-if="props.authorizeMode"
                 :label="t('tasks.toUpdate.authorize.label')"
                 color="warning"
@@ -1397,7 +1427,8 @@ const slideoverUi = computed(() => {
             v-if="isDetailView && !isBacklogMode && taskId != null"
             :task-id="taskId"
             :subtasks="taskDetailQuery.data.value?.subtasks ?? []"
-            :disabled="!canEditTask"
+            :disabled="isTaskLocked"
+            :restricted="!canModifyThisTask"
             :editing="isEditing"
             :user-items="userSelectItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
