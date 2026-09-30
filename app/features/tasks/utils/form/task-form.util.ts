@@ -125,19 +125,20 @@ export function dateInputToLimitISO(date: string): string {
   return new Date(Date.UTC(year, month - 1, day, 23, 59, 59)).toISOString()
 }
 
-function normalizeTaskReviewers(reviewers: number[], currentUserId?: number): number[] {
-  if (currentUserId == null) {
-    return reviewers
+/**
+ * Revisores de una tarea de cierre múltiple: solo los elegidos en el formulario, sin repetidos.
+ * Nunca se agrega al usuario en sesión (el backend crea una aprobación por cada id recibido).
+ */
+function resolveTaskReviewers(reviewers: number[]): number[] {
+  const unique = [...new Set(reviewers)]
+  if (!unique.length) {
+    throw new Error('task_reviewer_required')
   }
-  if (reviewers.includes(currentUserId)) {
-    return reviewers
-  }
-  return [currentUserId, ...reviewers]
+  return unique
 }
 
 export function buildCreateTaskPayload(
   form: NewTaskFormInput,
-  currentUserId?: number,
   subtasks?: CreateTaskSubtaskPayload[],
 ): CreateTaskPayload {
   if (!form.name.trim()) {
@@ -169,15 +170,7 @@ export function buildCreateTaskPayload(
   }
 
   if (form.type === 'multiple_close') {
-    const reviewers = form.taskReviewer.length
-      ? form.taskReviewer
-      : (currentUserId != null ? [currentUserId] : [])
-
-    if (!reviewers.length) {
-      throw new Error('task_reviewer_required')
-    }
-
-    payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
+    payload.task_reviewer = resolveTaskReviewers(form.taskReviewer)
   }
 
   if (form.type === 'repeat') {
@@ -240,7 +233,6 @@ export function buildUpdateBacklogTaskPayload(
 export function buildPromoteBacklogTaskPayload(
   form: NewTaskFormInput,
   taskId: number,
-  currentUserId?: number,
 ): PromoteBacklogTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -269,15 +261,7 @@ export function buildPromoteBacklogTaskPayload(
   }
 
   if (form.type === 'multiple_close') {
-    const reviewers = form.taskReviewer.length
-      ? form.taskReviewer
-      : (currentUserId != null ? [currentUserId] : [])
-
-    if (!reviewers.length) {
-      throw new Error('task_reviewer_required')
-    }
-
-    payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
+    payload.task_reviewer = resolveTaskReviewers(form.taskReviewer)
   }
 
   if (form.type === 'repeat') {
@@ -304,7 +288,6 @@ export interface RepeatSeriesUpdateOptions {
 export function buildUpdateTaskPayload(
   form: NewTaskFormInput,
   startDate: string | null | undefined,
-  currentUserId?: number,
   repeatSeries?: RepeatSeriesUpdateOptions,
 ): UpdateTaskPayload {
   if (!form.name.trim()) {
@@ -333,18 +316,7 @@ export function buildUpdateTaskPayload(
   }
 
   if (form.type === 'multiple_close') {
-    const reviewers = form.taskReviewer.length
-      ? form.taskReviewer
-      : (currentUserId != null ? [currentUserId] : [])
-
-    if (!reviewers.length) {
-      throw new Error('task_reviewer_required')
-    }
-
-    payload.task_reviewer = normalizeTaskReviewers(reviewers, currentUserId)
-  }
-  else if (form.taskReviewer.length) {
-    payload.task_reviewer = form.taskReviewer
+    payload.task_reviewer = resolveTaskReviewers(form.taskReviewer)
   }
 
   if (form.type === 'repeat') {
@@ -359,10 +331,6 @@ export function buildUpdateTaskPayload(
   }
 
   return payload
-}
-
-export function defaultTaskReviewers(currentUserId?: number): number[] {
-  return currentUserId != null ? [currentUserId] : []
 }
 
 /** Close approval del usuario logueado (match por profile), sin importar si ya cerró. */

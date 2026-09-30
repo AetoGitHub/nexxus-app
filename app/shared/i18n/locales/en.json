@@ -452,7 +452,7 @@
         "groupRequired": "Select a group",
         "assignedToRequired": "Select at least one assigned user",
         "dueDateRequired": "Select a due date",
-        "taskReviewerRequired": "Select at least one collaborator who must confirm",
+        "taskReviewerRequired": "Select at least one reviewer.",
         "repeatConfigRequired": "Complete the recurrence settings",
         "subtaskAssignedToRequired": "Select an assignee for each subtask"
       },
@@ -531,7 +531,7 @@
       },
       "multipleClose": {
         "title": "Who must confirm?",
-        "description": "Besides you. Each person must close their part to complete the task.",
+        "description": "Each person must close their part to complete the task.",
         "searchPlaceholder": "Search collaborator..."
       },
       "nexxtepSuggestions": {

@@ -42,7 +42,6 @@ import {
   buildUpdateBacklogTaskPayload,
   buildUpdateTaskPayload,
   createEmptySubtaskRow,
-  defaultTaskReviewers,
   findCloseApprovalForUser,
   findPendingCloseApproval,
   taskDetailToFormInput,
@@ -226,9 +225,6 @@ const canSubmit = computed(() => {
     return false
   }
   if (!isDetailView.value && state.group == null) {
-    return false
-  }
-  if (state.type === 'multiple_close' && !state.taskReviewer.length && user.value?.id == null) {
     return false
   }
   if (state.type === 'repeat' && !isRepeatConfigComplete(state.repeatConfig)) {
@@ -440,7 +436,7 @@ const state = reactive<NewTaskFormState>({
   project: undefined,
   group: undefined,
   assignedTo: [],
-  taskReviewer: defaultTaskReviewers(user.value?.id),
+  taskReviewer: [],
   dueDate: '',
   urgent: false,
   effort: undefined,
@@ -643,7 +639,7 @@ function resetForm() {
   state.project = undefined
   state.group = undefined
   state.assignedTo = []
-  state.taskReviewer = defaultTaskReviewers(user.value?.id)
+  state.taskReviewer = []
   state.dueDate = ''
   state.urgent = false
   state.effort = undefined
@@ -666,25 +662,13 @@ function applyFormInput(input: NewTaskFormInput) {
   state.project = input.project
   state.group = input.group
   state.assignedTo = [...input.assignedTo]
-  state.taskReviewer = input.taskReviewer.length
-    ? [...input.taskReviewer]
-    : defaultTaskReviewers(user.value?.id)
+  state.taskReviewer = [...input.taskReviewer]
   state.dueDate = input.dueDate
   state.urgent = input.urgent
   state.effort = input.effort
   state.repeatConfig = { ...input.repeatConfig }
   state.setAsMaster = false
   state.applyToAll = false
-}
-
-function ensureCurrentUserInReviewers() {
-  const currentUserId = user.value?.id
-  if (currentUserId == null) {
-    return
-  }
-  if (!state.taskReviewer.includes(currentUserId)) {
-    state.taskReviewer = [currentUserId, ...state.taskReviewer]
-  }
 }
 
 function close() {
@@ -955,17 +939,9 @@ function isSameAsStoredTask(payload: UpdateTaskPayload): boolean {
   }
   try {
     const input = taskDetailToFormInput(detail)
-    // Misma regla de default que `applyFormInput`: si no hay reviewers
-    // guardados, el form precarga al usuario actual para el caso de cambiar
-    // a "cierre múltiple". Replicarla aquí evita un falso "cambió" en la
-    // comparación cuando el usuario no tocó nada.
     const original = buildUpdateTaskPayload(
-      {
-        ...input,
-        taskReviewer: input.taskReviewer.length ? input.taskReviewer : defaultTaskReviewers(user.value?.id),
-      },
+      input,
       detail.start_date,
-      user.value?.id,
       { generatedFrom: generatedFromId.value, setAsMaster: false, applyToAll: false },
     )
     return JSON.stringify(payload) === JSON.stringify(original)
@@ -984,7 +960,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
   try {
     if (isPromotingBacklog.value && taskId.value != null) {
-      const payload = buildPromoteBacklogTaskPayload(state, taskId.value, user.value?.id)
+      const payload = buildPromoteBacklogTaskPayload(state, taskId.value)
       await promoteBacklogTask(payload)
       close()
       return
@@ -1001,7 +977,6 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       const payload = buildUpdateTaskPayload(
         state,
         taskDetailQuery.data.value?.start_date,
-        user.value?.id,
         {
           generatedFrom: generatedFromId.value,
           setAsMaster: state.setAsMaster,
@@ -1027,7 +1002,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
     validateSubtaskRows()
     await uploadPendingSubtaskImages()
-    const payload = buildCreateTaskPayload(state, user.value?.id, buildSubtasksPayload())
+    const payload = buildCreateTaskPayload(state, buildSubtasksPayload())
     const created = await createTask(payload)
     await attachPendingFiles(created.id)
     close()
@@ -1041,25 +1016,6 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       || (isEditing.value ? t('tasks.form.updateErrorTitle') : t('tasks.form.createError'))
   }
 }
-
-watch(() => state.taskReviewer, (reviewers) => {
-  if (isReadOnly.value || state.type !== 'multiple_close') {
-    return
-  }
-  const currentUserId = user.value?.id
-  if (currentUserId != null && !reviewers.includes(currentUserId)) {
-    state.taskReviewer = [currentUserId, ...reviewers]
-  }
-}, { deep: true })
-
-watch(() => state.type, (type) => {
-  if (isReadOnly.value) {
-    return
-  }
-  if (type === 'multiple_close') {
-    ensureCurrentUserInReviewers()
-  }
-})
 
 watch(isBacklog, (isOn) => {
   if (isOn) {

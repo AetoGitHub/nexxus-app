@@ -452,7 +452,7 @@
         "groupRequired": "Selecciona un grupo",
         "assignedToRequired": "Selecciona al menos un usuario asignado",
         "dueDateRequired": "Selecciona una fecha límite",
-        "taskReviewerRequired": "Selecciona al menos un colaborador que deba confirmar",
+        "taskReviewerRequired": "Selecciona al menos un revisor.",
         "repeatConfigRequired": "Completa la configuración de repetición",
         "subtaskAssignedToRequired": "Selecciona un responsable para cada subtarea"
       },
@@ -531,7 +531,7 @@
       },
       "multipleClose": {
         "title": "¿Quiénes deben confirmar?",
-        "description": "Además de ti. Cada uno debe cerrar su parte para completar la tarea.",
+        "description": "Cada uno debe cerrar su parte para completar la tarea.",
         "searchPlaceholder": "Buscar colaborador..."
       },
       "nexxtepSuggestions": {
