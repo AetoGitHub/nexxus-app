@@ -86,6 +86,10 @@
       "loadError": "Could not load notifications",
       "openTask": "Open task",
       "unread": "Unread"
+    },
+    "token": {
+      "title": "New token",
+      "description": "Someone gave a token to one of your tasks."
     }
   },
   "tasks": {
@@ -592,6 +596,17 @@
         "closeApprovedBy": "Close approved by {username}.",
         "taskReopened": "Task reopened by {username}."
       }
+    },
+    "tokens": {
+      "give": "Give token",
+      "ariaLabel": "Give token ({n} token) | Give token ({n} tokens)",
+      "errorTitle": "Could not give the token",
+      "viewGivers": "See who gave tokens",
+      "giversTitle": "Tokens given",
+      "loading": "Loading...",
+      "empty": "Nobody has given tokens yet",
+      "loadMore": "Show more",
+      "unknownUser": "User"
     }
   },
   "settings": {
@@ -1173,7 +1188,8 @@
         "task_created": "Assigned task",
         "task_started": "Task started",
         "task_message": "Comment",
-        "generic": "Activity"
+        "generic": "Activity",
+        "task_token_given": "Token received"
       }
     },
     "groups": {

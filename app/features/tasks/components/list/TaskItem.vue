@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import type { Task } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -152,6 +153,10 @@ function onCheckClick() {
             closed: closeApprovalsProgress.closed,
             total: closeApprovalsProgress.total,
           })"
+        />
+        <TaskTokenButton
+          :task-id="task.id"
+          :count="task.tokens_count"
         />
         <!-- Oculto de momento: genera confusión
         <UBadge

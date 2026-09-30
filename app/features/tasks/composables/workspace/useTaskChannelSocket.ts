@@ -1,9 +1,11 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
+import { useTaskTokens } from '~/features/tasks/composables/shared/useTaskTokens'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type {
   CreateMultipleTasksChannelEvent,
   CreateTaskChannelEvent,
+  UpdateTaskChannelEvent,
 } from '~/features/tasks/types/task.types'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
@@ -18,6 +20,18 @@ function isCreateTaskEvent(value: unknown): value is CreateTaskChannelEvent {
 
   const event = value as Partial<CreateTaskChannelEvent>
   return event.event === 'create_task'
+    && typeof event.task_pk === 'number'
+    && Number.isInteger(event.task_pk)
+    && event.task_pk > 0
+}
+
+function isUpdateTaskEvent(value: unknown): value is UpdateTaskChannelEvent {
+  if (typeof value !== 'object' || value == null) {
+    return false
+  }
+
+  const event = value as Partial<UpdateTaskChannelEvent>
+  return event.event === 'update_task'
     && typeof event.task_pk === 'number'
     && Number.isInteger(event.task_pk)
     && event.task_pk > 0
@@ -62,7 +76,9 @@ function isCreateMultipleTasksEvent(
  * Publica su estado en `useRealtimeStatus` para el indicador del sidebar.
  */
 export function useTaskChannelSocket() {
+  const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
+  const { applyServerCount } = useTaskTokens()
   const wsBaseUrl = useWsBaseUrl()
   const { requestTicket } = useWsTicket()
   const { isLoggedIn, selectedCompanyId, user } = useAuth()
@@ -276,6 +292,22 @@ export function useTaskChannelSocket() {
     }, RESYNC_DEBOUNCE_MS)
   }
 
+  /**
+   * Otra persona cambió la tarea (p. ej. le dio un token): trae su conteo real para que el número
+   * se actualice al instante; el resync general que sigue reordena las listas como las manda el backend.
+   */
+  async function syncRemoteTokens(taskPk: number) {
+    try {
+      const task = await $api<{ tokens_count?: number }>(`/api/tasks/channel/${taskPk}/`)
+      if (typeof task.tokens_count === 'number') {
+        applyServerCount(taskPk, task.tokens_count)
+      }
+    }
+    catch {
+      // El refetch general recupera la consistencia.
+    }
+  }
+
   async function connect() {
     const currentGeneration = ++generation
     status.value = reconnectAttempt > 0 ? 'reconnecting' : 'connecting'
@@ -360,6 +392,12 @@ export function useTaskChannelSocket() {
       if (isCreateMultipleTasksEvent(event)) {
         scheduleCountsResync()
         scheduleCurrentViewResync()
+        return
+      }
+
+      if (isUpdateTaskEvent(event)) {
+        void syncRemoteTokens(event.task_pk)
+        scheduleBoardResync()
         return
       }
 

@@ -25,6 +25,7 @@ import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmen
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
+import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -1219,6 +1220,12 @@ const slideoverUi = computed(() => {
               />
             </div>
             <div class="ml-auto flex shrink-0 items-center gap-1">
+              <TaskTokenButton
+                v-if="taskId != null"
+                :task-id="taskId"
+                :count="taskDetailQuery.data.value?.tokens_count"
+                show-givers
+              />
               <UButton
                 v-if="!isEditing"
                 class="sm:hidden"
