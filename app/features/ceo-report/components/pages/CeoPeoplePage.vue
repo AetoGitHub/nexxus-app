@@ -1,21 +1,12 @@
 <script setup lang="ts">
+import CeoPerformanceDistribution from '~/features/ceo-report/components/shared/CeoPerformanceDistribution.vue'
 import CeoReportPage from '~/features/ceo-report/components/shared/CeoReportPage.vue'
-import type { CeoRating, CeoReport } from '~/features/ceo-report/types/ceo-report.types'
-import { initialsOf, ratingFromScore, RATING_HEX } from '~/features/ceo-report/utils/ceo-report.util'
+import type { CeoReport } from '~/features/ceo-report/types/ceo-report.types'
+import { initialsOf, ratingFromScore } from '~/features/ceo-report/utils/ceo-report.util'
 
 defineProps<{ report: CeoReport, pageNumber: number }>()
 
 const { t } = useI18n()
-
-const LEGEND: Array<{ rating: CeoRating, range: string }> = [
-  { rating: 'excellent', range: '≥85%' },
-  { rating: 'good', range: '70-84%' },
-  { rating: 'regular', range: '55-69%' },
-  { rating: 'critical', range: '<55%' },
-]
-
-const CHART_HEIGHT = 60
-
 </script>
 
 <template>
@@ -39,34 +30,7 @@ const CHART_HEIGHT = 60
         {{ report.people.intro }}
       </p>
 
-      <template v-if="report.people.loadBars?.length">
-        <div class="cr-load__head">
-          {{ t('ceoReport.people.loadTitle') }}
-          <span class="cr-pill-red">{{ t('ceoReport.people.saturated', { n: report.people.saturatedCount ?? 0 }) }}</span>
-        </div>
-        <div class="cr-load__chart">
-          <div
-            class="cr-load__goal"
-            :style="{ bottom: `${((report.people.loadGoal ?? 0) / 100) * CHART_HEIGHT}px` }"
-          >
-            {{ t('ceoReport.people.goal', { n: report.people.loadGoal ?? 0 }) }}
-          </div>
-          <div
-            v-for="(bar, index) in report.people.loadBars"
-            :key="index"
-            class="cr-load__bar"
-            :style="{ height: `${(bar.value / 100) * CHART_HEIGHT}px`, background: RATING_HEX[bar.rating] }"
-          />
-        </div>
-        <div class="cr-legend">
-          <span
-            v-for="item in LEGEND"
-            :key="item.rating"
-          >
-            <i :style="{ background: RATING_HEX[item.rating] }" />{{ t(`ceoReport.rating.${item.rating}`).toUpperCase() }} {{ item.range }}
-          </span>
-        </div>
-      </template>
+      <CeoPerformanceDistribution :distribution="report.people.distribution" />
 
       <div
         v-if="report.people.stats?.length"

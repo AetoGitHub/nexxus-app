@@ -1,12 +1,16 @@
 import type {
   Report,
   ReportBreakdownMetric,
+  ReportPerformanceBucket,
   ReportPeriodType,
 } from '~/features/ceo-report/types/ceo-report-api.types'
 import type {
   CeoCategory,
+  CeoDistribution,
   CeoKpiRow,
+  CeoNarrative,
   CeoPerson,
+  CeoRating,
   CeoReport,
   CeoTeam,
   CeoTone,
@@ -264,7 +268,98 @@ export function buildCeoReport(report: Report, context: AdapterContext): CeoRepo
     kpis: buildKpis(report, context),
     teams: { items: buildTeams(metrics.by_team, context) },
     categories: { items: buildCategories(metrics.by_project, context) },
-    people: buildPeople(metrics.by_person),
+    people: {
+      ...buildPeople(metrics.by_person),
+      distribution: buildDistribution(metrics.performance_distribution),
+    },
+    narrative: buildNarrative(report.narrative, locale),
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+/**
+ * Valida el `narrative` de la API (hoy siempre `null`). Devuelve `null` si no trae ninguna
+ * sección utilizable; las secciones que falten quedan `undefined` y se dibujan «en preparación».
+ */
+export function buildNarrative(raw: unknown, locale: string): CeoNarrative | null {
+  if (!isRecord(raw)) {
+    return null
+  }
+
+  const verdict = nonEmptyString(raw.verdict)
+  const texts = Array.isArray(raw.insights)
+    ? raw.insights
+        .map(item => (isRecord(item) ? nonEmptyString(item.text) : undefined))
+        .filter((text): text is string => text != null)
+    : []
+  if (!verdict && !texts.length) {
+    return null
+  }
+
+  const generatedAtRaw = nonEmptyString(raw.generated_at)
+  const generatedDate = generatedAtRaw ? new Date(generatedAtRaw) : null
+  const generatedAt = generatedDate && !Number.isNaN(generatedDate.getTime())
+    ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(generatedDate)
+    : undefined
+
+  return {
+    model: nonEmptyString(raw.model),
+    generatedAt,
+    verdict,
+    insights: texts.length
+      ? texts.map((text, index) => ({ index: String(index + 1).padStart(2, '0'), text }))
+      : undefined,
+  }
+}
+
+const RATINGS: readonly CeoRating[] = ['excellent', 'good', 'regular', 'critical']
+
+/** «≥85%», «70–84%» o «<55%» a partir de los cortes de la API (`max_rate` es exclusivo salvo 100). */
+function rangeLabelOf(bucket: ReportPerformanceBucket): string {
+  if (bucket.max_rate >= 100) {
+    return `≥${bucket.min_rate}%`
+  }
+  if (bucket.min_rate <= 0) {
+    return `<${bucket.max_rate}%`
+  }
+  return `${bucket.min_rate}–${bucket.max_rate - 1}%`
+}
+
+/** `undefined` si el reporte es anterior a la distribución (no trae `performance_distribution`). */
+function buildDistribution(buckets: ReportPerformanceBucket[] | undefined): CeoDistribution | undefined {
+  if (!Array.isArray(buckets)) {
+    return undefined
+  }
+
+  const valid = buckets
+    .filter(bucket => RATINGS.includes(bucket.range))
+    .map(bucket => ({
+      range: bucket.range,
+      rangeLabel: rangeLabelOf(bucket),
+      count: bucket.count,
+      people: (bucket.people ?? []).map(person => ({
+        id: person.id,
+        name: person.name,
+        completion: person.completion_rate,
+        tasks: person.total_tasks,
+      })),
+    }))
+  if (!valid.length) {
+    return undefined
+  }
+
+  return {
+    buckets: valid,
+    criticalCount: valid.find(bucket => bucket.range === 'critical')?.count ?? 0,
+    maxCount: Math.max(...valid.map(bucket => bucket.count)),
+    goal: buckets.find(bucket => bucket.range === 'excellent')?.min_rate,
   }
 }
 

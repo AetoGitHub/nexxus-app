@@ -14,7 +14,6 @@ export interface CeoReportMeta {
   tasksCount: number
   generatedAt: string
   comparisonLabel: string
-  aiModel?: string
   confidentialityLabel: string
 }
 
@@ -42,13 +41,16 @@ export interface CeoKpiRow {
   whatItMeans?: string
 }
 
-export interface CeoInsight {
-  index: string
-  text: string
-  visual:
-    | { kind: 'bars', items: Array<{ label: string, value: number, tone: 'good' | 'bad' }> }
-    | { kind: 'stat', value: string, caption: string, tone: 'bad' | 'good' }
-    | { kind: 'split', left: { value: string, caption: string }, right: { value: string, caption: string } }
+/**
+ * Texto de Nexxa IA ya validado. Cada sección es opcional: la que falte se dibuja como
+ * «IA en preparación» en lugar de inventar contenido.
+ */
+export interface CeoNarrative {
+  model?: string
+  /** Fecha de generación ya formateada. */
+  generatedAt?: string
+  verdict?: string
+  insights?: Array<{ index: string, text: string }>
 }
 
 export interface CeoTeam {
@@ -91,16 +93,36 @@ export interface CeoPerson {
   deltaLabel?: string
 }
 
-export interface CeoLoadBar {
-  value: number
-  rating: CeoRating
+export interface CeoDistributionPerson {
+  id: number
+  name: string
+  /** `null` si la API no lo calculó. */
+  completion: number | null
+  tasks: number
+}
+
+export interface CeoDistributionBucket {
+  range: CeoRating
+  /** Rango legible, p. ej. «≥85%», «70–84%» o «<55%». */
+  rangeLabel: string
+  count: number
+  people: CeoDistributionPerson[]
+}
+
+export interface CeoDistribution {
+  buckets: CeoDistributionBucket[]
+  /** Personas en el rango crítico. */
+  criticalCount: number
+  /** Mayor `count` de los rangos: escala de las barras. */
+  maxCount: number
+  /** Meta de completación (corte del rango excelente); `undefined` si no hay rango excelente. */
+  goal?: number
 }
 
 export interface CeoPeopleSection {
   intro?: string
-  loadBars?: CeoLoadBar[]
-  loadGoal?: number
-  saturatedCount?: number
+  /** `undefined` en reportes viejos (sin `performance_distribution`): hay que regenerarlos. */
+  distribution?: CeoDistribution
   stats?: Array<{ value: number, label: string, names: string, tone: 'bad' | 'warn' | 'good' }>
   top: CeoPerson[]
   bottom: CeoPerson[]
@@ -141,10 +163,9 @@ export interface CeoClosing {
 
 export interface CeoReport {
   meta: CeoReportMeta
-  verdict?: string
+  narrative: CeoNarrative | null
   hero: CeoHeroKpi
   kpis: CeoKpiRow[]
-  insights?: { footnote: string, items: CeoInsight[] }
   teams: { intro?: string, items: CeoTeam[] }
   categories: {
     intro?: string

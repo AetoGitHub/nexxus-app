@@ -1065,7 +1065,8 @@
       "comparison": "Comparativo: {value}",
       "completion": "Completación global",
       "teamsCount": "{n} equipo | {n} equipos",
-      "tasksCount": "{n} tarea | {n} tareas"
+      "tasksCount": "{n} tarea | {n} tareas",
+      "scopeFull": "Empresa completa"
     },
     "kpis": {
       "eyebrow": "Objetivos del período",
@@ -1082,7 +1083,10 @@
     },
     "insights": {
       "eyebrow": "Análisis narrativo · Nexxa IA",
-      "title": "Lo que los números no te dicen"
+      "title": "Lo que los números no te dicen",
+      "continued": "Lo que los números no te dicen (continuación)",
+      "footnote": "Análisis generado por Nexxa IA",
+      "footnoteTasks": "{n} tarea del período | {n} tareas del período"
     },
     "teams": {
       "eyebrow": "Diagnóstico comparativo",
@@ -1106,9 +1110,6 @@
     "people": {
       "eyebrow": "Desempeño individual",
       "title": "Las personas detrás del resultado",
-      "loadTitle": "Distribución de carga productiva",
-      "saturated": "{n} saturados",
-      "goal": "Meta {n}%",
       "top": "Mejor desempeño del período",
       "bottom": "Requieren atención",
       "punctuality": "Punt: {n}%",
@@ -1195,6 +1196,21 @@
       "punctualityExcluded": "{n} sin fecha límite no cuentan.",
       "resolution": "Promedio de creación a cierre de las tareas completadas.",
       "noData": "Sin datos suficientes en el período."
+    },
+    "ai": {
+      "badge": "Nexxa IA · En preparación",
+      "ariaLabel": "Análisis de IA en preparación",
+      "caption": "Este análisis lo redactará Nexxa IA a partir de las métricas del período. Estamos trabajando en ello.",
+      "brand": "Nexxa IA"
+    },
+    "distribution": {
+      "title": "Distribución de desempeño",
+      "critical": "{n} crítico | {n} críticos",
+      "goal": "Meta {n}%",
+      "aria": "{range}: {n} persona | {range}: {n} personas",
+      "tipCount": "{n} persona | {n} personas",
+      "empty": "Sin personas en este rango",
+      "regenerate": "Regenera el reporte para ver la distribución"
     }
   },
   "taskSettings": {

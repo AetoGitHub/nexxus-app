@@ -24,6 +24,7 @@ const TEAMS_PER_SHEET_WITH_TEXT = 4
 const TEAMS_PER_SHEET = 7
 const CATEGORIES_PER_SHEET_WITH_TEXT = 6
 const CATEGORIES_PER_SHEET = 10
+const INSIGHTS_PER_SHEET = 3
 
 interface Sheet {
   key: string
@@ -32,8 +33,9 @@ interface Sheet {
 }
 
 /**
- * Hojas del reporte. Una sección sin datos no genera hoja (p. ej. insights, Nexxtep o el cierre
- * cuando aún no hay textos de IA) y las listas largas continúan en hojas adicionales.
+ * Hojas del reporte. Una sección sin datos no genera hoja (p. ej. Nexxtep o el cierre cuando aún no hay
+ * textos de IA); veredicto e insights sí, y se dibujan «en preparación». Las listas largas
+ * continúan en hojas adicionales.
  */
 const sheets = computed<Sheet[]>(() => {
   const { report } = props
@@ -49,6 +51,12 @@ const sheets = computed<Sheet[]>(() => {
     : CATEGORIES_PER_SHEET
   const categoryChunks = chunkItems(report.categories.items, categoriesSize, categoriesSize)
 
+  // Sin insights de la IA hay una sola hoja con las tarjetas «en preparación» (items indefinido).
+  const insights = report.narrative?.insights
+  const insightChunks: Array<typeof insights> = insights?.length
+    ? chunkItems(insights, INSIGHTS_PER_SHEET, INSIGHTS_PER_SHEET)
+    : [undefined]
+
   return [
     { key: 'cover', component: CeoCoverPage, props: { report } },
     ...kpiChunks.map((rows, index) => ({
@@ -56,7 +64,11 @@ const sheets = computed<Sheet[]>(() => {
       component: CeoKpisPage,
       props: { report, rows, intro: index === 0 },
     })),
-    ...(report.insights ? [{ key: 'insights', component: CeoInsightsPage, props: { report } }] : []),
+    ...insightChunks.map((items, index) => ({
+      key: `insights-${index}`,
+      component: CeoInsightsPage,
+      props: { report, items, intro: index === 0, last: index === insightChunks.length - 1 },
+    })),
     ...teamChunks.map((items, index) => ({
       key: `teams-${index}`,
       component: CeoTeamsPage,
