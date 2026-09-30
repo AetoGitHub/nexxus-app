@@ -1224,7 +1224,7 @@ const slideoverUi = computed(() => {
                 v-if="taskId != null"
                 :task-id="taskId"
                 :count="taskDetailQuery.data.value?.tokens_count"
-                show-givers
+                :givers="taskDetailQuery.data.value?.tokens_by_user ?? []"
               />
               <UButton
                 v-if="!isEditing"

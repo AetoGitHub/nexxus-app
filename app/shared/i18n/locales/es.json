@@ -603,10 +603,9 @@
       "errorTitle": "No se pudo dar el token",
       "viewGivers": "Ver quién dio tokens",
       "giversTitle": "Tokens dados",
-      "loading": "Cargando...",
       "empty": "Nadie ha dado tokens todavía",
-      "loadMore": "Ver más",
-      "unknownUser": "Usuario"
+      "unknownUser": "Usuario",
+      "givenCount": "{n} token | {n} tokens"
     }
   },
   "settings": {

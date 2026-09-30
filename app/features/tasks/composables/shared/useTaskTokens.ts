@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/vue-query'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
-import type { CreateTaskTokenResponse } from '~/features/tasks/types/task.types'
+import type { CreateTaskTokenResponse, TaskDetail } from '~/features/tasks/types/task.types'
+import { bumpTokensByUser } from '~/features/tasks/utils/task-token.util'
 
 /** Dar un token a una tarea con actualización optimista (ver `useTaskTokenState` para el conteo). */
 export function useTaskTokens() {
@@ -8,6 +9,7 @@ export function useTaskTokens() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const { t } = useI18n()
+  const { user } = useAuth()
   const { patch, displayCount, applyServerCount, sortByTokens } = useTaskTokenState()
 
   /** Sube el número al instante y manda el token; si falla, regresa al valor anterior. */
@@ -19,12 +21,23 @@ export function useTaskTokens() {
         method: 'POST',
         body: { task: taskId },
       })
-      // Un solo cambio de estado: el valor confirmado entra en el mismo instante en que sale el pendiente.
+      // El detalle en caché suma mi token en el mismo instante en que sale el pendiente: la lista del tooltip no retrocede.
+      const me = user.value
+      queryClient.setQueryData<TaskDetail>(['tasks', 'detail', taskId], current => (
+        current && me
+          ? {
+              ...current,
+              tokens_count: Math.max(current.tokens_count ?? 0, response.tokens_count),
+              tokens_by_user: bumpTokensByUser(current.tokens_by_user ?? [], me),
+            }
+          : current
+      ))
       patch(taskId, current => ({
         confirmed: Math.max(current.confirmed, response.tokens_count),
         pending: Math.max(0, current.pending - 1),
       }))
-      void queryClient.invalidateQueries({ queryKey: ['tasks', 'tokens', taskId] })
+      // Reconcilia con el servidor (nombres completos, tokens de otras personas).
+      void queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', taskId] })
     }
     catch (error) {
       patch(taskId, current => ({ ...current, pending: Math.max(0, current.pending - 1) }))

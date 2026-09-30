@@ -285,14 +285,13 @@ export interface CreateTaskTokenResponse {
   tokens_count: number
 }
 
-/** Fila de GET /api/tasks/:id/tokens/ (un token dado). */
-export interface TaskTokenGiver {
-  id: number
-  task: number
-  created_by: number
-  created_by_first_name: string
-  created_by_last_name: string
-  created_at: string
+/** Quién dio tokens a la tarea y cuántos (`tokens_by_user` del detalle, de más a menos). */
+export interface TaskTokenByUser {
+  id: number | null
+  username: string | null
+  first_name: string | null
+  last_name: string | null
+  tokens: number
 }
 
 /** Cambio en una tarea (incluye tokens). `actor_id` permite ignorar el propio eco. */
@@ -364,6 +363,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   /** Checklist de subtareas de la tarea (ver `TaskSubtaskChecklist`). */
   subtasks?: SubTaskDetail[]
   created_by?: TaskCreatedBy | null
+  /** Tokens por persona; lo manda el detalle de la tarea. */
+  tokens_by_user?: TaskTokenByUser[]
 }
 
 export interface TaskCounts {

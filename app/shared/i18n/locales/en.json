@@ -603,10 +603,9 @@
       "errorTitle": "Could not give the token",
       "viewGivers": "See who gave tokens",
       "giversTitle": "Tokens given",
-      "loading": "Loading...",
       "empty": "Nobody has given tokens yet",
-      "loadMore": "Show more",
-      "unknownUser": "User"
+      "unknownUser": "User",
+      "givenCount": "{n} token | {n} tokens"
     }
   },
   "settings": {
