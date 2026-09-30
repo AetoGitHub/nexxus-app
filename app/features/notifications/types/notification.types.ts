@@ -30,6 +30,7 @@ export type NotificationToastKind =
   | 'assigned'
   | 'updated'
   | 'message'
+  | 'token'
   | 'generic'
 
 /** Filtros de GET /api/notifications/. */

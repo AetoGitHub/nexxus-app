@@ -272,6 +272,34 @@ export interface Task {
   created_at: string
   close_approvals: TaskCloseApproval[]
   assigned_to?: TaskAssignee[]
+  /** Tokens (manita) que le dieron a la tarea; 0 si no tiene. */
+  tokens_count?: number
+}
+
+/** Respuesta de POST /api/tasks/tokens/create/: `tokens_count` es el total DESPUÉS de dar el token. */
+export interface CreateTaskTokenResponse {
+  id: number
+  task: number
+  created_by: number
+  created_at: string
+  tokens_count: number
+}
+
+/** Quién dio tokens a la tarea y cuántos (`tokens_by_user` del detalle, de más a menos). */
+export interface TaskTokenByUser {
+  id: number | null
+  username: string | null
+  first_name: string | null
+  last_name: string | null
+  tokens: number
+}
+
+/** Cambio en una tarea (incluye tokens). `actor_id` permite ignorar el propio eco. */
+export interface UpdateTaskChannelEvent {
+  event: 'update_task'
+  task_pk: number
+  user?: number[]
+  actor_id?: number | null
 }
 
 export interface CreateTaskChannelEvent {
@@ -297,6 +325,7 @@ export interface UnknownTaskChannelEvent {
 
 export type TaskChannelEvent =
   | CreateTaskChannelEvent
+  | UpdateTaskChannelEvent
   | CreateMultipleTasksChannelEvent
   | UnknownTaskChannelEvent
 
@@ -334,6 +363,8 @@ export interface TaskDetail extends Omit<Task, 'assigned_to'> {
   /** Checklist de subtareas de la tarea (ver `TaskSubtaskChecklist`). */
   subtasks?: SubTaskDetail[]
   created_by?: TaskCreatedBy | null
+  /** Tokens por persona; lo manda el detalle de la tarea. */
+  tokens_by_user?: TaskTokenByUser[]
 }
 
 export interface TaskCounts {

@@ -3,6 +3,7 @@ import type { ArchivedCounts, KanbanColumn, KanbanCounts, TaskListFilters } from
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { useKanbanCompleteDateFilter } from '~/features/tasks/composables/kanban/useKanbanCompleteDateFilter'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
@@ -37,6 +38,8 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     enabled: () => countsReady.value && rejectedCount.value > 0,
   })
 
+  const { sortByTokens } = useTaskTokenState()
+
   const columns = computed<KanbanColumn[]>(() => {
     const totals = counts.data.value
 
@@ -58,7 +61,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.pending',
         color: '#6b7280',
         count: totals?.pending,
-        tasks: extractResults(pending.data.value),
+        tasks: sortByTokens(extractResults(pending.data.value)),
         loading: pending.isPending.value,
         error: pending.isError.value,
         hasNextPage: pending.hasNextPage.value,
@@ -69,7 +72,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.wip',
         color: '#6366f1',
         count: totals?.wip,
-        tasks: extractResults(wip.data.value),
+        tasks: sortByTokens(extractResults(wip.data.value)),
         loading: wip.isPending.value,
         error: wip.isError.value,
         hasNextPage: wip.hasNextPage.value,
@@ -80,7 +83,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.inReview',
         color: '#f97316',
         count: totals?.in_review,
-        tasks: extractResults(inReview.data.value),
+        tasks: sortByTokens(extractResults(inReview.data.value)),
         loading: inReview.isPending.value,
         error: inReview.isError.value,
         hasNextPage: inReview.hasNextPage.value,
@@ -91,7 +94,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.rejected',
         color: '#dc2626',
         count: countsReady.value ? rejectedCount.value : undefined,
-        tasks: extractResults(rejected.data.value),
+        tasks: sortByTokens(extractResults(rejected.data.value)),
         loading: !countsReady.value || rejected.isPending.value,
         error: rejected.isError.value,
         hasNextPage: rejected.hasNextPage.value,
@@ -102,7 +105,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.complete',
         color: '#28ceab',
         count: totals?.complete,
-        tasks: extractResults(complete.data.value),
+        tasks: sortByTokens(extractResults(complete.data.value)),
         loading: complete.isPending.value,
         error: complete.isError.value,
         hasNextPage: complete.hasNextPage.value,

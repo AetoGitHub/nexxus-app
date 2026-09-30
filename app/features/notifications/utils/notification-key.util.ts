@@ -2,6 +2,7 @@ export const NOTIFICATION_FILTER_KEYS = [
   'task_created',
   'task_started',
   'task_message',
+  'task_token_given',
 ] as const
 
 export type NotificationFilterKey = (typeof NOTIFICATION_FILTER_KEYS)[number]
@@ -10,6 +11,7 @@ const ICONS: Record<string, string> = {
   task_created: 'i-lucide-clipboard-check',
   task_started: 'i-lucide-play',
   task_message: 'i-lucide-message-circle',
+  task_token_given: 'i-lucide-thumbs-up',
 }
 
 export function notificationIcon(key: string): string {

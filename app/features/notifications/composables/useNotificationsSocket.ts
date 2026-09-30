@@ -32,6 +32,9 @@ function resolveToastKind(
 ): NotificationToastKind {
   const key = notification.key.trim().toLowerCase()
 
+  if (key.includes('token')) {
+    return 'token'
+  }
   if (key.includes('message')) {
     return 'message'
   }
@@ -138,6 +141,11 @@ export function useNotificationsSocket() {
         title: 'notifications.message.title',
         description: 'notifications.message.description',
         icon: 'i-lucide-message-circle',
+      },
+      token: {
+        title: 'notifications.token.title',
+        description: 'notifications.token.description',
+        icon: 'i-lucide-thumbs-up',
       },
       generic: {
         title: 'notifications.generic.title',

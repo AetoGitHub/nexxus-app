@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import type { Task } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -78,12 +79,16 @@ function onDragEnd() {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <button
-      type="button"
-      class="relative w-full text-left rounded-lg border border-border bg-card p-3 shadow-sm hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 space-y-2"
+    <!-- div en vez de button: dentro va el botón de token y un button no puede anidar otro. -->
+    <div
+      role="button"
+      tabindex="0"
+      class="relative w-full cursor-pointer text-left rounded-lg border border-border bg-card p-3 shadow-sm hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 space-y-2"
       :class="selected ? 'ring-2 ring-aeto-teal/50' : ''"
       :style="{ borderLeft: `3px solid ${barColor}` }"
       @click="onSelect"
+      @keydown.enter.self.prevent="onSelect"
+      @keydown.space.self.prevent="onSelect"
     >
       <p class="text-sm font-medium text-foreground leading-snug line-clamp-2">
         {{ task.short_description }}
@@ -142,19 +147,22 @@ function onDragEnd() {
         -->
       </div>
 
-      <div
-        v-if="assignees.length || dueLabel"
-        class="flex items-center justify-between gap-2 pt-1"
-      >
+      <div class="flex items-center justify-between gap-2 pt-1">
         <TaskAssigneeAvatars :assignees="assignees" />
-        <span
-          v-if="dueLabel"
-          class="text-[11px] font-mono tabular-nums ml-auto"
-          :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
-        >
-          {{ dueLabel }}
-        </span>
+        <div class="ml-auto flex items-center gap-2">
+          <TaskTokenButton
+            :task-id="task.id"
+            :count="task.tokens_count"
+          />
+          <span
+            v-if="dueLabel"
+            class="text-[11px] font-mono tabular-nums"
+            :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
+          >
+            {{ dueLabel }}
+          </span>
+        </div>
       </div>
-    </button>
+    </div>
   </div>
 </template>

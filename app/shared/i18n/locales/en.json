@@ -86,6 +86,10 @@
       "loadError": "Could not load notifications",
       "openTask": "Open task",
       "unread": "Unread"
+    },
+    "token": {
+      "title": "New token",
+      "description": "Someone gave a token to one of your tasks."
     }
   },
   "tasks": {
@@ -452,7 +456,7 @@
         "groupRequired": "Select a group",
         "assignedToRequired": "Select at least one assigned user",
         "dueDateRequired": "Select a due date",
-        "taskReviewerRequired": "Select at least one collaborator who must confirm",
+        "taskReviewerRequired": "Select at least one reviewer.",
         "repeatConfigRequired": "Complete the recurrence settings",
         "subtaskAssignedToRequired": "Select an assignee for each subtask"
       },
@@ -531,7 +535,7 @@
       },
       "multipleClose": {
         "title": "Who must confirm?",
-        "description": "Besides you. Each person must close their part to complete the task.",
+        "description": "Each person must close their part to complete the task.",
         "searchPlaceholder": "Search collaborator..."
       },
       "nexxtepSuggestions": {
@@ -592,6 +596,16 @@
         "closeApprovedBy": "Close approved by {username}.",
         "taskReopened": "Task reopened by {username}."
       }
+    },
+    "tokens": {
+      "give": "Give token",
+      "ariaLabel": "Give token ({n} token) | Give token ({n} tokens)",
+      "errorTitle": "Could not give the token",
+      "viewGivers": "See who gave tokens",
+      "giversTitle": "Tokens given",
+      "empty": "Nobody has given tokens yet",
+      "unknownUser": "User",
+      "givenCount": "{n} token | {n} tokens"
     }
   },
   "settings": {
@@ -1173,7 +1187,8 @@
         "task_created": "Assigned task",
         "task_started": "Task started",
         "task_message": "Comment",
-        "generic": "Activity"
+        "generic": "Activity",
+        "task_token_given": "Token received"
       }
     },
     "groups": {

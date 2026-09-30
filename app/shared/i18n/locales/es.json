@@ -86,6 +86,10 @@
       "loadError": "No se pudieron cargar las notificaciones",
       "openTask": "Abrir tarea",
       "unread": "Sin leer"
+    },
+    "token": {
+      "title": "Nuevo token",
+      "description": "Le dieron un token a una de tus tareas."
     }
   },
   "tasks": {
@@ -452,7 +456,7 @@
         "groupRequired": "Selecciona un grupo",
         "assignedToRequired": "Selecciona al menos un usuario asignado",
         "dueDateRequired": "Selecciona una fecha límite",
-        "taskReviewerRequired": "Selecciona al menos un colaborador que deba confirmar",
+        "taskReviewerRequired": "Selecciona al menos un revisor.",
         "repeatConfigRequired": "Completa la configuración de repetición",
         "subtaskAssignedToRequired": "Selecciona un responsable para cada subtarea"
       },
@@ -531,7 +535,7 @@
       },
       "multipleClose": {
         "title": "¿Quiénes deben confirmar?",
-        "description": "Además de ti. Cada uno debe cerrar su parte para completar la tarea.",
+        "description": "Cada uno debe cerrar su parte para completar la tarea.",
         "searchPlaceholder": "Buscar colaborador..."
       },
       "nexxtepSuggestions": {
@@ -592,6 +596,16 @@
         "closeApprovedBy": "Cierre aprobado por {username}.",
         "taskReopened": "Tarea reabierta por {username}."
       }
+    },
+    "tokens": {
+      "give": "Dar token",
+      "ariaLabel": "Dar token ({n} token) | Dar token ({n} tokens)",
+      "errorTitle": "No se pudo dar el token",
+      "viewGivers": "Ver quién dio tokens",
+      "giversTitle": "Tokens dados",
+      "empty": "Nadie ha dado tokens todavía",
+      "unknownUser": "Usuario",
+      "givenCount": "{n} token | {n} tokens"
     }
   },
   "settings": {
@@ -1173,7 +1187,8 @@
         "task_created": "Tarea asignada",
         "task_started": "Tarea iniciada",
         "task_message": "Comentario",
-        "generic": "Actividad"
+        "generic": "Actividad",
+        "task_token_given": "Token recibido"
       }
     },
     "groups": {
