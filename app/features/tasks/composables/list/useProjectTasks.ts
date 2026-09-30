@@ -3,6 +3,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 import type {
@@ -70,20 +71,23 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     }),
   })
 
+  const { sortByTokens } = useTaskTokenState()
+
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
     return projectList.value.map((project, index) => {
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(project.id) ?? 0
-      const tasks = total > 0 ? extractResults(queryResult?.data) : []
+      const loadedTasks = total > 0 ? extractResults(queryResult?.data) : []
+      const tasks = sortByTokens(loadedTasks)
 
       return {
         id: project.id,
         name: project.name,
         count: total,
-        dotColor: tasks[0]?.project_color?.trim()
-          ? resolveThemeColor(tasks[0].project_color)
+        dotColor: loadedTasks[0]?.project_color?.trim()
+          ? resolveThemeColor(loadedTasks[0].project_color)
           : PROJECT_SECTION_COLORS[index % PROJECT_SECTION_COLORS.length]!,
         tasks,
         loading: total > 0 && (queryResult?.isPending ?? false),

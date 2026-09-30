@@ -9,6 +9,7 @@ import type {
   UserDropdown,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 
@@ -62,21 +63,24 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
     }),
   })
 
+  const { sortByTokens } = useTaskTokenState()
+
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
     return userList.value.map((user, index) => {
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(user.id) ?? 0
-      const tasks = total > 0 ? extractResults(queryResult?.data) : []
+      const loadedTasks = total > 0 ? extractResults(queryResult?.data) : []
+      const tasks = sortByTokens(loadedTasks)
       const fallbackColor = GROUP_SECTION_COLORS[index % GROUP_SECTION_COLORS.length] ?? '#6b7280'
 
       return {
         id: user.id,
         name: user.username,
         count: total,
-        dotColor: tasks[0]?.project_color?.trim()
-          ? resolveThemeColor(tasks[0].project_color)
+        dotColor: loadedTasks[0]?.project_color?.trim()
+          ? resolveThemeColor(loadedTasks[0].project_color)
           : fallbackColor,
         tasks,
         loading: total > 0 && (queryResult?.isPending ?? false),
