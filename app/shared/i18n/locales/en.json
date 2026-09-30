@@ -542,7 +542,9 @@
       "project": "Project",
       "projectPlaceholder": "Select a project...",
       "projectSearchPlaceholder": "Search project...",
-      "createProject": "Create project"
+      "createProject": "Create project",
+      "readOnly": "Read only",
+      "readOnlyHint": "You are not part of this task: you can only view it."
     },
     "messenger": {
       "title": "Activity and chat",

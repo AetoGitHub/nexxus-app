@@ -34,6 +34,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { user } = useAuth()
 const {
   typeMeta,
   priorityMeta,
@@ -46,6 +47,9 @@ const {
   isOverdue,
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
+
+/** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
+const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
 
 function onSelect() {
   emit('select', props.task.id)
@@ -176,7 +180,7 @@ function onCheckClick() {
     </span>
 
     <UTooltip
-      v-if="deletable"
+      v-if="canDelete"
       :text="t('tasks.processDelete.submit')"
     >
       <UButton

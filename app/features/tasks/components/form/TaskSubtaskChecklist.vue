@@ -21,12 +21,15 @@ const props = withDefaults(
     disabled?: boolean
     /** Modo edición del resto de la tarea: habilita alta y edición de subtareas. */
     editing?: boolean
+    /** Sin ser parte de la tarea: solo se pueden marcar las subtareas asignadas al usuario. */
+    restricted?: boolean
     userItems?: SelectItem[]
     usersLoading?: boolean
   }>(),
   {
     disabled: false,
     editing: false,
+    restricted: false,
     userItems: () => [],
     usersLoading: false,
   },
@@ -34,6 +37,7 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const toast = useToast()
+const { user } = useAuth()
 
 const { mutateAsync: completeSubtask } = useCompleteSubtask()
 const { mutateAsync: createSubtask, isPending: isCreating } = useCreateSubtask()
@@ -64,8 +68,14 @@ function clearPending(subtaskId: number) {
   pendingCompleted.value = next
 }
 
+/** Bloqueada: tarea cerrada/archivada o, sin ser parte de la tarea, una subtarea que no es mía. */
+function isRowLocked(row: Pick<SubTaskDetail, 'assigned_to'>) {
+  return props.disabled || (props.restricted && row.assigned_to !== user.value?.id)
+}
+
 async function toggleCompleted(subtaskId: number, value: boolean | 'indeterminate') {
-  if (props.disabled) {
+  const row = rows.value.find(item => item.id === subtaskId)
+  if (!row || isRowLocked(row)) {
     return
   }
   const completed = value === true
@@ -285,7 +295,7 @@ async function removeSubtask(subtaskId: number) {
         >
           <UCheckbox
             :model-value="row.completed"
-            :disabled="disabled"
+            :disabled="isRowLocked(row)"
             color="success"
             class="mt-0.5"
             :aria-label="row.short_description"

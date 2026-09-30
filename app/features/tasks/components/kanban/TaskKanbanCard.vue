@@ -24,6 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { user } = useAuth()
 const {
   typeMeta,
   priorityMeta,
@@ -39,6 +40,9 @@ const {
 
 const didDrag = ref(false)
 
+/** Mover la tarea de columna cambia su estado: solo quien participa en ella puede hacerlo. */
+const isDraggable = computed(() => props.draggable && canModifyTask(props.task, user.value?.id))
+
 function onSelect() {
   if (didDrag.value) {
     didDrag.value = false
@@ -48,7 +52,7 @@ function onSelect() {
 }
 
 function onDragStart(event: DragEvent) {
-  if (!props.draggable) {
+  if (!isDraggable.value) {
     event.preventDefault()
     return
   }
@@ -69,8 +73,8 @@ function onDragEnd() {
 
 <template>
   <div
-    :draggable="draggable"
-    :class="[draggable ? 'cursor-grab active:cursor-grabbing' : '', dragging ? 'opacity-40' : '']"
+    :draggable="isDraggable"
+    :class="[isDraggable ? 'cursor-grab active:cursor-grabbing' : '', dragging ? 'opacity-40' : '']"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
