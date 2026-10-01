@@ -57,6 +57,7 @@ export default defineNuxtConfig({
       meta: [
         { name: "apple-mobile-web-app-title", content: "ERP" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
+        { name: "mobile-web-app-capable", content: "yes" },
         { name: "theme-color", content: "#28ceab" },
       ],
     },
@@ -80,6 +81,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      // FASE 2: elegir qué tipos de notificación llegan por push (apagado por ahora).
+      notificationTypePreferences: process.env.NUXT_PUBLIC_NOTIFICATION_TYPE_PREFERENCES === "true",
       apiBaseUrl: resolveApiBaseUrl(),
       wsBaseUrl: process.env.NUXT_PUBLIC_WS_BASE_URL ?? "",
       apiAuthPath: process.env.NUXT_PUBLIC_API_AUTH_PATH ?? "/api/auth/login/",

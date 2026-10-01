@@ -7,7 +7,8 @@ import type {
   NotificationListFilters,
   NotificationReadTab,
 } from '~/features/notifications/types/notification.types'
-import { NOTIFICATION_FILTER_KEYS } from '~/features/notifications/utils/notification-key.util'
+import { NOTIFICATION_FILTER_KEYS, notificationKeyLabelPath } from '~/features/notifications/utils/notification-key.util'
+import PushNotificationsCard from '~/features/push/components/PushNotificationsCard.vue'
 import TaskSettingsNotificationCard from '~/features/task-settings/components/notifications/TaskSettingsNotificationCard.vue'
 
 const { t } = useI18n()
@@ -35,7 +36,7 @@ const tabs: { id: NotificationReadTab, labelKey: string }[] = [
 const keyItems = computed(() => [
   { label: t('taskSettings.notificationsPanel.filterKeyAll'), value: 'all' },
   ...NOTIFICATION_FILTER_KEYS.map(key => ({
-    label: t(`taskSettings.notificationsPanel.keys.${key}`),
+    label: t(notificationKeyLabelPath(key)),
     value: key,
   })),
 ])
@@ -85,6 +86,8 @@ watch([readTab, selectedKey], () => {
         {{ t('taskSettings.notificationsPanel.subtitle') }}
       </p>
     </div>
+
+    <PushNotificationsCard />
 
     <div class="flex items-start gap-2.5 rounded-lg bg-muted/60 border border-border px-3.5 py-3">
       <UIcon

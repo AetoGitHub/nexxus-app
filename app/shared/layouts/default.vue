@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useNotificationsSocket } from '~/features/notifications/composables/useNotificationsSocket'
+import { usePushSync } from '~/features/push/composables/usePushSync'
 import { useTaskChannelSocket } from '~/features/tasks/composables/workspace/useTaskChannelSocket'
 
 // Canales globales de la sesión autenticada.
 useTaskChannelSocket()
 useNotificationsSocket()
+// Push del sistema: sincroniza la suscripción, abre avisos que vienen de un push y actualiza el badge.
+usePushSync()
 </script>
 
 <template>

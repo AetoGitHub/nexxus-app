@@ -1184,11 +1184,7 @@
         "read": "Leídas"
       },
       "keys": {
-        "task_created": "Tarea asignada",
-        "task_started": "Tarea iniciada",
-        "task_message": "Comentario",
-        "generic": "Actividad",
-        "task_token_given": "Toque recibido"
+        "generic": "Actividad"
       }
     },
     "groups": {
@@ -1387,6 +1383,106 @@
         "releaseToastTitle": "Acceso liberado",
         "releaseToastDescription": "El acceso del usuario fue liberado (mock)."
       }
+    }
+  },
+  "pushSettings": {
+    "title": "Notificaciones del sistema",
+    "toggle": "Recibir notificaciones en este dispositivo",
+    "description": "Te avisaremos de tareas asignadas, mensajes, aprobaciones y más, aunque la app esté cerrada.",
+    "active": "Activas en este dispositivo",
+    "disableEverywhere": "Desactivar en todos mis dispositivos",
+    "toast": {
+      "enabled": "Notificaciones activadas",
+      "disabled": "Notificaciones desactivadas en este dispositivo",
+      "disabledEverywhere": "Notificaciones desactivadas en todos tus dispositivos"
+    },
+    "errors": {
+      "enableTitle": "No se pudieron activar las notificaciones",
+      "disableTitle": "No se pudieron desactivar las notificaciones",
+      "preferencesTitle": "No se pudo guardar la preferencia",
+      "unavailable": "Las notificaciones no están disponibles en este servidor.",
+      "pushService": "El navegador no pudo conectarse a su servicio de notificaciones. Revisa tu conexión; en Brave activa «Utiliza los servicios de Google para la mensajería push» en Ajustes → Privacidad y seguridad, y reinicia el navegador."
+    },
+    "denied": {
+      "title": "Bloqueaste las notificaciones",
+      "description": "Para volver a recibirlas, desbloquéalas desde los ajustes de este dispositivo:",
+      "cannotAsk": "Un navegador no puede volver a mostrar el aviso de permiso si ya lo bloqueaste: solo se cambia desde esos ajustes.",
+      "ios": "iPhone/iPad (con Nexxus instalado): Ajustes → Notificaciones → Nexxus → Permitir notificaciones.",
+      "androidChrome": "Android (Chrome): toca el candado de la barra de dirección → Permisos → Notificaciones → Permitir.",
+      "androidInstalled": "Si la instalaste: Ajustes del teléfono → Apps → Nexxus → Notificaciones.",
+      "desktop": {
+        "chromium": "Chrome/Edge: candado de la barra de dirección → Configuración del sitio → Notificaciones → Permitir.",
+        "firefox": "Firefox: candado de la barra de dirección → Permisos → Recibir notificaciones.",
+        "safari": "Safari (macOS): Safari → Ajustes → Sitios web → Notificaciones → Nexxus → Permitir."
+      }
+    },
+    "iosInstall": {
+      "title": "Instala Nexxus para recibir notificaciones en tu iPhone o iPad",
+      "step1": "Toca el botón Compartir (cuadro con flecha hacia arriba) en Safari.",
+      "step2": "Elige «Agregar a pantalla de inicio».",
+      "step3": "Abre Nexxus desde el ícono nuevo en tu pantalla de inicio.",
+      "step4": "Vuelve a Configuración → Notificaciones y actívalas.",
+      "note": "En iPhone solo funcionan si abres Nexxus desde la pantalla de inicio; no desde Safari."
+    },
+    "inApp": {
+      "message": "Abre Nexxus en Safari o Chrome para activar notificaciones.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado"
+    },
+    "unsupported": "Este navegador no soporta notificaciones. Usa Chrome, Edge, Firefox o, en iPhone, iOS 16.4 o superior con Nexxus instalado en la pantalla de inicio.",
+    "types": {
+      "title": "Tipos de notificaciones",
+      "description": "Elige qué avisos del sistema recibes. La campana dentro de la app sigue mostrando todo."
+    },
+    "help": {
+      "copyUrl": "Copiar dirección del ajuste",
+      "copied": "Dirección copiada. Pégala en la barra de direcciones y presiona Enter.",
+      "retry": "Ya lo cambié, reintentar",
+      "auto": "Al volver a esta pestaña lo detectamos automáticamente.",
+      "stillBlocked": "Todavía está bloqueado. Revisa que «Notificaciones» esté en «Permitir».",
+      "serviceTitle": "Tu navegador no pudo activar las notificaciones",
+      "otherService": "No se pudo conectar con el servicio de notificaciones de tu navegador. Revisa tu conexión a internet (algunos firewalls o VPN lo bloquean) y reintenta.",
+      "denied": {
+        "step1": "Copia la dirección del ajuste con el botón de abajo.",
+        "step2": "Pégala en la barra de direcciones (Ctrl+L) y presiona Enter.",
+        "step3": "Busca «Notificaciones» y cámbialo a «Permitir».",
+        "step4": "Vuelve a esta pestaña: activamos las notificaciones solas."
+      },
+      "braveService": {
+        "step1": "Copia la dirección del ajuste con el botón de abajo.",
+        "step2": "Pégala en la barra de direcciones (Ctrl+L) y presiona Enter.",
+        "step3": "Activa «Utiliza los servicios de Google para la mensajería push».",
+        "step4": "Pulsa «Reiniciar» y vuelve a abrir Nexxus: activamos las notificaciones solas."
+      }
+    }
+  },
+  "notificationTypes": {
+    "groups": {
+      "tasks": "Tareas",
+      "messages": "Mensajes",
+      "approval": "Aprobaciones",
+      "archive": "Archivo",
+      "backlog": "Backlog",
+      "touches": "Toques"
+    },
+    "labels": {
+      "task_created": "Tarea asignada",
+      "task_updated": "Tarea actualizada",
+      "task_started": "Tarea iniciada",
+      "task_sent_to_review": "Tarea enviada a revisión",
+      "task_closed": "Tarea cerrada",
+      "task_rejected": "Tarea rechazada",
+      "task_reopened": "Tarea reabierta",
+      "task_deleted": "Tarea eliminada",
+      "task_undeleted": "Tarea restaurada",
+      "task_message": "Comentario",
+      "close_approval_assigned": "Aprobación de cierre asignada",
+      "close_approval_approved": "Aprobación de cierre otorgada",
+      "task_archived": "Tarea archivada",
+      "task_unarchived": "Tarea desarchivada",
+      "task_backlog_created": "Tarea de backlog creada",
+      "task_backlog_completed": "Tarea de backlog completada",
+      "task_token_given": "Toque recibido"
     }
   }
 }

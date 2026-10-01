@@ -1184,11 +1184,7 @@
         "read": "Read"
       },
       "keys": {
-        "task_created": "Assigned task",
-        "task_started": "Task started",
-        "task_message": "Comment",
-        "generic": "Activity",
-        "task_token_given": "Touch received"
+        "generic": "Activity"
       }
     },
     "groups": {
@@ -1387,6 +1383,106 @@
         "releaseToastTitle": "Access released",
         "releaseToastDescription": "The user's access was released (mock)."
       }
+    }
+  },
+  "pushSettings": {
+    "title": "System notifications",
+    "toggle": "Receive notifications on this device",
+    "description": "We'll let you know about assigned tasks, messages, approvals and more, even when the app is closed.",
+    "active": "Active on this device",
+    "disableEverywhere": "Turn off on all my devices",
+    "toast": {
+      "enabled": "Notifications enabled",
+      "disabled": "Notifications turned off on this device",
+      "disabledEverywhere": "Notifications turned off on all your devices"
+    },
+    "errors": {
+      "enableTitle": "Could not enable notifications",
+      "disableTitle": "Could not turn off notifications",
+      "preferencesTitle": "Could not save the preference",
+      "unavailable": "Notifications are not available on this server.",
+      "pushService": "The browser could not reach its notification service. Check your connection; in Brave turn on \"Use Google Services for Push Messaging\" in Settings → Privacy and security, then restart the browser."
+    },
+    "denied": {
+      "title": "You blocked notifications",
+      "description": "To receive them again, unblock them from this device settings:",
+      "cannotAsk": "A browser cannot show the permission prompt again once blocked: it can only be changed from those settings.",
+      "ios": "iPhone/iPad (with Nexxus installed): Settings → Notifications → Nexxus → Allow notifications.",
+      "androidChrome": "Android (Chrome): tap the lock in the address bar → Permissions → Notifications → Allow.",
+      "androidInstalled": "If you installed it: phone Settings → Apps → Nexxus → Notifications.",
+      "desktop": {
+        "chromium": "Chrome/Edge: lock in the address bar → Site settings → Notifications → Allow.",
+        "firefox": "Firefox: lock in the address bar → Permissions → Receive notifications.",
+        "safari": "Safari (macOS): Safari → Settings → Websites → Notifications → Nexxus → Allow."
+      }
+    },
+    "iosInstall": {
+      "title": "Install Nexxus to get notifications on your iPhone or iPad",
+      "step1": "Tap the Share button (square with an up arrow) in Safari.",
+      "step2": "Choose \"Add to Home Screen\".",
+      "step3": "Open Nexxus from the new icon on your home screen.",
+      "step4": "Come back to Settings → Notifications and turn them on.",
+      "note": "On iPhone they only work if you open Nexxus from the home screen, not from Safari."
+    },
+    "inApp": {
+      "message": "Open Nexxus in Safari or Chrome to enable notifications.",
+      "copy": "Copy link",
+      "copied": "Link copied"
+    },
+    "unsupported": "This browser does not support notifications. Use Chrome, Edge, Firefox or, on iPhone, iOS 16.4 or later with Nexxus installed on the home screen.",
+    "types": {
+      "title": "Notification types",
+      "description": "Choose which system alerts you receive. The in-app bell keeps showing everything."
+    },
+    "help": {
+      "copyUrl": "Copy setting address",
+      "copied": "Address copied. Paste it in the address bar and press Enter.",
+      "retry": "I've changed it, try again",
+      "auto": "We'll detect it automatically when you come back to this tab.",
+      "stillBlocked": "It is still blocked. Check that \"Notifications\" is set to \"Allow\".",
+      "serviceTitle": "Your browser could not enable notifications",
+      "otherService": "Could not reach your browser's notification service. Check your internet connection (some firewalls or VPNs block it) and try again.",
+      "denied": {
+        "step1": "Copy the setting address with the button below.",
+        "step2": "Paste it in the address bar (Ctrl+L) and press Enter.",
+        "step3": "Find \"Notifications\" and change it to \"Allow\".",
+        "step4": "Come back to this tab: we turn notifications on automatically."
+      },
+      "braveService": {
+        "step1": "Copy the setting address with the button below.",
+        "step2": "Paste it in the address bar (Ctrl+L) and press Enter.",
+        "step3": "Turn on \"Use Google Services for Push Messaging\".",
+        "step4": "Click \"Relaunch\" and reopen Nexxus: we turn notifications on automatically."
+      }
+    }
+  },
+  "notificationTypes": {
+    "groups": {
+      "tasks": "Tasks",
+      "messages": "Messages",
+      "approval": "Approvals",
+      "archive": "Archive",
+      "backlog": "Backlog",
+      "touches": "Touches"
+    },
+    "labels": {
+      "task_created": "Task assigned",
+      "task_updated": "Task updated",
+      "task_started": "Task started",
+      "task_sent_to_review": "Task sent to review",
+      "task_closed": "Task closed",
+      "task_rejected": "Task rejected",
+      "task_reopened": "Task reopened",
+      "task_deleted": "Task deleted",
+      "task_undeleted": "Task restored",
+      "task_message": "Comment",
+      "close_approval_assigned": "Close approval assigned",
+      "close_approval_approved": "Close approval granted",
+      "task_archived": "Task archived",
+      "task_unarchived": "Task unarchived",
+      "task_backlog_created": "Backlog task created",
+      "task_backlog_completed": "Backlog task completed",
+      "task_token_given": "Touch received"
     }
   }
 }
