@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { AuthorizeCloseApprovalResponse } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Autoriza un close_approval vía PATCH /api/tasks/close_approvals/:id/update/.
@@ -28,6 +29,7 @@ export function useAuthorizeCloseApproval() {
         title: t('tasks.toUpdate.authorize.successTitle'),
         description: t('tasks.toUpdate.authorize.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

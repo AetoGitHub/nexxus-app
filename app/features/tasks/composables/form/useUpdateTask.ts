@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskPayload } from '~/features/tasks/types/task.types'
 import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Actualiza una tarea vía PATCH /api/tasks/:id/update/.
@@ -32,6 +33,7 @@ export function useUpdateTask() {
         title: t('tasks.form.updateSuccessTitle'),
         description: t('tasks.form.updateSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

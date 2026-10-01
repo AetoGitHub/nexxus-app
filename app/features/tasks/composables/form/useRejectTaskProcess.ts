@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { RejectTaskProcessPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 function buildRejectProcessBody(payload: RejectTaskProcessPayload): FormData | Record<string, unknown> {
   const comment = payload.comment?.trim()
@@ -49,6 +50,7 @@ export function useRejectTaskProcess() {
         title: t('tasks.processReview.rejectSuccessTitle'),
         description: t('tasks.processReview.rejectSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

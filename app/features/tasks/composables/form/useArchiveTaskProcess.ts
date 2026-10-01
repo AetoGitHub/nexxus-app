@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { ArchiveTaskProcessPayload } from '~/features/tasks/types/task.types'
 import { parseFetchError } from '~/shared/utils/error-message.util'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Archiva una tarea vía POST /api/tasks/process/archive/.
@@ -28,6 +29,7 @@ export function useArchiveTaskProcess() {
         title: t('tasks.processArchive.successTitle'),
         description: t('tasks.processArchive.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

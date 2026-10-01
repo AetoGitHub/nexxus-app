@@ -970,7 +970,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
     if (isEditing.value && taskId.value != null && isBacklogMode.value) {
       const payload = buildUpdateBacklogTaskPayload(state)
       await updateBacklogTask({ taskId: taskId.value, payload })
-      isEditing.value = false
+      close()
       return
     }
 
@@ -985,12 +985,12 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
         },
       )
       if (isSameAsStoredTask(payload) && !pendingAttachments.value.length) {
-        isEditing.value = false
+        close()
         return
       }
       await updateTask({ taskId: taskId.value, payload })
       await attachPendingFiles(taskId.value)
-      isEditing.value = false
+      close()
       return
     }
 

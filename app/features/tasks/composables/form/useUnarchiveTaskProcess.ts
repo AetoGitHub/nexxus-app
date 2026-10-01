@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UnarchiveTaskProcessPayload } from '~/features/tasks/types/task.types'
 import { parseFetchError } from '~/shared/utils/error-message.util'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Desarchiva una tarea vía POST /api/tasks/process/unarchive/.
@@ -28,6 +29,7 @@ export function useUnarchiveTaskProcess() {
         title: t('tasks.processUnarchive.successTitle'),
         description: t('tasks.processUnarchive.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

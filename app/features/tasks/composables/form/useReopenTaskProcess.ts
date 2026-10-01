@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { ReopenTaskProcessPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 function buildReopenProcessBody(payload: ReopenTaskProcessPayload): FormData | Record<string, unknown> {
   const comment = payload.comment?.trim()
@@ -49,6 +50,7 @@ export function useReopenTaskProcess() {
         title: t('tasks.processReopen.successTitle'),
         description: t('tasks.processReopen.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

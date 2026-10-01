@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/vue-query'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { CreateTaskPayload, TaskDetail } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Crea una tarea vía POST /api/tasks/create/. En vez de invalidar el árbol
@@ -27,6 +28,7 @@ export function useCreateTask() {
         title: t('tasks.form.createSuccessTitle'),
         description: t('tasks.form.createSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {
