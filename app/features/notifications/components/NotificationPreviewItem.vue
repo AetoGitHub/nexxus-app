@@ -2,6 +2,7 @@
 import type { AppNotification } from '~/features/notifications/types/notification.types'
 import {
   notificationIcon,
+  notificationIconClass,
   notificationKeyLabelPath,
 } from '~/features/notifications/utils/notification-key.util'
 import { formatRelativeTime } from '~/shared/utils/date'
@@ -18,6 +19,7 @@ const emit = defineEmits<{
 const { t, locale } = useI18n()
 
 const icon = computed(() => notificationIcon(props.notification.key))
+const iconClass = computed(() => notificationIconClass(props.notification.key))
 const keyLabel = computed(() => t(notificationKeyLabelPath(props.notification.key)))
 const createdAt = computed(() => formatRelativeTime(props.notification.created_at, locale.value))
 const canOpenTask = computed(() => props.notification.task != null && props.notification.task > 0)
@@ -42,7 +44,7 @@ const canOpenTask = computed(() => props.notification.task != null && props.noti
         <UIcon
           :name="icon"
           class="h-4 w-4 text-foreground"
-          :class="marking ? 'opacity-0' : ''"
+          :class="[marking ? 'opacity-0' : '', iconClass]"
         />
         <UIcon
           v-if="marking"

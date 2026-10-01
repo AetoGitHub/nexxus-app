@@ -145,7 +145,7 @@ export function useNotificationsSocket() {
       token: {
         title: 'notifications.token.title',
         description: 'notifications.token.description',
-        icon: 'i-lucide-thumbs-up',
+        icon: 'i-lucide-pointer',
       },
       generic: {
         title: 'notifications.generic.title',
@@ -175,6 +175,8 @@ export function useNotificationsSocket() {
       title: t(meta.title),
       description: notification.message.trim() || t(meta.description),
       icon: meta.icon,
+      // El dedo señalando de Lucide apunta hacia arriba: se gira para que apunte a la derecha (👉).
+      ...(kind === 'token' ? { ui: { icon: 'rotate-90' } } : {}),
       color: 'primary',
       onClick: openTask,
     } as const

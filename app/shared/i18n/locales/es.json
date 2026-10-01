@@ -88,8 +88,8 @@
       "unread": "Sin leer"
     },
     "token": {
-      "title": "Nuevo token",
-      "description": "Le dieron un token a una de tus tareas."
+      "title": "Nuevo toque",
+      "description": "Le dieron un toque a una de tus tareas."
     }
   },
   "tasks": {
@@ -598,14 +598,14 @@
       }
     },
     "tokens": {
-      "give": "Dar token",
-      "ariaLabel": "Dar token ({n} token) | Dar token ({n} tokens)",
-      "errorTitle": "No se pudo dar el token",
-      "viewGivers": "Ver quién dio tokens",
-      "giversTitle": "Tokens dados",
-      "empty": "Nadie ha dado tokens todavía",
+      "give": "Dar toque",
+      "ariaLabel": "Dar toque ({n} toque) | Dar toque ({n} toques)",
+      "errorTitle": "No se pudo dar el toque",
+      "viewGivers": "Ver quién dio toques",
+      "giversTitle": "Toques dados",
+      "empty": "Nadie ha dado toques todavía",
       "unknownUser": "Usuario",
-      "givenCount": "{n} token | {n} tokens"
+      "givenCount": "{n} toque | {n} toques"
     }
   },
   "settings": {
@@ -1188,7 +1188,7 @@
         "task_started": "Tarea iniciada",
         "task_message": "Comentario",
         "generic": "Actividad",
-        "task_token_given": "Token recibido"
+        "task_token_given": "Toque recibido"
       }
     },
     "groups": {

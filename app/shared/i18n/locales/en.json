@@ -88,8 +88,8 @@
       "unread": "Unread"
     },
     "token": {
-      "title": "New token",
-      "description": "Someone gave a token to one of your tasks."
+      "title": "New touch",
+      "description": "Someone gave a touch to one of your tasks."
     }
   },
   "tasks": {
@@ -598,14 +598,14 @@
       }
     },
     "tokens": {
-      "give": "Give token",
-      "ariaLabel": "Give token ({n} token) | Give token ({n} tokens)",
-      "errorTitle": "Could not give the token",
-      "viewGivers": "See who gave tokens",
-      "giversTitle": "Tokens given",
-      "empty": "Nobody has given tokens yet",
+      "give": "Give touch",
+      "ariaLabel": "Give touch ({n} touch) | Give touch ({n} touches)",
+      "errorTitle": "Could not give the touch",
+      "viewGivers": "See who gave touches",
+      "giversTitle": "Touches given",
+      "empty": "Nobody has given touches yet",
       "unknownUser": "User",
-      "givenCount": "{n} token | {n} tokens"
+      "givenCount": "{n} touch | {n} touches"
     }
   },
   "settings": {
@@ -1188,7 +1188,7 @@
         "task_started": "Task started",
         "task_message": "Comment",
         "generic": "Activity",
-        "task_token_given": "Token received"
+        "task_token_given": "Touch received"
       }
     },
     "groups": {

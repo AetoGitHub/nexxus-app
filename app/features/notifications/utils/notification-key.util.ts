@@ -11,11 +11,16 @@ const ICONS: Record<string, string> = {
   task_created: 'i-lucide-clipboard-check',
   task_started: 'i-lucide-play',
   task_message: 'i-lucide-message-circle',
-  task_token_given: 'i-lucide-thumbs-up',
+  task_token_given: 'i-lucide-pointer',
 }
 
 export function notificationIcon(key: string): string {
   return ICONS[key] ?? 'i-lucide-bell'
+}
+
+/** El dedo señalando de Lucide apunta hacia arriba: el toque lo gira para que apunte a la derecha (👉). */
+export function notificationIconClass(key: string): string {
+  return key === 'task_token_given' ? 'rotate-90' : ''
 }
 
 export function notificationKeyLabelPath(key: string): string {

@@ -73,8 +73,8 @@ const giversOpen = ref(false)
       >
         <UIcon
           :key="popKey"
-          name="i-lucide-thumbs-up"
-          class="token-icon h-3.5 w-3.5"
+          name="i-lucide-pointer"
+          class="token-icon h-3.5 w-3.5 rotate-90"
           :class="{ 'token-pop': popKey > 0 }"
         />
         <span
