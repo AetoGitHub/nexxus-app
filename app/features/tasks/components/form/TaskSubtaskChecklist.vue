@@ -5,6 +5,7 @@ import { useCompleteSubtask } from '~/features/tasks/composables/form/useComplet
 import { useCreateSubtask } from '~/features/tasks/composables/form/useCreateSubtask'
 import { useDeleteSubtask } from '~/features/tasks/composables/form/useDeleteSubtask'
 import { useUpdateSubtask } from '~/features/tasks/composables/form/useUpdateSubtask'
+import { personInitials } from '~/features/tasks/utils/task-initials.util'
 
 /**
  * Checklist de subtareas del detalle de una tarea ya existente: barra de
@@ -307,14 +308,25 @@ async function removeSubtask(subtaskId: number) {
               ? 'text-muted-foreground line-through'
               : 'text-foreground'"
           >{{ row.short_description }}</span>
-          <span
-            v-if="row.assigned_to_name"
-            class="shrink-0 text-xs text-muted-foreground"
-          >{{ row.assigned_to_name }}</span>
-          <span
-            v-else
-            class="shrink-0 text-xs italic text-muted-foreground/60"
-          >{{ t('tasks.form.subtasks.unassigned') }}</span>
+          <UTooltip :text="row.assigned_to_name || t('tasks.form.subtasks.unassigned')">
+            <span
+              v-if="row.assigned_to_name"
+              role="img"
+              :aria-label="row.assigned_to_name"
+              class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-aeto-teal/15 text-[10px] font-semibold text-aeto-teal"
+            >{{ personInitials(row.assigned_to_name) }}</span>
+            <span
+              v-else
+              role="img"
+              :aria-label="t('tasks.form.subtasks.unassigned')"
+              class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 text-muted-foreground/60"
+            >
+              <UIcon
+                name="i-lucide-user"
+                class="h-3 w-3"
+              />
+            </span>
+          </UTooltip>
           <UButton
             v-if="canManage"
             icon="i-lucide-pencil"

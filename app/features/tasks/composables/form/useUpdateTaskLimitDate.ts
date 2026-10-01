@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateTaskLimitDatePayload } from '~/features/tasks/types/task.types'
 import { invalidateTaskQueries } from '~/features/tasks/utils/task-query.util'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Actualiza solo limit_date vía PATCH /api/tasks/:id/update/.
@@ -31,6 +32,7 @@ export function useUpdateTaskLimitDate() {
         title: t('tasks.kanban.dueMove.successTitle'),
         description: t('tasks.kanban.dueMove.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

@@ -1,3 +1,4 @@
+import { removePushDeviceOnLogout } from '~/features/push/utils/push-device.util'
 import type { AuthLoginRequest, AuthLoginResponse } from '~/shared/types/auth.types'
 
 export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedGroup, AuthProject } from '~/shared/types/auth.types'
@@ -42,6 +43,8 @@ export function useAuth() {
   async function logout() {
     try {
       if (token.value) {
+        // Antes del logout: después el token ya no sirve. Si falla, el cierre de sesión continúa igual.
+        await removePushDeviceOnLogout({ apiBaseUrl, token: token.value })
         await $fetch(apiAuthLogoutPath as string, {
           baseURL: apiBaseUrl,
           method: 'POST',

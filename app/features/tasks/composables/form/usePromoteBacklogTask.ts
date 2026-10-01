@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { PromoteBacklogTaskPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Promueve una tarea de backlog a Pendiente (drag Kanban Backlog → Pendiente)
@@ -23,6 +24,7 @@ export function usePromoteBacklogTask() {
         title: t('tasks.form.promoteSuccessTitle'),
         description: t('tasks.form.promoteSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

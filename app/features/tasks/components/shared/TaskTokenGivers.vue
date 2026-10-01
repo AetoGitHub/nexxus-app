@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import type { TaskTokenByUser } from '~/features/tasks/types/task.types'
+import { personInitials } from '~/features/tasks/utils/task-initials.util'
 import { tokenGiverName } from '~/features/tasks/utils/task-token.util'
 
 /** Quién dio tokens a la tarea y cuántos (viene en `tokens_by_user` del detalle). */
 defineProps<{ givers: TaskTokenByUser[] }>()
 
 const { t } = useI18n()
-
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
-    .join('')
-}
 </script>
 
 <template>
@@ -30,7 +22,7 @@ function initialsOf(name: string): string {
         class="flex items-center gap-2.5 rounded-md px-2 py-1.5"
       >
         <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-aeto-teal/15 text-[11px] font-semibold text-aeto-teal">
-          {{ initialsOf(tokenGiverName(giver, t('tasks.tokens.unknownUser'))) }}
+          {{ personInitials(tokenGiverName(giver, t('tasks.tokens.unknownUser'))) }}
         </span>
         <span class="min-w-0 flex-1 truncate text-sm text-foreground">
           {{ tokenGiverName(giver, t('tasks.tokens.unknownUser')) }}

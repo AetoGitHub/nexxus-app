@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type { CloseTaskProcessPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 function buildCloseProcessBody(payload: CloseTaskProcessPayload): FormData | Record<string, unknown> {
   const comment = payload.comment?.trim()
@@ -53,6 +54,7 @@ export function useCloseTaskProcess() {
           ? t('tasks.processClose.successComplete')
           : t('tasks.processClose.successInReview'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

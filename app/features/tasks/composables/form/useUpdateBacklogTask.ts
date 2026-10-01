@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { UpdateBacklogTaskPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Edita los campos propios de una tarea de backlog (nombre/descripción/proyecto)
@@ -32,6 +33,7 @@ export function useUpdateBacklogTask() {
         title: t('tasks.form.updateSuccessTitle'),
         description: t('tasks.form.updateSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

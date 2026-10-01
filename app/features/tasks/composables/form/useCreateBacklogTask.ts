@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { CreateBacklogTaskPayload } from '~/features/tasks/types/task.types'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Crea una tarea de backlog vía POST /api/tasks/backlog/create/.
@@ -26,6 +27,7 @@ export function useCreateBacklogTask() {
         title: t('tasks.form.createSuccessTitle'),
         description: t('tasks.form.createSuccessDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

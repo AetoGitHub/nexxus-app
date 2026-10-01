@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { DeleteTaskProcessPayload } from '~/features/tasks/types/task.types'
 import { parseFetchError } from '~/shared/utils/error-message.util'
+import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Elimina definitivamente una tarea archivada vía POST /api/tasks/process/delete/.
@@ -28,6 +29,7 @@ export function useDeleteTaskProcess() {
         title: t('tasks.processDelete.successTitle'),
         description: t('tasks.processDelete.successDescription'),
         color: 'success',
+        duration: TASK_SUCCESS_TOAST_MS,
       })
     },
     onError: (error) => {

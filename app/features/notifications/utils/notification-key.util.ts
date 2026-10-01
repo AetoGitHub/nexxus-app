@@ -1,26 +1,18 @@
-export const NOTIFICATION_FILTER_KEYS = [
-  'task_created',
-  'task_started',
-  'task_message',
-  'task_token_given',
-] as const
+import { NOTIFICATION_TYPES, notificationTypeMeta } from '~/features/notifications/utils/notification-types.util'
 
-export type NotificationFilterKey = (typeof NOTIFICATION_FILTER_KEYS)[number]
-
-const ICONS: Record<string, string> = {
-  task_created: 'i-lucide-clipboard-check',
-  task_started: 'i-lucide-play',
-  task_message: 'i-lucide-message-circle',
-  task_token_given: 'i-lucide-thumbs-up',
-}
+/** Claves por las que se puede filtrar la lista de notificaciones: todas las del catálogo. */
+export const NOTIFICATION_FILTER_KEYS: readonly string[] = NOTIFICATION_TYPES.map(type => type.key)
 
 export function notificationIcon(key: string): string {
-  return ICONS[key] ?? 'i-lucide-bell'
+  return notificationTypeMeta(key)?.icon ?? 'i-lucide-bell'
+}
+
+export function notificationIconClass(key: string): string {
+  return notificationTypeMeta(key)?.iconClass ?? ''
 }
 
 export function notificationKeyLabelPath(key: string): string {
-  if (NOTIFICATION_FILTER_KEYS.includes(key as NotificationFilterKey)) {
-    return `taskSettings.notificationsPanel.keys.${key}`
-  }
-  return 'taskSettings.notificationsPanel.keys.generic'
+  return notificationTypeMeta(key)
+    ? `notificationTypes.labels.${key}`
+    : 'taskSettings.notificationsPanel.keys.generic'
 }
