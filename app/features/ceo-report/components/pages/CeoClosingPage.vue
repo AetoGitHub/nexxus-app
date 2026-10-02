@@ -15,6 +15,7 @@ const { t } = useI18n()
 
 <template>
   <CeoReportPage
+    v-if="report.closing"
     :page-number="pageNumber"
     :period-label="report.meta.periodLabel"
   >

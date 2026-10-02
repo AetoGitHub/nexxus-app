@@ -29,7 +29,7 @@ const { t } = useI18n()
       <div class="cr-title-rule" />
       <hr class="cr-hr">
       <p
-        v-if="intro"
+        v-if="intro && report.teams.intro"
         class="cr-lead"
       >
         {{ report.teams.intro }}
@@ -40,6 +40,7 @@ const { t } = useI18n()
           v-for="team in items"
           :key="team.name"
           class="cr-team"
+          :class="{ 'cr-team--compact': !team.reason }"
         >
           <div>
             <div class="cr-team__name">
@@ -49,7 +50,10 @@ const { t } = useI18n()
               />
               {{ team.name }}
             </div>
-            <div class="cr-team__people">
+            <div
+              v-if="team.people != null"
+              class="cr-team__people"
+            >
               {{ t('ceoReport.teams.people', { n: team.people }) }}
             </div>
             <span
@@ -72,11 +76,13 @@ const { t } = useI18n()
               />
             </div>
             <div class="cr-team__punct">
-              {{ t('ceoReport.teams.punctuality', { n: team.punctuality }) }}
+              {{ team.punctuality == null
+                ? t('ceoReport.teams.punctualityNone')
+                : t('ceoReport.teams.punctuality', { n: team.punctuality }) }}
             </div>
           </div>
 
-          <div>
+          <div v-if="team.series?.length">
             <CeoSparkline
               :series="team.series"
               :width="74"
@@ -89,8 +95,11 @@ const { t } = useI18n()
           </div>
 
           <div class="cr-team__stats">
-            <div>{{ t('ceoReport.teams.tasks', { n: team.tasks }) }}</div>
-            <div class="is-bad">
+            <div>{{ t('ceoReport.teams.tasks', { n: team.tasks }, team.tasks) }}</div>
+            <div
+              v-if="team.overdue != null"
+              class="is-bad"
+            >
               {{ t('ceoReport.teams.overdue', { n: team.overdue }) }}
             </div>
             <div class="is-muted">
@@ -99,6 +108,7 @@ const { t } = useI18n()
           </div>
 
           <div
+            v-if="team.reason"
             class="cr-tint"
             :class="`cr-tint--${team.rating}`"
           >

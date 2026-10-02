@@ -24,8 +24,10 @@ const { t } = useI18n()
       </div>
       <div class="cr-back__meta">
         {{ report.meta.periodLabel }} · {{ report.meta.confidentialityLabel }}<br>
-        {{ t('ceoReport.cover.generated', { date: report.meta.generatedAt }) }}<br>
-        {{ report.meta.aiModel }}
+        {{ t('ceoReport.cover.generated', { date: report.meta.generatedAt }) }}
+        <template v-if="report.narrative?.model">
+          <br>{{ report.narrative.model }}
+        </template>
       </div>
     </div>
   </CeoReportPage>
