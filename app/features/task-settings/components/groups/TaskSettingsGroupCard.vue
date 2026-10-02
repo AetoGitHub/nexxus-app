@@ -45,11 +45,20 @@ function resolveUsername(userId: number): string {
   return fromProfiles?.username ?? `#${userId}`
 }
 
-const managerName = computed(() =>
-  detail.value?.manager_name
-  || props.group.manager_name
-  || resolveUsername(props.group.manager),
-)
+/** Nombre y apellido del responsable; si no tiene, su username. */
+function joinName(firstName?: string | null, lastName?: string | null): string {
+  return `${firstName ?? ''} ${lastName ?? ''}`.trim()
+}
+
+const managerName = computed(() => {
+  const fromDetail = detail.value
+  const fromProfile = profiles.value.find(profile => profile.id === props.group.manager)
+  return joinName(fromDetail?.manager_first_name, fromDetail?.manager_last_name)
+    || joinName(fromProfile?.first_name, fromProfile?.last_name)
+    || fromDetail?.manager_name
+    || props.group.manager_name
+    || resolveUsername(props.group.manager)
+})
 
 const displayMembers = computed(() =>
   (detail.value?.members ?? []).filter(member => member.id !== props.group.manager),

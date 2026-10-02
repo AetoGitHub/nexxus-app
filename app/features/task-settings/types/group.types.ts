@@ -24,6 +24,8 @@ export interface CatalogueGroupDetail {
   color: string
   manager: number
   manager_name: string
+  manager_first_name?: string
+  manager_last_name?: string
   company: number
   company_name?: string
   members: CatalogueGroupMember[]
