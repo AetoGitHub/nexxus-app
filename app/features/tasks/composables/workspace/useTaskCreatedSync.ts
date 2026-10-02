@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/vue-query'
 import { useCalendarRealtimeTask } from '~/features/tasks/composables/calendar/useCalendarRealtimeTask'
 import { useKanbanRealtimeTask } from '~/features/tasks/composables/kanban/useKanbanRealtimeTask'
 import { useListRealtimeTask } from '~/features/tasks/composables/list/useListRealtimeTask'
@@ -25,6 +26,7 @@ export function useTaskCreatedSync() {
   const { refreshCreatedCalendarTask } = useCalendarRealtimeTask()
   const { insertCreatedListTask, moveTaskInList } = useListRealtimeTask()
   const route = useRoute()
+  const queryClient = useQueryClient()
 
   function queryParam(key: string) {
     const value = route.query[key]
@@ -160,6 +162,10 @@ export function useTaskCreatedSync() {
    * dedicada; el llamador debe caer a un invalidate acotado en esos casos.
    */
   async function syncMovedTask(taskPk: number): Promise<boolean> {
+    // Mover la tarjeta no toca el detalle en caché (el del slide over): sin esto, al reabrirla muestra el status anterior
+    // y sus botones (p. ej. "En revisión" otra vez) fallan en el backend.
+    void queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', taskPk], exact: true })
+
     if (route.path === '/tasks' && queryParam('view') === 'list') {
       const groupBy = queryParam('groupBy') ?? 'all'
       if (groupBy === 'status') {
