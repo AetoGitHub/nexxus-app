@@ -17,6 +17,7 @@ import {
   normalizeRepeatConfig,
   parseRepeatConfig,
 } from '~/features/tasks/utils/form/repeat-config.util'
+import { businessDayKey } from '~/shared/utils/date'
 
 /**
  * Fila de subtarea en el formulario de creación. Vive fuera de `NewTaskFormInput`
@@ -60,30 +61,19 @@ export interface NewTaskFormInput {
 }
 
 const FORM_TASK_TYPES: NewTaskFormType[] = ['manual', 'volume', 'multiple_close', 'repeat']
-const FORM_EFFORTS: TaskEffort[] = ['quick', 'normal', 'complex']
 
 function isNewTaskFormType(value: string): value is NewTaskFormType {
   return FORM_TASK_TYPES.includes(value as NewTaskFormType)
 }
 
-function isTaskEffort(value: string): value is TaskEffort {
-  return FORM_EFFORTS.includes(value as TaskEffort)
-}
-
+/** Día (YYYY-MM-DD) en hora de CDMX: el backend vence la tarea al final de ese día, no el día UTC del ISO. */
 function isoToDateInput(iso: string | null): string {
-  if (!iso) {
-    return ''
-  }
-  return iso.slice(0, 10)
+  return businessDayKey(iso) ?? ''
 }
 
 /** Mapea el detalle del API al estado del formulario del slideover. */
 export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
   const urgent = detail.priority === 'urgent'
-  const effortFromApi = detail.effort && isTaskEffort(String(detail.effort))
-    ? (detail.effort as TaskEffort)
-    : undefined
-
   return {
     type: isNewTaskFormType(detail.type) ? detail.type : 'manual',
     name: detail.short_description ?? '',
@@ -94,8 +84,25 @@ export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
     taskReviewer: detail.close_approvals?.map(approval => approval.profile) ?? [],
     dueDate: isoToDateInput(detail.limit_date),
     urgent,
-    effort: urgent ? undefined : effortFromApi,
+    effort: urgent ? undefined : priorityToEffort(detail.priority),
     repeatConfig: parseRepeatConfig(detail.repeat_config),
+  }
+}
+
+/**
+ * Esfuerzo que se eligió al crear la tarea. El backend no guarda `effort` (siempre queda en `normal`): el
+ * esfuerzo vive solo en `priority`, así que se deshace el mapeo de `resolveTaskPriority`.
+ */
+export function priorityToEffort(priority: string): TaskEffort | undefined {
+  switch (priority) {
+    case 'low':
+      return 'quick'
+    case 'normal':
+      return 'normal'
+    case 'high':
+      return 'complex'
+    default:
+      return undefined
   }
 }
 

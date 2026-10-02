@@ -7,6 +7,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import { getReadableTextColor } from '~/features/projects/utils/project-color.util'
 import { taskBarColor } from '~/features/tasks/utils/task-format.util'
+import { businessDayKey } from '~/shared/utils/date'
 
 /** Letras de weekday en es; índice = domingo…sábado (0–6). */
 export const CALENDAR_WEEKDAY_LETTERS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'] as const
@@ -96,13 +97,9 @@ export function calendarVisibleRange(
   }
 }
 
-/** Extrae YYYY-MM-DD de un ISO o fecha parcial. */
+/** Día calendario (YYYY-MM-DD) en hora de CDMX de un ISO o fecha sin hora. */
 function toDateOnly(value: string | null | undefined): string | null {
-  if (!value) {
-    return null
-  }
-  const match = value.match(/^(\d{4}-\d{2}-\d{2})/)
-  return match?.[1] ?? null
+  return businessDayKey(value)
 }
 
 /** Día siguiente en formato YYYY-MM-DD (end exclusivo de FullCalendar all-day). */
