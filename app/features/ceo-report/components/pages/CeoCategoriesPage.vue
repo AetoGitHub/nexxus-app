@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import CeoReportPage from '~/features/ceo-report/components/shared/CeoReportPage.vue'
-import type { CeoReport } from '~/features/ceo-report/types/ceo-report.types'
+import type { CeoCategory, CeoReport } from '~/features/ceo-report/types/ceo-report.types'
 import { RATING_HEX } from '~/features/ceo-report/utils/ceo-report.util'
 
-defineProps<{ report: CeoReport, pageNumber: number }>()
+defineProps<{
+  report: CeoReport
+  pageNumber: number
+  items: CeoCategory[]
+  intro: boolean
+}>()
 
 const { t } = useI18n()
 </script>
@@ -18,26 +23,30 @@ const { t } = useI18n()
         {{ t('ceoReport.categories.eyebrow') }}
       </div>
       <h2 class="cr-title">
-        {{ t('ceoReport.categories.title') }}
+        {{ intro ? t('ceoReport.categories.title') : t('ceoReport.categories.continued') }}
       </h2>
       <div class="cr-title-rule" />
       <hr class="cr-hr">
-      <p class="cr-lead">
+      <p
+        v-if="intro && report.categories.intro"
+        class="cr-lead"
+      >
         {{ report.categories.intro }}
       </p>
 
       <div style="margin-top: 14px">
         <div
-          v-for="cat in report.categories.items"
+          v-for="cat in items"
           :key="cat.name"
           class="cr-cat"
+          :class="{ 'cr-cat--compact': !cat.reason }"
         >
           <div>
             <div class="cr-cat__name">
               {{ cat.name }}
             </div>
             <span
-              v-for="team in cat.teams"
+              v-for="team in cat.teams ?? []"
               :key="team"
               class="cr-chip"
             >{{ team }}</span>
@@ -57,6 +66,7 @@ const { t } = useI18n()
 
           <div>
             <div
+              v-if="cat.overdue != null"
               class="cr-cat__over"
               :class="`cr-tint--${cat.rating}`"
             >
@@ -66,13 +76,14 @@ const { t } = useI18n()
             <div
               class="cr-cat__avg"
               :class="`cr-c-${cat.rating}`"
-              style="margin-top: 5px; text-align: center"
+              :style="{ marginTop: cat.overdue != null ? '5px' : '0', textAlign: 'center' }"
             >
               {{ cat.avgResolution }} <small>{{ t('ceoReport.categories.avg') }}</small>
             </div>
           </div>
 
           <div
+            v-if="cat.reason"
             class="cr-tint"
             :class="`cr-tint--${cat.rating}`"
           >
@@ -90,7 +101,7 @@ const { t } = useI18n()
       </div>
 
       <div
-        v-for="alert in report.categories.alerts"
+        v-for="alert in report.categories.alerts ?? []"
         :key="alert.text"
         class="cr-alert"
         :class="`cr-alert--${alert.tone}`"

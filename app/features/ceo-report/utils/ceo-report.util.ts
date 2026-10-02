@@ -46,7 +46,7 @@ export function sparklineEnd(series: number[], width: number, height: number, pa
 
 export function initialsOf(name: string): string {
   return name
-    .split(' ')
+    .split(/[\s._-]+/)
     .filter(Boolean)
     .slice(0, 2)
     .map(part => part.charAt(0).toUpperCase())

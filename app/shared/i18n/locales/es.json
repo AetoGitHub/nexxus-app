@@ -1051,10 +1051,10 @@
     "title": "Reporte CEO",
     "toolbar": {
       "filters": "Filtros",
-      "compare": "Compara {n} meses",
-      "allTeams": "Todos los equipos",
-      "ai": "IA activa",
-      "change": "Cambiar",
+      "period": "Período",
+      "periodPlaceholder": "Selecciona un período",
+      "generate": "Generar reporte",
+      "recalculate": "Recalcular",
       "download": "Descargar PDF"
     },
     "toast": {
@@ -1074,12 +1074,15 @@
     "cover": {
       "kicker": "Reporte de productividad",
       "results": "Resultados",
-      "scope": "{scope} · {teams} equipos · {tasks} tareas",
+      "scope": "{scope} · {teams} · {tasks}",
       "verdict": "Veredicto del período",
       "generated": "Generado: {date}",
       "period": "Período: {period}",
       "comparison": "Comparativo: {value}",
-      "completion": "Completación global"
+      "completion": "Completación global",
+      "teamsCount": "{n} equipo | {n} equipos",
+      "tasksCount": "{n} tarea | {n} tareas",
+      "scopeFull": "Empresa completa"
     },
     "kpis": {
       "eyebrow": "Objetivos del período",
@@ -1088,41 +1091,48 @@
       "completionRate": "Tasa de Completación Total",
       "whatHappened": "Qué pasó",
       "whatItMeans": "Qué significa",
-      "continued": "Indicadores clave (continuación)"
+      "continued": "Indicadores clave (continuación)",
+      "tct": "Completación total (TCT)",
+      "tc": "Puntualidad (TC)",
+      "tpr": "Tiempo de resolución (TPR)",
+      "created": "Tareas creadas"
     },
     "insights": {
       "eyebrow": "Análisis narrativo · Nexxa IA",
-      "title": "Lo que los números no te dicen"
+      "title": "Lo que los números no te dicen",
+      "continued": "Lo que los números no te dicen (continuación)",
+      "footnote": "Análisis generado por Nexxa IA",
+      "footnoteTasks": "{n} tarea del período | {n} tareas del período"
     },
     "teams": {
       "eyebrow": "Diagnóstico comparativo",
       "title": "El estado de cada equipo",
       "people": "{n} personas",
       "punctuality": "Punt: {n}%",
-      "tasks": "{n} tareas",
+      "tasks": "{n} tarea | {n} tareas",
       "overdue": "{n} venc.",
       "avg": "{value} prom",
       "months": "6 meses",
-      "continued": "El estado de cada equipo (continuación)"
+      "continued": "El estado de cada equipo (continuación)",
+      "punctualityNone": "Punt: —"
     },
     "categories": {
-      "eyebrow": "Categorías de trabajo",
-      "title": "Dónde se atora la operación",
+      "eyebrow": "Proyectos",
+      "title": "Cómo va cada proyecto",
       "overdue": "vencidas",
-      "avg": "prom"
+      "avg": "prom",
+      "continued": "Cómo va cada proyecto (continuación)"
     },
     "people": {
       "eyebrow": "Desempeño individual",
       "title": "Las personas detrás del resultado",
-      "loadTitle": "Distribución de carga productiva",
-      "saturated": "{n} saturados",
-      "goal": "Meta {n}%",
-      "top": "Top 5 · Mejor desempeño del mes",
+      "top": "Mejor desempeño del período",
       "bottom": "Requieren atención",
       "punctuality": "Punt: {n}%",
-      "tasks": "{n} tareas",
+      "tasks": "{n} tarea | {n} tareas",
       "overdue": "{n} vencidas",
-      "privacy": "Visible solo para CEO y manager directo"
+      "privacy": "Visible solo para CEO y manager directo",
+      "punctualityNone": "Punt: —"
     },
     "nexxtep": {
       "eyebrow": "Agente de IA",
@@ -1146,6 +1156,77 @@
     },
     "back": {
       "title": "Reporte de productividad"
+    },
+    "generate": {
+      "title": "Generar reporte",
+      "description": "Calcula las métricas de tu empresa para el período elegido.",
+      "periodType": "Tipo de período",
+      "start": "Inicio",
+      "end": "Fin",
+      "force": "Recalcular si ya existe un reporte con ese inicio",
+      "submit": "Generar",
+      "cancel": "Cancelar",
+      "invalidRange": "La fecha de fin debe ser igual o posterior al inicio.",
+      "successTitle": "Reporte generado",
+      "recalculatedTitle": "Reporte recalculado",
+      "errorTitle": "No se pudo generar el reporte"
+    },
+    "periodTypes": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual"
+    },
+    "states": {
+      "noCompany": "Selecciona una compañía para ver sus reportes.",
+      "emptyTitle": "Aún no hay reportes",
+      "emptyDescription": "Genera el primero para tu empresa eligiendo un período.",
+      "errorTitle": "No se pudieron cargar los reportes",
+      "retry": "Reintentar",
+      "noTasksTitle": "Sin tareas en este período",
+      "noTasksDescription": "No se crearon tareas en este período, así que no hay métricas que mostrar."
+    },
+    "scope": {
+      "company": "Empresa"
+    },
+    "confidentiality": "Confidencial · CEO",
+    "comparison": {
+      "previous": "Período anterior",
+      "none": "Sin período previo"
+    },
+    "delta": {
+      "stable": "estable vs anterior",
+      "points": "{value}pp vs anterior",
+      "days": "{value} d vs anterior"
+    },
+    "units": {
+      "days": "{n} días"
+    },
+    "trend": {
+      "up": "Subiendo",
+      "down": "Bajando",
+      "stable": "Estable"
+    },
+    "facts": {
+      "completion": "{completed} de {total} tareas completadas.",
+      "punctuality": "Sobre {base} tareas completadas con fecha límite.",
+      "punctualityExcluded": "{n} sin fecha límite no cuentan.",
+      "resolution": "Promedio de creación a cierre de las tareas completadas.",
+      "noData": "Sin datos suficientes en el período."
+    },
+    "ai": {
+      "badge": "Nexxa IA · En preparación",
+      "ariaLabel": "Análisis de IA en preparación",
+      "caption": "Este análisis lo redactará Nexxa IA a partir de las métricas del período. Estamos trabajando en ello.",
+      "brand": "Nexxa IA"
+    },
+    "distribution": {
+      "title": "Distribución de desempeño",
+      "critical": "{n} crítico | {n} críticos",
+      "goal": "Meta {n}%",
+      "aria": "{range}: {n} persona | {range}: {n} personas",
+      "tipCount": "{n} persona | {n} personas",
+      "empty": "Sin personas en este rango",
+      "regenerate": "Regenera el reporte para ver la distribución"
     }
   },
   "taskSettings": {

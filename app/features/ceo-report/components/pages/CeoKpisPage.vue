@@ -45,8 +45,11 @@ const TREND_ARROW = { up: '↗', down: '↘', stable: '→' } as const
             {{ t('ceoReport.kpis.completionRate') }}
           </div>
           <span class="cr-hero__tag">{{ t(`ceoReport.rating.${report.hero.rating}`).toUpperCase() }}</span>
-          <div class="cr-hero__delta">
-            ↑ {{ report.hero.deltaLabel }}
+          <div
+            v-if="report.hero.deltaLabel"
+            class="cr-hero__delta"
+          >
+            {{ report.hero.deltaLabel }}
           </div>
         </div>
         <div class="cr-hero__side">
@@ -60,6 +63,7 @@ const TREND_ARROW = { up: '↗', down: '↘', stable: '→' } as const
             <div>
               <span class="cr-hero__side-value">{{ item.value }}</span>
               <span
+                v-if="item.deltaLabel"
                 class="cr-hero__side-delta"
                 :class="`cr-tone-${item.tone}`"
               >{{ item.deltaLabel }}</span>
@@ -69,7 +73,7 @@ const TREND_ARROW = { up: '↗', down: '↘', stable: '→' } as const
       </div>
 
       <p
-        v-if="intro"
+        v-if="intro && report.hero.summary"
         class="cr-summary"
       >
         {{ report.hero.summary }}
@@ -91,16 +95,26 @@ const TREND_ARROW = { up: '↗', down: '↘', stable: '→' } as const
             >
               {{ kpi.value }}
             </div>
-            <div class="cr-kpi__goal">
+            <div
+              v-if="kpi.goalLabel"
+              class="cr-kpi__goal"
+            >
               {{ kpi.goalLabel }}
             </div>
-            <div class="cr-bar cr-kpi__bar">
+            <div
+              v-if="kpi.progress != null"
+              class="cr-bar cr-kpi__bar"
+            >
               <span
                 :style="{ width: `${kpi.progress}%`, background: kpi.accent === 'green' ? '#16a34a' : '#28ceab' }"
               />
             </div>
-            <span class="cr-trend">{{ TREND_ARROW[kpi.trend] }} {{ kpi.trendLabel }}</span>
+            <span
+              v-if="kpi.trend"
+              class="cr-trend"
+            >{{ TREND_ARROW[kpi.trend] }} {{ kpi.trendLabel }}</span>
             <CeoSparkline
+              v-if="kpi.series?.length"
               class="cr-kpi__spark"
               :series="kpi.series"
               :width="120"
@@ -109,18 +123,22 @@ const TREND_ARROW = { up: '↗', down: '↘', stable: '→' } as const
             />
           </div>
           <div class="cr-kpi__body">
-            <div class="cr-kpi__q">
-              {{ t('ceoReport.kpis.whatHappened') }}
-            </div>
-            <p class="cr-kpi__a">
-              {{ kpi.whatHappened }}
-            </p>
-            <div class="cr-kpi__q">
-              {{ t('ceoReport.kpis.whatItMeans') }}
-            </div>
-            <p class="cr-kpi__a">
-              {{ kpi.whatItMeans }}
-            </p>
+            <template v-if="kpi.whatHappened">
+              <div class="cr-kpi__q">
+                {{ t('ceoReport.kpis.whatHappened') }}
+              </div>
+              <p class="cr-kpi__a">
+                {{ kpi.whatHappened }}
+              </p>
+            </template>
+            <template v-if="kpi.whatItMeans">
+              <div class="cr-kpi__q">
+                {{ t('ceoReport.kpis.whatItMeans') }}
+              </div>
+              <p class="cr-kpi__a">
+                {{ kpi.whatItMeans }}
+              </p>
+            </template>
           </div>
         </div>
       </div>
