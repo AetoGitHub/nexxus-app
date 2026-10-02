@@ -3,6 +3,32 @@
  * Devuelven primitivos; el etiquetado i18n (hoy/mañana) se hace en la vista.
  */
 
+/** Zona horaria de negocio: el backend vence cada `limit_date` al final del día en CDMX. */
+export const BUSINESS_TIME_ZONE = 'America/Mexico_City'
+
+const BUSINESS_DAY_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: BUSINESS_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/**
+ * Día calendario (YYYY-MM-DD) de un instante en la zona de negocio. No se deben cortar los primeros 10
+ * caracteres del ISO: está en UTC y, p. ej., `2026-10-02T05:59:59Z` es el 1 de octubre a las 23:59 en CDMX.
+ * Una fecha sin hora (`YYYY-MM-DD`) ya es un día calendario y se devuelve igual.
+ */
+export function businessDayKey(value?: string | null): string | null {
+  if (!value) {
+    return null
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value
+  }
+  const date = parseDate(value)
+  return date ? BUSINESS_DAY_FORMAT.format(date) : null
+}
+
 export function parseDate(value?: string | null): Date | null {
   if (!value) {
     return null
