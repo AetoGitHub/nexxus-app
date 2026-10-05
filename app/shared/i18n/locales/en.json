@@ -1045,7 +1045,131 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "placeholder": "The dashboard content will be laid out here."
+    "toolbar": {
+      "scopeLabel": "Dashboard scope",
+      "scope": {
+        "mine": "My tasks",
+        "team": "Team"
+      },
+      "filters": "Filters",
+      "download": "Download report",
+      "analyze": "Analyze with AI"
+    },
+    "kpis": {
+      "tct": {
+        "label": "On-time completion · TCT"
+      },
+      "tc": {
+        "label": "Completion rate · TC"
+      },
+      "created": {
+        "label": "Tasks created"
+      },
+      "iur": {
+        "label": "Urgent tasks resolved · IUR"
+      },
+      "tpr": {
+        "label": "Average resolution time · TPR"
+      },
+      "ica": {
+        "label": "Weighted load · ICA"
+      }
+    },
+    "badges": {
+      "aboveTarget": "Above target",
+      "aboveTargetValue": "Above target {target}",
+      "belowTarget": "Below target",
+      "belowTargetPending": "Below target · {count} unattended",
+      "nearLimit": "Warning · near the limit",
+      "pointsBelowTarget": "{pp}pp below target"
+    },
+    "load": {
+      "title": "Load distribution",
+      "productive": "Productive load distribution",
+      "saturated": "{count} overloaded",
+      "goal": "Target {goal}%",
+      "legend": {
+        "excellent": "Excellent ≥85%",
+        "good": "Good 70-84%",
+        "regular": "Fair 55-69%",
+        "critical": "Critical <55%"
+      }
+    },
+    "periods": {
+      "week": "Week",
+      "month": "Month",
+      "quarter": "Quarter",
+      "year": "Year"
+    },
+    "individual": {
+      "title": "Individual performance",
+      "excel": "Excel",
+      "periodLabel": "Performance period",
+      "columns": {
+        "collaborator": "Collaborator",
+        "weightedLoad": "Weighted load",
+        "pendingLoad": "Pending load",
+        "distribution": "Distribution",
+        "trend": "Trend"
+      },
+      "pendingState": {
+        "available": "Available",
+        "limit": "At limit",
+        "saturated": "Overloaded"
+      }
+    },
+    "topics": {
+      "title": "Performance by topic",
+      "columns": {
+        "topic": "Topic",
+        "completed": "Completed",
+        "active": "Active",
+        "overdue": "Overdue",
+        "urgent": "Urgent",
+        "members": "Members",
+        "trend": "Trend"
+      },
+      "maxDays": "max {days}d"
+    },
+    "nexxtep": {
+      "title": "Nexxtep activity",
+      "kpis": {
+        "totalManagements": {
+          "label": "Total handled"
+        },
+        "autonomousRate": {
+          "label": "Autonomous rate"
+        },
+        "escalationRate": {
+          "label": "Escalation rate"
+        },
+        "averageClose": {
+          "label": "Avg. close time"
+        }
+      },
+      "tiles": {
+        "active": "Active cases now",
+        "waiting": "Waiting for reply",
+        "escalated": "Escalated, unattended",
+        "autonomous": "Completed autonomously"
+      },
+      "byExecutive": "By virtual executive",
+      "columns": {
+        "executive": "Executive",
+        "managements": "Cases",
+        "messages": "Messages",
+        "appointments": "Appointments",
+        "evidences": "Evidence",
+        "autonomousRate": "Autonomous rate",
+        "closeTime": "Close time",
+        "status": "Status"
+      },
+      "status": {
+        "managing": "Handling",
+        "waiting": "Waiting",
+        "escalated": "Escalated"
+      }
+    }
   },
   "ceoReport": {
     "title": "CEO Report",
