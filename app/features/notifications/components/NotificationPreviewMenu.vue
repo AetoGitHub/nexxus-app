@@ -5,6 +5,7 @@ import { useNotificationState } from '~/features/notifications/composables/useNo
 import type { AppNotification } from '~/features/notifications/types/notification.types'
 import { NOTIFICATION_PREVIEW_LIMIT } from '~/features/notifications/utils/notification-counts.util'
 import NotificationPreviewItem from '~/features/notifications/components/NotificationPreviewItem.vue'
+import PushDeviceSwitch from '~/features/push/components/PushDeviceSwitch.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -104,10 +105,13 @@ async function onOpen(notification: AppNotification) {
     </UChip>
 
     <template #content>
-      <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 border-b border-border">
-        <p class="text-sm font-semibold text-foreground">
-          {{ t('notifications.preview.title') }}
-        </p>
+      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3.5 py-2.5 border-b border-border">
+        <div class="flex items-center gap-2 min-w-0">
+          <p class="text-sm font-semibold text-foreground">
+            {{ t('notifications.preview.title') }}
+          </p>
+          <PushDeviceSwitch />
+        </div>
         <div class="flex items-center gap-2 shrink-0">
           <UButton
             color="neutral"

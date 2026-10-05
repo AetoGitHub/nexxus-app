@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PushHelpGuide from '~/features/push/components/PushHelpGuide.vue'
 import PushNotificationTypes from '~/features/push/components/PushNotificationTypes.vue'
-import { usePushNotifications } from '~/features/push/composables/usePushNotifications'
+import { usePushDeviceToggle } from '~/features/push/composables/usePushDeviceToggle'
 import { usePushPreferences } from '~/features/push/composables/usePushPreferences'
 import { detectPushBrowser, isBraveBrowser } from '~/shared/utils/push-support.util'
 
@@ -15,8 +15,8 @@ const toast = useToast()
 const { copy } = useClipboard()
 const typePreferencesEnabled = useRuntimeConfig().public.notificationTypePreferences === true
 
-const push = usePushNotifications()
-const { status, platform, busy, serviceError } = push
+const { push, status, busy, isOn, available, canToggle, setEnabled } = usePushDeviceToggle()
+const { platform, serviceError } = push
 
 const preferencesEnabled = computed(() => status.value != null && status.value !== 'unavailable')
 const { preferences } = usePushPreferences(preferencesEnabled)
@@ -32,24 +32,6 @@ watch(status, (value) => {
     void push.enable({ silent: true })
   }
 }, { immediate: true })
-
-const isOn = computed(() =>
-  status.value === 'granted-subscribed' || (status.value === 'granted-not-subscribed' && busy.value),
-)
-// Con el permiso dado pero sin suscripción (p. ej. el registro falló) se puede reintentar: el popup no vuelve a salir.
-const canToggle = computed(() =>
-  !busy.value && (status.value === 'default' || status.value === 'granted-not-subscribed' || isOn.value),
-)
-
-/** El permiso se pide dentro de este manejador, que corre directamente en el clic/tap del usuario. */
-function onToggle(value: boolean) {
-  if (value) {
-    void push.enable()
-  }
-  else {
-    void push.disable()
-  }
-}
 
 const browser = computed(() =>
   import.meta.client ? detectPushBrowser(navigator.userAgent, isBraveBrowser()) : 'chromium',
@@ -124,12 +106,12 @@ async function copyLink() {
         </div>
 
         <USwitch
-          v-if="status === 'default' || status === 'granted-not-subscribed' || isOn || status === 'denied'"
+          v-if="available"
           :model-value="isOn"
           :disabled="!canToggle"
           :loading="busy"
           :aria-label="t('pushSettings.toggle')"
-          @update:model-value="onToggle"
+          @update:model-value="setEnabled"
         />
       </div>
 
