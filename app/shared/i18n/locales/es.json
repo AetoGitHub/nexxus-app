@@ -1046,14 +1046,13 @@
   "dashboard": {
     "title": "Dashboard",
     "toolbar": {
-      "scopeLabel": "Alcance del dashboard",
-      "scope": {
-        "mine": "Mis tareas",
-        "team": "Equipo"
-      },
-      "filters": "Filtros",
-      "download": "Descargar reporte",
-      "analyze": "Analizar con IA"
+      "periodLabel": "Periodo del dashboard",
+      "compareLabel": "Comparativa",
+      "compare": {
+        "none": "Sin comparar",
+        "previous": "vs periodo anterior",
+        "last_year": "vs mismo periodo año anterior"
+      }
     },
     "kpis": {
       "tct": {
@@ -1078,22 +1077,17 @@
     "badges": {
       "aboveTarget": "Sobre meta",
       "aboveTargetValue": "Sobre meta {target}",
-      "belowTarget": "Bajo meta",
-      "belowTargetPending": "Bajo meta · {count} sin atender",
-      "nearLimit": "Atención · cerca del límite",
-      "pointsBelowTarget": "{pp}pp bajo meta"
+      "aboveTargetUnattended": "Sobre meta · {count} sin atender",
+      "belowTarget": "{pp}pp bajo meta",
+      "belowTargetUnattended": "{pp}pp bajo meta · {count} sin atender",
+      "unattended": "{count} sin atender"
     },
     "load": {
       "title": "Distribución de carga",
       "productive": "Distribución de carga productiva",
       "saturated": "{count} saturados",
       "goal": "Meta {goal}%",
-      "legend": {
-        "excellent": "Excelente ≥85%",
-        "good": "Bueno 70-84%",
-        "regular": "Regular 55-69%",
-        "critical": "Crítico <55%"
-      }
+      "empty": "Todavía no hay colaboradores con carga en este periodo."
     },
     "periods": {
       "week": "Semana",
@@ -1114,8 +1108,19 @@
       },
       "pendingState": {
         "available": "Disponible",
-        "limit": "En límite",
+        "at_limit": "En límite",
         "saturated": "Saturado"
+      },
+      "empty": "No hay colaboradores para mostrar en este periodo.",
+      "excelError": "No se pudo generar el Excel",
+      "excelColumns": {
+        "pointsDone": "Puntos hechos",
+        "points": "Puntos totales",
+        "capacity": "Capacidad (pts)",
+        "pendingStatus": "Estado de la carga pendiente",
+        "quick": "Rápidas",
+        "normal": "Normales",
+        "complex": "Complejas"
       }
     },
     "topics": {
@@ -1129,46 +1134,21 @@
         "members": "Miembros",
         "trend": "Tendencia"
       },
-      "maxDays": "máx {days}d"
+      "maxDays": "máx {days}d",
+      "empty": "No hay temas para mostrar en este periodo."
     },
-    "nexxtep": {
-      "title": "Actividad Nexxtep",
-      "kpis": {
-        "totalManagements": {
-          "label": "Gestiones totales"
-        },
-        "autonomousRate": {
-          "label": "Tasa autónoma"
-        },
-        "escalationRate": {
-          "label": "Tasa escalación"
-        },
-        "averageClose": {
-          "label": "T. cierre promedio"
-        }
-      },
-      "tiles": {
-        "active": "Gestiones activas ahora",
-        "waiting": "Esperando respuesta",
-        "escalated": "Escaladas sin atender",
-        "autonomous": "Completadas autónomamente"
-      },
-      "byExecutive": "Por ejecutivo virtual",
-      "columns": {
-        "executive": "Ejecutivo",
-        "managements": "Gestiones",
-        "messages": "Mensajes",
-        "appointments": "Citas",
-        "evidences": "Evidencias",
-        "autonomousRate": "Tasa autónoma",
-        "closeTime": "T. cierre",
-        "status": "Estado"
-      },
-      "status": {
-        "managing": "Gestionando",
-        "waiting": "Esperando",
-        "escalated": "Escalado"
-      }
+    "hero": {
+      "goal": "meta ≥{goal}%"
+    },
+    "state": {
+      "loading": "Cargando…",
+      "retry": "Reintentar"
+    },
+    "ranges": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "regular": "Regular",
+      "critical": "Crítico"
     }
   },
   "ceoReport": {

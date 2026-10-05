@@ -1,33 +1,45 @@
 <script setup lang="ts">
+import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import DashboardDonut from '~/features/dashboard/components/shared/DashboardDonut.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
-import type {
-  DashboardCollaborator,
-  DashboardPendingState,
-  DashboardPeriod,
-  DashboardTone,
-} from '~/features/dashboard/types/dashboard.types'
-import { TONE_BG, TONE_SOFT, TONE_TEXT } from '~/features/dashboard/utils/dashboard.util'
+import type { ApiDirection, ApiPeopleResponse, ApiPersonRow } from '~/features/dashboard/types/dashboard-api.types'
+import type { DashboardPeriod, DashboardTone } from '~/features/dashboard/types/dashboard.types'
+import { exportPeopleToExcel } from '~/features/dashboard/utils/dashboard-excel.util'
+import {
+  LOAD_STATUS_TONE,
+  NO_DATA,
+  TONE_BG,
+  TONE_SOFT,
+  TONE_TEXT,
+  avatarColor,
+  formatHours,
+  formatPercent,
+  rangeOf,
+} from '~/features/dashboard/utils/dashboard.util'
+import { getInitials } from '~/shared/utils/initials'
 
 /** Rendimiento individual: indicadores, carga, reparto por esfuerzo y tendencia de cada colaborador. */
 const props = defineProps<{
-  collaborators: DashboardCollaborator[]
+  data: ApiPeopleResponse | undefined
+  loading: boolean
+  refreshing: boolean
+  error: string
 }>()
 
+defineEmits<{
+  retry: []
+}>()
+
+/** Periodo propio de esta tabla: no cambia el de los demás bloques. */
 const period = defineModel<DashboardPeriod>('period', { required: true })
 
 const { t } = useI18n()
+const toast = useToast()
 
 const periods: DashboardPeriod[] = ['week', 'month', 'quarter', 'year']
 
 /** Meta de carga productiva: marca la línea roja de cada barra de carga ponderada. */
 const LOAD_GOAL = 85
-
-const pendingTone: Record<DashboardPendingState, DashboardTone> = {
-  available: 'good',
-  limit: 'warning',
-  saturated: 'danger',
-}
 
 const columns = computed(() => [
   { key: 'rank', label: '#', align: 'text-left' },
@@ -42,7 +54,50 @@ const columns = computed(() => [
   { key: 'trend', label: t('dashboard.individual.columns.trend'), align: 'text-left' },
 ])
 
-const rows = computed(() => props.collaborators)
+const rows = computed(() => props.data?.people ?? [])
+
+/** TC, IUR y TPR: chips con el color de su rango (TPR no tiene semáforo). */
+function metricsOf(row: ApiPersonRow): { key: string, text: string, tone: DashboardTone }[] {
+  return [
+    { key: 'tc', text: formatPercent(row.tc), tone: rangeOf(row.tc) },
+    { key: 'iur', text: formatPercent(row.iur), tone: rangeOf(row.iur) },
+    { key: 'tpr', text: formatHours(row.tpr), tone: 'neutral' },
+  ]
+}
+
+const TREND_ICONS: Record<NonNullable<ApiDirection>, string> = {
+  up: 'i-lucide-arrow-up',
+  down: 'i-lucide-arrow-down',
+  flat: 'i-lucide-minus',
+}
+
+const TREND_TONES: Record<NonNullable<ApiDirection>, DashboardTone> = {
+  up: 'good',
+  down: 'danger',
+  flat: 'neutral',
+}
+
+const exporting = ref(false)
+
+async function exportExcel() {
+  if (!props.data || exporting.value) {
+    return
+  }
+
+  exporting.value = true
+  try {
+    await exportPeopleToExcel(props.data, t)
+  }
+  catch {
+    toast.add({
+      title: t('dashboard.individual.excelError'),
+      color: 'error',
+    })
+  }
+  finally {
+    exporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -59,6 +114,9 @@ const rows = computed(() => props.collaborators)
           size="xs"
           icon="i-lucide-download"
           :label="t('dashboard.individual.excel')"
+          :loading="exporting"
+          :disabled="rows.length === 0"
+          @click="exportExcel"
         />
         <div
           class="inline-flex rounded-md bg-muted p-0.5"
@@ -82,152 +140,181 @@ const rows = computed(() => props.collaborators)
       </div>
     </header>
 
-    <div class="mt-3 overflow-x-auto">
-      <table class="w-full min-w-[980px] border-collapse text-sm">
-        <thead>
-          <tr class="border-b border-border">
-            <th
-              v-for="column in columns"
-              :key="column.key"
-              scope="col"
-              class="px-2 pb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
-              :class="column.align"
-            >
-              {{ column.label }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(row, index) in rows"
-            :key="row.id"
-            class="border-b border-border/60 last:border-0"
-          >
-            <td class="px-2 py-3">
-              <span class="inline-flex size-5 items-center justify-center rounded bg-muted font-mono text-[10px] font-semibold text-muted-foreground">
-                {{ index + 1 }}
-              </span>
-            </td>
+    <DashboardBlockState
+      class="mt-3"
+      :loading="loading"
+      :error="error"
+      :empty="rows.length === 0"
+      :empty-text="t('dashboard.individual.empty')"
+      :refreshing="refreshing"
+      @retry="$emit('retry')"
+    >
+      <template #loading>
+        <USkeleton
+          v-for="n in 4"
+          :key="n"
+          class="h-12 w-full rounded-lg"
+        />
+      </template>
 
-            <td class="px-2 py-3">
-              <div class="flex items-center gap-2.5">
-                <span
-                  class="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-                  :style="{ backgroundColor: row.color }"
-                >
-                  {{ row.initials }}
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[980px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-border">
+              <th
+                v-for="column in columns"
+                :key="column.key"
+                scope="col"
+                class="px-2 pb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+                :class="column.align"
+              >
+                {{ column.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in rows"
+              :key="row.id"
+              class="border-b border-border/60 last:border-0"
+            >
+              <td class="px-2 py-3">
+                <span class="inline-flex size-5 items-center justify-center rounded bg-muted font-mono text-[10px] font-semibold text-muted-foreground">
+                  {{ row.position }}
                 </span>
-                <span class="font-semibold text-foreground">{{ row.name }}</span>
-              </div>
-            </td>
+              </td>
 
-            <td class="px-2 py-3 text-center">
-              <span
-                class="font-mono text-lg font-bold tabular-nums"
-                :class="TONE_TEXT[row.tct.tone]"
-              >
-                {{ row.tct.value }}
-              </span>
-            </td>
+              <td class="px-2 py-3">
+                <div class="flex items-center gap-2.5">
+                  <span
+                    class="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                    :style="{ backgroundColor: avatarColor(row.id) }"
+                  >
+                    {{ getInitials(row.name) }}
+                  </span>
+                  <span class="font-semibold text-foreground">{{ row.name }}</span>
+                </div>
+              </td>
 
-            <td
-              v-for="(metric, metricIndex) in [row.tc, row.iur, row.tpr]"
-              :key="`${row.id}-${metricIndex}`"
-              class="px-2 py-3 text-center"
-            >
-              <span
-                class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                :class="TONE_SOFT[metric.tone]"
-              >
-                {{ metric.value }}
-              </span>
-            </td>
-
-            <td class="px-2 py-3">
-              <p
-                class="font-mono text-sm font-bold tabular-nums"
-                :class="TONE_TEXT[row.load.tone]"
-              >
-                {{ row.load.percent }}%
-              </p>
-              <p class="text-[10px] text-muted-foreground">
-                {{ row.load.used }}pts/{{ row.load.cap }}pts
-              </p>
-              <div class="relative mt-1 h-1 w-24 rounded-full bg-muted">
-                <div
-                  class="h-full rounded-full"
-                  :class="TONE_BG[row.load.tone]"
-                  :style="{ width: `${Math.min(row.load.percent, 100)}%` }"
-                />
+              <td class="px-2 py-3 text-center">
                 <span
-                  class="absolute -top-0.5 h-2 w-px bg-red-600"
-                  :style="{ left: `${LOAD_GOAL}%` }"
-                />
-              </div>
-            </td>
+                  class="font-mono text-lg font-bold tabular-nums"
+                  :class="row.tct == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.tct)]"
+                >
+                  {{ formatPercent(row.tct) }}
+                </span>
+              </td>
 
-            <td class="px-2 py-3">
-              <p class="font-mono text-sm tabular-nums">
-                <span
-                  class="font-bold"
-                  :class="TONE_TEXT[pendingTone[row.pending.state]]"
-                >{{ row.pending.used }}</span>
-                <span class="text-[11px] text-muted-foreground">/{{ row.pending.cap }}pts</span>
-              </p>
-              <div class="mt-1 h-1 w-24 rounded-full bg-muted">
-                <div
-                  class="h-full rounded-full"
-                  :class="TONE_BG[pendingTone[row.pending.state]]"
-                  :style="{ width: `${Math.min((row.pending.used / row.pending.cap) * 100, 100)}%` }"
-                />
-              </div>
-              <span
-                class="mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
-                :class="TONE_SOFT[pendingTone[row.pending.state]]"
+              <td
+                v-for="metric in metricsOf(row)"
+                :key="`${row.id}-${metric.key}`"
+                class="px-2 py-3 text-center"
               >
-                {{ t(`dashboard.individual.pendingState.${row.pending.state}`) }}
-              </span>
-            </td>
+                <span
+                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
+                  :class="TONE_SOFT[metric.tone]"
+                >
+                  {{ metric.text }}
+                </span>
+              </td>
 
-            <td class="px-2 py-3">
-              <div class="flex items-center gap-2">
-                <DashboardDonut
-                  :quick="row.distribution.quick"
-                  :normal="row.distribution.normal"
-                  :complex="row.distribution.complex"
-                />
-                <ul class="font-mono text-[10px] leading-tight">
-                  <li :class="TONE_TEXT.good">
-                    R {{ row.distribution.quick }}
-                  </li>
-                  <li :class="TONE_TEXT.warning">
-                    N {{ row.distribution.normal }}
-                  </li>
-                  <li :class="TONE_TEXT.danger">
-                    C {{ row.distribution.complex }}
-                  </li>
-                </ul>
-              </div>
-            </td>
+              <td class="px-2 py-3">
+                <p
+                  class="font-mono text-sm font-bold tabular-nums"
+                  :class="row.weighted_load.percentage == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.weighted_load.percentage)]"
+                >
+                  {{ formatPercent(row.weighted_load.percentage) }}
+                </p>
+                <p class="text-[10px] text-muted-foreground">
+                  {{ row.weighted_load.points_done }}pts/{{ row.weighted_load.points }}pts
+                </p>
+                <div class="relative mt-1 h-1 w-24 rounded-full bg-muted">
+                  <div
+                    v-if="row.weighted_load.percentage != null"
+                    class="h-full rounded-full"
+                    :class="TONE_BG[rangeOf(row.weighted_load.percentage)]"
+                    :style="{ width: `${Math.min(row.weighted_load.percentage, 100)}%` }"
+                  />
+                  <span
+                    class="absolute -top-0.5 h-2 w-px bg-red-600"
+                    :style="{ left: `${LOAD_GOAL}%` }"
+                  />
+                </div>
+              </td>
 
-            <td class="px-2 py-3">
-              <div class="flex items-center gap-1.5">
-                <DashboardTrendLine
-                  :series="row.trend.series"
-                  :tone="row.trend.tone"
-                  :width="44"
-                  :height="16"
-                />
-                <UIcon
-                  :name="row.trend.direction === 'up' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'"
-                  class="size-3"
-                  :class="row.trend.direction === 'up' ? TONE_TEXT.good : TONE_TEXT.danger"
-                />
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+              <td class="px-2 py-3">
+                <p class="font-mono text-sm tabular-nums">
+                  <span
+                    class="font-bold"
+                    :class="TONE_TEXT[LOAD_STATUS_TONE[row.pending_load.status]]"
+                  >{{ row.pending_load.points }}</span>
+                  <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.capacity }}pts</span>
+                </p>
+                <div class="mt-1 h-1 w-24 rounded-full bg-muted">
+                  <div
+                    class="h-full rounded-full"
+                    :class="TONE_BG[LOAD_STATUS_TONE[row.pending_load.status]]"
+                    :style="{ width: `${Math.min(row.pending_load.percentage, 100)}%` }"
+                  />
+                </div>
+                <span
+                  class="mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide"
+                  :class="TONE_SOFT[LOAD_STATUS_TONE[row.pending_load.status]]"
+                >
+                  {{ t(`dashboard.individual.pendingState.${row.pending_load.status}`) }}
+                </span>
+              </td>
+
+              <td class="px-2 py-3">
+                <div class="flex items-center gap-2">
+                  <DashboardDonut
+                    :quick="row.distribution.quick"
+                    :normal="row.distribution.normal"
+                    :complex="row.distribution.complex"
+                  />
+                  <ul class="font-mono text-[10px] leading-tight">
+                    <li :class="TONE_TEXT.good">
+                      R {{ row.distribution.quick }}
+                    </li>
+                    <li :class="TONE_TEXT.warning">
+                      N {{ row.distribution.normal }}
+                    </li>
+                    <li :class="TONE_TEXT.danger">
+                      C {{ row.distribution.complex }}
+                    </li>
+                  </ul>
+                </div>
+              </td>
+
+              <td class="px-2 py-3">
+                <div
+                  v-if="row.trend.series.some(point => point.value != null)"
+                  class="flex items-center gap-1.5"
+                >
+                  <DashboardTrendLine
+                    :series="row.trend.series.map(point => point.value)"
+                    :tone="row.trend.direction ? TREND_TONES[row.trend.direction] : 'neutral'"
+                    :width="44"
+                    :height="16"
+                  />
+                  <UIcon
+                    v-if="row.trend.direction"
+                    :name="TREND_ICONS[row.trend.direction]"
+                    class="size-3"
+                    :class="TONE_TEXT[TREND_TONES[row.trend.direction]]"
+                  />
+                </div>
+                <span
+                  v-else
+                  class="text-muted-foreground"
+                >
+                  {{ NO_DATA }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </DashboardBlockState>
   </section>
 </template>

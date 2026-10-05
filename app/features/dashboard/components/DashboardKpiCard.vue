@@ -4,19 +4,10 @@ import DashboardTrendLine from '~/features/dashboard/components/shared/Dashboard
 import type { DashboardKpi } from '~/features/dashboard/types/dashboard.types'
 import { TONE_SOFT, TONE_TEXT, TONE_TOP_BORDER } from '~/features/dashboard/utils/dashboard.util'
 
-/**
- * Tarjeta de KPI: etiqueta, badge de estado, valor, variación y tendencia.
- * `compact` es la versión sin tendencia que usa la actividad de Nexxtep.
- */
-withDefaults(defineProps<{
+/** Tarjeta de KPI: etiqueta, badge de estado, valor, variación y tendencia. */
+defineProps<{
   kpi: DashboardKpi
-  /** Prefijo de las etiquetas i18n (`dashboard.kpis` o `dashboard.nexxtep.kpis`). */
-  labelPrefix?: string
-  compact?: boolean
-}>(), {
-  labelPrefix: 'dashboard.kpis',
-  compact: false,
-})
+}>()
 
 const { t } = useI18n()
 </script>
@@ -28,7 +19,7 @@ const { t } = useI18n()
   >
     <header class="flex items-start justify-between gap-2">
       <p class="min-w-0 truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {{ t(`${labelPrefix}.${kpi.key}.label`) }}
+        {{ t(`dashboard.kpis.${kpi.key}.label`) }}
       </p>
       <span
         v-if="kpi.badge"
@@ -41,16 +32,19 @@ const { t } = useI18n()
 
     <div class="flex items-end justify-between gap-2">
       <p
-        class="font-mono font-bold leading-none tabular-nums"
-        :class="[TONE_TEXT[kpi.tone], compact ? 'text-xl' : 'text-2xl']"
+        class="font-mono text-2xl font-bold leading-none tabular-nums"
+        :class="TONE_TEXT[kpi.tone]"
       >
         {{ kpi.value }}
       </p>
-      <DashboardDelta :delta="kpi.delta" />
+      <DashboardDelta
+        v-if="kpi.delta"
+        :delta="kpi.delta"
+      />
     </div>
 
     <DashboardTrendLine
-      v-if="!compact && kpi.series.length"
+      v-if="kpi.series.length"
       :series="kpi.series"
       :tone="kpi.tone"
       :height="20"

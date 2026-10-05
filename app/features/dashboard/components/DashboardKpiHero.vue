@@ -32,10 +32,19 @@ const { t } = useI18n()
         >
           {{ t(kpi.badge.labelKey, kpi.badge.params ?? {}) }}
         </span>
-        <span class="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <DashboardDelta :delta="kpi.delta" />
-          <template v-if="kpi.note">
-            · {{ kpi.note }}
+        <span
+          v-if="kpi.delta || kpi.goal != null"
+          class="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"
+        >
+          <DashboardDelta
+            v-if="kpi.delta"
+            :delta="kpi.delta"
+          />
+          <template v-if="kpi.goal != null">
+            <template v-if="kpi.delta">
+              ·
+            </template>
+            {{ t('dashboard.hero.goal', { goal: kpi.goal }) }}
           </template>
         </span>
       </div>

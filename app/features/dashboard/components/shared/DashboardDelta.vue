@@ -2,10 +2,16 @@
 import type { DashboardDelta } from '~/features/dashboard/types/dashboard.types'
 import { TONE_TEXT } from '~/features/dashboard/utils/dashboard.util'
 
-/** Variación contra el periodo anterior: flecha + valor, coloreada por semáforo. */
+/** Variación contra el periodo de comparación: flecha + valor, coloreada por semáforo. */
 defineProps<{
   delta: DashboardDelta
 }>()
+
+const ICONS = {
+  up: 'i-lucide-arrow-up',
+  down: 'i-lucide-arrow-down',
+  flat: 'i-lucide-minus',
+} as const
 </script>
 
 <template>
@@ -14,7 +20,7 @@ defineProps<{
     :class="TONE_TEXT[delta.tone]"
   >
     <UIcon
-      :name="delta.direction === 'up' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'"
+      :name="ICONS[delta.direction]"
       class="size-3"
     />
     {{ delta.value }}

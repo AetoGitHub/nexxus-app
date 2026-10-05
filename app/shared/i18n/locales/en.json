@@ -1046,14 +1046,13 @@
   "dashboard": {
     "title": "Dashboard",
     "toolbar": {
-      "scopeLabel": "Dashboard scope",
-      "scope": {
-        "mine": "My tasks",
-        "team": "Team"
-      },
-      "filters": "Filters",
-      "download": "Download report",
-      "analyze": "Analyze with AI"
+      "periodLabel": "Dashboard period",
+      "compareLabel": "Comparison",
+      "compare": {
+        "none": "No comparison",
+        "previous": "vs previous period",
+        "last_year": "vs same period last year"
+      }
     },
     "kpis": {
       "tct": {
@@ -1076,24 +1075,19 @@
       }
     },
     "badges": {
-      "aboveTarget": "Above target",
-      "aboveTargetValue": "Above target {target}",
-      "belowTarget": "Below target",
-      "belowTargetPending": "Below target · {count} unattended",
-      "nearLimit": "Warning · near the limit",
-      "pointsBelowTarget": "{pp}pp below target"
+      "aboveTarget": "Above goal",
+      "aboveTargetValue": "Above goal {target}",
+      "aboveTargetUnattended": "Above goal · {count} unattended",
+      "belowTarget": "{pp}pp below goal",
+      "belowTargetUnattended": "{pp}pp below goal · {count} unattended",
+      "unattended": "{count} unattended"
     },
     "load": {
       "title": "Load distribution",
       "productive": "Productive load distribution",
       "saturated": "{count} overloaded",
       "goal": "Target {goal}%",
-      "legend": {
-        "excellent": "Excellent ≥85%",
-        "good": "Good 70-84%",
-        "regular": "Fair 55-69%",
-        "critical": "Critical <55%"
-      }
+      "empty": "There are no collaborators with load in this period yet."
     },
     "periods": {
       "week": "Week",
@@ -1114,8 +1108,19 @@
       },
       "pendingState": {
         "available": "Available",
-        "limit": "At limit",
-        "saturated": "Overloaded"
+        "at_limit": "At limit",
+        "saturated": "Saturated"
+      },
+      "empty": "There are no collaborators to show in this period.",
+      "excelError": "Could not generate the Excel file",
+      "excelColumns": {
+        "pointsDone": "Points done",
+        "points": "Total points",
+        "capacity": "Capacity (pts)",
+        "pendingStatus": "Pending load status",
+        "quick": "Quick",
+        "normal": "Normal",
+        "complex": "Complex"
       }
     },
     "topics": {
@@ -1129,46 +1134,21 @@
         "members": "Members",
         "trend": "Trend"
       },
-      "maxDays": "max {days}d"
+      "maxDays": "max {days}d",
+      "empty": "There are no topics to show in this period."
     },
-    "nexxtep": {
-      "title": "Nexxtep activity",
-      "kpis": {
-        "totalManagements": {
-          "label": "Total handled"
-        },
-        "autonomousRate": {
-          "label": "Autonomous rate"
-        },
-        "escalationRate": {
-          "label": "Escalation rate"
-        },
-        "averageClose": {
-          "label": "Avg. close time"
-        }
-      },
-      "tiles": {
-        "active": "Active cases now",
-        "waiting": "Waiting for reply",
-        "escalated": "Escalated, unattended",
-        "autonomous": "Completed autonomously"
-      },
-      "byExecutive": "By virtual executive",
-      "columns": {
-        "executive": "Executive",
-        "managements": "Cases",
-        "messages": "Messages",
-        "appointments": "Appointments",
-        "evidences": "Evidence",
-        "autonomousRate": "Autonomous rate",
-        "closeTime": "Close time",
-        "status": "Status"
-      },
-      "status": {
-        "managing": "Handling",
-        "waiting": "Waiting",
-        "escalated": "Escalated"
-      }
+    "hero": {
+      "goal": "goal ≥{goal}%"
+    },
+    "state": {
+      "loading": "Loading…",
+      "retry": "Retry"
+    },
+    "ranges": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "regular": "Fair",
+      "critical": "Critical"
     }
   },
   "ceoReport": {

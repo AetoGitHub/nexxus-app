@@ -43,6 +43,14 @@ const segments = computed(() => {
     aria-hidden="true"
   >
     <circle
+      cx="18"
+      cy="18"
+      :r="RADIUS"
+      fill="none"
+      stroke-width="5"
+      class="stroke-muted"
+    />
+    <circle
       v-for="segment in segments"
       :key="segment.key"
       cx="18"
