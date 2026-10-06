@@ -25,7 +25,13 @@ import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmen
 import TaskMoreTasksField from '~/features/tasks/components/form/TaskMoreTasksField.vue'
 import TaskVoiceButton from '~/features/tasks/components/form/TaskVoiceButton.vue'
 import type { VoiceTaskCatalogItem, VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
-import { resolveVoiceEffort, resolveVoiceTaskType, voiceSubtaskRows } from '~/features/tasks/utils/form/voice-task.util'
+import {
+  resolveVoiceEffort,
+  resolveVoiceTaskType,
+  toVoiceProjects,
+  toVoiceUsers,
+  voiceSubtaskRows,
+} from '~/features/tasks/utils/form/voice-task.util'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
@@ -97,6 +103,8 @@ const props = withDefaults(
     toUpdateSection?: ToUpdateSectionId | null
     /** Id de la tarea cuando el detalle se abrió arrastrando Backlog → Pendiente en Kanban. */
     promotingBacklogTaskId?: number | null
+    /** Tarea dictada con el atajo de voz: el formulario se abre ya rellenado con ella. */
+    voiceDraft?: VoiceTaskResponse | null
   }>(),
   {
     view: 'list',
@@ -105,6 +113,7 @@ const props = withDefaults(
     authorizeMode: false,
     toUpdateSection: null,
     promotingBacklogTaskId: null,
+    voiceDraft: null,
   },
 )
 
@@ -649,18 +658,9 @@ watch(
 )
 
 /** Usuarios y proyectos que se le mandan a la IA para que resuelva nombres como «Héctor» o «NEXXUS TASK». */
-const voiceUsers = computed<VoiceTaskCatalogItem[]>(() =>
-  usersList.value.map(item => ({
-    id: item.id,
-    name: `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim() || item.username,
-  })),
-)
+const voiceUsers = computed<VoiceTaskCatalogItem[]>(() => toVoiceUsers(usersList.value))
 
-const voiceProjects = computed<VoiceTaskCatalogItem[]>(() =>
-  allProjectItems.value
-    .filter((item): item is { label: string, value: number } => typeof item.value === 'number')
-    .map(item => ({ id: item.value, name: item.label })),
-)
+const voiceProjects = computed<VoiceTaskCatalogItem[]>(() => toVoiceProjects(allProjectItems.value))
 
 /** Rellena el formulario con la tarea que entendió la IA. Solo toca lo que ella devolvió; el resto queda como estaba. */
 function applyVoiceTask(task: VoiceTaskResponse) {
@@ -1141,6 +1141,10 @@ watch(open, (isOpen) => {
     }
     if (!state.dueDate) {
       state.dueDate = minDueDate.value
+    }
+    // Atajo de voz: va al final para que lo dictado gane sobre los valores por defecto.
+    if (props.voiceDraft) {
+      applyVoiceTask(props.voiceDraft)
     }
   }
   else if (props.promotingBacklogTaskId === taskId.value) {

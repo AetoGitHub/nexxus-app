@@ -7,6 +7,7 @@ import type {
   TaskListFilters,
   TaskView,
 } from '~/features/tasks/types/task.types'
+import type { VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 import { useProfileConfigurationStore } from '~/features/auth/composables/useProfileConfigurationStore'
@@ -156,6 +157,8 @@ export function useTaskWorkspaceState(options: {
   const selectedTaskId = ref<number | null>(initialTaskId)
   /** Prefills al abrir el slideover en modo creación (p. ej. proyecto desde Kanban). */
   const newTaskDefaults = ref<NewTaskFormDefaults | null>(null)
+  /** Tarea dictada por voz con el atajo: el slideover se abre ya rellenado con ella. */
+  const newTaskVoiceDraft = ref<VoiceTaskResponse | null>(null)
   /** Sección de pending-approval desde la que se abrió el detalle. */
   const toUpdateSection = ref<ToUpdateSectionId | null>(null)
   /** Id de la tarea cuando el detalle se abrió arrastrando Backlog → Pendiente en Kanban. */
@@ -180,6 +183,7 @@ export function useTaskWorkspaceState(options: {
     }
 
     newTaskDefaults.value = null
+    newTaskVoiceDraft.value = null
     toUpdateSection.value = null
     promotingBacklogTaskId.value = null
 
@@ -286,10 +290,11 @@ export function useTaskWorkspaceState(options: {
 
   const activeGroupByLabel = computed(() => t(`tasks.groupBy.${groupBy.value}`))
 
-  function openNewTask(defaults?: NewTaskFormDefaults | null) {
+  function openNewTask(defaults?: NewTaskFormDefaults | null, voiceDraft?: VoiceTaskResponse | null) {
     selectedTaskId.value = null
     toUpdateSection.value = null
     newTaskDefaults.value = defaults ?? null
+    newTaskVoiceDraft.value = voiceDraft ?? null
     newTaskOpen.value = true
   }
 
@@ -323,6 +328,7 @@ export function useTaskWorkspaceState(options: {
     newTaskOpen,
     selectedTaskId,
     newTaskDefaults,
+    newTaskVoiceDraft,
     toUpdateSection,
     promotingBacklogTaskId,
     listFilters,
