@@ -22,6 +22,7 @@ import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
+import TaskMoreTasksField from '~/features/tasks/components/form/TaskMoreTasksField.vue'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
@@ -43,10 +44,12 @@ import {
   buildUpdateBacklogTaskPayload,
   buildUpdateTaskPayload,
   createEmptySubtaskRow,
+  resolveMoreTaskNames,
   findCloseApprovalForUser,
   findPendingCloseApproval,
   taskDetailToFormInput,
   type NewTaskFormInput,
+  type MoreTaskFormRow,
   type SubtaskFormRow,
 } from '~/features/tasks/utils/form/task-form.util'
 import {
@@ -180,6 +183,9 @@ const isAttachingFiles = ref(false)
  * checklist lo maneja `TaskSubtaskChecklist` con sus propios endpoints.
  */
 const subtaskRows = ref<SubtaskFormRow[]>([])
+
+/** Nombres de las tareas extra (`more_tasks`) que se crean con el mismo cuerpo; solo al crear (normal o backlog). */
+const moreTaskRows = ref<MoreTaskFormRow[]>([])
 const isUploadingSubtaskImages = ref(false)
 
 const isSaving = computed(() =>
@@ -816,7 +822,7 @@ function onAuthorizeSuccess() {
  * y deja los archivos en `pendingAttachments` (el submit del resto de la
  * tarea ya se completó y no debe bloquearse por esto).
  */
-async function attachPendingFiles(taskId: number) {
+async function attachPendingFiles(taskId: number, extraTaskIds: number[] = []) {
   if (!pendingAttachments.value.length) {
     return
   }
@@ -837,6 +843,10 @@ async function attachPendingFiles(taskId: number) {
     )
     const files = [...existingAttachments.value, ...uploaded]
     await updateTaskFiles({ taskId, payload: { files } })
+    // Las tareas extra son copias de esta: llevan los mismos archivos (ya subidos, no se vuelven a subir).
+    for (const extraTaskId of extraTaskIds) {
+      await updateTaskFiles({ taskId: extraTaskId, payload: { files } })
+    }
     existingAttachments.value = files
     pendingAttachments.value = []
   }
@@ -995,7 +1005,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
     }
 
     if (isBacklogMode.value) {
-      const payload = buildCreateBacklogTaskPayload(state)
+      const payload = buildCreateBacklogTaskPayload(state, resolveMoreTaskNames(moreTaskRows.value))
       await createBacklogTask(payload)
       close()
       return
@@ -1003,9 +1013,9 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
     validateSubtaskRows()
     await uploadPendingSubtaskImages()
-    const payload = buildCreateTaskPayload(state, buildSubtasksPayload())
+    const payload = buildCreateTaskPayload(state, buildSubtasksPayload(), resolveMoreTaskNames(moreTaskRows.value))
     const created = await createTask(payload)
-    await attachPendingFiles(created.id)
+    await attachPendingFiles(created.id, created.more_tasks_ids ?? [])
     close()
   }
   catch (error) {
@@ -1054,6 +1064,7 @@ watch(open, (isOpen) => {
     pendingAttachments.value = []
     existingAttachments.value = []
     subtaskRows.value = []
+    moreTaskRows.value = []
     return
   }
 
@@ -1384,6 +1395,12 @@ const slideoverUi = computed(() => {
             v-model:rows="subtaskRows"
             :user-items="userSelectItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
+          />
+
+          <TaskMoreTasksField
+            v-if="!isDetailView"
+            v-model:rows="moreTaskRows"
+            :backlog="isBacklogMode"
           />
 
           <TaskSubtaskChecklist

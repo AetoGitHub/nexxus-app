@@ -104,7 +104,12 @@ export interface CreateTaskPayload {
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
   subtasks?: CreateTaskSubtaskPayload[]
+  /** Nombres de tareas extra: el backend crea una por cada uno con el mismo cuerpo (sin descripción). */
+  more_tasks?: string[]
 }
+
+/** Respuesta de POST /api/tasks/create/: la tarea creada y los ids de las extra (`more_tasks`), en el mismo orden. */
+export type CreateTaskResponse = TaskDetail & { more_tasks_ids?: number[] }
 
 /** Payload de POST /api/tasks/backlog/create/. */
 export interface CreateBacklogTaskPayload {
@@ -112,6 +117,8 @@ export interface CreateBacklogTaskPayload {
   long_description?: string
   type: 'manual'
   project: number
+  /** Nombres de tareas extra: el backend crea un backlog por cada uno con el mismo proyecto. */
+  more_tasks?: string[]
 }
 
 /**

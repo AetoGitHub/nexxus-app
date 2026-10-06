@@ -409,6 +409,7 @@
       "promoteToPending": "Send to pending",
       "createSuccessTitle": "Task created",
       "createSuccessDescription": "The task was created successfully.",
+      "createManySuccessDescription": "{count} tasks were created successfully.",
       "createError": "Could not create the task",
       "promoteSuccessTitle": "Task sent to pending",
       "promoteSuccessDescription": "The task was moved from backlog to pending successfully.",
@@ -449,6 +450,15 @@
         "edit": "Edit subtask",
         "delete": "Delete subtask",
         "deleteErrorTitle": "Could not delete the subtask"
+      },
+      "moreTasks": {
+        "label": "More tasks",
+        "optional": "optional",
+        "add": "Add task",
+        "namePlaceholder": "Name of the next task",
+        "remove": "Remove task",
+        "hint": "Each one is created with this task's data (project, dates, assignees, files and subtasks), but without a description.",
+        "hintBacklog": "Each one is created as a backlog task in the same project, without a description."
       },
       "validation": {
         "nameRequired": "Name is required",

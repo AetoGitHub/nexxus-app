@@ -17,15 +17,18 @@ export function useCreateBacklogTask() {
 
   return useMutation({
     mutationFn: (payload: CreateBacklogTaskPayload) =>
-      $api('/api/tasks/backlog/create/', {
+      $api<{ more_tasks_ids?: number[] }>('/api/tasks/backlog/create/', {
         method: 'POST',
         body: payload,
       }),
-    onSuccess: async () => {
+    onSuccess: async (created) => {
       await queryClient.invalidateQueries({ queryKey: ['tasks', companyId.value, 'backlog'] })
+      const moreTasksCount = created?.more_tasks_ids?.length ?? 0
       toast.add({
         title: t('tasks.form.createSuccessTitle'),
-        description: t('tasks.form.createSuccessDescription'),
+        description: moreTasksCount
+          ? t('tasks.form.createManySuccessDescription', { count: moreTasksCount + 1 })
+          : t('tasks.form.createSuccessDescription'),
         color: 'success',
         duration: TASK_SUCCESS_TOAST_MS,
       })

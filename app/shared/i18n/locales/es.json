@@ -409,6 +409,7 @@
       "promoteToPending": "Enviar a pendiente",
       "createSuccessTitle": "Tarea creada",
       "createSuccessDescription": "La tarea se creó correctamente.",
+      "createManySuccessDescription": "Se crearon {count} tareas correctamente.",
       "createError": "No se pudo crear la tarea",
       "promoteSuccessTitle": "Tarea enviada a pendiente",
       "promoteSuccessDescription": "La tarea se movió de backlog a pendiente correctamente.",
@@ -449,6 +450,15 @@
         "edit": "Editar subtarea",
         "delete": "Eliminar subtarea",
         "deleteErrorTitle": "No se pudo eliminar la subtarea"
+      },
+      "moreTasks": {
+        "label": "Más tareas",
+        "optional": "opcional",
+        "add": "Agregar tarea",
+        "namePlaceholder": "Nombre de la siguiente tarea",
+        "remove": "Quitar tarea",
+        "hint": "Cada una se crea con los mismos datos de esta tarea (proyecto, fechas, asignados, archivos y subtareas), pero sin descripción.",
+        "hintBacklog": "Cada una se crea como backlog en el mismo proyecto, sin descripción."
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",

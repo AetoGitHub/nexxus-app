@@ -46,6 +46,25 @@ export function createEmptySubtaskRow(): SubtaskFormRow {
   }
 }
 
+/** Fila de «Más tareas»: el nombre de una tarea extra que se crea con el mismo cuerpo que la principal. */
+export interface MoreTaskFormRow {
+  /** Id local para el `v-for`; no viaja al backend. */
+  key: string
+  name: string
+}
+
+export function createEmptyMoreTaskRow(): MoreTaskFormRow {
+  return {
+    key: crypto.randomUUID(),
+    name: '',
+  }
+}
+
+/** Nombres para `more_tasks`: sin espacios sobrantes y sin las filas que se dejaron vacías (el backend rechaza textos vacíos). */
+export function resolveMoreTaskNames(rows: MoreTaskFormRow[]): string[] {
+  return rows.map(row => row.name.trim()).filter(Boolean)
+}
+
 export interface NewTaskFormInput {
   type: NewTaskFormType
   name: string
@@ -147,6 +166,7 @@ function resolveTaskReviewers(reviewers: number[]): number[] {
 export function buildCreateTaskPayload(
   form: NewTaskFormInput,
   subtasks?: CreateTaskSubtaskPayload[],
+  moreTasks: string[] = [],
 ): CreateTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -191,12 +211,17 @@ export function buildCreateTaskPayload(
     payload.subtasks = subtasks
   }
 
+  if (moreTasks.length) {
+    payload.more_tasks = moreTasks
+  }
+
   return payload
 }
 
 /** Payload de POST /api/tasks/backlog/create/: solo name/description/project, type fijo en manual. */
 export function buildCreateBacklogTaskPayload(
   form: Pick<NewTaskFormInput, 'name' | 'description' | 'project'>,
+  moreTasks: string[] = [],
 ): CreateBacklogTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -205,12 +230,18 @@ export function buildCreateBacklogTaskPayload(
     throw new Error('project_required')
   }
 
-  return {
+  const payload: CreateBacklogTaskPayload = {
     short_description: form.name.trim(),
     long_description: form.description.trim(),
     type: 'manual',
     project: form.project,
   }
+
+  if (moreTasks.length) {
+    payload.more_tasks = moreTasks
+  }
+
+  return payload
 }
 
 /** Payload de PATCH /api/tasks/:id/update/ para editar un backlog existente: solo name/description/project. */
