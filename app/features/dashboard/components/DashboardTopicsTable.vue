@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
+import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiDirection, ApiProjectsResponse } from '~/features/dashboard/types/dashboard-api.types'
-import type { DashboardTone } from '~/features/dashboard/types/dashboard.types'
+import type { DashboardTone, MetricKey } from '~/features/dashboard/types/dashboard.types'
 import { NO_DATA, TONE_SOFT, TONE_TEXT, formatPercent, rangeOf } from '~/features/dashboard/utils/dashboard.util'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { getInitials } from '~/shared/utils/initials'
@@ -24,15 +25,16 @@ const { t } = useI18n()
 /** Avatares visibles de la columna Miembros; el resto va como «+N». */
 const VISIBLE_MEMBERS = 3
 
-const columns = computed(() => [
+/** `metric` es la llave del tooltip: Tema no mide nada y no lleva. */
+const columns = computed<{ key: string, label: string, metric?: MetricKey }[]>(() => [
   { key: 'topic', label: t('dashboard.topics.columns.topic') },
-  { key: 'tct', label: 'TCT' },
-  { key: 'completed', label: t('dashboard.topics.columns.completed') },
-  { key: 'active', label: t('dashboard.topics.columns.active') },
-  { key: 'overdue', label: t('dashboard.topics.columns.overdue') },
-  { key: 'urgent', label: t('dashboard.topics.columns.urgent') },
-  { key: 'members', label: t('dashboard.topics.columns.members') },
-  { key: 'trend', label: t('dashboard.topics.columns.trend') },
+  { key: 'tct', label: 'TCT', metric: 'tct' },
+  { key: 'completed', label: t('dashboard.topics.columns.completed'), metric: 'completed' },
+  { key: 'active', label: t('dashboard.topics.columns.active'), metric: 'active' },
+  { key: 'overdue', label: t('dashboard.topics.columns.overdue'), metric: 'overdue' },
+  { key: 'urgent', label: t('dashboard.topics.columns.urgent'), metric: 'urgent' },
+  { key: 'members', label: t('dashboard.topics.columns.members'), metric: 'members' },
+  { key: 'trend', label: t('dashboard.topics.columns.trend'), metric: 'trend' },
 ])
 
 const rows = computed(() => props.data?.projects ?? [])
@@ -101,7 +103,15 @@ function completedWidth(completed: number, total: number): string {
                 scope="col"
                 class="px-2 pb-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
               >
-                {{ column.label }}
+                <MetricTooltip
+                  v-if="column.metric"
+                  :metric="column.metric"
+                >
+                  {{ column.label }}
+                </MetricTooltip>
+                <template v-else>
+                  {{ column.label }}
+                </template>
               </th>
             </tr>
           </thead>

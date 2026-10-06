@@ -1149,6 +1149,72 @@
       "good": "Bueno",
       "regular": "Regular",
       "critical": "Crítico"
+    },
+    "metrics": {
+      "tct": {
+        "title": "TCT — Tareas Completadas a Tiempo",
+        "description": "Porcentaje de tareas con fecha límite que se completaron en tiempo y forma (antes o en su fecha límite). Meta: ≥85%."
+      },
+      "tc": {
+        "title": "TC — Tasa de Cumplimiento",
+        "description": "Porcentaje de tareas completadas respecto al total de tareas creadas en el período. Meta: ≥85%."
+      },
+      "iur": {
+        "title": "IUR — Índice de Urgentes Resueltas",
+        "description": "Porcentaje de tareas urgentes o críticas que ya se completaron. Las que siguen pendientes cuentan como sin atender. Meta: ≥85%."
+      },
+      "tpr": {
+        "title": "TPR — Tiempo Promedio de Resolución",
+        "description": "Horas promedio desde que se crea una tarea hasta que se completa. Menor es mejor."
+      },
+      "ica": {
+        "title": "ICA — Índice de Carga Atendida",
+        "description": "Porcentaje de puntos completados sobre los puntos asignados en el período. Meta: ≥85%."
+      },
+      "tasks_created": {
+        "title": "Tareas creadas",
+        "description": "Total de tareas creadas en el período (sin eliminadas ni archivadas). Meta: 160."
+      },
+      "weighted_load": {
+        "title": "Carga ponderada",
+        "description": "Puntos completados contra puntos asignados en el período. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
+      },
+      "pending_load": {
+        "title": "Carga pendiente",
+        "description": "Puntos de tareas abiertas asignadas hoy contra la capacidad de la persona. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+      },
+      "distribution": {
+        "title": "Distribución por esfuerzo",
+        "description": "Cantidad de tareas del período por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
+      },
+      "trend": {
+        "title": "Tendencia",
+        "description": "Evolución del TCT dentro del período y la flecha indica si subió o bajó contra el período de comparación."
+      },
+      "completed": {
+        "title": "Completadas",
+        "description": "Tareas completadas del tema contra el total de tareas creadas en el período."
+      },
+      "active": {
+        "title": "Activas",
+        "description": "Tareas abiertas del tema (pendientes, en proceso, en revisión o reabiertas)."
+      },
+      "overdue": {
+        "title": "Vencidas",
+        "description": "Tareas abiertas cuya fecha límite ya pasó. Debajo se muestran los días de la más atrasada."
+      },
+      "urgent": {
+        "title": "Urgentes",
+        "description": "Tareas con prioridad urgente o crítica."
+      },
+      "members": {
+        "title": "Miembros",
+        "description": "Personas con tareas asignadas en este tema."
+      },
+      "load_distribution": {
+        "title": "Distribución de carga productiva",
+        "description": "ICA de cada persona en el período. La línea punteada marca la meta del 85%."
+      }
     }
   },
   "ceoReport": {

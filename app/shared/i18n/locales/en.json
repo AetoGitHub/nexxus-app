@@ -1149,6 +1149,72 @@
       "good": "Good",
       "regular": "Fair",
       "critical": "Critical"
+    },
+    "metrics": {
+      "tct": {
+        "title": "TCT — Tasks Completed on Time",
+        "description": "Percentage of tasks with a due date that were completed on time (on or before the due date). Goal: ≥85%."
+      },
+      "tc": {
+        "title": "TC — Completion Rate",
+        "description": "Percentage of completed tasks out of all tasks created in the period. Goal: ≥85%."
+      },
+      "iur": {
+        "title": "IUR — Urgent Resolution Index",
+        "description": "Percentage of urgent or critical tasks that have been completed. Those still pending count as unattended. Goal: ≥85%."
+      },
+      "tpr": {
+        "title": "TPR — Average Resolution Time",
+        "description": "Average hours from task creation to completion. Lower is better."
+      },
+      "ica": {
+        "title": "ICA — Workload Completion Index",
+        "description": "Percentage of completed points out of the points assigned in the period. Goal: ≥85%."
+      },
+      "tasks_created": {
+        "title": "Tasks created",
+        "description": "Total tasks created in the period (excluding deleted and archived). Goal: 160."
+      },
+      "weighted_load": {
+        "title": "Weighted load",
+        "description": "Completed points vs assigned points in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
+      },
+      "pending_load": {
+        "title": "Pending load",
+        "description": "Points from open tasks currently assigned vs the person's capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+      },
+      "distribution": {
+        "title": "Effort distribution",
+        "description": "Number of tasks in the period by effort: R = quick, N = normal, C = complex."
+      },
+      "trend": {
+        "title": "Trend",
+        "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
+      },
+      "completed": {
+        "title": "Completed",
+        "description": "Completed tasks in the topic vs all tasks created in the period."
+      },
+      "active": {
+        "title": "Active",
+        "description": "Open tasks in the topic (pending, in progress, in review or reopened)."
+      },
+      "overdue": {
+        "title": "Overdue",
+        "description": "Open tasks past their due date. The days of the most overdue one are shown below."
+      },
+      "urgent": {
+        "title": "Urgent",
+        "description": "Tasks with urgent or critical priority."
+      },
+      "members": {
+        "title": "Members",
+        "description": "People with tasks assigned in this topic."
+      },
+      "load_distribution": {
+        "title": "Productive load distribution",
+        "description": "Each person's ICA for the period. The dashed line marks the 85% goal."
+      }
     }
   },
   "ceoReport": {

@@ -42,3 +42,10 @@ export interface DashboardKpi {
   /** Los `null` cortan la línea. */
   series: (number | null)[]
 }
+
+/** Métricas con tooltip: cada una tiene `title` y `description` en `dashboard.metrics.<llave>`. */
+export type MetricKey =
+  | 'tct' | 'tc' | 'iur' | 'tpr' | 'ica' | 'tasks_created'
+  | 'weighted_load' | 'pending_load' | 'distribution' | 'trend'
+  | 'completed' | 'active' | 'overdue' | 'urgent' | 'members'
+  | 'load_distribution'

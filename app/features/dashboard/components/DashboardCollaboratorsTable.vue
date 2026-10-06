@@ -2,8 +2,9 @@
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import DashboardDonut from '~/features/dashboard/components/shared/DashboardDonut.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
+import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiDirection, ApiPeopleResponse, ApiPersonRow } from '~/features/dashboard/types/dashboard-api.types'
-import type { DashboardPeriod, DashboardTone } from '~/features/dashboard/types/dashboard.types'
+import type { DashboardPeriod, DashboardTone, MetricKey } from '~/features/dashboard/types/dashboard.types'
 import { exportPeopleToExcel } from '~/features/dashboard/utils/dashboard-excel.util'
 import {
   LOAD_STATUS_TONE,
@@ -41,17 +42,18 @@ const periods: DashboardPeriod[] = ['week', 'month', 'quarter', 'year']
 /** Meta de carga productiva: marca la línea roja de cada barra de carga ponderada. */
 const LOAD_GOAL = 85
 
-const columns = computed(() => [
+/** `metric` es la llave del tooltip: # y Colaborador no miden nada y no llevan. */
+const columns = computed<{ key: string, label: string, align: string, metric?: MetricKey }[]>(() => [
   { key: 'rank', label: '#', align: 'text-left' },
   { key: 'collaborator', label: t('dashboard.individual.columns.collaborator'), align: 'text-left' },
-  { key: 'tct', label: 'TCT', align: 'text-center' },
-  { key: 'tc', label: 'TC', align: 'text-center' },
-  { key: 'iur', label: 'IUR', align: 'text-center' },
-  { key: 'tpr', label: 'TPR', align: 'text-center' },
-  { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left' },
-  { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left' },
-  { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left' },
-  { key: 'trend', label: t('dashboard.individual.columns.trend'), align: 'text-left' },
+  { key: 'tct', label: 'TCT', align: 'text-center', metric: 'tct' },
+  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
+  { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur' },
+  { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr' },
+  { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load' },
+  { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load' },
+  { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
+  { key: 'trend', label: t('dashboard.individual.columns.trend'), align: 'text-left', metric: 'trend' },
 ])
 
 const rows = computed(() => props.data?.people ?? [])
@@ -168,7 +170,15 @@ async function exportExcel() {
                 class="px-2 pb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
                 :class="column.align"
               >
-                {{ column.label }}
+                <MetricTooltip
+                  v-if="column.metric"
+                  :metric="column.metric"
+                >
+                  {{ column.label }}
+                </MetricTooltip>
+                <template v-else>
+                  {{ column.label }}
+                </template>
               </th>
             </tr>
           </thead>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
+import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiLoadDistributionResponse } from '~/features/dashboard/types/dashboard-api.types'
 import { NO_DATA, RANGE_TONE, TONE_BG } from '~/features/dashboard/utils/dashboard.util'
 
@@ -53,7 +54,9 @@ function barLabel(name: string, value: number | null): string {
 
     <div class="mt-3 flex items-center gap-2">
       <h3 class="text-[11px] font-semibold uppercase tracking-wider text-foreground/80">
-        {{ t('dashboard.load.productive') }}
+        <MetricTooltip metric="load_distribution">
+          {{ t('dashboard.load.productive') }}
+        </MetricTooltip>
       </h3>
       <span
         v-if="load && load.saturated_count > 0"

@@ -1,22 +1,27 @@
 <script setup lang="ts">
 import DashboardDelta from '~/features/dashboard/components/shared/DashboardDelta.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
-import type { DashboardKpi } from '~/features/dashboard/types/dashboard.types'
+import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
+import type { DashboardKpi, MetricKey } from '~/features/dashboard/types/dashboard.types'
 import { TONE_SOFT, TONE_TEXT } from '~/features/dashboard/utils/dashboard.util'
 
 /** Indicador principal del Dashboard (cumplimiento en tiempo). */
-defineProps<{
+const props = defineProps<{
   kpi: DashboardKpi
 }>()
 
 const { t } = useI18n()
+
+const metric = computed(() => props.kpi.key as MetricKey)
 </script>
 
 <template>
   <section class="flex items-center justify-between gap-4 rounded-xl border border-border border-t-2 border-t-aeto-teal bg-card px-4 py-3">
     <div class="min-w-0 space-y-1">
       <p class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {{ t(`dashboard.kpis.${kpi.key}.label`) }}
+        <MetricTooltip :metric="metric">
+          {{ t(`dashboard.kpis.${kpi.key}.label`) }}
+        </MetricTooltip>
       </p>
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span
