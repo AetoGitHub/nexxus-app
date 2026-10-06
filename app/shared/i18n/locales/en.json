@@ -460,6 +460,23 @@
         "hint": "Each one is created with this task's data (project, dates, assignees, files and subtasks), but without a description.",
         "hintBacklog": "Each one is created as a backlog task in the same project, without a description."
       },
+      "voice": {
+        "label": "Dictate",
+        "start": "Dictate the task by voice",
+        "stop": "Finish and send the dictation",
+        "stopLabel": "Send",
+        "processing": "Processing…",
+        "errorTitle": "Could not dictate the task",
+        "permissionDenied": "Allow microphone access in your browser to dictate the task.",
+        "noMicrophone": "No microphone was found.",
+        "tooShort": "Nothing was heard. Keep recording while you speak and try again.",
+        "notUnderstood": "Could not tell which task to create. Try again saying what needs to be done.",
+        "requestFailed": "Could not process the audio. Try again.",
+        "filledTitle": "Dictated task: review it and create",
+        "reviewTitle": "Review before creating",
+        "reviewHint": "Confirm these details in the form before creating the task.",
+        "dismiss": "Dismiss notice"
+      },
       "validation": {
         "nameRequired": "Name is required",
         "projectRequired": "Select a project",

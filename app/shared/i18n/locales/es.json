@@ -460,6 +460,23 @@
         "hint": "Cada una se crea con los mismos datos de esta tarea (proyecto, fechas, asignados, archivos y subtareas), pero sin descripción.",
         "hintBacklog": "Cada una se crea como backlog en el mismo proyecto, sin descripción."
       },
+      "voice": {
+        "label": "Dictar",
+        "start": "Dictar la tarea por voz",
+        "stop": "Terminar y enviar el dictado",
+        "stopLabel": "Enviar",
+        "processing": "Procesando…",
+        "errorTitle": "No se pudo dictar la tarea",
+        "permissionDenied": "Permite el uso del micrófono en tu navegador para dictar la tarea.",
+        "noMicrophone": "No se encontró un micrófono.",
+        "tooShort": "No se escuchó nada. Mantén la grabación mientras hablas y vuelve a intentarlo.",
+        "notUnderstood": "No se entendió qué tarea crear. Intenta de nuevo diciendo qué hay que hacer.",
+        "requestFailed": "No se pudo procesar el audio. Intenta de nuevo.",
+        "filledTitle": "Tarea dictada: revísala y crea",
+        "reviewTitle": "Revisa antes de crear",
+        "reviewHint": "Confirma estos datos en el formulario antes de crear la tarea.",
+        "dismiss": "Cerrar aviso"
+      },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
         "projectRequired": "Selecciona un proyecto",

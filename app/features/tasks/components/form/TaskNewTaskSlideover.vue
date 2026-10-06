@@ -23,6 +23,9 @@ import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useA
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
 import TaskMoreTasksField from '~/features/tasks/components/form/TaskMoreTasksField.vue'
+import TaskVoiceButton from '~/features/tasks/components/form/TaskVoiceButton.vue'
+import type { VoiceTaskCatalogItem, VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
+import { resolveVoiceEffort, resolveVoiceTaskType, voiceSubtaskRows } from '~/features/tasks/utils/form/voice-task.util'
 import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksField.vue'
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
@@ -186,6 +189,12 @@ const subtaskRows = ref<SubtaskFormRow[]>([])
 
 /** Nombres de las tareas extra (`more_tasks`) que se crean con el mismo cuerpo; solo al crear (normal o backlog). */
 const moreTaskRows = ref<MoreTaskFormRow[]>([])
+
+/**
+ * Lo que entendió la IA al dictar la tarea por voz: la transcripción y, si dudó de algo (`needs_review`), sus dudas.
+ * La tarea nunca se crea sola: el formulario se rellena y la persona la confirma con «Crear tarea».
+ */
+const voiceReview = ref<Pick<VoiceTaskResponse, 'transcript' | 'ambiguities' | 'needs_review'> | null>(null)
 const isUploadingSubtaskImages = ref(false)
 
 const isSaving = computed(() =>
@@ -639,6 +648,62 @@ watch(
   },
 )
 
+/** Usuarios y proyectos que se le mandan a la IA para que resuelva nombres como «Héctor» o «NEXXUS TASK». */
+const voiceUsers = computed<VoiceTaskCatalogItem[]>(() =>
+  usersList.value.map(item => ({
+    id: item.id,
+    name: `${item.first_name ?? ''} ${item.last_name ?? ''}`.trim() || item.username,
+  })),
+)
+
+const voiceProjects = computed<VoiceTaskCatalogItem[]>(() =>
+  allProjectItems.value
+    .filter((item): item is { label: string, value: number } => typeof item.value === 'number')
+    .map(item => ({ id: item.value, name: item.label })),
+)
+
+/** Rellena el formulario con la tarea que entendió la IA. Solo toca lo que ella devolvió; el resto queda como estaba. */
+function applyVoiceTask(task: VoiceTaskResponse) {
+  state.name = task.name
+  state.description = task.description
+
+  if (task.in_backlog) {
+    isBacklog.value = true
+  }
+  else {
+    const type = resolveVoiceTaskType(task.task_type)
+    if (type) {
+      state.type = type
+    }
+  }
+
+  if (task.project_id != null) {
+    state.project = task.project_id
+  }
+  if (task.assignee_ids.length) {
+    state.assignedTo = [...task.assignee_ids]
+  }
+  if (task.due_date) {
+    state.dueDate = task.due_date
+  }
+  state.urgent = task.urgent
+  const effort = resolveVoiceEffort(task.effort)
+  if (effort) {
+    state.effort = effort
+  }
+
+  const subtaskRowsFromVoice = voiceSubtaskRows(task.subtasks, task.assignee_ids[0] ?? user.value?.id)
+  if (subtaskRowsFromVoice.length) {
+    subtaskRows.value = subtaskRowsFromVoice
+  }
+
+  voiceReview.value = {
+    transcript: task.transcript,
+    ambiguities: task.ambiguities,
+    needs_review: task.needs_review,
+  }
+}
+
 function resetForm() {
   state.type = 'manual'
   state.name = ''
@@ -1065,6 +1130,7 @@ watch(open, (isOpen) => {
     existingAttachments.value = []
     subtaskRows.value = []
     moreTaskRows.value = []
+    voiceReview.value = null
     return
   }
 
@@ -1344,12 +1410,61 @@ const slideoverUi = computed(() => {
                 class="mb-2"
               />
 
+              <UAlert
+                v-if="voiceReview && !isDetailView"
+                :color="voiceReview.needs_review ? 'warning' : 'info'"
+                variant="subtle"
+                icon="i-lucide-mic"
+                :title="voiceReview.needs_review ? t('tasks.form.voice.reviewTitle') : t('tasks.form.voice.filledTitle')"
+                :close="{ 'aria-label': t('tasks.form.voice.dismiss') }"
+                @update:open="voiceReview = null"
+              >
+                <template #description>
+                  <p
+                    v-if="voiceReview.transcript"
+                    class="italic"
+                  >
+                    «{{ voiceReview.transcript }}»
+                  </p>
+                  <ul
+                    v-if="voiceReview.ambiguities.length"
+                    class="mt-1.5 list-disc space-y-0.5 pl-4"
+                  >
+                    <li
+                      v-for="ambiguity in voiceReview.ambiguities"
+                      :key="ambiguity"
+                    >
+                      {{ ambiguity }}
+                    </li>
+                  </ul>
+                  <p
+                    v-if="voiceReview.needs_review"
+                    class="mt-1.5 font-medium"
+                  >
+                    {{ t('tasks.form.voice.reviewHint') }}
+                  </p>
+                </template>
+              </UAlert>
+
               <template v-if="!isDetailView || taskDetailQuery.data.value">
           <UFormField
             :label="t('tasks.form.name')"
             name="name"
             :required="!isReadOnly"
           >
+            <template
+              v-if="!isDetailView"
+              #hint
+            >
+              <TaskVoiceButton
+                :user-id="user?.id"
+                :users="voiceUsers"
+                :projects="voiceProjects"
+                :default-project-id="state.project ?? null"
+                :disabled="isSaving"
+                @result="applyVoiceTask"
+              />
+            </template>
             <UTextarea
               v-if="!isReadOnly"
               v-model="state.name"

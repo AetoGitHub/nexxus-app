@@ -91,6 +91,10 @@ export default defineNuxtConfig({
       n8nUploadUrl:
         process.env.NUXT_PUBLIC_N8N_UPLOAD_URL
         ?? "https://n8n.srv1137762.hstgr.cloud/webhook/upload-firebase-general",
+      // Webhook de n8n que convierte un audio en una tarea (dictado por voz en «Nueva tarea»).
+      n8nVoiceUrl:
+        process.env.NUXT_PUBLIC_N8N_VOICE_URL
+        ?? "https://n8n.srv1137762.hstgr.cloud/webhook/nexxus-voz",
     },
   },
 
