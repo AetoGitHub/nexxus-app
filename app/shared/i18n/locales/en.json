@@ -1079,6 +1079,21 @@
         "none": "No comparison",
         "previous": "vs previous period",
         "last_year": "vs same period last year"
+      },
+      "scopeLabel": "Dashboard scope",
+      "scope": {
+        "mine": "My tasks",
+        "team": "Team"
+      },
+      "dateStart": "From",
+      "dateEnd": "To",
+      "rangeIncomplete": "Pick both dates to see the range.",
+      "rangeInvalid": "The start date must be on or before the end date.",
+      "projects": {
+        "label": "Topics",
+        "all": "All topics",
+        "count": "{count} topics",
+        "search": "Search topic…"
       }
     },
     "kpis": {
@@ -1120,7 +1135,8 @@
       "week": "Week",
       "month": "Month",
       "quarter": "Quarter",
-      "year": "Year"
+      "year": "Year",
+      "custom": "Custom"
     },
     "individual": {
       "title": "Individual performance",

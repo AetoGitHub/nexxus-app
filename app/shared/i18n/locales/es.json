@@ -1079,6 +1079,21 @@
         "none": "Sin comparar",
         "previous": "vs periodo anterior",
         "last_year": "vs mismo periodo año anterior"
+      },
+      "scopeLabel": "Alcance del dashboard",
+      "scope": {
+        "mine": "Mis tareas",
+        "team": "Equipo"
+      },
+      "dateStart": "Desde",
+      "dateEnd": "Hasta",
+      "rangeIncomplete": "Elige las dos fechas para ver el rango.",
+      "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
+      "projects": {
+        "label": "Temas",
+        "all": "Todos los temas",
+        "count": "{count} temas",
+        "search": "Buscar tema…"
       }
     },
     "kpis": {
@@ -1120,7 +1135,8 @@
       "week": "Semana",
       "month": "Mes",
       "quarter": "Trimestre",
-      "year": "Año"
+      "year": "Año",
+      "custom": "Personalizado"
     },
     "individual": {
       "title": "Rendimiento individual",

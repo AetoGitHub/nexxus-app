@@ -9,7 +9,17 @@ export type DashboardTone = 'neutral' | 'excellent' | 'good' | 'warning' | 'dang
 
 export type DashboardDirection = NonNullable<ApiDirection>
 
-export type DashboardPeriod = DashboardApiPeriod
+/** Periodos que se eligen con los botones; el rango personalizado va aparte (`DashboardDateRange`). */
+export type DashboardPeriod = Exclude<DashboardApiPeriod, 'custom'>
+
+/** Rango personalizado (`YYYY-MM-DD`, inclusivo). */
+export interface DashboardDateRange {
+  start: string
+  end: string
+}
+
+/** `mine` = solo las tareas donde el usuario está asignado (`my_tasks=true`); `team` = todo el equipo. */
+export type DashboardScope = 'mine' | 'team'
 
 export type DashboardCompare = DashboardApiCompare
 
