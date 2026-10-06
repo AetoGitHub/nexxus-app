@@ -395,7 +395,7 @@
       "effortQuickHint": "< 30 min",
       "effortNormal": "Normal",
       "effortNormalHint": "1-4 hrs",
-      "effortComplex": "Compleja",
+      "effortComplex": "Alto",
       "effortComplexHint": "> medio día",
       "nexxtepTitle": "Nexxtep puede gestionar esto",
       "nexxtepAccept": "Sí, que Nexxtep me ayude",
@@ -409,6 +409,7 @@
       "promoteToPending": "Enviar a pendiente",
       "createSuccessTitle": "Tarea creada",
       "createSuccessDescription": "La tarea se creó correctamente.",
+      "createManySuccessDescription": "Se crearon {count} tareas correctamente.",
       "createError": "No se pudo crear la tarea",
       "promoteSuccessTitle": "Tarea enviada a pendiente",
       "promoteSuccessDescription": "La tarea se movió de backlog a pendiente correctamente.",
@@ -449,6 +450,15 @@
         "edit": "Editar subtarea",
         "delete": "Eliminar subtarea",
         "deleteErrorTitle": "No se pudo eliminar la subtarea"
+      },
+      "moreTasks": {
+        "label": "Más tareas",
+        "optional": "opcional",
+        "add": "Agregar tarea",
+        "namePlaceholder": "Nombre de la siguiente tarea",
+        "remove": "Quitar tarea",
+        "hint": "Cada una se crea con los mismos datos de esta tarea (proyecto, fechas, asignados, archivos y subtareas), pero sin descripción.",
+        "hintBacklog": "Cada una se crea como backlog en el mismo proyecto, sin descripción."
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
@@ -1045,7 +1055,177 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "placeholder": "El contenido del dashboard se maquetará aquí."
+    "toolbar": {
+      "periodLabel": "Periodo del dashboard",
+      "compareLabel": "Comparativa",
+      "compare": {
+        "none": "Sin comparar",
+        "previous": "vs periodo anterior",
+        "last_year": "vs mismo periodo año anterior"
+      }
+    },
+    "kpis": {
+      "tct": {
+        "label": "Cumplimiento en tiempo · TCT"
+      },
+      "tc": {
+        "label": "Tasa de completación · TC"
+      },
+      "created": {
+        "label": "Tareas creadas"
+      },
+      "iur": {
+        "label": "Índice urgencias resueltas · IUR"
+      },
+      "tpr": {
+        "label": "Tiempo promedio resolución · TPR"
+      },
+      "ica": {
+        "label": "Carga ponderada · ICA"
+      }
+    },
+    "badges": {
+      "aboveTarget": "Sobre meta",
+      "aboveTargetValue": "Sobre meta {target}",
+      "aboveTargetUnattended": "Sobre meta · {count} sin atender",
+      "belowTarget": "{pp}pp bajo meta",
+      "belowTargetUnattended": "{pp}pp bajo meta · {count} sin atender",
+      "unattended": "{count} sin atender"
+    },
+    "load": {
+      "title": "Distribución de carga",
+      "productive": "Distribución de carga productiva",
+      "saturated": "{count} saturados",
+      "goal": "Meta {goal}%",
+      "empty": "Todavía no hay colaboradores con carga en este periodo."
+    },
+    "periods": {
+      "week": "Semana",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "individual": {
+      "title": "Rendimiento individual",
+      "excel": "Excel",
+      "periodLabel": "Periodo del rendimiento",
+      "columns": {
+        "collaborator": "Colaborador",
+        "weightedLoad": "Carga ponderada",
+        "pendingLoad": "Carga pendiente",
+        "distribution": "Distribución",
+        "trend": "Tendencia"
+      },
+      "pendingState": {
+        "available": "Disponible",
+        "at_limit": "En límite",
+        "saturated": "Saturado"
+      },
+      "empty": "No hay colaboradores para mostrar en este periodo.",
+      "excelError": "No se pudo generar el Excel",
+      "excelColumns": {
+        "pointsDone": "Puntos hechos",
+        "points": "Puntos totales",
+        "capacity": "Capacidad (pts)",
+        "pendingStatus": "Estado de la carga pendiente",
+        "quick": "Rápidas",
+        "normal": "Normales",
+        "complex": "Complejas"
+      }
+    },
+    "topics": {
+      "title": "Rendimiento por tema",
+      "columns": {
+        "topic": "Tema",
+        "completed": "Completadas",
+        "active": "Activas",
+        "overdue": "Vencidas",
+        "urgent": "Urgentes",
+        "members": "Miembros",
+        "trend": "Tendencia"
+      },
+      "maxDays": "máx {days}d",
+      "empty": "No hay temas para mostrar en este periodo."
+    },
+    "hero": {
+      "goal": "meta ≥{goal}%"
+    },
+    "state": {
+      "loading": "Cargando…",
+      "retry": "Reintentar"
+    },
+    "ranges": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "regular": "Regular",
+      "critical": "Crítico"
+    },
+    "metrics": {
+      "tct": {
+        "title": "TCT — Tareas Completadas a Tiempo",
+        "description": "Porcentaje de tareas con fecha límite que se completaron en tiempo y forma (antes o en su fecha límite). Meta: ≥85%."
+      },
+      "tc": {
+        "title": "TC — Tasa de Cumplimiento",
+        "description": "Porcentaje de tareas completadas respecto al total de tareas creadas en el período. Meta: ≥85%."
+      },
+      "iur": {
+        "title": "IUR — Índice de Urgentes Resueltas",
+        "description": "Porcentaje de tareas urgentes o críticas que ya se completaron. Las que siguen pendientes cuentan como sin atender. Meta: ≥85%."
+      },
+      "tpr": {
+        "title": "TPR — Tiempo Promedio de Resolución",
+        "description": "Horas promedio desde que se crea una tarea hasta que se completa. Menor es mejor."
+      },
+      "ica": {
+        "title": "ICA — Índice de Carga Atendida",
+        "description": "Porcentaje de puntos completados sobre los puntos asignados en el período. Meta: ≥85%."
+      },
+      "tasks_created": {
+        "title": "Tareas creadas",
+        "description": "Total de tareas creadas en el período (sin eliminadas ni archivadas). Meta: 160."
+      },
+      "weighted_load": {
+        "title": "Carga ponderada",
+        "description": "Puntos completados contra puntos asignados en el período. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
+      },
+      "pending_load": {
+        "title": "Carga pendiente",
+        "description": "Puntos de tareas abiertas asignadas hoy contra la capacidad de la persona. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+      },
+      "distribution": {
+        "title": "Distribución por esfuerzo",
+        "description": "Cantidad de tareas del período por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
+      },
+      "trend": {
+        "title": "Tendencia",
+        "description": "Evolución del TCT dentro del período y la flecha indica si subió o bajó contra el período de comparación."
+      },
+      "completed": {
+        "title": "Completadas",
+        "description": "Tareas completadas del tema contra el total de tareas creadas en el período."
+      },
+      "active": {
+        "title": "Activas",
+        "description": "Tareas abiertas del tema (pendientes, en proceso, en revisión o reabiertas)."
+      },
+      "overdue": {
+        "title": "Vencidas",
+        "description": "Tareas abiertas cuya fecha límite ya pasó. Debajo se muestran los días de la más atrasada."
+      },
+      "urgent": {
+        "title": "Urgentes",
+        "description": "Tareas con prioridad urgente o crítica."
+      },
+      "members": {
+        "title": "Miembros",
+        "description": "Personas con tareas asignadas en este tema."
+      },
+      "load_distribution": {
+        "title": "Distribución de carga productiva",
+        "description": "ICA de cada persona en el período. La línea punteada marca la meta del 85%."
+      }
+    }
   },
   "ceoReport": {
     "title": "Reporte CEO",

@@ -395,7 +395,7 @@
       "effortQuickHint": "< 30 min",
       "effortNormal": "Normal",
       "effortNormalHint": "1-4 hrs",
-      "effortComplex": "Complex",
+      "effortComplex": "High",
       "effortComplexHint": "> half day",
       "nexxtepTitle": "Nexxtep can handle this",
       "nexxtepAccept": "Yes, let Nexxtep help me",
@@ -409,6 +409,7 @@
       "promoteToPending": "Send to pending",
       "createSuccessTitle": "Task created",
       "createSuccessDescription": "The task was created successfully.",
+      "createManySuccessDescription": "{count} tasks were created successfully.",
       "createError": "Could not create the task",
       "promoteSuccessTitle": "Task sent to pending",
       "promoteSuccessDescription": "The task was moved from backlog to pending successfully.",
@@ -449,6 +450,15 @@
         "edit": "Edit subtask",
         "delete": "Delete subtask",
         "deleteErrorTitle": "Could not delete the subtask"
+      },
+      "moreTasks": {
+        "label": "More tasks",
+        "optional": "optional",
+        "add": "Add task",
+        "namePlaceholder": "Name of the next task",
+        "remove": "Remove task",
+        "hint": "Each one is created with this task's data (project, dates, assignees, files and subtasks), but without a description.",
+        "hintBacklog": "Each one is created as a backlog task in the same project, without a description."
       },
       "validation": {
         "nameRequired": "Name is required",
@@ -1045,7 +1055,177 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "placeholder": "The dashboard content will be laid out here."
+    "toolbar": {
+      "periodLabel": "Dashboard period",
+      "compareLabel": "Comparison",
+      "compare": {
+        "none": "No comparison",
+        "previous": "vs previous period",
+        "last_year": "vs same period last year"
+      }
+    },
+    "kpis": {
+      "tct": {
+        "label": "On-time completion · TCT"
+      },
+      "tc": {
+        "label": "Completion rate · TC"
+      },
+      "created": {
+        "label": "Tasks created"
+      },
+      "iur": {
+        "label": "Urgent tasks resolved · IUR"
+      },
+      "tpr": {
+        "label": "Average resolution time · TPR"
+      },
+      "ica": {
+        "label": "Weighted load · ICA"
+      }
+    },
+    "badges": {
+      "aboveTarget": "Above goal",
+      "aboveTargetValue": "Above goal {target}",
+      "aboveTargetUnattended": "Above goal · {count} unattended",
+      "belowTarget": "{pp}pp below goal",
+      "belowTargetUnattended": "{pp}pp below goal · {count} unattended",
+      "unattended": "{count} unattended"
+    },
+    "load": {
+      "title": "Load distribution",
+      "productive": "Productive load distribution",
+      "saturated": "{count} overloaded",
+      "goal": "Target {goal}%",
+      "empty": "There are no collaborators with load in this period yet."
+    },
+    "periods": {
+      "week": "Week",
+      "month": "Month",
+      "quarter": "Quarter",
+      "year": "Year"
+    },
+    "individual": {
+      "title": "Individual performance",
+      "excel": "Excel",
+      "periodLabel": "Performance period",
+      "columns": {
+        "collaborator": "Collaborator",
+        "weightedLoad": "Weighted load",
+        "pendingLoad": "Pending load",
+        "distribution": "Distribution",
+        "trend": "Trend"
+      },
+      "pendingState": {
+        "available": "Available",
+        "at_limit": "At limit",
+        "saturated": "Saturated"
+      },
+      "empty": "There are no collaborators to show in this period.",
+      "excelError": "Could not generate the Excel file",
+      "excelColumns": {
+        "pointsDone": "Points done",
+        "points": "Total points",
+        "capacity": "Capacity (pts)",
+        "pendingStatus": "Pending load status",
+        "quick": "Quick",
+        "normal": "Normal",
+        "complex": "Complex"
+      }
+    },
+    "topics": {
+      "title": "Performance by topic",
+      "columns": {
+        "topic": "Topic",
+        "completed": "Completed",
+        "active": "Active",
+        "overdue": "Overdue",
+        "urgent": "Urgent",
+        "members": "Members",
+        "trend": "Trend"
+      },
+      "maxDays": "max {days}d",
+      "empty": "There are no topics to show in this period."
+    },
+    "hero": {
+      "goal": "goal ≥{goal}%"
+    },
+    "state": {
+      "loading": "Loading…",
+      "retry": "Retry"
+    },
+    "ranges": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "regular": "Fair",
+      "critical": "Critical"
+    },
+    "metrics": {
+      "tct": {
+        "title": "TCT — Tasks Completed on Time",
+        "description": "Percentage of tasks with a due date that were completed on time (on or before the due date). Goal: ≥85%."
+      },
+      "tc": {
+        "title": "TC — Completion Rate",
+        "description": "Percentage of completed tasks out of all tasks created in the period. Goal: ≥85%."
+      },
+      "iur": {
+        "title": "IUR — Urgent Resolution Index",
+        "description": "Percentage of urgent or critical tasks that have been completed. Those still pending count as unattended. Goal: ≥85%."
+      },
+      "tpr": {
+        "title": "TPR — Average Resolution Time",
+        "description": "Average hours from task creation to completion. Lower is better."
+      },
+      "ica": {
+        "title": "ICA — Workload Completion Index",
+        "description": "Percentage of completed points out of the points assigned in the period. Goal: ≥85%."
+      },
+      "tasks_created": {
+        "title": "Tasks created",
+        "description": "Total tasks created in the period (excluding deleted and archived). Goal: 160."
+      },
+      "weighted_load": {
+        "title": "Weighted load",
+        "description": "Completed points vs assigned points in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
+      },
+      "pending_load": {
+        "title": "Pending load",
+        "description": "Points from open tasks currently assigned vs the person's capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+      },
+      "distribution": {
+        "title": "Effort distribution",
+        "description": "Number of tasks in the period by effort: R = quick, N = normal, C = complex."
+      },
+      "trend": {
+        "title": "Trend",
+        "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
+      },
+      "completed": {
+        "title": "Completed",
+        "description": "Completed tasks in the topic vs all tasks created in the period."
+      },
+      "active": {
+        "title": "Active",
+        "description": "Open tasks in the topic (pending, in progress, in review or reopened)."
+      },
+      "overdue": {
+        "title": "Overdue",
+        "description": "Open tasks past their due date. The days of the most overdue one are shown below."
+      },
+      "urgent": {
+        "title": "Urgent",
+        "description": "Tasks with urgent or critical priority."
+      },
+      "members": {
+        "title": "Members",
+        "description": "People with tasks assigned in this topic."
+      },
+      "load_distribution": {
+        "title": "Productive load distribution",
+        "description": "Each person's ICA for the period. The dashed line marks the 85% goal."
+      }
+    }
   },
   "ceoReport": {
     "title": "CEO Report",

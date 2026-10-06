@@ -26,8 +26,9 @@ export function useAppNav() {
 
   const tasksItems = computed<AppNavItem[]>(() => {
     const items: AppNavItem[] = [
-      { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo' },
-      { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard' },
+      // En mobile viven en la hoja "Más": la barra inferior solo lleva Mis tareas, Pendiente de aprobación y Más.
+      { labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo', bottomNav: false },
+      { labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard', bottomNav: false },
       { labelKey: 'sidebar.myTasks', icon: 'i-lucide-square-check-big', to: '/tasks' },
     ]
 
@@ -75,7 +76,6 @@ export function useAppNav() {
         icon: 'i-lucide-refresh-cw',
         to: '/tasks/pending-approval',
         badge: actionableCount.value,
-        bottomNav: false,
       },
       {
         labelKey: 'sidebar.settings',
