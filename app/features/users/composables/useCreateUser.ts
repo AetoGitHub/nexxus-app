@@ -6,6 +6,7 @@ export function useCreateUser() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const { t } = useI18n()
+  const nuxtApp = useNuxtApp()
 
   return useMutation({
     mutationFn: (payload: CreateUserPayload) =>
@@ -14,6 +15,7 @@ export function useCreateUser() {
         body: payload,
       }),
     onSuccess: async () => {
+      void nuxtApp.$refreshProfileAppearances()
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['auth-profiles'] }),
         queryClient.invalidateQueries({ queryKey: ['auth', 'profiles'] }),

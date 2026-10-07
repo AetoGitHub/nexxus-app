@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
+import UserAppearanceField from '~/features/users/components/UserAppearanceField.vue'
+import { initialsFromNames } from '~/features/auth/utils/profile-appearance.util'
+import { useUserImageUpload } from '~/features/users/composables/useUserImageUpload'
+import { normalizeUserColor } from '~/features/users/utils/user-appearance.util'
 import type { UpdateUserSchema } from '~/features/users/schemas/user.schema'
 import type { UserProfileDetail } from '~/features/users/types/user.types'
 
@@ -12,6 +16,7 @@ const open = computed({
   },
 })
 const updateUser = useUpdateUser()
+const { uploadUserImage, isUploading } = useUserImageUpload()
 const {
   data: user,
   errorMessage,
@@ -35,10 +40,16 @@ function createInitialState(): UpdateUserSchema {
     email: '',
     corporate_email: '',
     whatsapp: '',
+    background_color: '',
+    background_image: '',
   }
 }
 
 const state = reactive<UpdateUserSchema>(createInitialState())
+/** Foto nueva elegida; se sube a Firebase al guardar y su URL va en `background_image`. */
+const pendingImage = ref<File | null>(null)
+
+const appearanceInitials = computed(() => initialsFromNames(state.first_name, state.last_name) ?? getInitials(state.username))
 
 const usernameModel = computed({
   get: () => state.username,
@@ -69,11 +80,15 @@ function applyUser(detail: UserProfileDetail) {
     email: detail.email,
     corporate_email: detail.corporate_email,
     whatsapp: detail.whatsapp,
+    background_color: normalizeUserColor(detail.background_color),
+    background_image: detail.background_image ?? '',
   })
+  pendingImage.value = null
 }
 
 function resetForm() {
   Object.assign(state, createInitialState())
+  pendingImage.value = null
   form.value?.clear()
 }
 
@@ -89,10 +104,19 @@ async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
   const userId = editUserId.value
   if (!userId) return
 
+  const payload = { ...event.data }
+  if (pendingImage.value) {
+    const url = await uploadUserImage(pendingImage.value, user.value?.organization ?? 0)
+    if (url == null) {
+      return
+    }
+    payload.background_image = url
+  }
+
   try {
     await updateUser.mutateAsync({
       id: userId,
-      payload: event.data,
+      payload,
     })
     closeEditDialog()
   }
@@ -227,12 +251,24 @@ async function onSubmit(event: FormSubmitEvent<UpdateUserSchema>) {
           />
         </UFormField>
 
+        <UFormField
+          name="background_image"
+          :label="t('configuration.user.appearance.label')"
+        >
+          <UserAppearanceField
+            v-model:color="state.background_color"
+            v-model:image="state.background_image"
+            v-model:file="pendingImage"
+            :initials="appearanceInitials"
+          />
+        </UFormField>
+
         <div class="mt-2 flex justify-end">
           <UButton
             type="submit"
             color="primary"
             :label="t('configuration.user.update.submit')"
-            :loading="updateUser.isPending.value"
+            :loading="updateUser.isPending.value || isUploading"
           />
         </div>
       </UForm>

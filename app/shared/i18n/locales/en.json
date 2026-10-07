@@ -912,6 +912,23 @@
         "corporateEmail": "E.g. john{'@'}company.com",
         "whatsapp": "E.g. +521234567890"
       },
+      "appearance": {
+        "label": "Photo and color",
+        "photo": "Photo",
+        "upload": "Upload photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "photoHint": "Image up to {max} MB. It is uploaded when you save.",
+        "color": "Background color",
+        "customColor": "Pick another color",
+        "noColor": "No color",
+        "colorHint": "Used when the user has no photo; with neither, their initials are shown.",
+        "invalidType": "The file must be an image.",
+        "tooLarge": "The image is larger than {max} MB.",
+        "uploadErrorTitle": "Could not upload the photo",
+        "urlTooLong": "The image address is too long.",
+        "previewLabel": "Preview of the user circle"
+      },
       "validation": {
         "usernameRequired": "Username is required.",
         "passwordRequired": "Password is required.",

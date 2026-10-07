@@ -309,12 +309,16 @@ async function removeSubtask(subtaskId: number) {
               : 'text-foreground'"
           >{{ row.short_description }}</span>
           <UTooltip :text="row.assigned_to_name || t('tasks.form.subtasks.unassigned')">
-            <span
+            <UserAvatar
               v-if="row.assigned_to_name"
               role="img"
               :aria-label="row.assigned_to_name"
-              class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-aeto-teal/15 text-[10px] font-semibold text-aeto-teal"
-            >{{ personInitials(row.assigned_to_name) }}</span>
+              :user-id="row.assigned_to"
+              :initials="personInitials(row.assigned_to_name)"
+              :size="24"
+              :font-size="10"
+              fallback-color="#28ceab"
+            />
             <span
               v-else
               role="img"

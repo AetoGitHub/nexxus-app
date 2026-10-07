@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { Form, FormSubmitEvent } from '@nuxt/ui'
+import UserAppearanceField from '~/features/users/components/UserAppearanceField.vue'
+import { initialsFromNames } from '~/features/auth/utils/profile-appearance.util'
+import { useUserImageUpload } from '~/features/users/composables/useUserImageUpload'
 import UserPasswordStrengthField from '~/features/users/components/UserPasswordStrengthField.vue'
 import type { CreateUserSchema } from '~/features/users/schemas/user.schema'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
@@ -7,6 +10,7 @@ import { useCompaniesDropdown } from '~/features/companies/composables/useCompan
 
 const { t } = useI18n()
 const createUser = useCreateUser()
+const { uploadUserImage, isUploading } = useUserImageUpload()
 const open = ref(false)
 const form = useTemplateRef<Form<CreateUserSchema>>('form')
 
@@ -39,10 +43,16 @@ function createInitialState(): UserCreateFormState {
     email: '',
     corporate_email: '',
     whatsapp: '',
+    background_color: '',
+    background_image: '',
   }
 }
 
 const state = reactive<UserCreateFormState>(createInitialState())
+/** Foto elegida; se sube a Firebase al guardar y su URL va en `background_image`. */
+const pendingImage = ref<File | null>(null)
+
+const appearanceInitials = computed(() => initialsFromNames(state.first_name, state.last_name) ?? getInitials(state.username))
 
 const { items: organizationItems } = useOrganizationsDropdown()
 const { items: companyItems, isPending: companyItemsPending } = useCompaniesDropdown({
@@ -79,6 +89,7 @@ watch(() => state.organization, () => {
 
 function resetForm() {
   Object.assign(state, createInitialState())
+  pendingImage.value = null
   form.value?.clear()
 }
 
@@ -89,8 +100,17 @@ watch(open, (isOpen) => {
 })
 
 async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
+  const payload = { ...event.data }
+  if (pendingImage.value) {
+    const url = await uploadUserImage(pendingImage.value, payload.organization)
+    if (url == null) {
+      return
+    }
+    payload.background_image = url
+  }
+
   try {
-    await createUser.mutateAsync(event.data)
+    await createUser.mutateAsync(payload)
     open.value = false
   }
   catch {
@@ -240,12 +260,24 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
           />
         </UFormField>
 
+        <UFormField
+          name="background_image"
+          :label="t('configuration.user.appearance.label')"
+        >
+          <UserAppearanceField
+            v-model:color="state.background_color"
+            v-model:image="state.background_image"
+            v-model:file="pendingImage"
+            :initials="appearanceInitials"
+          />
+        </UFormField>
+
         <div class="mt-2 flex justify-end">
           <UButton
             type="submit"
             color="primary"
             :label="t('configuration.user.create.submit')"
-            :loading="createUser.isPending.value"
+            :loading="createUser.isPending.value || isUploading"
           />
         </div>
       </UForm>

@@ -1,6 +1,17 @@
+import {
+  useProfileAppearanceCatalog,
+  useProfileInitialsCatalog,
+} from '~/features/auth/composables/useProfileAppearance'
 import type { AuthProfile } from '~/features/auth/types/profile.types'
-import { normalizeAppearance, toRelativeApiUrl } from '~/features/auth/utils/profile-appearance.util'
-import type { ProfileAppearance } from '~/features/auth/utils/profile-appearance.util'
+import {
+  clearStoredCatalog,
+  initialsFromNames,
+  normalizeAppearance,
+  readStoredCatalog,
+  toRelativeApiUrl,
+  writeStoredCatalog,
+} from '~/features/auth/utils/profile-appearance.util'
+import type { StoredProfileCatalog } from '~/features/auth/utils/profile-appearance.util'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 
 /** Páginas de 100 perfiles; el tope evita un ciclo infinito si el backend repite el cursor. */
@@ -9,17 +20,30 @@ const MAX_PAGES = 30
 const REFRESH_AFTER_MS = 5 * 60 * 1000
 
 /**
- * Carga la imagen y el color de fondo de los perfiles de la organización (`background_image` / `background_color`)
- * para que cualquier círculo de usuario de la app los muestre (ver `UserAvatar`). Si falla, los círculos siguen como siempre.
+ * Carga de los perfiles de la organización (`GET /api/auth/profiles/`) lo que necesita cualquier círculo de usuario de la
+ * app (ver `UserAvatar`): su imagen o color de fondo y sus iniciales reales (nombre y apellido). Se guarda también en el
+ * navegador para que, al abrir la app, los círculos salgan bien desde el primer render. Si falla, los círculos siguen como siempre.
  */
 export default defineNuxtPlugin((nuxtApp) => {
   const session = useAuthSession()
-  const catalog = useProfileAppearanceCatalog()
+  const appearances = useProfileAppearanceCatalog()
+  const initials = useProfileInitialsCatalog()
   let loadedAt = 0
   let generation = 0
 
-  async function fetchAll(): Promise<Record<number, ProfileAppearance>> {
-    const found: Record<number, ProfileAppearance> = {}
+  function apply(catalog: StoredProfileCatalog) {
+    appearances.value = catalog.appearances
+    initials.value = catalog.initials
+  }
+
+  // Primer render: lo último que se guardó de este mismo usuario.
+  const stored = readStoredCatalog(session.value?.user.id)
+  if (stored) {
+    apply(stored)
+  }
+
+  async function fetchAll(): Promise<StoredProfileCatalog> {
+    const found: StoredProfileCatalog = { appearances: {}, initials: {} }
     let nextUrl: string | null = null
 
     for (let page = 0; page < MAX_PAGES; page++) {
@@ -29,7 +53,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       for (const profile of response.results) {
         const appearance = normalizeAppearance(profile.background_color, profile.background_image)
         if (appearance) {
-          found[profile.id] = appearance
+          found.appearances[profile.id] = appearance
+        }
+        const profileInitials = initialsFromNames(profile.first_name, profile.last_name)
+        if (profileInitials) {
+          found.initials[profile.id] = profileInitials
         }
       }
       if (!response.next) {
@@ -43,11 +71,13 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   async function load() {
     const current = ++generation
+    const userId = session.value?.user.id
     try {
       const found = await fetchAll()
       // Una sesión nueva o un cierre de sesión mientras se pedía descarta esta respuesta.
-      if (current === generation) {
-        catalog.value = found
+      if (current === generation && userId != null) {
+        apply(found)
+        writeStoredCatalog(userId, found)
         loadedAt = Date.now()
       }
     }
@@ -63,9 +93,13 @@ export default defineNuxtPlugin((nuxtApp) => {
         generation++
         loadedAt = 0
         if (userId == null) {
-          catalog.value = {}
+          apply({ appearances: {}, initials: {} })
+          clearStoredCatalog()
           return
         }
+        // Otra cuenta: nunca se muestra el catálogo guardado de la anterior.
+        const own = readStoredCatalog(userId)
+        apply(own ?? { appearances: {}, initials: {} })
         void load()
       },
       { immediate: true },
@@ -77,4 +111,9 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
     })
   })
+
+  // Para refrescar los círculos al instante tras guardar un usuario (`useUpdateUser` / `useCreateUser`).
+  return {
+    provide: { refreshProfileAppearances: load },
+  }
 })
