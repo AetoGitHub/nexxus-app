@@ -669,14 +669,15 @@ onUnmounted(() => {
             class="flex max-w-[85%] items-end gap-2"
           >
             <!-- Avatar nativo: círculo de iniciales (mismo patrón que grupos). -->
-            <span
+            <UserAvatar
               v-if="isFirstIncomingInGroup(message, index)"
-              class="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white select-none"
-              :style="{ backgroundColor: resolveAvatarColor(message.profile) }"
+              :user-id="message.profile"
+              :initials="getInitials(message.profile_username)"
+              :size="28"
+              :font-size="11"
+              :fallback-color="resolveAvatarColor(message.profile)"
               :title="message.profile_username"
-            >
-              {{ getInitials(message.profile_username) }}
-            </span>
+            />
             <span
               v-else
               class="size-7 shrink-0"

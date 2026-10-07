@@ -38,9 +38,13 @@ export interface ProfileConfiguration {
   enable_trigger_tasks: boolean
   default_view: ProfileDefaultView
   show_system_messages: boolean
+  /** Fondo del círculo del usuario: color `#RRGGBB` y URL de imagen. Vacío o ausente (sesión anterior) = sin valor. */
+  background_color?: string | null
+  background_image?: string | null
 }
 
-export type UpdateProfileConfigurationPayload = Omit<ProfileConfiguration, 'id'>
+/** Lo que edita la pantalla de configuración; el fondo del perfil no se manda (el backend solo cambia lo que llega). */
+export type UpdateProfileConfigurationPayload = Omit<ProfileConfiguration, 'id' | 'background_color' | 'background_image'>
 
 export interface AuthLoginResponse {
   token: string

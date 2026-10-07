@@ -29,11 +29,17 @@ const color = computed(() =>
   <UPopover mode="hover">
     <button
       type="button"
-      class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white select-none ring-2 ring-card"
-      :style="{ backgroundColor: color }"
+      class="inline-flex shrink-0 rounded-full"
       :aria-label="`${t('tasks.form.createdByLabel')}: ${fullName}`"
     >
-      {{ initials }}
+      <UserAvatar
+        class="ring-2 ring-card"
+        :user-id="createdBy.id"
+        :initials="initials"
+        :size="24"
+        :font-size="11"
+        :fallback-color="color"
+      />
     </button>
 
     <template #content>

@@ -196,12 +196,13 @@ async function exportExcel() {
 
               <td class="px-2 py-3">
                 <div class="flex items-center gap-2.5">
-                  <span
-                    class="inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-                    :style="{ backgroundColor: avatarColor(row.id) }"
-                  >
-                    {{ getInitials(row.name) }}
-                  </span>
+                  <UserAvatar
+                    :user-id="row.id"
+                    :initials="getInitials(row.name)"
+                    :size="28"
+                    :font-size="11"
+                    :fallback-color="avatarColor(row.id)"
+                  />
                   <span class="font-semibold text-foreground">{{ row.name }}</span>
                 </div>
               </td>

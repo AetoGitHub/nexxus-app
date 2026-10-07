@@ -150,13 +150,14 @@ const search = ref('')
       </ClientOnly>
 
       <div class="ml-1">
-        <span
+        <UserAvatar
           :title="displayName"
-          class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none w-8 h-8 text-[12.8px] leading-none"
-          style="background-color: #f59e0b"
-        >
-          {{ initials }}
-        </span>
+          :user-id="user?.id"
+          :initials="initials"
+          :size="32"
+          :font-size="12.8"
+          fallback-color="#f59e0b"
+        />
       </div>
     </div>
   </header>

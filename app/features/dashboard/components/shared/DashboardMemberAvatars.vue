@@ -30,16 +30,18 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
 
 <template>
   <div class="flex items-center">
-    <span
+    <UserAvatar
       v-for="(member, index) in shown"
       :key="member.id"
-      class="inline-flex size-6 items-center justify-center rounded-full border-2 border-card text-[9px] font-semibold text-white"
+      class="border-2 border-card"
       :class="index > 0 ? '-ml-1.5' : ''"
-      :style="{ backgroundColor: avatarColor(member.id) }"
+      :user-id="member.id"
+      :initials="getInitials(member.name)"
+      :size="24"
+      :font-size="9"
+      :fallback-color="avatarColor(member.id)"
       :title="member.name"
-    >
-      {{ getInitials(member.name) }}
-    </span>
+    />
 
     <UTooltip
       v-if="hidden.length"
@@ -67,12 +69,13 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
             :key="member.id"
             class="flex items-center gap-2"
           >
-            <span
-              class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[8px] font-semibold text-white"
-              :style="{ backgroundColor: avatarColor(member.id) }"
-            >
-              {{ getInitials(member.name) }}
-            </span>
+            <UserAvatar
+              :user-id="member.id"
+              :initials="getInitials(member.name)"
+              :size="20"
+              :font-size="8"
+              :fallback-color="avatarColor(member.id)"
+            />
             <span class="text-xs text-foreground">{{ member.name }}</span>
           </li>
         </ul>
