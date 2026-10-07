@@ -1485,6 +1485,12 @@ const slideoverUi = computed(() => {
             </p>
           </UFormField>
 
+          <TaskMoreTasksField
+            v-if="!isDetailView"
+            v-model:rows="moreTaskRows"
+            :backlog="isBacklogMode"
+          />
+
           <UFormField :label="t('tasks.form.description')" name="description">
             <UTextarea
               v-if="!isReadOnly"
@@ -1514,12 +1520,6 @@ const slideoverUi = computed(() => {
             v-model:rows="subtaskRows"
             :user-items="userSelectItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
-          />
-
-          <TaskMoreTasksField
-            v-if="!isDetailView"
-            v-model:rows="moreTaskRows"
-            :backlog="isBacklogMode"
           />
 
           <TaskSubtaskChecklist
