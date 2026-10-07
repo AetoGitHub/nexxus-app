@@ -604,6 +604,8 @@
       "reconnecting": "Reconnecting",
       "offline": "Offline",
       "connectionErrorTitle": "Could not connect to the real-time chat",
+      "accessLostTitle": "You no longer have access to this task",
+      "accessLostDescription": "Your access changed, so the panel was closed.",
       "archivedNotice": "This task is archived. Messages can't be sent.",
       "attachments": {
         "add": "Attach file",

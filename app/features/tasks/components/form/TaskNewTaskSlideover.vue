@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { useQueryClient } from '@tanstack/vue-query'
 import type {
   CloseTaskProcessStatus,
   CreateTaskSubtaskPayload,
@@ -120,6 +121,7 @@ const props = withDefaults(
 const { t } = useI18n()
 const { user, managedGroups, organization, selectedCompanyId } = useAuth()
 const toast = useToast()
+const queryClient = useQueryClient()
 
 const formId = 'new-task-form'
 const submitError = ref('')
@@ -749,6 +751,34 @@ function close() {
   open.value = false
 }
 
+/**
+ * El backend cerró el chat con 4403: se perdió el acceso a la tarea. Se avisa, se cierra el panel (sin reintentos) y,
+ * ya con el panel cerrado, se limpia lo cargado de esa tarea y se refrescan las listas, que ya no deben mostrarla.
+ */
+async function onTaskAccessLost() {
+  const lostTaskId = taskId.value
+  toast.add({
+    title: t('tasks.messenger.accessLostTitle'),
+    description: t('tasks.messenger.accessLostDescription'),
+    color: 'warning',
+    icon: 'i-lucide-lock',
+  })
+  close()
+  if (lostTaskId == null) {
+    return
+  }
+
+  // Con el panel ya desmontado las consultas quedan inactivas y se pueden quitar sin que se vuelvan a pedir.
+  await nextTick()
+  queryClient.removeQueries({ queryKey: ['tasks', 'messages', lostTaskId], exact: true })
+  queryClient.removeQueries({ queryKey: ['tasks', 'detail', lostTaskId], exact: true })
+  void queryClient.invalidateQueries({
+    queryKey: ['tasks'],
+    type: 'active',
+    predicate: query => query.queryKey[1] !== 'messages' && query.queryKey[1] !== 'detail',
+  })
+}
+
 function startEditing() {
   if (!canEditTask.value) {
     return
@@ -1232,6 +1262,7 @@ const slideoverUi = computed(() => {
             :task-id="taskId"
             :readonly="isArchived"
             class="h-full"
+            @access-lost="onTaskAccessLost"
           >
             <template #header-actions>
               <UButton

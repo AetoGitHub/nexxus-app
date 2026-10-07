@@ -8,6 +8,7 @@ import type {
   UpdateTaskChannelEvent,
 } from '~/features/tasks/types/task.types'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
+import { useSessionClosing } from '~/shared/composables/useSessionClosing'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
 import { useWsBaseUrl } from '~/shared/utils/api'
 
@@ -80,8 +81,9 @@ export function useTaskChannelSocket() {
   const queryClient = useQueryClient()
   const { applyServerCount } = useTaskTokens()
   const wsBaseUrl = useWsBaseUrl()
-  const { requestTicket } = useWsTicket()
+  const { requestTicket, isSessionStillValid } = useWsTicket()
   const { isLoggedIn, selectedCompanyId, user } = useAuth()
+  const sessionClosing = useSessionClosing()
   const { status, isConnected } = useRealtimeStatus()
   const { syncCreatedTask } = useTaskCreatedSync()
   const route = useRoute()
@@ -424,7 +426,12 @@ export function useTaskChannelSocket() {
       }
 
       if (event.code === 4403) {
+        // Sin acceso (company o sesión): no se reconecta. Si fue un logout en otro dispositivo, el 401 de este sondeo
+        // manda al login. Un logout propio no se sondea: ya se está yendo al login.
         status.value = 'error'
+        if (!sessionClosing.value) {
+          void isSessionStillValid()
+        }
         return
       }
 
@@ -439,7 +446,12 @@ export function useTaskChannelSocket() {
         return
       }
 
-      // 4400: sin company seleccionada — nuevo ticket + backoff.
+      // 4400: sin company seleccionada. No se reintenta: al elegir una, el cambio de company reconecta.
+      if (event.code === 4400) {
+        status.value = 'error'
+        return
+      }
+
       scheduleReconnect()
     }
 
@@ -460,8 +472,12 @@ export function useTaskChannelSocket() {
     void connect()
   }
 
-  // Sin sesión no hay ticket posible: el túnel sigue al estado de login.
-  watch(isLoggedIn, (loggedIn) => {
+  // Sin sesión no hay ticket posible: el túnel sigue al estado de login (y se cierra apenas empieza un logout propio).
+  // También sigue a la company activa: al cambiarla el backend cierra el tablero con 4403, así que el socket viejo se
+  // descarta (close 1000 + nueva generación: su cierre ya no cuenta) y se pide un ticket nuevo para la company nueva.
+  const shouldConnect = computed(() => isLoggedIn.value && !sessionClosing.value)
+
+  watch([shouldConnect, selectedCompanyId], ([connectNow]) => {
     if (!import.meta.client) {
       return
     }
@@ -471,7 +487,7 @@ export function useTaskChannelSocket() {
     ticketAuthRetryUsed = false
     shouldResync = false
 
-    if (loggedIn) {
+    if (connectNow) {
       void connect()
       return
     }

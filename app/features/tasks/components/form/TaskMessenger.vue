@@ -38,6 +38,11 @@ const props = withDefaults(
   },
 )
 
+const emit = defineEmits<{
+  /** El backend cerró el chat porque ya no hay acceso a la tarea. */
+  accessLost: []
+}>()
+
 const { t, locale } = useI18n()
 const { user, organization, selectedCompanyId } = useAuth()
 const { uploadFile } = useFirebaseUpload()
@@ -50,7 +55,9 @@ const {
   errorMessage,
 } = useTaskMessages(() => props.taskId)
 
-const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId)
+const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId, {
+  onAccessDenied: () => emit('accessLost'),
+})
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
 const { mutateAsync: updateMessage, isPending: isUpdating } = useUpdateTaskMessage()
 

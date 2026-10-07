@@ -1,6 +1,7 @@
 import { FetchError } from 'ofetch'
 import { useQueryClient } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
+import { useSessionClosing } from '~/shared/composables/useSessionClosing'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
 import { useWsBaseUrl } from '~/shared/utils/api'
 import type { TaskMessage } from '~/features/tasks/types/task.types'
@@ -19,12 +20,23 @@ export function isTaskMessagesSocketConnected(taskId: number) {
   return taskSocketStatuses[taskId] === 'connected'
 }
 
+export interface TaskMessagesSocketOptions {
+  /**
+   * El backend cerró el chat con 4403: la persona ya no tiene acceso a la tarea. No se reconecta. Solo se avisa si la
+   * sesión sigue valiendo (con logout en otro dispositivo también llega 4403, y ahí corresponde ir al login).
+   */
+  onAccessDenied?: (taskId: number) => void
+}
+
 export function useTaskMessagesSocket(
   taskId: MaybeRefOrGetter<number | null | undefined>,
+  options: TaskMessagesSocketOptions = {},
 ) {
   const queryClient = useQueryClient()
   const wsBaseUrl = useWsBaseUrl()
-  const { requestTicket } = useWsTicket()
+  const { requestTicket, isSessionStillValid } = useWsTicket()
+  const { isLoggedIn } = useAuth()
+  const sessionClosing = useSessionClosing()
 
   const resolvedTaskId = computed(() => toValue(taskId))
   const status = computed<TaskMessagesSocketStatus>(() => {
@@ -65,6 +77,16 @@ export function useTaskMessagesSocket(
       socket.close(1000)
     }
     socket = null
+  }
+
+  async function handleAccessDenied(id: number) {
+    if (sessionClosing.value || !(await isSessionStillValid())) {
+      return
+    }
+    if (disposed || !isLoggedIn.value || resolvedTaskId.value !== id) {
+      return
+    }
+    options.onAccessDenied?.(id)
   }
 
   function scheduleReconnect(id: number, immediate = false) {
@@ -216,6 +238,7 @@ export function useTaskMessagesSocket(
 
       if (event.code === 4403) {
         taskSocketStatuses[id] = 'error'
+        void handleAccessDenied(id)
         return
       }
 
@@ -268,6 +291,18 @@ export function useTaskMessagesSocket(
     },
     { immediate: true },
   )
+
+  // Logout propio en curso: se cierra con 1000 antes de que el backend cierre con 4403.
+  watch(sessionClosing, (closing) => {
+    if (!closing) {
+      return
+    }
+    closeCurrentSocket()
+    const id = resolvedTaskId.value
+    if (id != null) {
+      taskSocketStatuses[id] = 'offline'
+    }
+  })
 
   onScopeDispose(() => {
     disposed = true
