@@ -1092,10 +1092,10 @@
       "rangeIncomplete": "Pick both dates to see the range.",
       "rangeInvalid": "The start date must be on or before the end date.",
       "projects": {
-        "label": "Topics",
-        "all": "All topics",
-        "count": "{count} topics",
-        "search": "Search topic…"
+        "label": "Projects",
+        "all": "All projects",
+        "count": "{count} projects",
+        "search": "Search project…"
       }
     },
     "kpis": {
@@ -1169,9 +1169,9 @@
       }
     },
     "topics": {
-      "title": "Performance by topic",
+      "title": "Performance by project",
       "columns": {
-        "topic": "Topic",
+        "topic": "Project",
         "completed": "Completed",
         "active": "Active",
         "overdue": "Overdue",
@@ -1180,7 +1180,8 @@
         "trend": "Trend"
       },
       "maxDays": "max {days}d",
-      "empty": "There are no topics to show in this period."
+      "moreMembers": "{count} more members",
+      "empty": "There are no projects to show in this period."
     },
     "hero": {
       "goal": "goal ≥{goal}%"
@@ -1238,11 +1239,11 @@
       },
       "completed": {
         "title": "Completed",
-        "description": "Completed tasks in the topic vs all tasks created in the period."
+        "description": "Completed tasks in the project vs all tasks created in the period."
       },
       "active": {
         "title": "Active",
-        "description": "Open tasks in the topic (pending, in progress, in review or reopened)."
+        "description": "Open tasks in the project (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",
@@ -1254,7 +1255,7 @@
       },
       "members": {
         "title": "Members",
-        "description": "People with tasks assigned in this topic."
+        "description": "People with tasks assigned in this project."
       },
       "load_distribution": {
         "title": "Productive load distribution",

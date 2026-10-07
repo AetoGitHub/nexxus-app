@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTooltipTouchTap } from '~/features/dashboard/composables/useTooltipTouchTap'
 import type { MetricKey } from '~/features/dashboard/types/dashboard.types'
 
 /**
@@ -20,43 +21,8 @@ const { t } = useI18n()
 const title = computed(() => t(`dashboard.metrics.${props.metric}.title`))
 const description = computed(() => t(`dashboard.metrics.${props.metric}.description`))
 
-const open = ref(false)
-
-/**
- * En touch no hay hover: el tap debe abrir y cerrar el tooltip. El tooltip de Reka cierra al hacer clic en su
- * disparador, así que mientras dura un tap se ignoran sus cierres y el tap lo maneja este componente.
- * El `pointerdown` va en captura para marcar el tap antes que los manejadores de Reka.
- */
-let touchTap = false
-let touchTimer: ReturnType<typeof setTimeout> | undefined
-
-function onPointerDown(event: PointerEvent) {
-  clearTimeout(touchTimer)
-  touchTap = event.pointerType === 'touch'
-}
-
-/** El clic llega justo después de soltar el dedo; pasado ese momento los cierres de Reka (tap afuera, etc.) vuelven a valer. */
-function endTouchTap() {
-  clearTimeout(touchTimer)
-  touchTimer = setTimeout(() => {
-    touchTap = false
-  }, 100)
-}
-
-function onUpdateOpen(value: boolean) {
-  if (touchTap) {
-    return
-  }
-  open.value = value
-}
-
-function onClick() {
-  if (touchTap) {
-    open.value = !open.value
-  }
-}
-
-onBeforeUnmount(() => clearTimeout(touchTimer))
+// En touch no hay hover: el tap abre y cierra el tooltip (ver `useTooltipTouchTap`).
+const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTouchTap()
 </script>
 
 <template>

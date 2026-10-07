@@ -10,13 +10,13 @@ export interface DashboardQueryFilters {
   range?: DashboardDateRange | null
   /** Vista «Mis tareas» (`my_tasks=true`). */
   myTasks?: boolean
-  /** Temas elegidos (`project=2,3`); vacío = todos. */
+  /** Proyectos elegidos (`project=2,3`); vacío = todos. */
   projectIds?: number[]
 }
 
 /**
  * Query string de `GET /api/dashboard/<bloque>/`. No manda `company` (el backend usa la compañía seleccionada del perfil)
- * y solo manda `my_tasks` / `project` cuando hay filtro: sin ellos el backend cuenta todo el equipo y todos los temas.
+ * y solo manda `my_tasks` / `project` cuando hay filtro: sin ellos el backend cuenta todo el equipo y todos los proyectos.
  */
 export function buildDashboardQuery(filters: DashboardQueryFilters): Record<string, string> {
   const query: Record<string, string> = {}

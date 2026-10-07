@@ -1092,10 +1092,10 @@
       "rangeIncomplete": "Elige las dos fechas para ver el rango.",
       "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
       "projects": {
-        "label": "Temas",
-        "all": "Todos los temas",
-        "count": "{count} temas",
-        "search": "Buscar tema…"
+        "label": "Proyectos",
+        "all": "Todos los proyectos",
+        "count": "{count} proyectos",
+        "search": "Buscar proyecto…"
       }
     },
     "kpis": {
@@ -1169,9 +1169,9 @@
       }
     },
     "topics": {
-      "title": "Rendimiento por tema",
+      "title": "Rendimiento por proyecto",
       "columns": {
-        "topic": "Tema",
+        "topic": "Proyecto",
         "completed": "Completadas",
         "active": "Activas",
         "overdue": "Vencidas",
@@ -1180,7 +1180,8 @@
         "trend": "Tendencia"
       },
       "maxDays": "máx {days}d",
-      "empty": "No hay temas para mostrar en este periodo."
+      "moreMembers": "{count} miembros más",
+      "empty": "No hay proyectos para mostrar en este periodo."
     },
     "hero": {
       "goal": "meta ≥{goal}%"
@@ -1238,11 +1239,11 @@
       },
       "completed": {
         "title": "Completadas",
-        "description": "Tareas completadas del tema contra el total de tareas creadas en el período."
+        "description": "Tareas completadas del proyecto contra el total de tareas creadas en el período."
       },
       "active": {
         "title": "Activas",
-        "description": "Tareas abiertas del tema (pendientes, en proceso, en revisión o reabiertas)."
+        "description": "Tareas abiertas del proyecto (pendientes, en proceso, en revisión o reabiertas)."
       },
       "overdue": {
         "title": "Vencidas",
@@ -1254,7 +1255,7 @@
       },
       "members": {
         "title": "Miembros",
-        "description": "Personas con tareas asignadas en este tema."
+        "description": "Personas con tareas asignadas en este proyecto."
       },
       "load_distribution": {
         "title": "Distribución de carga productiva",

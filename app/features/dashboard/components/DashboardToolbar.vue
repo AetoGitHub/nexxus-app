@@ -9,8 +9,8 @@ import type {
 import { isValidDateRange } from '~/features/dashboard/utils/dashboard-filters.util'
 
 /**
- * Filtros globales del Dashboard: alcance (Mis tareas / Equipo), periodo o rango personalizado, comparativa y temas.
- * Aplican a los KPI, la carga y los temas (y «Mis tareas» y los temas también a Rendimiento individual).
+ * Filtros globales del Dashboard: alcance (Mis tareas / Equipo), periodo o rango personalizado, comparativa y proyectos.
+ * Aplican a los KPI, la carga y los proyectos (y «Mis tareas» y los proyectos también a Rendimiento individual).
  */
 const scope = defineModel<DashboardScope>('scope', { required: true })
 const period = defineModel<DashboardPeriod>('period', { required: true })

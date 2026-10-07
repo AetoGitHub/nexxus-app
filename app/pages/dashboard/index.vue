@@ -31,10 +31,10 @@ useSeoMeta({
   title: () => t('dashboard.title'),
 })
 
-// Filtros globales: aplican a los KPI, la distribución de carga y los temas.
+// Filtros globales: aplican a los KPI, la distribución de carga y los proyectos.
 const period = ref<DashboardPeriod>('week')
 const compare = ref<DashboardCompare>('previous')
-// «Mis tareas» (`my_tasks`) y los temas (`project`) aplican a todos los bloques, también a Rendimiento individual.
+// «Mis tareas» (`my_tasks`) y los proyectos (`project`) aplican a todos los bloques, también a Rendimiento individual.
 const scope = ref<DashboardScope>('team')
 const projectIds = ref<number[]>([])
 // Rango personalizado: reemplaza al periodo en los bloques globales; solo se pide cuando está completo y es válido.

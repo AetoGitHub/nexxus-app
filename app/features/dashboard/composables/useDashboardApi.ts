@@ -19,7 +19,7 @@ export interface DashboardFilters {
   range?: MaybeRefOrGetter<DashboardDateRange | null>
   /** Vista «Mis tareas». */
   myTasks?: MaybeRefOrGetter<boolean>
-  /** Temas elegidos; vacío = todos. */
+  /** Proyectos elegidos; vacío = todos. */
   projectIds?: MaybeRefOrGetter<number[]>
   /** Falso mientras el rango personalizado está a medias: no se pide nada y se conserva lo que había. */
   enabled?: MaybeRefOrGetter<boolean>
@@ -78,7 +78,7 @@ export function useDashboardLoadDistribution(filters: Omit<DashboardFilters, 'co
 
 /**
  * Rendimiento individual: su periodo es propio (el selector de la tabla) y no sigue al rango personalizado; la
- * comparativa, «Mis tareas» y los temas sí son los globales.
+ * comparativa, «Mis tareas» y los proyectos sí son los globales.
  */
 export function useDashboardPeople(filters: Omit<DashboardFilters, 'range' | 'enabled'>) {
   return useDashboardBlock<ApiPeopleResponse>('people', () => buildDashboardQuery({
@@ -89,7 +89,7 @@ export function useDashboardPeople(filters: Omit<DashboardFilters, 'range' | 'en
   }))
 }
 
-/** Rendimiento por tema. Con el filtro de temas solo regresa esas filas. */
+/** Rendimiento por proyecto. Con el filtro de proyectos solo regresa esas filas. */
 export function useDashboardProjects(filters: DashboardFilters) {
   return useDashboardBlock<ApiProjectsResponse>('projects', () => buildDashboardQuery({
     period: toValue(filters.period),
