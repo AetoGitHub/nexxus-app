@@ -27,7 +27,19 @@
   },
   "user": {
     "fallback": "User",
-    "roleManager": "Manager"
+    "roleManager": "Manager",
+    "viewProfile": "View profile",
+    "profile": {
+      "title": "Profile",
+      "description": "Your account details.",
+      "email": "Email",
+      "company": "Company",
+      "organization": "Organization",
+      "superuser": "Superuser",
+      "copyEmail": "Copy email",
+      "copied": "Email copied",
+      "copyError": "Could not copy to the clipboard"
+    }
   },
   "realtime": {
     "connected": "Connected in real time",
@@ -1133,7 +1145,8 @@
         "label": "On-time completion · TCT"
       },
       "tc": {
-        "label": "Completion rate · TC"
+        "label": "Completion rate · TC",
+        "count": "{completed} of {total}"
       },
       "created": {
         "label": "Tasks created"
@@ -1257,7 +1270,7 @@
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Points from open tasks currently assigned vs the person's capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Points from the period's tasks that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
         "title": "Effort distribution",
@@ -1273,7 +1286,7 @@
       },
       "active": {
         "title": "Active",
-        "description": "Open tasks in the project (pending, in progress, in review or reopened)."
+        "description": "Period tasks that are still open in the project (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",

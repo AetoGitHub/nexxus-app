@@ -313,6 +313,8 @@ async function removeSubtask(subtaskId: number) {
               v-if="row.assigned_to_name"
               role="img"
               :aria-label="row.assigned_to_name"
+              :name="row.assigned_to_name"
+              title=""
               :user-id="row.assigned_to"
               :initials="personInitials(row.assigned_to_name)"
               :size="24"

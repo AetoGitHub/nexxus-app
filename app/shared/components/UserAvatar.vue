@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { useProfileAppearance, useProfileInitials } from '~/features/auth/composables/useProfileAppearance'
+import { useProfileAppearance, useProfileFullName, useProfileInitials } from '~/features/auth/composables/useProfileAppearance'
 import { readableTextColor } from '~/features/auth/utils/profile-appearance.util'
 import type { ProfileAppearance } from '~/features/auth/utils/profile-appearance.util'
 
 /**
  * Círculo de un usuario: su imagen de perfil si tiene; si no, su color de fondo con las iniciales; y si no tiene ninguno,
  * `fallbackColor` con las iniciales (lo de siempre). Si la imagen no carga, cae al color o al fallback.
+ * Al pasar el cursor muestra el nombre completo (nombre y apellido) del usuario; un `title` o `aria-label` pasado por el padre
+ * sobreescribe al del círculo, por eso los usos de este componente no deben pasarlos.
  * Las clases (anillo, borde, márgenes) se pasan directo al círculo.
  */
 const props = withDefaults(
@@ -16,6 +18,8 @@ const props = withDefaults(
     appearance?: ProfileAppearance | null
     /** Respaldo mientras no se conozcan el nombre y apellido del usuario (con `userId` se usan las iniciales reales). */
     initials: string
+    /** Respaldo del nombre mostrado al pasar el cursor mientras el catálogo no tenga al usuario (con `userId` manda el nombre completo del catálogo). */
+    name?: string
     /** Diámetro en px. */
     size?: number
     /** Tamaño de las iniciales en px; por defecto, proporcional al diámetro. */
@@ -26,6 +30,7 @@ const props = withDefaults(
   {
     userId: null,
     appearance: undefined,
+    name: undefined,
     size: 32,
     fontSize: undefined,
     fallbackColor: '#64748b',
@@ -34,6 +39,9 @@ const props = withDefaults(
 
 const looked = useProfileAppearance(() => props.userId)
 const realInitials = useProfileInitials(() => props.userId)
+const fullName = useProfileFullName(() => props.userId)
+/** Nombre completo (nombre y apellido) que se ve al pasar el cursor; sin ninguno no hay `title`. */
+const displayName = computed(() => fullName.value ?? (props.name?.trim() || undefined))
 const displayInitials = computed(() => realInitials.value ?? props.initials)
 const resolved = computed(() => (props.appearance !== undefined ? props.appearance : looked.value))
 
@@ -50,6 +58,9 @@ const resolvedFontSize = computed(() => props.fontSize ?? Math.max(9, Math.round
 
 <template>
   <span
+    :title="displayName"
+    :role="displayName ? 'img' : undefined"
+    :aria-label="displayName"
     class="inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full font-semibold leading-none"
     :style="{
       width: `${size}px`,

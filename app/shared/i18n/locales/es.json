@@ -27,7 +27,19 @@
   },
   "user": {
     "fallback": "Usuario",
-    "roleManager": "Manager"
+    "roleManager": "Manager",
+    "viewProfile": "Ver perfil",
+    "profile": {
+      "title": "Perfil",
+      "description": "Datos de tu cuenta.",
+      "email": "Correo",
+      "company": "Empresa",
+      "organization": "Organización",
+      "superuser": "Superusuario",
+      "copyEmail": "Copiar correo",
+      "copied": "Correo copiado",
+      "copyError": "No se pudo copiar al portapapeles"
+    }
   },
   "realtime": {
     "connected": "Conectado en tiempo real",
@@ -1133,7 +1145,8 @@
         "label": "Cumplimiento en tiempo · TCT"
       },
       "tc": {
-        "label": "Tasa de completación · TC"
+        "label": "Tasa de completación · TC",
+        "count": "{completed} de {total}"
       },
       "created": {
         "label": "Tareas creadas"
@@ -1257,7 +1270,7 @@
       },
       "pending_load": {
         "title": "Carga pendiente",
-        "description": "Puntos de tareas abiertas asignadas hoy contra la capacidad de la persona. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+        "description": "Puntos de las tareas del periodo que siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
         "title": "Distribución por esfuerzo",
@@ -1273,7 +1286,7 @@
       },
       "active": {
         "title": "Activas",
-        "description": "Tareas abiertas del proyecto (pendientes, en proceso, en revisión o reabiertas)."
+        "description": "Tareas del periodo que siguen abiertas en el proyecto (pendientes, en proceso, en revisión o reabiertas)."
       },
       "overdue": {
         "title": "Vencidas",

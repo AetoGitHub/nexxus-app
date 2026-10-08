@@ -49,6 +49,8 @@ export interface DashboardKpi {
   delta: DashboardDelta | null
   /** Meta que se muestra junto a la variación (`meta ≥85%`). */
   goal?: number
+  /** Conteo crudo bajo el valor (TC: «70 de 468»); `labelKey` es la clave i18n. */
+  detail?: { labelKey: string, params: Record<string, string | number> }
   /** Los `null` cortan la línea. */
   series: (number | null)[]
 }

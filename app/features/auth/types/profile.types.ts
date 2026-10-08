@@ -4,6 +4,8 @@ export interface AuthProfile {
   username: string
   first_name?: string
   last_name?: string
+  email?: string
+  corporate_email?: string
   selected_company: number | null
   /** Fondo del círculo del usuario; `null` o vacío si no tiene configuración. */
   background_color?: string | null

@@ -40,7 +40,7 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
       :size="24"
       :font-size="9"
       :fallback-color="avatarColor(member.id)"
-      :title="member.name"
+      :name="member.name"
     />
 
     <UTooltip
@@ -75,6 +75,7 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
               :size="20"
               :font-size="8"
               :fallback-color="avatarColor(member.id)"
+              :name="member.name"
             />
             <span class="text-xs text-foreground">{{ member.name }}</span>
           </li>

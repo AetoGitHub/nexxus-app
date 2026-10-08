@@ -194,7 +194,7 @@ function onToggle() {
               :size="28"
               :font-size="11"
               :fallback-color="resolveAvatarColor(group.manager)"
-              :title="managerName"
+              :name="managerName"
             />
             <div class="min-w-0 flex-1">
               <p class="text-[13px] font-medium text-foreground truncate">
@@ -237,10 +237,10 @@ function onToggle() {
               <UserAvatar
                 :user-id="member.id"
                 :initials="getInitials(member.username)"
+                :name="member.username"
                 :size="28"
                 :font-size="11"
                 :fallback-color="resolveAvatarColor(member.id)"
-                :title="member.username"
               />
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-medium text-foreground truncate">

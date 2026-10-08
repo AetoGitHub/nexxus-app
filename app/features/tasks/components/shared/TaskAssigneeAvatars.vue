@@ -23,9 +23,9 @@ withDefaults(
     <UserAvatar
       v-for="assignee in assignees.slice(0, max)"
       :key="assignee.id"
-      :title="assignee.username"
       class="ring-2 ring-card"
       :user-id="assignee.id"
+      :name="assignee.username"
       :initials="taskAssigneeInitial(assignee.username)"
       :size="size"
       :font-size="Math.max(9, Math.round(size * 0.42))"

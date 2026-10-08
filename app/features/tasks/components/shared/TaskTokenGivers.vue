@@ -27,6 +27,7 @@ const { t } = useI18n()
           :size="28"
           :font-size="11"
           fallback-color="#28ceab"
+          :name="tokenGiverName(giver, t('tasks.tokens.unknownUser'))"
         />
         <span class="min-w-0 flex-1 truncate text-sm text-foreground">
           {{ tokenGiverName(giver, t('tasks.tokens.unknownUser')) }}

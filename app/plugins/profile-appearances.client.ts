@@ -1,12 +1,14 @@
 import {
   useProfileAppearanceCatalog,
   useProfileInitialsCatalog,
+  useProfileNamesCatalog,
 } from '~/features/auth/composables/useProfileAppearance'
 import type { AuthProfile } from '~/features/auth/types/profile.types'
 import {
   clearStoredCatalog,
   initialsFromNames,
   normalizeAppearance,
+  profileFullName,
   readStoredCatalog,
   toRelativeApiUrl,
   writeStoredCatalog,
@@ -21,19 +23,21 @@ const REFRESH_AFTER_MS = 5 * 60 * 1000
 
 /**
  * Carga de los perfiles de la organización (`GET /api/auth/profiles/`) lo que necesita cualquier círculo de usuario de la
- * app (ver `UserAvatar`): su imagen o color de fondo y sus iniciales reales (nombre y apellido). Se guarda también en el
+ * app (ver `UserAvatar`): su imagen o color de fondo y sus iniciales reales y su nombre completo (nombre y apellido). Se guarda también en el
  * navegador para que, al abrir la app, los círculos salgan bien desde el primer render. Si falla, los círculos siguen como siempre.
  */
 export default defineNuxtPlugin((nuxtApp) => {
   const session = useAuthSession()
   const appearances = useProfileAppearanceCatalog()
   const initials = useProfileInitialsCatalog()
+  const names = useProfileNamesCatalog()
   let loadedAt = 0
   let generation = 0
 
   function apply(catalog: StoredProfileCatalog) {
     appearances.value = catalog.appearances
     initials.value = catalog.initials
+    names.value = catalog.names
   }
 
   // Primer render: lo último que se guardó de este mismo usuario.
@@ -43,7 +47,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   async function fetchAll(): Promise<StoredProfileCatalog> {
-    const found: StoredProfileCatalog = { appearances: {}, initials: {} }
+    const found: StoredProfileCatalog = { appearances: {}, initials: {}, names: {} }
     let nextUrl: string | null = null
 
     for (let page = 0; page < MAX_PAGES; page++) {
@@ -58,6 +62,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         const profileInitials = initialsFromNames(profile.first_name, profile.last_name)
         if (profileInitials) {
           found.initials[profile.id] = profileInitials
+        }
+        // Solo con nombre o apellido: sin ninguno de los dos no hay nombre completo que mostrar (el username no cuenta).
+        if (profile.first_name?.trim() || profile.last_name?.trim()) {
+          found.names[profile.id] = profileFullName(profile)
         }
       }
       if (!response.next) {
@@ -93,13 +101,13 @@ export default defineNuxtPlugin((nuxtApp) => {
         generation++
         loadedAt = 0
         if (userId == null) {
-          apply({ appearances: {}, initials: {} })
+          apply({ appearances: {}, initials: {}, names: {} })
           clearStoredCatalog()
           return
         }
         // Otra cuenta: nunca se muestra el catálogo guardado de la anterior.
         const own = readStoredCatalog(userId)
-        apply(own ?? { appearances: {}, initials: {} })
+        apply(own ?? { appearances: {}, initials: {}, names: {} })
         void load()
       },
       { immediate: true },

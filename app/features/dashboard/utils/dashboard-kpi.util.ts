@@ -1,4 +1,4 @@
-import type { ApiKpi, ApiKpis } from '~/features/dashboard/types/dashboard-api.types'
+import type { ApiKpi, ApiKpis, ApiTcKpi } from '~/features/dashboard/types/dashboard-api.types'
 import type { DashboardBadge, DashboardDelta, DashboardKpi } from '~/features/dashboard/types/dashboard.types'
 import { NO_DATA, formatHours, formatPercent, formatSigned, rangeOf } from '~/features/dashboard/utils/dashboard.util'
 
@@ -96,6 +96,15 @@ function buildTprKpi(kpi: ApiKpi): DashboardKpi {
   }
 }
 
+/** TC: además del porcentaje, el conteo crudo («70 de 468») cuando el backend lo manda. */
+function buildTcKpi(kpi: ApiTcKpi): DashboardKpi {
+  const result = buildRateKpi('tc', kpi)
+  if (kpi.completed != null && kpi.total != null) {
+    result.detail = { labelKey: 'dashboard.kpis.tc.count', params: { completed: kpi.completed, total: kpi.total } }
+  }
+  return result
+}
+
 /** Convierte `GET /api/dashboard/kpis/` en lo que pintan la cabecera y las tarjetas. */
 export function buildDashboardKpis(kpis: ApiKpis): DashboardKpiSet {
   const hero = buildRateKpi('tct', kpis.tct)
@@ -106,7 +115,7 @@ export function buildDashboardKpis(kpis: ApiKpis): DashboardKpiSet {
   return {
     hero,
     cards: [
-      buildRateKpi('tc', kpis.tc),
+      buildTcKpi(kpis.tc),
       buildCreatedKpi(kpis.tasks_created),
       buildRateKpi('iur', kpis.iur, kpis.iur.unattended),
       buildTprKpi(kpis.tpr),

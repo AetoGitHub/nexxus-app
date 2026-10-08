@@ -37,9 +37,17 @@ export interface ApiKpi {
   trend: ApiTrendPoint[]
 }
 
+/** TC trae además el conteo crudo; opcionales para no romper con un backend que aún no los manda. */
+export interface ApiTcKpi extends ApiKpi {
+  /** Tareas creadas en el periodo que ya se completaron. */
+  completed?: number
+  /** Tareas creadas en el periodo. */
+  total?: number
+}
+
 export interface ApiKpis {
   tct: ApiKpi
-  tc: ApiKpi
+  tc: ApiTcKpi
   tasks_created: ApiKpi
   tpr: ApiKpi
   ica: ApiKpi

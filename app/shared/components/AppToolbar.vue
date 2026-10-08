@@ -2,7 +2,7 @@
 import NotificationPreviewMenu from '~/features/notifications/components/NotificationPreviewMenu.vue'
 
 const { t } = useI18n()
-const { user } = useAuth()
+const { user, logout } = useAuth()
 const { collapsed, toggle } = useSidebar()
 const colorMode = useColorMode()
 const route = useRoute()
@@ -150,14 +150,37 @@ const search = ref('')
       </ClientOnly>
 
       <div class="ml-1">
-        <UserAvatar
-          :title="displayName"
-          :user-id="user?.id"
-          :initials="initials"
-          :size="32"
-          :font-size="12.8"
-          fallback-color="#f59e0b"
-        />
+        <UPopover
+          :content="{ side: 'bottom', align: 'end', sideOffset: 8 }"
+          :ui="{ content: 'w-[min(20rem,calc(100vw-1.5rem))] p-4' }"
+        >
+          <button
+            type="button"
+            :aria-label="t('user.viewProfile')"
+            class="inline-flex rounded-full transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <UserAvatar
+              :user-id="user?.id"
+              :initials="initials"
+              :size="32"
+              :font-size="12.8"
+              fallback-color="#f59e0b"
+            />
+          </button>
+
+          <template #content>
+            <UserProfileCard>
+              <UButton
+                :label="t('common.logout')"
+                icon="i-lucide-log-out"
+                color="error"
+                variant="ghost"
+                block
+                @click="logout"
+              />
+            </UserProfileCard>
+          </template>
+        </UPopover>
       </div>
     </div>
   </header>

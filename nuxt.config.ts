@@ -60,6 +60,18 @@ export default defineNuxtConfig({
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "theme-color", content: "#28ceab" },
       ],
+      // CSS crítico: la app es SPA (ssr: false), así que antes de que monte Vue el documento
+      // está vacío y el navegador pintaría el lienzo blanco por defecto (pantallazo blanco en F5).
+      // El script de @nuxtjs/color-mode (inyectado en <head>, síncrono) pone la clase `dark` en
+      // <html> antes del primer pintado; con ella elegimos el fondo del tema. Los valores son los
+      // mismos que `--background` en app/assets/css/main.css (:root / .dark): mantenerlos en sync.
+      style: [
+        {
+          innerHTML:
+            "html{background-color:#F5F5F5;color-scheme:light}"
+            + "html.dark{background-color:#1A1A1A;color-scheme:dark}",
+        },
+      ],
     },
   },
 

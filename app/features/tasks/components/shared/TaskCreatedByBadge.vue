@@ -13,6 +13,9 @@ const fullName = computed(() => {
   return name || t('tasks.form.createdByUnknown')
 })
 
+/** Solo nombre y apellido reales (sin el texto de respaldo) para el nombre del círculo. */
+const realName = computed(() => `${props.createdBy.first_name ?? ''} ${props.createdBy.last_name ?? ''}`.trim() || undefined)
+
 const initials = computed(() => {
   const first = props.createdBy.first_name?.trim().charAt(0) ?? ''
   const last = props.createdBy.last_name?.trim().charAt(0) ?? ''
@@ -39,6 +42,7 @@ const color = computed(() =>
         :size="24"
         :font-size="11"
         :fallback-color="color"
+        :name="realName"
       />
     </button>
 

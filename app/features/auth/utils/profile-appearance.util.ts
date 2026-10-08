@@ -56,6 +56,8 @@ export function profileFullName(profile: { first_name?: string | null, last_name
 export interface StoredProfileCatalog {
   appearances: Record<number, ProfileAppearance>
   initials: Record<number, string>
+  /** `id -> nombre y apellido`; solo de quien tiene alguno. Lo guardado antes de existir este campo no lo trae. */
+  names: Record<number, string>
 }
 
 const CATALOG_STORAGE_KEY = 'nexxus.profile-catalog'
@@ -67,11 +69,11 @@ export function readStoredCatalog(userId: number | null | undefined): StoredProf
   }
   try {
     const parsed = JSON.parse(localStorage.getItem(CATALOG_STORAGE_KEY) ?? 'null') as
-      { userId?: number, appearances?: Record<number, ProfileAppearance>, initials?: Record<number, string> } | null
+      { userId?: number, appearances?: Record<number, ProfileAppearance>, initials?: Record<number, string>, names?: Record<number, string> } | null
     if (parsed?.userId !== userId) {
       return null
     }
-    return { appearances: parsed.appearances ?? {}, initials: parsed.initials ?? {} }
+    return { appearances: parsed.appearances ?? {}, initials: parsed.initials ?? {}, names: parsed.names ?? {} }
   }
   catch {
     return null
