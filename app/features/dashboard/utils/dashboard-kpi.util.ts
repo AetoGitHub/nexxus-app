@@ -1,4 +1,4 @@
-import type { ApiKpi, ApiKpis, ApiTcKpi } from '~/features/dashboard/types/dashboard-api.types'
+import type { ApiKpi, ApiKpis, ApiTasksCreatedKpi, ApiTcKpi } from '~/features/dashboard/types/dashboard-api.types'
 import type { DashboardBadge, DashboardDelta, DashboardKpi } from '~/features/dashboard/types/dashboard.types'
 import { NO_DATA, formatHours, formatPercent, formatSigned, rangeOf } from '~/features/dashboard/utils/dashboard.util'
 
@@ -70,10 +70,10 @@ function buildRateKpi(key: string, kpi: ApiKpi, unattended = 0): DashboardKpi {
   }
 }
 
-function buildCreatedKpi(kpi: ApiKpi): DashboardKpi {
+function buildCreatedKpi(kpi: ApiTasksCreatedKpi): DashboardKpi {
   const reachedGoal = kpi.value != null && kpi.goal != null && kpi.value >= kpi.goal
 
-  return {
+  const result: DashboardKpi = {
     key: 'created',
     value: kpi.value == null ? NO_DATA : String(kpi.value),
     tone: reachedGoal ? 'good' : 'neutral',
@@ -83,6 +83,14 @@ function buildCreatedKpi(kpi: ApiKpi): DashboardKpi {
     delta: buildDelta(kpi, '', 0),
     series: seriesOf(kpi),
   }
+  // Desglose del usuario en sesión («6 asignadas a mí · 3 creadas por mí»), solo si el backend lo manda.
+  if (kpi.assigned_to_me != null && kpi.created_by_me != null) {
+    result.detail = {
+      labelKey: 'dashboard.kpis.created.mine',
+      params: { assigned: kpi.assigned_to_me, created: kpi.created_by_me },
+    }
+  }
+  return result
 }
 
 /** TPR (horas): sin meta ni semáforo; menor es mejor. */
@@ -96,11 +104,13 @@ function buildTprKpi(kpi: ApiKpi): DashboardKpi {
   }
 }
 
-/** TC: además del porcentaje, el conteo crudo («70 de 468») cuando el backend lo manda. */
+/** TC: además del porcentaje, el conteo crudo («70 de 468») cuando el backend lo manda; con `total` en 0, «—». */
 function buildTcKpi(kpi: ApiTcKpi): DashboardKpi {
   const result = buildRateKpi('tc', kpi)
   if (kpi.completed != null && kpi.total != null) {
-    result.detail = { labelKey: 'dashboard.kpis.tc.count', params: { completed: kpi.completed, total: kpi.total } }
+    result.detail = kpi.total === 0
+      ? { labelKey: 'dashboard.kpis.tc.countEmpty', params: {} }
+      : { labelKey: 'dashboard.kpis.tc.count', params: { completed: kpi.completed, total: kpi.total } }
   }
   return result
 }

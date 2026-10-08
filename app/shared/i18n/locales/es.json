@@ -1146,10 +1146,12 @@
       },
       "tc": {
         "label": "Tasa de completación · TC",
-        "count": "{completed} de {total}"
+        "count": "{completed} de {total}",
+        "countEmpty": "—"
       },
       "created": {
-        "label": "Tareas creadas"
+        "label": "Tareas creadas",
+        "mine": "{assigned} asignadas a mí · {created} creadas por mí"
       },
       "iur": {
         "label": "Índice urgencias resueltas · IUR"
@@ -1246,7 +1248,7 @@
       },
       "tc": {
         "title": "TC — Tasa de Cumplimiento",
-        "description": "Porcentaje de tareas completadas respecto al total de tareas creadas en el período. Meta: ≥85%."
+        "description": "Tareas completadas entre las tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Meta: ≥85%."
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
@@ -1262,7 +1264,7 @@
       },
       "tasks_created": {
         "title": "Tareas creadas",
-        "description": "Total de tareas creadas en el período (sin eliminadas ni archivadas). Meta: 160."
+        "description": "Tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
       },
       "weighted_load": {
         "title": "Carga ponderada",

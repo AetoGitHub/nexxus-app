@@ -1146,10 +1146,12 @@
       },
       "tc": {
         "label": "Completion rate · TC",
-        "count": "{completed} of {total}"
+        "count": "{completed} of {total}",
+        "countEmpty": "—"
       },
       "created": {
-        "label": "Tasks created"
+        "label": "Tasks created",
+        "mine": "{assigned} assigned to me · {created} created by me"
       },
       "iur": {
         "label": "Urgent tasks resolved · IUR"
@@ -1246,7 +1248,7 @@
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Percentage of completed tasks out of all tasks created in the period. Goal: ≥85%."
+        "description": "Completed tasks out of the tasks created in the period (excluding archived, deleted and backlog). Goal: ≥85%."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
@@ -1262,7 +1264,7 @@
       },
       "tasks_created": {
         "title": "Tasks created",
-        "description": "Total tasks created in the period (excluding deleted and archived). Goal: 160."
+        "description": "Tasks created in the period (excluding archived, deleted and backlog). Below: how many are assigned to you and how many you created. Goal: 160."
       },
       "weighted_load": {
         "title": "Weighted load",

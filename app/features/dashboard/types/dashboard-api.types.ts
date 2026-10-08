@@ -45,10 +45,18 @@ export interface ApiTcKpi extends ApiKpi {
   total?: number
 }
 
+/** Tareas creadas trae el desglose del usuario en sesión; opcionales para no romper con un backend que aún no los manda. */
+export interface ApiTasksCreatedKpi extends ApiKpi {
+  /** De las tareas creadas en el periodo, las que tiene asignadas el usuario en sesión. */
+  assigned_to_me?: number
+  /** De las tareas creadas en el periodo, las que creó el usuario en sesión. */
+  created_by_me?: number
+}
+
 export interface ApiKpis {
   tct: ApiKpi
   tc: ApiTcKpi
-  tasks_created: ApiKpi
+  tasks_created: ApiTasksCreatedKpi
   tpr: ApiKpi
   ica: ApiKpi
   iur: ApiKpi & { unattended: number }
