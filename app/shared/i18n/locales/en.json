@@ -22,7 +22,8 @@
     "logout": "Sign out",
     "back": "Back",
     "noData": "No data",
-    "noUsers": "No users available"
+    "noUsers": "No users available",
+    "selectDateRange": "Select a date range"
   },
   "user": {
     "fallback": "User",
@@ -1091,6 +1092,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "periodFilter": {
+      "label": "Period filter",
+      "current": "Current period",
+      "currentTag": "current",
+      "disabledCustom": "Does not apply with a custom range",
+      "weekHint": "Pick any day: the whole week is selected, Sunday to Saturday.",
+      "weekRange": "Week of {range}",
+      "pickWeek": "Pick a day",
+      "pickMonth": "Pick a month",
+      "pickQuarter": "Pick a quarter",
+      "pickYear": "Pick a year",
+      "quarter": "Q{n} {year}"
+    },
     "toolbar": {
       "periodLabel": "Dashboard period",
       "compareLabel": "Comparison",
@@ -1104,8 +1118,7 @@
         "mine": "My tasks",
         "team": "Team"
       },
-      "dateStart": "From",
-      "dateEnd": "To",
+      "dateRange": "Date range",
       "rangeIncomplete": "Pick both dates to see the range.",
       "rangeInvalid": "The start date must be on or before the end date.",
       "projects": {
@@ -1394,8 +1407,7 @@
       "title": "Generate report",
       "description": "Calculates your company metrics for the chosen period.",
       "periodType": "Period type",
-      "start": "Start",
-      "end": "End",
+      "period": "Period",
       "force": "Recalculate if a report with that start already exists",
       "submit": "Generate",
       "cancel": "Cancel",

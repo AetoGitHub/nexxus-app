@@ -40,9 +40,16 @@ const projectIds = ref<number[]>([])
 // Rango personalizado: reemplaza al periodo en los bloques globales; solo se pide cuando está completo y es válido.
 const customActive = ref(false)
 const customRange = ref<DashboardDateRange>(defaultCustomRange())
-const validRange = computed(() =>
-  customActive.value && isValidDateRange(customRange.value.start, customRange.value.end) ? customRange.value : null,
-)
+// Periodo concreto del filtro por periodo (p. ej. una semana anterior): se pide como rango, igual que el personalizado.
+const periodRange = ref<DashboardDateRange | null>(null)
+// El campo del rango emite cada tecla (p. ej. al escribir un año): se espera a que termine de teclear antes de pedir datos.
+const settledCustomRange = refDebounced(customRange, 400)
+const validRange = computed(() => {
+  if (!customActive.value) {
+    return periodRange.value
+  }
+  return isValidDateRange(settledCustomRange.value.start, settledCustomRange.value.end) ? settledCustomRange.value : null
+})
 const globalEnabled = computed(() => !customActive.value || validRange.value != null)
 const myTasks = computed(() => scope.value === 'mine')
 // Rendimiento individual tiene su propio selector de periodo; solo cambia esa tabla.
@@ -70,6 +77,7 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
       v-model:period="period"
       v-model:custom-active="customActive"
       v-model:range="customRange"
+      v-model:period-range="periodRange"
       v-model:compare="compare"
       v-model:project-ids="projectIds"
     />

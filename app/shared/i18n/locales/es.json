@@ -22,7 +22,8 @@
     "logout": "Cerrar sesión",
     "back": "Volver",
     "noData": "Sin datos",
-    "noUsers": "Sin usuarios disponibles"
+    "noUsers": "Sin usuarios disponibles",
+    "selectDateRange": "Selecciona un rango de fechas"
   },
   "user": {
     "fallback": "Usuario",
@@ -1091,6 +1092,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "periodFilter": {
+      "label": "Filtro por periodo",
+      "current": "Periodo actual",
+      "currentTag": "actual",
+      "disabledCustom": "No aplica con un rango personalizado",
+      "weekHint": "Elige cualquier día: se marca la semana completa, de domingo a sábado.",
+      "weekRange": "Semana del {range}",
+      "pickWeek": "Elige un día",
+      "pickMonth": "Elige un mes",
+      "pickQuarter": "Elige un trimestre",
+      "pickYear": "Elige un año",
+      "quarter": "T{n} {year}"
+    },
     "toolbar": {
       "periodLabel": "Periodo del dashboard",
       "compareLabel": "Comparativa",
@@ -1104,8 +1118,7 @@
         "mine": "Mis tareas",
         "team": "Equipo"
       },
-      "dateStart": "Desde",
-      "dateEnd": "Hasta",
+      "dateRange": "Rango de fechas",
       "rangeIncomplete": "Elige las dos fechas para ver el rango.",
       "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
       "projects": {
@@ -1394,8 +1407,7 @@
       "title": "Generar reporte",
       "description": "Calcula las métricas de tu empresa para el período elegido.",
       "periodType": "Tipo de período",
-      "start": "Inicio",
-      "end": "Fin",
+      "period": "Periodo",
       "force": "Recalcular si ya existe un reporte con ese inicio",
       "submit": "Generar",
       "cancel": "Cancelar",

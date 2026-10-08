@@ -3,6 +3,7 @@ import type { SelectItem } from '@nuxt/ui'
 import type { CatalogueGroupMember, GroupFormState } from '~/features/task-settings/types/group.types'
 import { THEME_COLORS } from '~/features/projects/types/project.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
+import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 import { useProfileCompanyMemberships } from '~/features/company-memberships/composables/useProfileCompanyMemberships'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -42,9 +43,13 @@ const { items: profileItems, profilesQuery } = useProfiles(
   { no_group: true },
 )
 
+// Los usuarios ya asignados solo traen `username`: su nombre completo sale del catálogo de perfiles.
+const { profiles: allProfiles } = useProfiles(() => open.value)
+const fullNameById = computed(() => new Map(allProfiles.value.map(profile => [profile.id, profileFullName(profile)])))
+
 const assignedItems = computed<SelectItem[]>(() =>
   props.assignedUsers.map(user => ({
-    label: user.username,
+    label: fullNameById.value.get(user.id) ?? user.username,
     value: user.id,
   })),
 )

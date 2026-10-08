@@ -44,9 +44,13 @@ export function buildDashboardQuery(filters: DashboardQueryFilters): Record<stri
 
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/
 
+/** Años razonables: al escribir un año con el teclado el campo pasa por valores como 0002 o 0202, que no deben pedirse. */
+const MIN_DAY = '1990-01-01'
+const MAX_DAY = '2100-12-31'
+
 /** Rango completo (los dos días) y con el inicio antes o igual al fin; si no, el backend responde 400. */
 export function isValidDateRange(start: string, end: string): boolean {
-  return DAY_KEY.test(start) && DAY_KEY.test(end) && start <= end
+  return DAY_KEY.test(start) && DAY_KEY.test(end) && start <= end && start >= MIN_DAY && end <= MAX_DAY
 }
 
 /** Rango inicial al abrir «Personalizado»: los últimos 7 días contando hoy (hora de CDMX). */
