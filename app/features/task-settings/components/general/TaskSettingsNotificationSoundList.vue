@@ -8,6 +8,8 @@ const {
   sounds,
   selectedSoundId,
   playingSoundId,
+  soundMuted,
+  setSoundMuted,
   setNotificationSound,
   toggleNotificationSoundPreview,
 } = useNotificationSound()
@@ -35,7 +37,26 @@ function selectSound(id: NotificationSoundId) {
       {{ t('taskSettings.general.notificationSound.help') }}
     </div>
 
-    <div class="bg-card border border-border rounded-xl divide-y divide-border">
+    <div class="bg-card border border-border rounded-xl px-3 py-2.5 flex items-center gap-3">
+      <div class="min-w-0 flex-1">
+        <div class="text-[13px] font-medium text-foreground">
+          {{ t('taskSettings.general.notificationSound.muteLabel') }}
+        </div>
+        <div class="text-[11px] text-muted-foreground">
+          {{ t('taskSettings.general.notificationSound.muteDescription') }}
+        </div>
+      </div>
+      <USwitch
+        :model-value="soundMuted"
+        :aria-label="t('taskSettings.general.notificationSound.muteLabel')"
+        @update:model-value="setSoundMuted(Boolean($event))"
+      />
+    </div>
+
+    <div
+      class="bg-card border border-border rounded-xl divide-y divide-border"
+      :class="soundMuted ? 'opacity-60' : ''"
+    >
       <div
         v-for="sound in sounds"
         :key="sound.id"

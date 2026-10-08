@@ -77,16 +77,17 @@ export function useDashboardLoadDistribution(filters: Omit<DashboardFilters, 'co
 }
 
 /**
- * Rendimiento individual: su periodo es propio (el selector de la tabla) y no sigue al rango personalizado; la
- * comparativa, «Mis tareas» y los proyectos sí son los globales.
+ * Rendimiento individual: sigue los mismos filtros globales (periodo o rango, comparativa, «Mis tareas» y proyectos);
+ * la carga pendiente solo cuenta las tareas creadas dentro del rango.
  */
-export function useDashboardPeople(filters: Omit<DashboardFilters, 'range' | 'enabled'>) {
+export function useDashboardPeople(filters: DashboardFilters) {
   return useDashboardBlock<ApiPeopleResponse>('people', () => buildDashboardQuery({
     period: toValue(filters.period),
     compare: toValue(filters.compare),
+    range: toValue(filters.range),
     myTasks: toValue(filters.myTasks),
     projectIds: toValue(filters.projectIds),
-  }))
+  }), filters.enabled)
 }
 
 /** Rendimiento por proyecto. Con el filtro de proyectos solo regresa esas filas. */

@@ -49,6 +49,13 @@ const metric = computed<MetricKey>(() => (props.kpi.key === 'created' ? 'tasks_c
       />
     </div>
 
+    <p
+      v-if="kpi.detail"
+      class="-mt-1 font-mono text-[11px] tabular-nums text-muted-foreground"
+    >
+      {{ t(kpi.detail.labelKey, kpi.detail.params) }}
+    </p>
+
     <DashboardTrendLine
       v-if="kpi.series.length"
       :series="kpi.series"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DashboardPeriodPicker from '~/features/dashboard/components/DashboardPeriodPicker.vue'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
 import type {
   DashboardCompare,
@@ -17,6 +18,8 @@ const period = defineModel<DashboardPeriod>('period', { required: true })
 /** `true` cuando se usa el rango personalizado en lugar de uno de los periodos. */
 const customActive = defineModel<boolean>('customActive', { required: true })
 const range = defineModel<DashboardDateRange>('range', { required: true })
+/** Periodo concreto elegido con el filtro por periodo (una semana, mes, trimestre o año anterior); `null` = el actual. */
+const periodRange = defineModel<DashboardDateRange | null>('periodRange', { required: true })
 const compare = defineModel<DashboardCompare>('compare', { required: true })
 const projectIds = defineModel<number[]>('projectIds', { required: true })
 
@@ -46,20 +49,6 @@ const projectsLabel = computed(() => {
   return t('dashboard.toolbar.projects.count', { count })
 })
 
-const start = computed({
-  get: () => range.value.start,
-  set: (value: string) => {
-    range.value = { ...range.value, start: value }
-  },
-})
-
-const end = computed({
-  get: () => range.value.end,
-  set: (value: string) => {
-    range.value = { ...range.value, end: value }
-  },
-})
-
 /** Mensaje mientras el rango está incompleto o al revés: no se pide nada hasta que sea válido. */
 const rangeError = computed(() => {
   if (!customActive.value || isValidDateRange(range.value.start, range.value.end)) {
@@ -72,7 +61,14 @@ const rangeError = computed(() => {
 
 function selectPeriod(item: DashboardPeriod) {
   customActive.value = false
+  // Otro tipo de periodo: el elegido antes (p. ej. una semana) ya no corresponde.
+  periodRange.value = null
   period.value = item
+}
+
+function selectCustom() {
+  periodRange.value = null
+  customActive.value = true
 }
 </script>
 
@@ -124,7 +120,7 @@ function selectPeriod(item: DashboardPeriod) {
             ? 'bg-card text-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground'"
           :aria-pressed="customActive"
-          @click="customActive = true"
+          @click="selectCustom"
         >
           {{ t('dashboard.periods.custom') }}
         </button>
@@ -155,30 +151,29 @@ function selectPeriod(item: DashboardPeriod) {
           {{ projectsLabel }}
         </span>
       </USelectMenu>
+
+      <div class="ml-auto">
+        <DashboardPeriodPicker
+          v-model:range="periodRange"
+          :period="period"
+          :disabled="customActive"
+        />
+      </div>
     </div>
 
     <div
       v-if="customActive"
       class="flex flex-wrap items-center gap-2"
     >
-      <label class="flex items-center gap-2 text-xs text-muted-foreground">
-        {{ t('dashboard.toolbar.dateStart') }}
-        <UInput
-          v-model="start"
-          type="date"
+      <div class="flex items-center gap-2 text-xs text-muted-foreground">
+        {{ t('dashboard.toolbar.dateRange') }}
+        <AppDateRangePicker
+          v-model="range"
           size="sm"
-          :max="end || undefined"
+          :week-starts-on="0"
+          :aria-label="t('dashboard.toolbar.dateRange')"
         />
-      </label>
-      <label class="flex items-center gap-2 text-xs text-muted-foreground">
-        {{ t('dashboard.toolbar.dateEnd') }}
-        <UInput
-          v-model="end"
-          type="date"
-          size="sm"
-          :min="start || undefined"
-        />
-      </label>
+      </div>
       <p
         v-if="rangeError"
         class="text-xs text-error"

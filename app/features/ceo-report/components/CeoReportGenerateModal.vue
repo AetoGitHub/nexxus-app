@@ -41,6 +41,15 @@ watch(open, (isOpen) => {
   }
 })
 
+/** Los dos días del periodo como un solo rango para el campo. */
+const periodRange = computed({
+  get: () => ({ start: state.period_start, end: state.period_end }),
+  set: (value: { start: string, end: string }) => {
+    state.period_start = value.start
+    state.period_end = value.end
+  },
+})
+
 const hasRangeError = computed(() =>
   !!state.period_start && !!state.period_end && state.period_end < state.period_start,
 )
@@ -80,25 +89,15 @@ function onSubmit() {
           />
         </UFormField>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField :label="t('ceoReport.generate.start')">
-            <UInput
-              v-model="state.period_start"
-              type="date"
-              class="w-full"
-            />
-          </UFormField>
-          <UFormField
-            :label="t('ceoReport.generate.end')"
-            :error="hasRangeError ? t('ceoReport.generate.invalidRange') : undefined"
-          >
-            <UInput
-              v-model="state.period_end"
-              type="date"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
+        <UFormField
+          :label="t('ceoReport.generate.period')"
+          :error="hasRangeError ? t('ceoReport.generate.invalidRange') : undefined"
+        >
+          <AppDateRangePicker
+            v-model="periodRange"
+            class="w-full"
+          />
+        </UFormField>
 
         <UCheckbox
           v-model="state.force"

@@ -22,11 +22,29 @@
     "logout": "Sign out",
     "back": "Back",
     "noData": "No data",
-    "noUsers": "No users available"
+    "noUsers": "No users available",
+    "selectDateRange": "Select a date range"
   },
   "user": {
     "fallback": "User",
-    "roleManager": "Manager"
+    "roleManager": "Manager",
+    "viewProfile": "View profile",
+    "profile": {
+      "title": "Profile",
+      "description": "Your account details.",
+      "username": "Username",
+      "email": "Email",
+      "companies": "Companies",
+      "managedGroups": "Groups you manage",
+      "memberGroups": "Groups",
+      "projects": "Projects",
+      "company": "Company",
+      "organization": "Organization",
+      "superuser": "Superuser",
+      "copyEmail": "Copy email",
+      "copied": "Email copied",
+      "copyError": "Could not copy to the clipboard"
+    }
   },
   "realtime": {
     "connected": "Connected in real time",
@@ -1091,6 +1109,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "periodFilter": {
+      "label": "Period filter",
+      "current": "Current period",
+      "currentTag": "current",
+      "disabledCustom": "Does not apply with a custom range",
+      "weekHint": "Pick any day: the whole week is selected, Sunday to Saturday.",
+      "weekRange": "Week of {range}",
+      "pickWeek": "Pick a day",
+      "pickMonth": "Pick a month",
+      "pickQuarter": "Pick a quarter",
+      "pickYear": "Pick a year",
+      "quarter": "Q{n} {year}"
+    },
     "toolbar": {
       "periodLabel": "Dashboard period",
       "compareLabel": "Comparison",
@@ -1104,8 +1135,7 @@
         "mine": "My tasks",
         "team": "Team"
       },
-      "dateStart": "From",
-      "dateEnd": "To",
+      "dateRange": "Date range",
       "rangeIncomplete": "Pick both dates to see the range.",
       "rangeInvalid": "The start date must be on or before the end date.",
       "projects": {
@@ -1120,10 +1150,13 @@
         "label": "On-time completion · TCT"
       },
       "tc": {
-        "label": "Completion rate · TC"
+        "label": "Completion rate · TC",
+        "count": "{completed} of {total}",
+        "countEmpty": "—"
       },
       "created": {
-        "label": "Tasks created"
+        "label": "Tasks created",
+        "mine": "{assigned} assigned to me · {created} created by me"
       },
       "iur": {
         "label": "Urgent tasks resolved · IUR"
@@ -1163,6 +1196,7 @@
       "periodLabel": "Performance period",
       "columns": {
         "collaborator": "Collaborator",
+        "completed": "Completed",
         "weightedLoad": "Weighted load",
         "pendingLoad": "Pending load",
         "distribution": "Distribution",
@@ -1220,7 +1254,7 @@
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Percentage of completed tasks out of all tasks created in the period. Goal: ≥85%."
+        "description": "Completed tasks out of the tasks created in the period (excluding archived, deleted and backlog). Goal: ≥85%."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
@@ -1236,7 +1270,7 @@
       },
       "tasks_created": {
         "title": "Tasks created",
-        "description": "Total tasks created in the period (excluding deleted and archived). Goal: 160."
+        "description": "Tasks created in the period (excluding archived, deleted and backlog). Below: how many are assigned to you and how many you created. Goal: 160."
       },
       "weighted_load": {
         "title": "Weighted load",
@@ -1244,7 +1278,7 @@
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Points from open tasks currently assigned vs the person's capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Points from the period's tasks that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
         "title": "Effort distribution",
@@ -1254,13 +1288,17 @@
         "title": "Trend",
         "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
       },
+      "people_completed": {
+        "title": "Completed",
+        "description": "Tasks assigned to the person in the period: completed / assigned (excluding archived, deleted and backlog)."
+      },
       "completed": {
         "title": "Completed",
         "description": "Completed tasks in the project vs all tasks created in the period."
       },
       "active": {
         "title": "Active",
-        "description": "Open tasks in the project (pending, in progress, in review or reopened)."
+        "description": "Period tasks that are still open in the project (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",
@@ -1394,8 +1432,7 @@
       "title": "Generate report",
       "description": "Calculates your company metrics for the chosen period.",
       "periodType": "Period type",
-      "start": "Start",
-      "end": "End",
+      "period": "Period",
       "force": "Recalculate if a report with that start already exists",
       "submit": "Generate",
       "cancel": "Cancel",
@@ -1631,6 +1668,8 @@
         "stop": "Stop sound",
         "savedTitle": "Sound updated",
         "savedDescription": "This tone will be used for notifications.",
+        "muteLabel": "Mute notifications",
+        "muteDescription": "Nothing plays when you receive notifications in this browser. You still see them in the bell.",
         "options": {
           "chime": "Classic",
           "pop": "Pop",

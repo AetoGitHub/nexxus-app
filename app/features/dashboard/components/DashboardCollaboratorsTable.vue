@@ -4,7 +4,7 @@ import DashboardDonut from '~/features/dashboard/components/shared/DashboardDonu
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
 import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiDirection, ApiPeopleResponse, ApiPersonRow } from '~/features/dashboard/types/dashboard-api.types'
-import type { DashboardPeriod, DashboardTone, MetricKey } from '~/features/dashboard/types/dashboard.types'
+import type { DashboardTone, MetricKey } from '~/features/dashboard/types/dashboard.types'
 import { exportPeopleToExcel } from '~/features/dashboard/utils/dashboard-excel.util'
 import {
   LOAD_STATUS_TONE,
@@ -31,13 +31,8 @@ defineEmits<{
   retry: []
 }>()
 
-/** Periodo propio de esta tabla: no cambia el de los demás bloques. */
-const period = defineModel<DashboardPeriod>('period', { required: true })
-
 const { t } = useI18n()
 const toast = useToast()
-
-const periods: DashboardPeriod[] = ['week', 'month', 'quarter', 'year']
 
 /** Meta de carga productiva: marca la línea roja de cada barra de carga ponderada. */
 const LOAD_GOAL = 85
@@ -50,6 +45,7 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr' },
+  { key: 'completed', label: t('dashboard.individual.columns.completed'), align: 'text-left', metric: 'people_completed' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load' },
   { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
@@ -65,6 +61,11 @@ function metricsOf(row: ApiPersonRow): { key: string, text: string, tone: Dashbo
     { key: 'iur', text: formatPercent(row.iur), tone: rangeOf(row.iur) },
     { key: 'tpr', text: formatHours(row.tpr), tone: 'neutral' },
   ]
+}
+
+/** Avance de completadas; sin tareas en el periodo la barra queda vacía (evita dividir entre 0). */
+function completedWidth(completed: number, total: number): string {
+  return total > 0 ? `${Math.min((completed / total) * 100, 100)}%` : '0%'
 }
 
 const TREND_ICONS: Record<NonNullable<ApiDirection>, string> = {
@@ -120,25 +121,6 @@ async function exportExcel() {
           :disabled="rows.length === 0"
           @click="exportExcel"
         />
-        <div
-          class="inline-flex rounded-md bg-muted p-0.5"
-          role="group"
-          :aria-label="t('dashboard.individual.periodLabel')"
-        >
-          <button
-            v-for="item in periods"
-            :key="item"
-            type="button"
-            class="rounded px-2.5 py-1 text-[11px] font-medium transition-colors"
-            :class="period === item
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'"
-            :aria-pressed="period === item"
-            @click="period = item"
-          >
-            {{ t(`dashboard.periods.${item}`) }}
-          </button>
-        </div>
       </div>
     </header>
 
@@ -160,7 +142,7 @@ async function exportExcel() {
       </template>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[980px] border-collapse text-sm">
+        <table class="w-full min-w-[1080px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th
@@ -199,6 +181,7 @@ async function exportExcel() {
                   <UserAvatar
                     :user-id="row.id"
                     :initials="getInitials(row.name)"
+                    :name="row.name"
                     :size="28"
                     :font-size="11"
                     :fallback-color="avatarColor(row.id)"
@@ -227,6 +210,24 @@ async function exportExcel() {
                 >
                   {{ metric.text }}
                 </span>
+              </td>
+
+              <td class="px-2 py-3">
+                <div class="h-1 w-20 rounded-full bg-muted">
+                  <div
+                    class="h-full rounded-full"
+                    :style="{
+                      width: completedWidth(row.completed, row.total),
+                      backgroundColor: avatarColor(row.id),
+                    }"
+                  />
+                </div>
+                <p
+                  class="mt-0.5 font-mono text-[10px]"
+                  :class="row.total > 0 ? 'text-foreground' : 'text-muted-foreground'"
+                >
+                  {{ row.completed }}/{{ row.total }}
+                </p>
               </td>
 
               <td class="px-2 py-3">

@@ -676,7 +676,7 @@ onUnmounted(() => {
               :size="28"
               :font-size="11"
               :fallback-color="resolveAvatarColor(message.profile)"
-              :title="message.profile_username"
+              :name="message.profile_username"
             />
             <span
               v-else

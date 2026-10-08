@@ -15,6 +15,21 @@ export function useProfileInitialsCatalog() {
   return useState<Record<number, string>>('profile-initials', () => ({}))
 }
 
+/** Catálogo `id de usuario -> nombre completo` (nombre y apellido). Solo guarda a quien tiene alguno de los dos. */
+export function useProfileNamesCatalog() {
+  return useState<Record<number, string>>('profile-names', () => ({}))
+}
+
+/** Nombre completo de un usuario (nombre + apellido) o `null` si aún no se conoce o no tiene ni nombre ni apellido. */
+export function useProfileFullName(userId: MaybeRefOrGetter<number | null | undefined>) {
+  const catalog = useProfileNamesCatalog()
+
+  return computed<string | null>(() => {
+    const id = toValue(userId)
+    return id == null ? null : (catalog.value[id] ?? null)
+  })
+}
+
 /** Iniciales reales de un usuario (p. ej. `GF`) o `null` si aún no se conocen o no tiene nombre. */
 export function useProfileInitials(userId: MaybeRefOrGetter<number | null | undefined>) {
   const catalog = useProfileInitialsCatalog()

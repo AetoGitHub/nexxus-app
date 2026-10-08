@@ -31,7 +31,18 @@ const realtimeDot = computed(() => {
   }
 })
 
+const profileOpen = ref(false)
+
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
+  [
+    {
+      label: t('user.viewProfile'),
+      icon: 'i-lucide-user-round',
+      onSelect: () => {
+        profileOpen.value = true
+      },
+    },
+  ],
   [
     {
       label: t('settings.language.title'),
@@ -135,7 +146,6 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
         >
           <button
             type="button"
-            :title="displayName"
             class="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted transition-colors"
           >
             <span class="relative shrink-0">
@@ -167,6 +177,7 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
             />
           </button>
         </UDropdownMenu>
+        <UserProfileModal v-model:open="profileOpen" />
       </div>
     </aside>
   </div>

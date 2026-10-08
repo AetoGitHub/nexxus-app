@@ -22,11 +22,29 @@
     "logout": "Cerrar sesión",
     "back": "Volver",
     "noData": "Sin datos",
-    "noUsers": "Sin usuarios disponibles"
+    "noUsers": "Sin usuarios disponibles",
+    "selectDateRange": "Selecciona un rango de fechas"
   },
   "user": {
     "fallback": "Usuario",
-    "roleManager": "Manager"
+    "roleManager": "Manager",
+    "viewProfile": "Ver perfil",
+    "profile": {
+      "title": "Perfil",
+      "description": "Datos de tu cuenta.",
+      "username": "Usuario",
+      "email": "Correo",
+      "companies": "Empresas",
+      "managedGroups": "Grupos que administra",
+      "memberGroups": "Grupos",
+      "projects": "Proyectos",
+      "company": "Empresa",
+      "organization": "Organización",
+      "superuser": "Superusuario",
+      "copyEmail": "Copiar correo",
+      "copied": "Correo copiado",
+      "copyError": "No se pudo copiar al portapapeles"
+    }
   },
   "realtime": {
     "connected": "Conectado en tiempo real",
@@ -1091,6 +1109,19 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "periodFilter": {
+      "label": "Filtro por periodo",
+      "current": "Periodo actual",
+      "currentTag": "actual",
+      "disabledCustom": "No aplica con un rango personalizado",
+      "weekHint": "Elige cualquier día: se marca la semana completa, de domingo a sábado.",
+      "weekRange": "Semana del {range}",
+      "pickWeek": "Elige un día",
+      "pickMonth": "Elige un mes",
+      "pickQuarter": "Elige un trimestre",
+      "pickYear": "Elige un año",
+      "quarter": "T{n} {year}"
+    },
     "toolbar": {
       "periodLabel": "Periodo del dashboard",
       "compareLabel": "Comparativa",
@@ -1104,8 +1135,7 @@
         "mine": "Mis tareas",
         "team": "Equipo"
       },
-      "dateStart": "Desde",
-      "dateEnd": "Hasta",
+      "dateRange": "Rango de fechas",
       "rangeIncomplete": "Elige las dos fechas para ver el rango.",
       "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
       "projects": {
@@ -1120,10 +1150,13 @@
         "label": "Cumplimiento en tiempo · TCT"
       },
       "tc": {
-        "label": "Tasa de completación · TC"
+        "label": "Tasa de completación · TC",
+        "count": "{completed} de {total}",
+        "countEmpty": "—"
       },
       "created": {
-        "label": "Tareas creadas"
+        "label": "Tareas creadas",
+        "mine": "{assigned} asignadas a mí · {created} creadas por mí"
       },
       "iur": {
         "label": "Índice urgencias resueltas · IUR"
@@ -1163,6 +1196,7 @@
       "periodLabel": "Periodo del rendimiento",
       "columns": {
         "collaborator": "Colaborador",
+        "completed": "Completadas",
         "weightedLoad": "Carga ponderada",
         "pendingLoad": "Carga pendiente",
         "distribution": "Distribución",
@@ -1220,7 +1254,7 @@
       },
       "tc": {
         "title": "TC — Tasa de Cumplimiento",
-        "description": "Porcentaje de tareas completadas respecto al total de tareas creadas en el período. Meta: ≥85%."
+        "description": "Tareas completadas entre las tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Meta: ≥85%."
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
@@ -1236,7 +1270,7 @@
       },
       "tasks_created": {
         "title": "Tareas creadas",
-        "description": "Total de tareas creadas en el período (sin eliminadas ni archivadas). Meta: 160."
+        "description": "Tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
       },
       "weighted_load": {
         "title": "Carga ponderada",
@@ -1244,7 +1278,7 @@
       },
       "pending_load": {
         "title": "Carga pendiente",
-        "description": "Puntos de tareas abiertas asignadas hoy contra la capacidad de la persona. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+        "description": "Puntos de las tareas del periodo que siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
         "title": "Distribución por esfuerzo",
@@ -1254,13 +1288,17 @@
         "title": "Tendencia",
         "description": "Evolución del TCT dentro del período y la flecha indica si subió o bajó contra el período de comparación."
       },
+      "people_completed": {
+        "title": "Completadas",
+        "description": "Tareas asignadas a la persona en el periodo: completadas / asignadas (sin archivadas, eliminadas ni backlog)."
+      },
       "completed": {
         "title": "Completadas",
         "description": "Tareas completadas del proyecto contra el total de tareas creadas en el período."
       },
       "active": {
         "title": "Activas",
-        "description": "Tareas abiertas del proyecto (pendientes, en proceso, en revisión o reabiertas)."
+        "description": "Tareas del periodo que siguen abiertas en el proyecto (pendientes, en proceso, en revisión o reabiertas)."
       },
       "overdue": {
         "title": "Vencidas",
@@ -1394,8 +1432,7 @@
       "title": "Generar reporte",
       "description": "Calcula las métricas de tu empresa para el período elegido.",
       "periodType": "Tipo de período",
-      "start": "Inicio",
-      "end": "Fin",
+      "period": "Periodo",
       "force": "Recalcular si ya existe un reporte con ese inicio",
       "submit": "Generar",
       "cancel": "Cancelar",
@@ -1631,6 +1668,8 @@
         "stop": "Detener sonido",
         "savedTitle": "Sonido actualizado",
         "savedDescription": "Este tono se usará en las notificaciones.",
+        "muteLabel": "Silenciar notificaciones",
+        "muteDescription": "No suena nada al recibir notificaciones en este navegador. Sigues viéndolas en la campana.",
         "options": {
           "chime": "Clásico",
           "pop": "Pop",

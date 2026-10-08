@@ -22,7 +22,18 @@ const realtimeDot = computed(() => {
   }
 })
 
+const profileOpen = ref(false)
+
 const userMenuItems = computed<DropdownMenuItem[][]>(() => [
+  [
+    {
+      label: t('user.viewProfile'),
+      icon: 'i-lucide-user-round',
+      onSelect: () => {
+        profileOpen.value = true
+      },
+    },
+  ],
   [
     {
       label: t('settings.language.title'),
@@ -110,7 +121,6 @@ function backToHub() {
       >
         <button
           type="button"
-          :title="displayName"
           class="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted transition-colors"
           :class="collapsed ? 'justify-center' : ''"
         >
@@ -151,6 +161,7 @@ function backToHub() {
           </template>
         </button>
       </UDropdownMenu>
+      <UserProfileModal v-model:open="profileOpen" />
     </div>
   </aside>
 </template>

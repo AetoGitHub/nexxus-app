@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { AuthProfile } from '~/features/auth/types/profile.types'
+import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 
 export interface UseProfilesParams {
   /** Solo perfiles sin grupo asignado. */
@@ -10,7 +11,7 @@ export interface UseProfilesParams {
   organization?: number
 }
 
-/** Catálogo de perfiles para selectores (miembros de tema, grupos, etc.). */
+/** Catálogo de perfiles para selectores (miembros de proyectos y grupos, etc.). Cada item muestra el nombre completo, no el username. */
 export function useProfiles(
   enabled: MaybeRefOrGetter<boolean> = true,
   params: MaybeRefOrGetter<UseProfilesParams> = {},
@@ -42,7 +43,7 @@ export function useProfiles(
 
   const items = computed(() =>
     profiles.value.map(profile => ({
-      label: profile.username,
+      label: profileFullName(profile),
       value: profile.id,
     })),
   )
