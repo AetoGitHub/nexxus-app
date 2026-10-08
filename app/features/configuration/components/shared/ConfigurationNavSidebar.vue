@@ -139,12 +139,13 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
             class="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted transition-colors"
           >
             <span class="relative shrink-0">
-              <span
-                class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none w-8 h-8 text-[12.8px] leading-none"
-                style="background-color: #f59e0b"
-              >
-                {{ initials }}
-              </span>
+              <UserAvatar
+                :user-id="user?.id"
+                :initials="initials"
+                :size="32"
+                :font-size="12.8"
+                fallback-color="#f59e0b"
+              />
             </span>
             <div class="flex-1 min-w-0 text-left">
               <div class="text-[13px] font-semibold text-foreground truncate">

@@ -14,10 +14,15 @@ const props = withDefaults(
     /** Proyecto que ya está elegido en el formulario; la IA solo cambia de proyecto si nombran otro. */
     defaultProjectId?: number | null
     disabled?: boolean
+    /** Solo el ícono del micrófono (el atajo junto a «Nueva tarea»); grabando muestra además el cronómetro. */
+    iconOnly?: boolean
+    size?: 'xs' | 'sm'
   }>(),
   {
     defaultProjectId: null,
     disabled: false,
+    iconOnly: false,
+    size: 'xs',
   },
 )
 
@@ -77,7 +82,10 @@ watch(() => props.disabled, (disabled) => {
   <UButton
     v-if="isSupported"
     type="button"
-    size="xs"
+    :size="size"
+    :square="iconOnly && !isRecording"
+    :class="iconOnly ? 'h-8 shrink-0' : ''"
+    :title="isRecording ? t('tasks.form.voice.stop') : t('tasks.form.voice.start')"
     :color="isRecording ? 'error' : 'neutral'"
     :variant="isRecording ? 'soft' : 'ghost'"
     :icon="isRecording ? 'i-lucide-square' : 'i-lucide-mic'"
@@ -95,9 +103,11 @@ watch(() => props.disabled, (disabled) => {
       </span>
     </template>
     <template v-else-if="isProcessing">
-      {{ t('tasks.form.voice.processing') }}
+      <template v-if="!iconOnly">
+        {{ t('tasks.form.voice.processing') }}
+      </template>
     </template>
-    <template v-else>
+    <template v-else-if="!iconOnly">
       {{ t('tasks.form.voice.label') }}
     </template>
   </UButton>

@@ -604,6 +604,8 @@
       "reconnecting": "Reconectando",
       "offline": "Sin conexión",
       "connectionErrorTitle": "No se pudo conectar al chat en tiempo real",
+      "accessLostTitle": "Ya no tienes acceso a esta tarea",
+      "accessLostDescription": "Tu acceso cambió, así que se cerró el panel.",
       "archivedNotice": "Esta tarea está archivada. No se pueden enviar mensajes.",
       "attachments": {
         "add": "Adjuntar archivo",
@@ -910,6 +912,23 @@
         "corporateEmail": "Ej. juan{'@'}empresa.com",
         "whatsapp": "Ej. +521234567890"
       },
+      "appearance": {
+        "label": "Foto y color",
+        "photo": "Foto",
+        "upload": "Subir foto",
+        "change": "Cambiar foto",
+        "remove": "Quitar foto",
+        "photoHint": "Imagen de hasta {max} MB. Se sube al guardar.",
+        "color": "Color de fondo",
+        "customColor": "Elegir otro color",
+        "noColor": "Sin color",
+        "colorHint": "Se usa cuando el usuario no tiene foto; sin ninguno se muestran sus iniciales.",
+        "invalidType": "El archivo debe ser una imagen.",
+        "tooLarge": "La imagen pesa más de {max} MB.",
+        "uploadErrorTitle": "No se pudo subir la foto",
+        "urlTooLong": "La dirección de la imagen es demasiado larga.",
+        "previewLabel": "Vista previa del círculo del usuario"
+      },
       "validation": {
         "usernameRequired": "El nombre de usuario es obligatorio.",
         "passwordRequired": "La contraseña es obligatoria.",
@@ -1079,6 +1098,21 @@
         "none": "Sin comparar",
         "previous": "vs periodo anterior",
         "last_year": "vs mismo periodo año anterior"
+      },
+      "scopeLabel": "Alcance del dashboard",
+      "scope": {
+        "mine": "Mis tareas",
+        "team": "Equipo"
+      },
+      "dateStart": "Desde",
+      "dateEnd": "Hasta",
+      "rangeIncomplete": "Elige las dos fechas para ver el rango.",
+      "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
+      "projects": {
+        "label": "Proyectos",
+        "all": "Todos los proyectos",
+        "count": "{count} proyectos",
+        "search": "Buscar proyecto…"
       }
     },
     "kpis": {
@@ -1120,7 +1154,8 @@
       "week": "Semana",
       "month": "Mes",
       "quarter": "Trimestre",
-      "year": "Año"
+      "year": "Año",
+      "custom": "Personalizado"
     },
     "individual": {
       "title": "Rendimiento individual",
@@ -1151,9 +1186,9 @@
       }
     },
     "topics": {
-      "title": "Rendimiento por tema",
+      "title": "Rendimiento por proyecto",
       "columns": {
-        "topic": "Tema",
+        "topic": "Proyecto",
         "completed": "Completadas",
         "active": "Activas",
         "overdue": "Vencidas",
@@ -1162,7 +1197,8 @@
         "trend": "Tendencia"
       },
       "maxDays": "máx {days}d",
-      "empty": "No hay temas para mostrar en este periodo."
+      "moreMembers": "{count} miembros más",
+      "empty": "No hay proyectos para mostrar en este periodo."
     },
     "hero": {
       "goal": "meta ≥{goal}%"
@@ -1220,11 +1256,11 @@
       },
       "completed": {
         "title": "Completadas",
-        "description": "Tareas completadas del tema contra el total de tareas creadas en el período."
+        "description": "Tareas completadas del proyecto contra el total de tareas creadas en el período."
       },
       "active": {
         "title": "Activas",
-        "description": "Tareas abiertas del tema (pendientes, en proceso, en revisión o reabiertas)."
+        "description": "Tareas abiertas del proyecto (pendientes, en proceso, en revisión o reabiertas)."
       },
       "overdue": {
         "title": "Vencidas",
@@ -1236,7 +1272,7 @@
       },
       "members": {
         "title": "Miembros",
-        "description": "Personas con tareas asignadas en este tema."
+        "description": "Personas con tareas asignadas en este proyecto."
       },
       "load_distribution": {
         "title": "Distribución de carga productiva",

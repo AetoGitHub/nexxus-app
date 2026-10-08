@@ -1,3 +1,5 @@
+import { USER_IMAGE_URL_MAX_LENGTH, normalizeUserColor } from '~/features/users/utils/user-appearance.util'
+
 interface UserSchemaMessages {
   usernameRequired: string
   passwordRequired: string
@@ -41,6 +43,10 @@ function strongPassword(messages: Pick<
 const optionalEmail = (message: string) =>
   z.string().trim().email(message).or(z.literal(''))
 
+/** Fondo del círculo: color `#rrggbb` o vacío, y URL de la foto (la sube el formulario) o vacía. */
+const backgroundColor = z.string().trim().transform(normalizeUserColor)
+const backgroundImage = z.string().trim().max(USER_IMAGE_URL_MAX_LENGTH)
+
 const requiredId = (message: string) =>
   z.number({ error: message }).int().positive(message)
 
@@ -57,6 +63,8 @@ export function createUserSchema(messages: UserSchemaMessages) {
     email: optionalEmail(messages.emailInvalid),
     corporate_email: optionalEmail(messages.corporateEmailInvalid),
     whatsapp: z.string().trim(),
+    background_color: backgroundColor,
+    background_image: backgroundImage,
   })
 }
 
@@ -72,6 +80,8 @@ export function createUpdateUserSchema(
     email: optionalEmail(messages.emailInvalid),
     corporate_email: optionalEmail(messages.corporateEmailInvalid),
     whatsapp: z.string().trim(),
+    background_color: backgroundColor,
+    background_image: backgroundImage,
   })
 }
 

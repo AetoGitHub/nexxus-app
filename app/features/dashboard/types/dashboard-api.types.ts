@@ -1,6 +1,7 @@
 /** Respuestas de `GET /api/dashboard/*` (kpis, load_distribution, people, projects). */
 
-export type DashboardApiPeriod = 'week' | 'month' | 'quarter' | 'year'
+/** `custom` solo viene en las respuestas: es el rango personalizado (`date_start`/`date_end`). */
+export type DashboardApiPeriod = 'week' | 'month' | 'quarter' | 'year' | 'custom'
 
 export type DashboardApiCompare = 'none' | 'previous' | 'last_year'
 

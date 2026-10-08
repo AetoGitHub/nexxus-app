@@ -8,6 +8,7 @@ export function useAuth() {
   const { public: { apiAuthPath, apiAuthLogoutPath } } = useRuntimeConfig()
 
   const session = useAuthSession()
+  const sessionClosing = useSessionClosing()
 
   const user = computed(() => session.value?.user ?? null)
   const organization = computed(() => session.value?.organization ?? null)
@@ -41,6 +42,9 @@ export function useAuth() {
   }
 
   async function logout() {
+    // Antes de llamar al backend: los sockets propios se cierran con 1000 y el 4403 que el backend manda al cerrar
+    // sesión no se confunde con una revocación de acceso.
+    sessionClosing.value = true
     try {
       if (token.value) {
         // Antes del logout: después el token ya no sirve. Si falla, el cierre de sesión continúa igual.
@@ -57,6 +61,7 @@ export function useAuth() {
       // Si el backend falla, igual cerramos la sesión local.
     } finally {
       session.value = null
+      sessionClosing.value = false
       await navigateTo('/login')
       // Ya sin pantallas montadas: evita que el siguiente usuario vea datos en caché de esta sesión.
       useNuxtApp().$queryClient.clear()

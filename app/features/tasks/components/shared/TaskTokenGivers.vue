@@ -21,9 +21,13 @@ const { t } = useI18n()
         :key="giver.id ?? giver.username ?? 'unknown'"
         class="flex items-center gap-2.5 rounded-md px-2 py-1.5"
       >
-        <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-aeto-teal/15 text-[11px] font-semibold text-aeto-teal">
-          {{ personInitials(tokenGiverName(giver, t('tasks.tokens.unknownUser'))) }}
-        </span>
+        <UserAvatar
+          :user-id="giver.id"
+          :initials="personInitials(tokenGiverName(giver, t('tasks.tokens.unknownUser')))"
+          :size="28"
+          :font-size="11"
+          fallback-color="#28ceab"
+        />
         <span class="min-w-0 flex-1 truncate text-sm text-foreground">
           {{ tokenGiverName(giver, t('tasks.tokens.unknownUser')) }}
         </span>

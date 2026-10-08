@@ -3,6 +3,7 @@ import TaskCalendarPhaseFilter from '~/features/tasks/components/workspace/TaskC
 import TaskGroupByFilter from '~/features/tasks/components/workspace/TaskGroupByFilter.vue'
 import TaskListFilters from '~/features/tasks/components/workspace/TaskListFilters.vue'
 import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSlideover.vue'
+import TaskVoiceQuickButton from '~/features/tasks/components/workspace/TaskVoiceQuickButton.vue'
 import TaskViewSwitcher from '~/features/tasks/components/workspace/TaskViewSwitcher.vue'
 import { useRefreshTaskWorkspace } from '~/features/tasks/composables/workspace/useRefreshTaskWorkspace'
 import { useTaskWorkspaceState } from '~/features/tasks/composables/workspace/useTaskWorkspaceState'
@@ -35,6 +36,7 @@ const {
   newTaskOpen,
   selectedTaskId,
   newTaskDefaults,
+  newTaskVoiceDraft,
   toUpdateSection,
   promotingBacklogTaskId,
   listFilters,
@@ -247,6 +249,7 @@ function goToStatusList() {
             :label="t('tasks.newTask')"
             @click="openNewTask()"
           />
+          <TaskVoiceQuickButton @result="task => openNewTask(null, task)" />
         </div>
       </TaskGroupByFilter>
 
@@ -355,6 +358,7 @@ function goToStatusList() {
       :view="view"
       :group-by="groupBy"
       :initial-defaults="newTaskDefaults"
+      :voice-draft="newTaskVoiceDraft"
       :authorize-mode="props.authorizeMode"
       :to-update-section="toUpdateSection"
       :promoting-backlog-task-id="promotingBacklogTaskId"

@@ -604,6 +604,8 @@
       "reconnecting": "Reconnecting",
       "offline": "Offline",
       "connectionErrorTitle": "Could not connect to the real-time chat",
+      "accessLostTitle": "You no longer have access to this task",
+      "accessLostDescription": "Your access changed, so the panel was closed.",
       "archivedNotice": "This task is archived. Messages can't be sent.",
       "attachments": {
         "add": "Attach file",
@@ -910,6 +912,23 @@
         "corporateEmail": "E.g. john{'@'}company.com",
         "whatsapp": "E.g. +521234567890"
       },
+      "appearance": {
+        "label": "Photo and color",
+        "photo": "Photo",
+        "upload": "Upload photo",
+        "change": "Change photo",
+        "remove": "Remove photo",
+        "photoHint": "Image up to {max} MB. It is uploaded when you save.",
+        "color": "Background color",
+        "customColor": "Pick another color",
+        "noColor": "No color",
+        "colorHint": "Used when the user has no photo; with neither, their initials are shown.",
+        "invalidType": "The file must be an image.",
+        "tooLarge": "The image is larger than {max} MB.",
+        "uploadErrorTitle": "Could not upload the photo",
+        "urlTooLong": "The image address is too long.",
+        "previewLabel": "Preview of the user circle"
+      },
       "validation": {
         "usernameRequired": "Username is required.",
         "passwordRequired": "Password is required.",
@@ -1079,6 +1098,21 @@
         "none": "No comparison",
         "previous": "vs previous period",
         "last_year": "vs same period last year"
+      },
+      "scopeLabel": "Dashboard scope",
+      "scope": {
+        "mine": "My tasks",
+        "team": "Team"
+      },
+      "dateStart": "From",
+      "dateEnd": "To",
+      "rangeIncomplete": "Pick both dates to see the range.",
+      "rangeInvalid": "The start date must be on or before the end date.",
+      "projects": {
+        "label": "Projects",
+        "all": "All projects",
+        "count": "{count} projects",
+        "search": "Search project…"
       }
     },
     "kpis": {
@@ -1120,7 +1154,8 @@
       "week": "Week",
       "month": "Month",
       "quarter": "Quarter",
-      "year": "Year"
+      "year": "Year",
+      "custom": "Custom"
     },
     "individual": {
       "title": "Individual performance",
@@ -1151,9 +1186,9 @@
       }
     },
     "topics": {
-      "title": "Performance by topic",
+      "title": "Performance by project",
       "columns": {
-        "topic": "Topic",
+        "topic": "Project",
         "completed": "Completed",
         "active": "Active",
         "overdue": "Overdue",
@@ -1162,7 +1197,8 @@
         "trend": "Trend"
       },
       "maxDays": "max {days}d",
-      "empty": "There are no topics to show in this period."
+      "moreMembers": "{count} more members",
+      "empty": "There are no projects to show in this period."
     },
     "hero": {
       "goal": "goal ≥{goal}%"
@@ -1220,11 +1256,11 @@
       },
       "completed": {
         "title": "Completed",
-        "description": "Completed tasks in the topic vs all tasks created in the period."
+        "description": "Completed tasks in the project vs all tasks created in the period."
       },
       "active": {
         "title": "Active",
-        "description": "Open tasks in the topic (pending, in progress, in review or reopened)."
+        "description": "Open tasks in the project (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",
@@ -1236,7 +1272,7 @@
       },
       "members": {
         "title": "Members",
-        "description": "People with tasks assigned in this topic."
+        "description": "People with tasks assigned in this project."
       },
       "load_distribution": {
         "title": "Productive load distribution",

@@ -115,12 +115,13 @@ function backToHub() {
           :class="collapsed ? 'justify-center' : ''"
         >
           <span class="relative shrink-0">
-            <span
-              class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none w-8 h-8 text-[12.8px] leading-none"
-              style="background-color: #f59e0b"
-            >
-              {{ initials }}
-            </span>
+            <UserAvatar
+              :user-id="user?.id"
+              :initials="initials"
+              :size="32"
+              :font-size="12.8"
+              fallback-color="#f59e0b"
+            />
             <span
               v-if="collapsed"
               class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-sidebar transition-colors"

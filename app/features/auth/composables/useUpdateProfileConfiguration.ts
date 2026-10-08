@@ -23,7 +23,9 @@ export function useUpdateProfileConfiguration() {
       await queryClient.cancelQueries({ queryKey: profileConfigurationQueryKey })
 
       const previous = configuration.value
+      // Se conserva lo que la pantalla no edita (p. ej. el fondo del perfil).
       const optimistic: ProfileConfiguration = {
+        ...previous,
         id: previous?.id ?? 0,
         ...payload,
       }

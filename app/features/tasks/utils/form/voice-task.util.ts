@@ -1,7 +1,8 @@
 import type { SubtaskFormRow } from '~/features/tasks/utils/form/task-form.util'
 import { createEmptySubtaskRow } from '~/features/tasks/utils/form/task-form.util'
 import type { NewTaskFormType, TaskEffort } from '~/features/tasks/types/task.types'
-import type { VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
+import type { UserDropdown } from '~/features/tasks/types/task.types'
+import type { VoiceTaskCatalogItem, VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 
 /** Zona de México: el backend interpreta «hoy», «mañana» o «el viernes» según esta hora, no la UTC. */
 export const VOICE_TIME_ZONE = 'America/Mexico_City'
@@ -33,6 +34,21 @@ export function formatMexicoNow(date: Date = new Date()): string {
   const offset = `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`
 
   return `${local}${offset}`
+}
+
+/** Usuarios para la IA: nombre y apellidos, o el username si no los tienen. */
+export function toVoiceUsers(users: UserDropdown[]): VoiceTaskCatalogItem[] {
+  return users.map(user => ({
+    id: user.id,
+    name: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || user.username,
+  }))
+}
+
+/** Proyectos para la IA a partir de los items del dropdown (`label` = nombre, `value` = id). */
+export function toVoiceProjects(items: { label: string, value: string | number }[]): VoiceTaskCatalogItem[] {
+  return items
+    .filter((item): item is { label: string, value: number } => typeof item.value === 'number')
+    .map(item => ({ id: item.value, name: item.label }))
 }
 
 /** Esfuerzo de la IA (`rapida` | `normal` | `compleja`) al del formulario (`quick` | `normal` | `complex`). */

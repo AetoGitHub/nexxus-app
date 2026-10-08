@@ -6,6 +6,9 @@ export function useUpdateUser() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const { t } = useI18n()
+  const nuxtApp = useNuxtApp()
+  const session = useAuthSession()
+  const { configuration, setConfiguration } = useProfileConfigurationStore()
 
   return useMutation({
     mutationFn: ({ id, payload }: UpdateUserVariables) =>
@@ -13,7 +16,16 @@ export function useUpdateUser() {
         method: 'PATCH',
         body: payload,
       }),
-    onSuccess: async (_data, { id }) => {
+    onSuccess: async (_data, { id, payload }) => {
+      // El círculo propio sale de la configuración de la sesión: se actualiza con lo guardado.
+      if (session.value?.user.id === id && configuration.value) {
+        setConfiguration({
+          ...configuration.value,
+          background_color: payload.background_color ?? configuration.value.background_color,
+          background_image: payload.background_image ?? configuration.value.background_image,
+        })
+      }
+      void nuxtApp.$refreshProfileAppearances()
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['auth-profiles'] }),
         queryClient.invalidateQueries({ queryKey: ['auth', 'profiles'] }),

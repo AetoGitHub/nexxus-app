@@ -188,13 +188,14 @@ function onToggle() {
             {{ t('taskSettings.groups.managerSection') }}
           </p>
           <div class="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2.5">
-            <span
-              class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none shrink-0 w-7 h-7 text-[11px] leading-none"
-              :style="{ backgroundColor: resolveAvatarColor(group.manager) }"
+            <UserAvatar
+              :user-id="group.manager"
+              :initials="getInitials(managerName)"
+              :size="28"
+              :font-size="11"
+              :fallback-color="resolveAvatarColor(group.manager)"
               :title="managerName"
-            >
-              {{ getInitials(managerName) }}
-            </span>
+            />
             <div class="min-w-0 flex-1">
               <p class="text-[13px] font-medium text-foreground truncate">
                 {{ managerName }}
@@ -233,13 +234,14 @@ function onToggle() {
               :key="member.id"
               class="flex items-center gap-2.5 px-3 py-2.5 bg-card"
             >
-              <span
-                class="inline-flex items-center justify-center rounded-full font-semibold text-white select-none shrink-0 w-7 h-7 text-[11px] leading-none"
-                :style="{ backgroundColor: resolveAvatarColor(member.id) }"
+              <UserAvatar
+                :user-id="member.id"
+                :initials="getInitials(member.username)"
+                :size="28"
+                :font-size="11"
+                :fallback-color="resolveAvatarColor(member.id)"
                 :title="member.username"
-              >
-                {{ getInitials(member.username) }}
-              </span>
+              />
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-medium text-foreground truncate">
                   {{ member.username }}

@@ -13,7 +13,13 @@ import {
   useDashboardPeople,
   useDashboardProjects,
 } from '~/features/dashboard/composables/useDashboardApi'
-import type { DashboardCompare, DashboardPeriod } from '~/features/dashboard/types/dashboard.types'
+import type {
+  DashboardCompare,
+  DashboardDateRange,
+  DashboardPeriod,
+  DashboardScope,
+} from '~/features/dashboard/types/dashboard.types'
+import { defaultCustomRange, isValidDateRange } from '~/features/dashboard/utils/dashboard-filters.util'
 import { buildDashboardKpis } from '~/features/dashboard/utils/dashboard-kpi.util'
 
 // Protected route: redirects to /login when not authenticated.
@@ -25,17 +31,29 @@ useSeoMeta({
   title: () => t('dashboard.title'),
 })
 
-// Filtros globales: aplican a los KPI, la distribución de carga y los temas.
+// Filtros globales: aplican a los KPI, la distribución de carga y los proyectos.
 const period = ref<DashboardPeriod>('week')
 const compare = ref<DashboardCompare>('previous')
+// «Mis tareas» (`my_tasks`) y los proyectos (`project`) aplican a todos los bloques, también a Rendimiento individual.
+const scope = ref<DashboardScope>('team')
+const projectIds = ref<number[]>([])
+// Rango personalizado: reemplaza al periodo en los bloques globales; solo se pide cuando está completo y es válido.
+const customActive = ref(false)
+const customRange = ref<DashboardDateRange>(defaultCustomRange())
+const validRange = computed(() =>
+  customActive.value && isValidDateRange(customRange.value.start, customRange.value.end) ? customRange.value : null,
+)
+const globalEnabled = computed(() => !customActive.value || validRange.value != null)
+const myTasks = computed(() => scope.value === 'mine')
 // Rendimiento individual tiene su propio selector de periodo; solo cambia esa tabla.
 const peoplePeriod = ref<DashboardPeriod>('week')
 
 // Cada bloque pide lo suyo: al cambiar un filtro solo se vuelven a pedir los que dependen de él.
-const kpisQuery = useDashboardKpis({ period, compare })
-const loadQuery = useDashboardLoadDistribution({ period })
-const peopleQuery = useDashboardPeople({ period: peoplePeriod, compare })
-const projectsQuery = useDashboardProjects({ period, compare })
+const globalFilters = { period, range: validRange, myTasks, projectIds, enabled: globalEnabled }
+const kpisQuery = useDashboardKpis({ ...globalFilters, compare })
+const loadQuery = useDashboardLoadDistribution(globalFilters)
+const peopleQuery = useDashboardPeople({ period: peoplePeriod, compare, myTasks, projectIds })
+const projectsQuery = useDashboardProjects({ ...globalFilters, compare })
 
 const kpiSet = computed(() => (kpisQuery.data.value ? buildDashboardKpis(kpisQuery.data.value.kpis) : null))
 
@@ -48,8 +66,12 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
 <template>
   <div class="space-y-4 p-4 md:p-6">
     <DashboardToolbar
+      v-model:scope="scope"
       v-model:period="period"
+      v-model:custom-active="customActive"
+      v-model:range="customRange"
       v-model:compare="compare"
+      v-model:project-ids="projectIds"
     />
 
     <DashboardBlockState

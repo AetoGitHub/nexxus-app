@@ -9,6 +9,7 @@ import type {
   NotificationSocketEvent,
   NotificationToastKind,
 } from '~/features/notifications/types/notification.types'
+import { useSessionClosing } from '~/shared/composables/useSessionClosing'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
 import { useWsBaseUrl } from '~/shared/utils/api'
 
@@ -53,8 +54,9 @@ function resolveToastKind(
  */
 export function useNotificationsSocket() {
   const wsBaseUrl = useWsBaseUrl()
-  const { requestTicket } = useWsTicket()
+  const { requestTicket, isSessionStillValid } = useWsTicket()
   const { isLoggedIn } = useAuth()
+  const sessionClosing = useSessionClosing()
   const route = useRoute()
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -280,7 +282,15 @@ export function useNotificationsSocket() {
         stableTimer = null
       }
 
-      if (event.code === 1000 || event.code === 4403) {
+      if (event.code === 1000) {
+        return
+      }
+
+      if (event.code === 4403) {
+        // Sin acceso: no se reconecta. Si fue un logout en otro dispositivo, el 401 de este sondeo manda al login.
+        if (!sessionClosing.value) {
+          void isSessionStillValid()
+        }
         return
       }
 
@@ -318,6 +328,13 @@ export function useNotificationsSocket() {
     resetNotifications()
     pendingNotificationIds.clear()
   }, { immediate: true })
+
+  // Logout propio en curso: se cierra con 1000 antes de que el backend cierre con 4403.
+  watch(sessionClosing, (closing) => {
+    if (closing) {
+      closeCurrentSocket()
+    }
+  })
 
   onScopeDispose(() => {
     disposed = true

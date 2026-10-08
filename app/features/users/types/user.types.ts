@@ -12,6 +12,9 @@ export interface UserProfile {
   organization_name: string
   selected_company: number | null
   selected_company_name: string | null
+  /** Fondo del círculo: vacío o `null` si el perfil no tiene configuración. */
+  background_color?: string | null
+  background_image?: string | null
   company_memberships: UserCompanyMembership[]
 }
 
@@ -23,6 +26,9 @@ export interface UserProfileDetail {
   email: string
   corporate_email: string
   whatsapp: string
+  organization?: number | null
+  background_color?: string | null
+  background_image?: string | null
 }
 
 export interface CreateUserPayload {
@@ -35,6 +41,10 @@ export interface CreateUserPayload {
   email: string
   corporate_email: string
   whatsapp: string
+  /** `#rrggbb` o `''` (sin color). */
+  background_color?: string
+  /** URL de la foto o `''` (sin foto). */
+  background_image?: string
 }
 
 export interface UpdateUserPayload {
@@ -44,6 +54,10 @@ export interface UpdateUserPayload {
   email: string
   corporate_email: string
   whatsapp: string
+  /** `#rrggbb` o `''` (sin color). */
+  background_color?: string
+  /** URL de la foto o `''` (sin foto). */
+  background_image?: string
 }
 
 export interface UpdateUserVariables {
