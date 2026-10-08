@@ -9,6 +9,7 @@ import {
 } from '~/features/notifications/utils/notification-sound.util'
 
 const SOUND_COOKIE = 'notification_sound'
+const MUTED_COOKIE = 'notification_sound_muted'
 
 let currentAudio: HTMLAudioElement | null = null
 const playingSoundId = ref<NotificationSoundId | null>(null)
@@ -63,11 +64,27 @@ export function useNotificationSound() {
       : DEFAULT_NOTIFICATION_SOUND,
   )
 
+  // Silencio por navegador: lo que suena solo al llegar una notificación se calla; la vista previa de la lista sigue sonando.
+  const soundMuted = useCookie<boolean>(MUTED_COOKIE, {
+    default: () => false,
+    sameSite: 'lax',
+  })
+
   function setNotificationSound(id: NotificationSoundId) {
     selectedSoundId.value = id
   }
 
+  function setSoundMuted(muted: boolean) {
+    soundMuted.value = muted
+    if (muted) {
+      stopNotificationAudio()
+    }
+  }
+
   function playNotificationSound(id: NotificationSoundId = resolvedSoundId.value) {
+    if (soundMuted.value) {
+      return
+    }
     playAudio(id)
   }
 
@@ -83,6 +100,8 @@ export function useNotificationSound() {
     sounds: NOTIFICATION_SOUNDS,
     selectedSoundId: resolvedSoundId,
     playingSoundId,
+    soundMuted,
+    setSoundMuted,
     setNotificationSound,
     playNotificationSound,
     toggleNotificationSoundPreview,

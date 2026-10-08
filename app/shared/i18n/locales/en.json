@@ -1656,6 +1656,8 @@
         "stop": "Stop sound",
         "savedTitle": "Sound updated",
         "savedDescription": "This tone will be used for notifications.",
+        "muteLabel": "Mute notifications",
+        "muteDescription": "Nothing plays when you receive notifications in this browser. You still see them in the bell.",
         "options": {
           "chime": "Classic",
           "pop": "Pop",

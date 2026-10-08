@@ -1656,6 +1656,8 @@
         "stop": "Detener sonido",
         "savedTitle": "Sonido actualizado",
         "savedDescription": "Este tono se usará en las notificaciones.",
+        "muteLabel": "Silenciar notificaciones",
+        "muteDescription": "No suena nada al recibir notificaciones en este navegador. Sigues viéndolas en la campana.",
         "options": {
           "chime": "Clásico",
           "pop": "Pop",
