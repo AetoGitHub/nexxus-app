@@ -32,7 +32,12 @@
     "profile": {
       "title": "Profile",
       "description": "Your account details.",
+      "username": "Username",
       "email": "Email",
+      "companies": "Companies",
+      "managedGroups": "Groups you manage",
+      "memberGroups": "Groups",
+      "projects": "Projects",
       "company": "Company",
       "organization": "Organization",
       "superuser": "Superuser",
@@ -1191,6 +1196,7 @@
       "periodLabel": "Performance period",
       "columns": {
         "collaborator": "Collaborator",
+        "completed": "Completed",
         "weightedLoad": "Weighted load",
         "pendingLoad": "Pending load",
         "distribution": "Distribution",
@@ -1281,6 +1287,10 @@
       "trend": {
         "title": "Trend",
         "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
+      },
+      "people_completed": {
+        "title": "Completed",
+        "description": "Tasks assigned to the person in the period: completed / assigned (excluding archived, deleted and backlog)."
       },
       "completed": {
         "title": "Completed",

@@ -45,6 +45,7 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr' },
+  { key: 'completed', label: t('dashboard.individual.columns.completed'), align: 'text-left', metric: 'people_completed' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load' },
   { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
@@ -60,6 +61,11 @@ function metricsOf(row: ApiPersonRow): { key: string, text: string, tone: Dashbo
     { key: 'iur', text: formatPercent(row.iur), tone: rangeOf(row.iur) },
     { key: 'tpr', text: formatHours(row.tpr), tone: 'neutral' },
   ]
+}
+
+/** Avance de completadas; sin tareas en el periodo la barra queda vacía (evita dividir entre 0). */
+function completedWidth(completed: number, total: number): string {
+  return total > 0 ? `${Math.min((completed / total) * 100, 100)}%` : '0%'
 }
 
 const TREND_ICONS: Record<NonNullable<ApiDirection>, string> = {
@@ -136,7 +142,7 @@ async function exportExcel() {
       </template>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[980px] border-collapse text-sm">
+        <table class="w-full min-w-[1080px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th
@@ -204,6 +210,24 @@ async function exportExcel() {
                 >
                   {{ metric.text }}
                 </span>
+              </td>
+
+              <td class="px-2 py-3">
+                <div class="h-1 w-20 rounded-full bg-muted">
+                  <div
+                    class="h-full rounded-full"
+                    :style="{
+                      width: completedWidth(row.completed, row.total),
+                      backgroundColor: avatarColor(row.id),
+                    }"
+                  />
+                </div>
+                <p
+                  class="mt-0.5 font-mono text-[10px]"
+                  :class="row.total > 0 ? 'text-foreground' : 'text-muted-foreground'"
+                >
+                  {{ row.completed }}/{{ row.total }}
+                </p>
               </td>
 
               <td class="px-2 py-3">

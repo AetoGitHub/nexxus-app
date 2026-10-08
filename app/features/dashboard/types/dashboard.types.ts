@@ -59,5 +59,5 @@ export interface DashboardKpi {
 export type MetricKey =
   | 'tct' | 'tc' | 'iur' | 'tpr' | 'ica' | 'tasks_created'
   | 'weighted_load' | 'pending_load' | 'distribution' | 'trend'
-  | 'completed' | 'active' | 'overdue' | 'urgent' | 'members'
+  | 'completed' | 'people_completed' | 'active' | 'overdue' | 'urgent' | 'members'
   | 'load_distribution'

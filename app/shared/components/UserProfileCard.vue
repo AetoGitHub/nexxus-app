@@ -58,6 +58,19 @@ const details = computed(() => [
   { key: 'company', icon: 'i-lucide-building-2', label: t('user.profile.company'), value: company.value },
   { key: 'organization', icon: 'i-lucide-network', label: t('user.profile.organization'), value: organizationName.value },
 ].filter(row => row.value))
+
+/** Listas del detalle del perfil: empresas, grupos que administra, grupos de los que es miembro y proyectos. */
+const lists = computed(() => [
+  {
+    key: 'companies',
+    icon: 'i-lucide-building',
+    label: t('user.profile.companies'),
+    items: (profileDetail.value?.company_memberships ?? []).map(item => ({ id: item.id, name: item.company_name })),
+  },
+  { key: 'managedGroups', icon: 'i-lucide-shield', label: t('user.profile.managedGroups'), items: profileDetail.value?.managed_groups ?? [] },
+  { key: 'memberGroups', icon: 'i-lucide-users', label: t('user.profile.memberGroups'), items: profileDetail.value?.member_groups ?? [] },
+  { key: 'projects', icon: 'i-lucide-folder-kanban', label: t('user.profile.projects'), items: profileDetail.value?.projects ?? [] },
+].filter(list => list.items.length))
 </script>
 
 <template>
@@ -86,7 +99,19 @@ const details = computed(() => [
       </div>
     </div>
 
-    <dl class="mt-4 space-y-3 border-t border-border pt-3">
+    <dl class="mt-4 max-h-[50vh] space-y-3 overflow-y-auto border-t border-border pt-3">
+      <div v-if="username" class="flex items-center gap-2.5 min-w-0">
+        <UIcon name="i-lucide-at-sign" class="h-4 w-4 shrink-0 text-muted-foreground" />
+        <div class="min-w-0 flex-1">
+          <dt class="text-[11px] uppercase tracking-wider text-muted-foreground">
+            {{ t('user.profile.username') }}
+          </dt>
+          <dd class="text-sm text-foreground break-words">
+            {{ username }}
+          </dd>
+        </div>
+      </div>
+
       <div v-if="email" class="flex items-center gap-2.5 min-w-0">
         <UIcon name="i-lucide-mail" class="h-4 w-4 shrink-0 text-muted-foreground" />
         <div class="min-w-0 flex-1">
@@ -121,6 +146,29 @@ const details = computed(() => [
           </dt>
           <dd class="text-sm text-foreground break-words">
             {{ row.value }}
+          </dd>
+        </div>
+      </div>
+
+      <div
+        v-for="list in lists"
+        :key="list.key"
+        class="flex items-start gap-2.5 min-w-0"
+      >
+        <UIcon :name="list.icon" class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <div class="min-w-0 flex-1">
+          <dt class="text-[11px] uppercase tracking-wider text-muted-foreground">
+            {{ list.label }}
+          </dt>
+          <dd class="mt-1 flex flex-wrap gap-1">
+            <UBadge
+              v-for="item in list.items"
+              :key="item.id"
+              :label="item.name"
+              color="neutral"
+              variant="subtle"
+              size="sm"
+            />
           </dd>
         </div>
       </div>

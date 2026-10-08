@@ -32,7 +32,12 @@
     "profile": {
       "title": "Perfil",
       "description": "Datos de tu cuenta.",
+      "username": "Usuario",
       "email": "Correo",
+      "companies": "Empresas",
+      "managedGroups": "Grupos que administra",
+      "memberGroups": "Grupos",
+      "projects": "Proyectos",
       "company": "Empresa",
       "organization": "Organización",
       "superuser": "Superusuario",
@@ -1191,6 +1196,7 @@
       "periodLabel": "Periodo del rendimiento",
       "columns": {
         "collaborator": "Colaborador",
+        "completed": "Completadas",
         "weightedLoad": "Carga ponderada",
         "pendingLoad": "Carga pendiente",
         "distribution": "Distribución",
@@ -1281,6 +1287,10 @@
       "trend": {
         "title": "Tendencia",
         "description": "Evolución del TCT dentro del período y la flecha indica si subió o bajó contra el período de comparación."
+      },
+      "people_completed": {
+        "title": "Completadas",
+        "description": "Tareas asignadas a la persona en el periodo: completadas / asignadas (sin archivadas, eliminadas ni backlog)."
       },
       "completed": {
         "title": "Completadas",

@@ -100,6 +100,10 @@ export interface ApiPersonRow {
   tc: number | null
   iur: number | null
   tpr: number | null
+  /** Tareas asignadas a la persona y creadas en el periodo que ya se completaron. */
+  completed: number
+  /** Tareas asignadas a la persona y creadas en el periodo (sin archivadas, eliminadas ni backlog). */
+  total: number
   weighted_load: { percentage: number | null, points_done: number, points: number }
   pending_load: { points: number, capacity: number, percentage: number, status: ApiLoadStatus }
   distribution: { quick: number, normal: number, complex: number }
