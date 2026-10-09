@@ -1188,6 +1188,8 @@
       "productive": "Productive load distribution",
       "saturated": "{count} overloaded",
       "goal": "Target {goal}%",
+      "people": "No people | {count} person | {count} people",
+      "noRange": "No data",
       "empty": "There are no collaborators with load in this period yet."
     },
     "periods": {
@@ -1331,7 +1333,7 @@
       },
       "load_distribution": {
         "title": "Productive load distribution",
-        "description": "Each person's ICA for the period. The dashed line marks the 85% goal."
+        "description": "People grouped by ICA range for the period. Each bar counts how many fall in the range; hover to see who they are and their percentage. Goal: ≥85%."
       }
     }
   },

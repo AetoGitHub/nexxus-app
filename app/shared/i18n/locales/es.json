@@ -1188,6 +1188,8 @@
       "productive": "Distribución de carga productiva",
       "saturated": "{count} saturados",
       "goal": "Meta {goal}%",
+      "people": "Sin personas | {count} persona | {count} personas",
+      "noRange": "Sin dato",
       "empty": "Todavía no hay colaboradores con carga en este periodo."
     },
     "periods": {
@@ -1331,7 +1333,7 @@
       },
       "load_distribution": {
         "title": "Distribución de carga productiva",
-        "description": "ICA de cada persona en el período. La línea punteada marca la meta del 85%."
+        "description": "Personas agrupadas por rango de ICA en el período. Cada barra cuenta cuántas caen en el rango; pasa el cursor para ver quiénes son y su porcentaje. Meta: ≥85%."
       }
     }
   },
