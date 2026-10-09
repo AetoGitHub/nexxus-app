@@ -6,7 +6,7 @@ import type { ApiLoadDistributionResponse } from '~/features/dashboard/types/das
 import type { DashboardTone } from '~/features/dashboard/types/dashboard.types'
 import { RANGE_TONE } from '~/features/dashboard/utils/dashboard.util'
 
-/** Carga productiva por rango: una barra por rango con cuántas personas caen en él; el tooltip lista quiénes y su porcentaje. */
+/** Carga productiva por rango: una barra horizontal por rango con cuántas personas caen en él; el tooltip lista quiénes y su porcentaje. */
 const props = defineProps<{
   load: ApiLoadDistributionResponse | undefined
   loading: boolean
@@ -63,7 +63,7 @@ const groups = computed(() => {
   return result
 })
 
-/** El alto de cada barra es relativo a la que tiene más personas. */
+/** El largo de cada barra es relativo a la que tiene más personas. */
 const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.people.length)))
 </script>
 
@@ -101,7 +101,7 @@ const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.p
       </template>
 
       <template v-if="load">
-        <div class="flex h-36 items-stretch gap-3">
+        <div class="space-y-1">
           <DashboardLoadRangeBar
             v-for="group in groups"
             :key="group.key"
@@ -109,7 +109,7 @@ const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.p
             :limits="group.limits"
             :tone="group.tone"
             :people="group.people"
-            :height="(group.people.length / maxCount) * 100"
+            :width="(group.people.length / maxCount) * 100"
           />
         </div>
       </template>

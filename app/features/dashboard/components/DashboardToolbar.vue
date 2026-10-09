@@ -37,7 +37,10 @@ const periods: DashboardPeriod[] = ['week', 'month', 'quarter', 'year']
 const compareItems = computed(() =>
   (['none', 'previous', 'last_year'] as const).map(value => ({
     value,
-    label: t(`dashboard.toolbar.compare.${value}`),
+    // «vs semana/mes/trimestre/año anterior» según el periodo; con rango personalizado queda «vs periodo anterior».
+    label: value === 'previous' && !customActive.value
+      ? t(`dashboard.toolbar.compare.previous_${period.value}`)
+      : t(`dashboard.toolbar.compare.${value}`),
   })),
 )
 
@@ -104,6 +107,7 @@ function selectCustom() {
       <div
         class="inline-flex rounded-lg bg-muted p-0.5"
         role="group"
+        :title="t('dashboard.toolbar.periodLabel')"
         :aria-label="t('dashboard.toolbar.periodLabel')"
       >
         <button

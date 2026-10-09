@@ -231,6 +231,7 @@ async function exportExcel() {
                 <span
                   class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
                   :class="TONE_SOFT.neutral"
+                  :title="row.tpr == null ? t('dashboard.kpis.tpr.empty') : undefined"
                 >
                   {{ formatHours(row.tpr) }}
                 </span>

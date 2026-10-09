@@ -119,8 +119,8 @@ const buttonLabel = computed(() => {
       icon="i-lucide-calendar-range"
       trailing-icon="i-lucide-chevron-down"
       :disabled="disabled"
-      :title="disabled ? t('dashboard.periodFilter.disabledCustom') : t('dashboard.periodFilter.label')"
-      :aria-label="t('dashboard.periodFilter.label')"
+      :title="disabled ? t('dashboard.periodFilter.disabledCustom') : `${t('dashboard.periodFilter.label')}. ${t('dashboard.periodFilter.byDueDate')}`"
+      :aria-label="`${t('dashboard.periodFilter.label')}. ${t('dashboard.periodFilter.byDueDate')}`"
     >
       <span class="hidden text-muted-foreground sm:inline">{{ t('dashboard.periodFilter.label') }}:</span>
       <span class="font-medium">{{ buttonLabel }}</span>

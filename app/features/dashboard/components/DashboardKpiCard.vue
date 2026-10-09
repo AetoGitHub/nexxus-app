@@ -3,7 +3,7 @@ import DashboardDelta from '~/features/dashboard/components/shared/DashboardDelt
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
 import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { DashboardKpi, MetricKey } from '~/features/dashboard/types/dashboard.types'
-import { TONE_SOFT, TONE_TEXT, TONE_TOP_BORDER } from '~/features/dashboard/utils/dashboard.util'
+import { NO_DATA, TONE_SOFT, TONE_TEXT, TONE_TOP_BORDER } from '~/features/dashboard/utils/dashboard.util'
 
 /** Tarjeta de KPI: etiqueta, badge de estado, valor, variación y tendencia. */
 const props = defineProps<{
@@ -40,6 +40,7 @@ const metric = computed<MetricKey>(() => (props.kpi.key === 'created' ? 'tasks_c
       <p
         class="font-mono text-2xl font-bold leading-none tabular-nums"
         :class="TONE_TEXT[kpi.tone]"
+        :title="kpi.key === 'tpr' && kpi.value === NO_DATA ? t('dashboard.kpis.tpr.empty') : undefined"
       >
         {{ kpi.value }}
       </p>

@@ -1116,6 +1116,7 @@
     "title": "Dashboard",
     "periodFilter": {
       "label": "Filtro por periodo",
+      "byDueDate": "Se filtran las tareas por su fecha límite.",
       "current": "Periodo actual",
       "currentTag": "actual",
       "disabledCustom": "No aplica con un rango personalizado",
@@ -1128,13 +1129,17 @@
       "quarter": "T{n} {year}"
     },
     "toolbar": {
-      "periodLabel": "Periodo del dashboard",
+      "periodLabel": "Periodo del dashboard (por fecha límite)",
       "compareLabel": "Comparativa",
       "download": "Descargar reporte",
       "analyze": "Analizar con IA",
       "compare": {
         "none": "Sin comparar",
         "previous": "vs periodo anterior",
+        "previous_week": "vs semana anterior",
+        "previous_month": "vs mes anterior",
+        "previous_quarter": "vs trimestre anterior",
+        "previous_year": "vs año anterior",
         "last_year": "vs mismo periodo año anterior"
       },
       "scopeLabel": "Alcance del dashboard",
@@ -1142,7 +1147,7 @@
         "mine": "Mis tareas",
         "team": "Equipo"
       },
-      "dateRange": "Rango de fechas",
+      "dateRange": "Rango por fecha límite",
       "rangeIncomplete": "Elige las dos fechas para ver el rango.",
       "rangeInvalid": "La fecha inicial debe ser anterior o igual a la final.",
       "projects": {
@@ -1162,14 +1167,15 @@
         "countEmpty": "—"
       },
       "created": {
-        "label": "Tareas creadas",
+        "label": "Tareas del periodo",
         "mine": "{assigned} asignadas a mí · {created} creadas por mí"
       },
       "iur": {
         "label": "Índice urgencias resueltas · IUR"
       },
       "tpr": {
-        "label": "Tiempo promedio resolución · TPR"
+        "label": "Tiempo promedio resolución · TPR",
+        "empty": "Sin tareas trabajadas en el periodo"
       },
       "ica": {
         "label": "Carga ponderada · ICA"
@@ -1269,39 +1275,39 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tareas Completadas a Tiempo",
-        "description": "Porcentaje de tareas con fecha límite que se completaron en tiempo y forma (antes o en su fecha límite). Meta: ≥85%."
+        "description": "Porcentaje de las tareas que vencen en el periodo que se cerraron a tiempo (antes o en su fecha límite)."
       },
       "tc": {
         "title": "TC — Tasa de Cumplimiento",
-        "description": "Tareas completadas entre las tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Meta: ≥85%."
+        "description": "Porcentaje de las tareas que vencen en el periodo que ya están completadas."
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
-        "description": "Porcentaje de tareas urgentes o críticas que ya se completaron. Las que siguen pendientes cuentan como sin atender. Meta: ≥85%."
+        "description": "Porcentaje de las tareas urgentes o críticas que vencen en el periodo y ya se resolvieron."
       },
       "tpr": {
         "title": "TPR — Tiempo Promedio de Resolución",
-        "description": "Horas promedio desde que se crea una tarea hasta que se completa. Menor es mejor."
+        "description": "Tiempo promedio, en horas, desde que se empezó a trabajar la tarea (pasó a \"En progreso\") hasta que se completó."
       },
       "ica": {
         "title": "ICA — Índice de Carga Atendida",
-        "description": "Porcentaje de puntos completados sobre los puntos asignados en el período. Meta: ≥85%."
+        "description": "Puntos de esfuerzo completados ÷ puntos totales de las tareas que vencen en el periodo."
       },
       "tasks_created": {
-        "title": "Tareas creadas",
-        "description": "Tareas creadas en el periodo (sin archivadas, eliminadas ni backlog). Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
+        "title": "Tareas del periodo",
+        "description": "Total de tareas cuya fecha límite cae en el periodo. Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
       },
       "weighted_load": {
         "title": "Carga ponderada",
-        "description": "Puntos completados contra puntos asignados en el período. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
+        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
       },
       "pending_load": {
         "title": "Carga pendiente",
-        "description": "Puntos de las tareas del periodo que siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+        "description": "Puntos de las tareas que vencen en el periodo y siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
         "title": "Distribución por esfuerzo",
-        "description": "Cantidad de tareas del período por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
+        "description": "Cantidad de tareas que vencen en el periodo por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
       },
       "trend": {
         "title": "Tendencia",
@@ -1309,15 +1315,15 @@
       },
       "people_completed": {
         "title": "Completadas",
-        "description": "Tareas asignadas a la persona en el periodo: completadas / asignadas (sin archivadas, eliminadas ni backlog)."
+        "description": "Tareas asignadas a la persona que vencen en el periodo: completadas / asignadas (sin archivadas, eliminadas ni backlog)."
       },
       "completed": {
         "title": "Completadas",
-        "description": "Tareas completadas del proyecto contra el total de tareas creadas en el período."
+        "description": "Tareas completadas del proyecto contra el total de tareas que vencen en el periodo."
       },
       "active": {
         "title": "Activas",
-        "description": "Tareas del periodo que siguen abiertas en el proyecto (pendientes, en proceso, en revisión o reabiertas)."
+        "description": "Tareas que vencen en el periodo y siguen abiertas en el proyecto (pendientes, en proceso, en revisión o reabiertas)."
       },
       "overdue": {
         "title": "Vencidas",
@@ -1333,7 +1339,7 @@
       },
       "load_distribution": {
         "title": "Distribución de carga productiva",
-        "description": "Personas agrupadas por rango de ICA en el período. Cada barra cuenta cuántas caen en el rango; pasa el cursor para ver quiénes son y su porcentaje. Meta: ≥85%."
+        "description": "Carga productiva de cada persona de toda la organización (Índice de Carga Atendida, ICA), considerando las tareas de todas sus compañías. Cada barra cuenta cuántas personas caen en el rango; pasa el cursor para ver quiénes son y su porcentaje. Meta: ≥85%."
       }
     }
   },
