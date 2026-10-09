@@ -50,10 +50,21 @@ export interface CeoNarrative {
   /** Fecha de generación ya formateada. */
   generatedAt?: string
   verdict?: string
-  insights?: Array<{ index: string, text: string }>
+  insights?: Array<{ index: string, text: string, metric?: string, team?: string }>
+}
+
+/**
+ * Estado de la IA cuando el texto NO se dibuja: `review` = n8n marcó `needs_review` o mandó `warnings` (hay que
+ * revisarlo antes de mostrarlo o mandarlo al CEO); `error` = n8n no pudo redactarlo.
+ */
+export interface CeoAiReview {
+  state: 'review' | 'error'
+  warnings: string[]
+  error?: string
 }
 
 export interface CeoTeam {
+  id?: number
   name: string
   people?: number
   color: string
@@ -70,6 +81,7 @@ export interface CeoTeam {
 }
 
 export interface CeoCategory {
+  id?: number
   name: string
   teams?: string[]
   rating: CeoRating
@@ -81,6 +93,7 @@ export interface CeoCategory {
 }
 
 export interface CeoPerson {
+  id?: number
   name: string
   team?: string
   teamColor?: string
@@ -150,12 +163,20 @@ export interface CeoDecision {
   assignee: string
   metric: string
   date: string
+  /** Para «Crear como tarea»: la persona (`assignee_id`) y la fecha `YYYY-MM-DD` tal como las mandó la IA. */
+  assigneeId: number | null
+  dueDate: string | null
+  /** La IA no estuvo segura de esta decisión: se marca «por revisar». */
+  needsReview: boolean
 }
 
 export interface CeoClosing {
   title: string
-  quote: string
+  /** Frase destacada; sin ella no se dibuja la cita. */
+  quote?: string
   paragraphs: string[]
+  /** Hay titular o párrafos de la IA: sin ellos solo se dibujan las decisiones. */
+  hasSummary: boolean
   decisionsEyebrow: string
   decisions: CeoDecision[]
   disclaimer: string
@@ -164,6 +185,8 @@ export interface CeoClosing {
 export interface CeoReport {
   meta: CeoReportMeta
   narrative: CeoNarrative | null
+  /** Presente cuando hay texto de IA que no se dibuja (por revisar o con error). */
+  aiReview?: CeoAiReview
   hero: CeoHeroKpi
   kpis: CeoKpiRow[]
   teams: { intro?: string, items: CeoTeam[] }

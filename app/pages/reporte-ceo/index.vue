@@ -7,6 +7,9 @@ import { useGenerateReport } from '~/features/ceo-report/composables/useGenerate
 import { useReportDetail } from '~/features/ceo-report/composables/useReportDetail'
 import { useReports } from '~/features/ceo-report/composables/useReports'
 import type { GenerateReportPayload } from '~/features/ceo-report/types/ceo-report-api.types'
+import type { CeoDecision } from '~/features/ceo-report/types/ceo-report.types'
+import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSlideover.vue'
+import type { VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 import { formatReportOption } from '~/features/ceo-report/utils/ceo-report-adapter.util'
 
 // Protected route: redirects to /login when not authenticated.
@@ -49,7 +52,12 @@ watch(selectedCompanyId, () => {
 })
 
 const detailQuery = useReportDetail(selectedId)
-const { view } = useCeoReportView(() => detailQuery.data.value)
+// Texto de IA marcado «por revisar»: no se dibuja hasta que quien lo revisó decide mostrarlo.
+const showUnreviewed = ref(false)
+watch(selectedId, () => {
+  showUnreviewed.value = false
+})
+const { view } = useCeoReportView(() => detailQuery.data.value, showUnreviewed)
 
 const periodItems = computed(() =>
   reports.value.map(item => ({
@@ -103,6 +111,32 @@ function notifyPending() {
     description: t('ceoReport.toast.pendingDescription'),
     color: 'info',
   })
+}
+
+// «Crear como tarea»: abre el formulario de nueva tarea ya rellenado con la decisión (el mismo que el dictado por voz).
+const newTaskOpen = ref(false)
+const newTaskId = ref<number | null>(null)
+const decisionDraft = ref<VoiceTaskResponse | null>(null)
+
+function onCreateTask(decision: CeoDecision) {
+  decisionDraft.value = {
+    name: decision.title,
+    description: [decision.description, decision.metric !== '—' ? `${t('ceoReport.closing.metric')}: ${decision.metric}` : '']
+      .filter(Boolean)
+      .join('\n\n'),
+    task_type: 'manual',
+    project_id: null,
+    due_date: decision.dueDate,
+    assignee_ids: decision.assigneeId != null ? [decision.assigneeId] : [],
+    urgent: false,
+    effort: 'normal',
+    subtasks: [],
+    in_backlog: false,
+    transcript: '',
+    needs_review: decision.needsReview,
+    ambiguities: decision.needsReview ? [t('ceoReport.closing.reviewDecision')] : [],
+  }
+  newTaskOpen.value = true
 }
 </script>
 
@@ -204,12 +238,53 @@ function notifyPending() {
 
       <div
         v-else-if="view"
-        :style="{ zoom }"
       >
-        <CeoReportDocument
-          :report="view"
-          @create-task="notifyPending"
+        <UAlert
+          v-if="view.aiReview"
+          class="mx-auto mt-3 max-w-3xl"
+          :color="view.aiReview.state === 'error' ? 'error' : 'warning'"
+          variant="subtle"
+          icon="i-lucide-triangle-alert"
+          :title="view.aiReview.state === 'error' ? t('ceoReport.aiReview.errorTitle') : t('ceoReport.aiReview.reviewTitle')"
+          :description="view.aiReview.state === 'error'
+            ? (view.aiReview.error || t('ceoReport.aiReview.errorDescription'))
+            : t('ceoReport.aiReview.reviewDescription')"
+          :actions="view.aiReview.state === 'review'
+            ? [{ label: t('ceoReport.aiReview.showAnyway'), color: 'neutral', variant: 'outline', onClick: () => { showUnreviewed = true } }]
+            : []"
+        >
+          <template
+            v-if="view.aiReview.warnings.length"
+            #description
+          >
+            <p>{{ t('ceoReport.aiReview.reviewDescription') }}</p>
+            <ul class="mt-1 list-disc pl-5">
+              <li
+                v-for="warning in view.aiReview.warnings"
+                :key="warning"
+              >
+                {{ warning }}
+              </li>
+            </ul>
+          </template>
+        </UAlert>
+
+        <UAlert
+          v-else-if="showUnreviewed"
+          class="mx-auto mt-3 max-w-3xl"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-eye"
+          :title="t('ceoReport.aiReview.reviewTitle')"
+          :actions="[{ label: t('ceoReport.aiReview.hide'), color: 'neutral', variant: 'outline', onClick: () => { showUnreviewed = false } }]"
         />
+
+        <div :style="{ zoom }">
+          <CeoReportDocument
+            :report="view"
+            @create-task="onCreateTask"
+          />
+        </div>
       </div>
     </div>
 
@@ -217,6 +292,12 @@ function notifyPending() {
       v-model:open="isGenerateOpen"
       :loading="generate.isPending.value"
       @submit="onGenerate"
+    />
+
+    <TaskNewTaskSlideover
+      v-model:open="newTaskOpen"
+      v-model:task-id="newTaskId"
+      :voice-draft="decisionDraft"
     />
   </div>
 </template>

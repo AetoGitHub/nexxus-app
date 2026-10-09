@@ -1448,7 +1448,23 @@
       "assignedTo": "Asignado a",
       "metric": "Métrica",
       "date": "Fecha",
-      "createTask": "Crear como tarea"
+      "createTask": "Crear como tarea",
+      "title": "Cierre ejecutivo",
+      "decisionsEyebrow": "Decisiones sugeridas",
+      "disclaimer": "Las decisiones las sugiere Nexxa IA a partir de las métricas: revísalas antes de convertirlas en tareas.",
+      "needsReview": "por revisar",
+      "reviewDecision": "La IA no estuvo segura de esta decisión: revisa el responsable y la fecha."
+    },
+    "notes": {
+      "title": "Lectura de Nexxa IA"
+    },
+    "aiReview": {
+      "reviewTitle": "El texto de IA necesita revisión",
+      "reviewDescription": "Nexxa IA marcó este análisis para revisión, por lo que no se muestra ni debe enviarse al CEO todavía.",
+      "showAnyway": "Mostrar de todos modos",
+      "hide": "Ocultar texto de IA",
+      "errorTitle": "Nexxa IA no pudo redactar el análisis",
+      "errorDescription": "El reporte conserva sus métricas; intenta recalcularlo más tarde."
     },
     "back": {
       "title": "Reporte de productividad"

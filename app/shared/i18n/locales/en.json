@@ -1448,7 +1448,23 @@
       "assignedTo": "Assigned to",
       "metric": "Metric",
       "date": "Date",
-      "createTask": "Create as task"
+      "createTask": "Create as task",
+      "title": "Executive closing",
+      "decisionsEyebrow": "Suggested decisions",
+      "disclaimer": "Nexxa AI suggests these decisions from the metrics: review them before turning them into tasks.",
+      "needsReview": "to review",
+      "reviewDecision": "The AI was not sure about this decision: check the owner and the date."
+    },
+    "notes": {
+      "title": "Nexxa AI reading"
+    },
+    "aiReview": {
+      "reviewTitle": "The AI text needs review",
+      "reviewDescription": "Nexxa AI flagged this analysis for review, so it is hidden and must not be sent to the CEO yet.",
+      "showAnyway": "Show anyway",
+      "hide": "Hide AI text",
+      "errorTitle": "Nexxa AI could not write the analysis",
+      "errorDescription": "The report keeps its metrics; try recalculating it later."
     },
     "back": {
       "title": "Productivity report"

@@ -5,7 +5,10 @@ import type {
   ReportPeriodType,
 } from '~/features/ceo-report/types/ceo-report-api.types'
 import type {
+  CeoAiReview,
   CeoCategory,
+  CeoClosing,
+  CeoDecision,
   CeoDistribution,
   CeoKpiRow,
   CeoNarrative,
@@ -25,7 +28,12 @@ interface AdapterContext {
   locale: string
   /** Nombre de la empresa del reporte. */
   scopeLabel: string
+  /** Dibuja el texto de IA aunque n8n lo haya marcado `needs_review` o mandado `warnings` (decisión explícita de quien lo revisó). */
+  allowUnreviewed?: boolean
 }
+
+/** Notas de la IA por id (`team_notes`, `theme_notes`, `person_notes`); las ids son las del reporte. */
+type NotesById = Record<string, string>
 
 const PALETTE = ['#28ceab', '#7c3aed', '#0ea5e9', '#f59e0b', '#ec4899', '#84cc16', '#f97316', '#14b8a6']
 const NO_VALUE = '—'
@@ -178,8 +186,10 @@ function completionOf(row: ReportBreakdownMetric): number {
   return row.completion_rate ?? 0
 }
 
-function buildTeams(rows: ReportBreakdownMetric[], { t }: AdapterContext): CeoTeam[] {
+function buildTeams(rows: ReportBreakdownMetric[], { t }: AdapterContext, notes: NotesById = {}): CeoTeam[] {
   return rows.map((row, index) => ({
+    id: row.id,
+    ...noteFields(notes[String(row.id)], t),
     name: row.name,
     color: colorAt(index),
     rating: ratingFromScore(completionOf(row)),
@@ -190,8 +200,10 @@ function buildTeams(rows: ReportBreakdownMetric[], { t }: AdapterContext): CeoTe
   }))
 }
 
-function buildCategories(rows: ReportBreakdownMetric[], { t }: AdapterContext): CeoCategory[] {
+function buildCategories(rows: ReportBreakdownMetric[], { t }: AdapterContext, notes: NotesById = {}): CeoCategory[] {
   return rows.map(row => ({
+    id: row.id,
+    ...noteFields(notes[String(row.id)], t),
     name: row.name,
     rating: ratingFromScore(completionOf(row)),
     completion: completionOf(row),
@@ -199,8 +211,10 @@ function buildCategories(rows: ReportBreakdownMetric[], { t }: AdapterContext): 
   }))
 }
 
-function toPerson(row: ReportBreakdownMetric, index: number): CeoPerson {
+function toPerson(row: ReportBreakdownMetric, index: number, notes: NotesById): CeoPerson {
   return {
+    id: row.id,
+    note: notes[String(row.id)],
     name: row.name,
     avatarColor: colorAt(index),
     completion: completionOf(row),
@@ -210,10 +224,10 @@ function toPerson(row: ReportBreakdownMetric, index: number): CeoPerson {
 }
 
 /** Mejores y peores por completación (a igualdad, la de más tareas primero). Sin solaparse. */
-function buildPeople(rows: ReportBreakdownMetric[]): { top: CeoPerson[], bottom: CeoPerson[] } {
+function buildPeople(rows: ReportBreakdownMetric[], notes: NotesById = {}): { top: CeoPerson[], bottom: CeoPerson[] } {
   const ranked = [...rows].sort((a, b) =>
     completionOf(b) - completionOf(a) || b.total_tasks - a.total_tasks)
-  const people = ranked.map(toPerson)
+  const people = ranked.map((row, index) => toPerson(row, index, notes))
 
   const top = people.slice(0, PEOPLE_RANKING_SIZE)
   const rest = people.slice(PEOPLE_RANKING_SIZE)
@@ -221,10 +235,37 @@ function buildPeople(rows: ReportBreakdownMetric[]): { top: CeoPerson[], bottom:
   return { top, bottom }
 }
 
+/** `reason` y su título cuando la IA escribió algo sobre ese equipo o proyecto. */
+function noteFields(note: string | undefined, t: Translate): { reason?: string, reasonTitle?: string } {
+  return note ? { reason: note, reasonTitle: t('ceoReport.notes.title') } : {}
+}
+
+/** Nombre de cada persona por id: el nombre completo de la distribución y, si falta, el de `by_person`. */
+function personNames(metrics: Report['metrics']): Map<number, string> {
+  const names = new Map<number, string>()
+  for (const row of metrics.by_person) {
+    names.set(row.id, row.name)
+  }
+  for (const bucket of metrics.performance_distribution ?? []) {
+    for (const person of bucket.people ?? []) {
+      if (person.name) {
+        names.set(person.id, person.name)
+      }
+    }
+  }
+  return names
+}
+
 export function buildCeoReport(report: Report, context: AdapterContext): CeoReport {
   const { t, locale, scopeLabel } = context
   const { metrics } = report
   const delta = metrics.delta_vs_previous
+
+  const parsed = parseNarrative(report.narrative, locale)
+  const blocked = parsed.review != null && !(context.allowUnreviewed && parsed.review.state === 'review')
+  // Texto de IA que se dibuja: nada si está por revisar (sin permiso) o con error.
+  const ai = blocked ? null : parsed
+  const noNotes: NotesById = {}
 
   const generatedAt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' })
     .format(new Date(report.updated_at))
@@ -266,13 +307,15 @@ export function buildCeoReport(report: Report, context: AdapterContext): CeoRepo
       ],
     },
     kpis: buildKpis(report, context),
-    teams: { items: buildTeams(metrics.by_team, context) },
-    categories: { items: buildCategories(metrics.by_project, context) },
+    teams: { items: buildTeams(metrics.by_team, context, ai?.teamNotes ?? noNotes) },
+    categories: { items: buildCategories(metrics.by_project, context, ai?.themeNotes ?? noNotes) },
     people: {
-      ...buildPeople(metrics.by_person),
+      ...buildPeople(metrics.by_person, ai?.personNotes ?? noNotes),
       distribution: buildDistribution(metrics.performance_distribution),
     },
-    narrative: buildNarrative(report.narrative, locale),
+    narrative: ai?.narrative ?? null,
+    aiReview: parsed.review,
+    closing: ai ? buildClosing(ai, personNames(metrics), context) : undefined,
   }
 }
 
@@ -284,38 +327,178 @@ function nonEmptyString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
-/**
- * Valida el `narrative` de la API (hoy siempre `null`). Devuelve `null` si no trae ninguna
- * sección utilizable; las secciones que falten quedan `undefined` y se dibujan «en preparación».
- */
-export function buildNarrative(raw: unknown, locale: string): CeoNarrative | null {
-  if (!isRecord(raw)) {
-    return null
-  }
-
-  const verdict = nonEmptyString(raw.verdict)
-  const texts = Array.isArray(raw.insights)
-    ? raw.insights
-        .map(item => (isRecord(item) ? nonEmptyString(item.text) : undefined))
-        .filter((text): text is string => text != null)
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.map(item => nonEmptyString(item)).filter((item): item is string => item != null)
     : []
-  if (!verdict && !texts.length) {
-    return null
+}
+
+/** `{ "1": "texto" }` -> solo las entradas con texto. */
+function notesOf(value: unknown): NotesById {
+  if (!isRecord(value)) {
+    return {}
+  }
+  const notes: NotesById = {}
+  for (const [id, text] of Object.entries(value)) {
+    const note = nonEmptyString(text)
+    if (note) {
+      notes[id] = note
+    }
+  }
+  return notes
+}
+
+interface RawDecision {
+  title: string
+  description?: string
+  assigneeId: number | null
+  metric?: string
+  dueDate: string | null
+  needsReview: boolean
+}
+
+interface ParsedNarrative {
+  narrative: CeoNarrative | null
+  teamNotes: NotesById
+  themeNotes: NotesById
+  personNotes: NotesById
+  closing?: { headline?: string, callout?: string, paragraphs: string[] }
+  decisions: RawDecision[]
+  /** Presente cuando el texto no debe dibujarse tal cual (por revisar o con error). */
+  review?: CeoAiReview
+}
+
+function parseDecisions(value: unknown): RawDecision[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.flatMap((item) => {
+    if (!isRecord(item)) {
+      return []
+    }
+    const title = nonEmptyString(item.title)
+    if (!title) {
+      return []
+    }
+    const dueDate = nonEmptyString(item.due_date)
+    return [{
+      title,
+      description: nonEmptyString(item.description),
+      assigneeId: typeof item.assignee_id === 'number' ? item.assignee_id : null,
+      metric: nonEmptyString(item.metric),
+      dueDate: dueDate && /^\d{4}-\d{2}-\d{2}$/.test(dueDate) ? dueDate : null,
+      needsReview: item.needs_review === true,
+    }]
+  })
+}
+
+/**
+ * Valida el `narrative` de la API (el que guarda el backend con el callback de n8n; también acepta el cuerpo completo
+ * del callback con el texto dentro de `narrative`). Devuelve `narrative: null` si no trae ninguna sección utilizable;
+ * las secciones que falten quedan `undefined` y se dibujan «en preparación». Con `needs_review` en `true`, con
+ * `warnings` o con `status: 'error'` marca `review`: el texto no debe dibujarse hasta que alguien lo revise.
+ */
+export function parseNarrative(raw: unknown, locale: string): ParsedNarrative {
+  const empty: ParsedNarrative = { narrative: null, teamNotes: {}, themeNotes: {}, personNotes: {}, decisions: [] }
+  if (!isRecord(raw)) {
+    return empty
   }
 
-  const generatedAtRaw = nonEmptyString(raw.generated_at)
+  // El callback manda { report_id, status, needs_review, narrative: {...}, warnings }; el backend puede guardar eso o solo el texto.
+  const body = isRecord(raw.narrative) ? raw.narrative : raw
+  const pick = (key: string) => (raw[key] !== undefined ? raw[key] : body[key])
+
+  if (pick('status') === 'error') {
+    return { ...empty, review: { state: 'error', warnings: [], error: nonEmptyString(pick('error')) } }
+  }
+
+  const warnings = stringList(pick('warnings'))
+  const needsReview = pick('needs_review') === true || warnings.length > 0
+
+  const verdict = nonEmptyString(body.verdict)
+  const insights = Array.isArray(body.insights)
+    ? body.insights.flatMap((item) => {
+        const text = isRecord(item) ? nonEmptyString(item.text) : undefined
+        return text && isRecord(item)
+          ? [{ text, metric: nonEmptyString(item.metric), team: nonEmptyString(item.team) }]
+          : []
+      })
+    : []
+
+  const closingRaw = isRecord(body.closing) ? body.closing : null
+  const closing = closingRaw
+    ? {
+        headline: nonEmptyString(closingRaw.headline),
+        callout: nonEmptyString(closingRaw.callout),
+        paragraphs: stringList(closingRaw.paragraphs),
+      }
+    : undefined
+  const hasClosing = closing != null && (closing.headline != null || closing.paragraphs.length > 0)
+  const decisions = parseDecisions(body.decisions)
+
+  const teamNotes = notesOf(body.team_notes)
+  const themeNotes = notesOf(body.theme_notes)
+  const personNotes = notesOf(body.person_notes)
+  const hasContent = verdict != null
+    || insights.length > 0
+    || hasClosing
+    || decisions.length > 0
+    || [teamNotes, themeNotes, personNotes].some(notes => Object.keys(notes).length > 0)
+  if (!hasContent) {
+    return empty
+  }
+
+  const generatedAtRaw = nonEmptyString(body.generated_at)
   const generatedDate = generatedAtRaw ? new Date(generatedAtRaw) : null
   const generatedAt = generatedDate && !Number.isNaN(generatedDate.getTime())
     ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(generatedDate)
     : undefined
 
   return {
-    model: nonEmptyString(raw.model),
-    generatedAt,
-    verdict,
-    insights: texts.length
-      ? texts.map((text, index) => ({ index: String(index + 1).padStart(2, '0'), text }))
-      : undefined,
+    narrative: {
+      model: nonEmptyString(body.model),
+      generatedAt,
+      verdict,
+      insights: insights.length
+        ? insights.map((item, index) => ({ index: String(index + 1).padStart(2, '0'), ...item }))
+        : undefined,
+    },
+    teamNotes,
+    themeNotes,
+    personNotes,
+    closing: hasClosing ? closing : undefined,
+    decisions,
+    review: needsReview ? { state: 'review', warnings } : undefined,
+  }
+}
+
+/** Hojas de cierre: resumen (titular, destacado y párrafos) y decisiones; sin ninguno de los dos no hay cierre. */
+function buildClosing(parsed: ParsedNarrative, names: Map<number, string>, { t, locale }: AdapterContext): CeoClosing | undefined {
+  if (!parsed.closing && !parsed.decisions.length) {
+    return undefined
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' })
+  const decisions: CeoDecision[] = parsed.decisions.map((decision, index) => ({
+    index: String(index + 1).padStart(2, '0'),
+    title: decision.title,
+    description: decision.description ?? '',
+    assignee: decision.assigneeId != null ? (names.get(decision.assigneeId) ?? NO_VALUE) : NO_VALUE,
+    metric: decision.metric ?? NO_VALUE,
+    date: decision.dueDate ? formatter.format(parseIsoDate(decision.dueDate)) : NO_VALUE,
+    assigneeId: decision.assigneeId,
+    dueDate: decision.dueDate,
+    needsReview: decision.needsReview,
+  }))
+
+  return {
+    title: parsed.closing?.headline ?? t('ceoReport.closing.title'),
+    quote: parsed.closing?.callout,
+    paragraphs: parsed.closing?.paragraphs ?? [],
+    hasSummary: parsed.closing != null,
+    decisionsEyebrow: t('ceoReport.closing.decisionsEyebrow'),
+    decisions,
+    disclaimer: t('ceoReport.closing.disclaimer'),
   }
 }
 
