@@ -4,6 +4,7 @@ import DashboardCollaboratorsTable from '~/features/dashboard/components/Dashboa
 import DashboardKpiCard from '~/features/dashboard/components/DashboardKpiCard.vue'
 import DashboardKpiHero from '~/features/dashboard/components/DashboardKpiHero.vue'
 import DashboardLoadDistribution from '~/features/dashboard/components/DashboardLoadDistribution.vue'
+import DashboardNexxtepActivity from '~/features/dashboard/components/DashboardNexxtepActivity.vue'
 import DashboardToolbar from '~/features/dashboard/components/DashboardToolbar.vue'
 import DashboardTopicsTable from '~/features/dashboard/components/DashboardTopicsTable.vue'
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
@@ -136,5 +137,8 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
       :error="errorOf(projectsQuery)"
       @retry="projectsQuery.refetch()"
     />
+
+    <!-- Sin backend todavía: maqueta marcada como trabajo en proceso. -->
+    <DashboardNexxtepActivity />
   </div>
 </template>

@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
   report: CeoReport
   pageNumber: number
   /** Insights redactados por la IA; sin ellos la hoja muestra las tarjetas «en preparación». */
-  items?: Array<{ index: string, text: string }>
+  items?: Array<{ index: string, text: string, metric?: string, team?: string }>
   intro?: boolean
   /** Última hoja de insights: lleva el pie de autoría. */
   last?: boolean
@@ -56,7 +56,7 @@ const footnote = computed(() => [
           >{{ item.index }}</span>
           <div class="cr-insight__main">
             <div class="cr-insight__tag">
-              {{ item.index }} ·
+              {{ [item.index, item.team, item.metric].filter(Boolean).join(' · ') }}
             </div>
             <p class="cr-insight__text">
               {{ item.text }}

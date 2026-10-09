@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
+import DashboardLoadRangeBar from '~/features/dashboard/components/shared/DashboardLoadRangeBar.vue'
 import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiLoadDistributionResponse } from '~/features/dashboard/types/dashboard-api.types'
-import { NO_DATA, RANGE_TONE, TONE_BG } from '~/features/dashboard/utils/dashboard.util'
+import type { DashboardTone } from '~/features/dashboard/types/dashboard.types'
+import { RANGE_TONE } from '~/features/dashboard/utils/dashboard.util'
 
-/** Carga productiva por colaborador contra la meta (barras verticales + línea de meta). */
+/** Carga productiva por décima: una barra vertical por cada 10 puntos de porcentaje con cuántas personas caen en ella; el tooltip lista quiénes y su porcentaje. */
 const props = defineProps<{
   load: ApiLoadDistributionResponse | undefined
   loading: boolean
@@ -20,30 +22,42 @@ const { t } = useI18n()
 
 const bars = computed(() => props.load?.bars ?? [])
 
-/** Leyenda a partir de los rangos del backend: `≥85`, `70-84`, `55-69`, `<55`. */
-const legend = computed(() => {
+/** Tono y nombre del rango del backend (Excelente, Bueno…) al que pertenece un porcentaje. */
+function rangeOfValue(value: number): { tone: DashboardTone, name: string } {
   const ranges = props.load?.ranges ?? []
+  const hit = ranges.find(item => value >= item.min_rate) ?? ranges[ranges.length - 1]
+  return hit ? { tone: RANGE_TONE[hit.range], name: t(`dashboard.ranges.${hit.range}`) } : { tone: 'neutral', name: '' }
+}
 
-  return ranges.map((item, index) => {
-    const upper = index > 0 ? ranges[index - 1]!.min_rate : null
-    let limits: string
-    if (upper == null) {
-      limits = `≥${item.min_rate}%`
-    }
-    else if (index === ranges.length - 1) {
-      limits = `<${upper}%`
-    }
-    else {
-      limits = `${item.min_rate}-${upper - 1}%`
-    }
+/** Cubeta de 10 en 10 (0 = 0-9 … 9 = 90-100) de un porcentaje; se redondea antes para coincidir con el que se muestra. */
+function bucketOf(value: number): number {
+  return Math.min(Math.max(Math.floor(Math.round(value) / 10), 0), 9)
+}
 
-    return { range: item.range, tone: RANGE_TONE[item.range], label: `${t(`dashboard.ranges.${item.range}`)} ${limits}` }
+/** Diez barras de 10 en 10 (de 90-100% a 0-9%) con sus personas, de mayor a menor porcentaje; quien no tiene dato no se grafica. */
+const groups = computed(() => {
+  const people = props.load?.bars ?? []
+  const byValue = (a: { value: number | null }, b: { value: number | null }) => (b.value ?? -1) - (a.value ?? -1)
+
+  return Array.from({ length: 10 }, (_, index) => {
+    const bucket = 9 - index
+    const low = bucket * 10
+    const high = bucket === 9 ? 100 : low + 9
+    // El tono sale del punto medio de la cubeta contra los rangos del backend.
+    const { tone, name } = rangeOfValue(low + 5)
+    return {
+      key: String(bucket),
+      label: `${low}–${high}%`,
+      shortLabel: String(low),
+      limits: name,
+      tone: tone as DashboardTone | null,
+      people: people.filter(bar => bar.value != null && bucketOf(bar.value) === bucket).sort(byValue),
+    }
   })
 })
 
-function barLabel(name: string, value: number | null): string {
-  return `${name}: ${value == null ? NO_DATA : `${Math.round(value)}%`}`
-}
+/** El alto de cada barra es relativo a la que tiene más personas. */
+const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.people.length)))
 </script>
 
 <template>
@@ -80,51 +94,18 @@ function barLabel(name: string, value: number | null): string {
       </template>
 
       <template v-if="load">
-        <div class="relative h-28">
-          <ul class="flex h-full items-end gap-2">
-            <li
-              v-for="bar in bars"
-              :key="bar.id"
-              class="flex h-full min-w-0 flex-1 items-end"
-            >
-              <UTooltip
-                :text="barLabel(bar.name, bar.value)"
-                class="w-full"
-              >
-                <div
-                  class="w-full rounded-sm transition-opacity hover:opacity-80"
-                  :class="bar.value == null || bar.range == null ? 'bg-muted-foreground/30' : TONE_BG[RANGE_TONE[bar.range]]"
-                  :style="{ height: bar.value == null ? '4px' : `${Math.max(Math.min(bar.value, 100), 1)}%` }"
-                  role="img"
-                  :aria-label="barLabel(bar.name, bar.value)"
-                />
-              </UTooltip>
-            </li>
-          </ul>
-
-          <div
-            class="pointer-events-none absolute inset-x-0 border-t border-dashed border-foreground/50"
-            :style="{ bottom: `${load.goal}%` }"
-          >
-            <span class="absolute -top-4 right-0 text-[11px] text-muted-foreground">
-              {{ t('dashboard.load.goal', { goal: load.goal }) }}
-            </span>
-          </div>
+        <div class="flex h-40 items-stretch gap-1.5 sm:gap-3">
+          <DashboardLoadRangeBar
+            v-for="group in groups"
+            :key="group.key"
+            :label="group.label"
+            :short-label="group.shortLabel"
+            :limits="group.limits"
+            :tone="group.tone"
+            :people="group.people"
+            :height="(group.people.length / maxCount) * 100"
+          />
         </div>
-
-        <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] uppercase tracking-wide text-muted-foreground">
-          <li
-            v-for="item in legend"
-            :key="item.range"
-            class="inline-flex items-center gap-1.5"
-          >
-            <span
-              class="size-2 rounded-full"
-              :class="TONE_BG[item.tone]"
-            />
-            {{ item.label }}
-          </li>
-        </ul>
       </template>
     </DashboardBlockState>
   </section>

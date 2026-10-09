@@ -32,7 +32,10 @@ const { t } = useI18n()
         </h2>
         <div class="cr-title-rule" />
 
-        <blockquote class="cr-quote">
+        <blockquote
+          v-if="report.closing.quote"
+          class="cr-quote"
+        >
           {{ report.closing.quote }}
         </blockquote>
 
@@ -65,6 +68,10 @@ const { t } = useI18n()
           </div>
           <h3 class="cr-decision__title">
             {{ decision.title }}
+            <small
+              v-if="decision.needsReview"
+              class="cr-no-print"
+            >· {{ t('ceoReport.closing.needsReview') }}</small>
           </h3>
           <p class="cr-decision__text">
             {{ decision.description }}

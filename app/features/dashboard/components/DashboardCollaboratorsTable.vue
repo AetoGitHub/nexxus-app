@@ -42,10 +42,9 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'rank', label: '#', align: 'text-left' },
   { key: 'collaborator', label: t('dashboard.individual.columns.collaborator'), align: 'text-left' },
   { key: 'tct', label: 'TCT', align: 'text-center', metric: 'tct' },
-  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur' },
+  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr' },
-  { key: 'completed', label: t('dashboard.individual.columns.completed'), align: 'text-left', metric: 'people_completed' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load' },
   { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
@@ -53,20 +52,6 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
 ])
 
 const rows = computed(() => props.data?.people ?? [])
-
-/** TC, IUR y TPR: chips con el color de su rango (TPR no tiene semáforo). */
-function metricsOf(row: ApiPersonRow): { key: string, text: string, tone: DashboardTone }[] {
-  return [
-    { key: 'tc', text: formatPercent(row.tc), tone: rangeOf(row.tc) },
-    { key: 'iur', text: formatPercent(row.iur), tone: rangeOf(row.iur) },
-    { key: 'tpr', text: formatHours(row.tpr), tone: 'neutral' },
-  ]
-}
-
-/** Avance de completadas; sin tareas en el periodo la barra queda vacía (evita dividir entre 0). */
-function completedWidth(completed: number, total: number): string {
-  return total > 0 ? `${Math.min((completed / total) * 100, 100)}%` : '0%'
-}
 
 const TREND_ICONS: Record<NonNullable<ApiDirection>, string> = {
   up: 'i-lucide-arrow-up',
@@ -142,7 +127,7 @@ async function exportExcel() {
       </template>
 
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[1080px] border-collapse text-sm">
+        <table class="w-full min-w-[980px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th
@@ -199,35 +184,41 @@ async function exportExcel() {
                 </span>
               </td>
 
-              <td
-                v-for="metric in metricsOf(row)"
-                :key="`${row.id}-${metric.key}`"
-                class="px-2 py-3 text-center"
-              >
+              <td class="px-2 py-3 text-center">
                 <span
                   class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                  :class="TONE_SOFT[metric.tone]"
+                  :class="TONE_SOFT[rangeOf(row.iur)]"
                 >
-                  {{ metric.text }}
+                  {{ formatPercent(row.iur) }}
                 </span>
               </td>
 
-              <td class="px-2 py-3">
-                <div class="h-1 w-20 rounded-full bg-muted">
-                  <div
-                    class="h-full rounded-full"
-                    :style="{
-                      width: completedWidth(row.completed, row.total),
-                      backgroundColor: avatarColor(row.id),
-                    }"
-                  />
-                </div>
-                <p
-                  class="mt-0.5 font-mono text-[10px]"
-                  :class="row.total > 0 ? 'text-foreground' : 'text-muted-foreground'"
+              <td class="px-2 py-3 text-center">
+                <span class="inline-flex items-baseline gap-1.5">
+                  <span
+                    class="font-mono text-lg font-bold tabular-nums"
+                    :class="row.tc == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.tc)]"
+                  >
+                    {{ formatPercent(row.tc) }}
+                  </span>
+                  <span
+                    class="font-mono text-[11px] tabular-nums"
+                    :class="row.total > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
+                    :title="t('dashboard.metrics.people_completed.description')"
+                  >
+                    {{ row.completed }}/{{ row.total }}
+                  </span>
+                </span>
+              </td>
+
+              <td class="px-2 py-3 text-center">
+                <span
+                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
+                  :class="TONE_SOFT.neutral"
+                  :title="row.tpr == null ? t('dashboard.kpis.tpr.empty') : undefined"
                 >
-                  {{ row.completed }}/{{ row.total }}
-                </p>
+                  {{ formatHours(row.tpr) }}
+                </span>
               </td>
 
               <td class="px-2 py-3">

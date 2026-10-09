@@ -68,15 +68,36 @@ export interface ReportMetrics {
   performance_distribution?: ReportPerformanceBucket[]
 }
 
+/** Decisión sugerida por la IA: trae lo necesario para el botón «Crear como tarea». */
+export interface ReportNarrativeDecision {
+  title: string
+  description?: string
+  assignee_id?: number | null
+  metric?: string
+  /** `YYYY-MM-DD`. */
+  due_date?: string | null
+  needs_review?: boolean
+}
+
 /**
- * Texto redactado por Nexxa IA (contrato propuesto; el backend aún no lo envía).
- * Cada sección es opcional: la que falte se muestra como «IA en preparación».
+ * Texto redactado por Nexxa IA (callback de n8n `nexxus-reporte`). Cada sección es opcional: la que falte se muestra
+ * como «IA en preparación». Las notas vienen por id (equipo, proyecto/tema y persona). Con `needs_review` en `true`
+ * o con `warnings` el texto no se dibuja hasta que alguien lo revise; `status: 'error'` trae `error`.
  */
 export interface ReportNarrative {
+  status?: 'done' | 'error'
+  error?: string
+  needs_review?: boolean
+  warnings?: string[]
   model?: string
   generated_at?: string
   verdict?: string
-  insights?: Array<{ text: string }>
+  insights?: Array<{ text: string, metric?: string, team?: string }>
+  team_notes?: Record<string, string>
+  theme_notes?: Record<string, string>
+  person_notes?: Record<string, string>
+  closing?: { headline?: string, callout?: string, paragraphs?: string[] }
+  decisions?: ReportNarrativeDecision[]
 }
 
 export interface Report {

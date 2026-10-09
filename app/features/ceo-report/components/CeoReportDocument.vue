@@ -81,19 +81,19 @@ const sheets = computed<Sheet[]>(() => {
     })),
     ...(report.people.top.length ? [{ key: 'people', component: CeoPeoplePage, props: { report } }] : []),
     ...(report.nexxtep ? [{ key: 'nexxtep', component: CeoNexxtepPage, props: { report } }] : []),
-    ...(report.closing
-      ? [
-          { key: 'closing', component: CeoClosingPage, props: { report, part: 'summary' } },
-          {
-            key: 'decisions',
-            component: CeoClosingPage,
-            props: {
-              report,
-              part: 'decisions',
-              onCreateTask: (decision: CeoDecision) => emit('createTask', decision),
-            },
+    ...(report.closing?.hasSummary
+      ? [{ key: 'closing', component: CeoClosingPage, props: { report, part: 'summary' } }]
+      : []),
+    ...(report.closing?.decisions.length
+      ? [{
+          key: 'decisions',
+          component: CeoClosingPage,
+          props: {
+            report,
+            part: 'decisions',
+            onCreateTask: (decision: CeoDecision) => emit('createTask', decision),
           },
-        ]
+        }]
       : []),
     { key: 'back', component: CeoBackCoverPage, props: { report } },
   ]

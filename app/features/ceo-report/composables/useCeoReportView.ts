@@ -4,7 +4,11 @@ import type { CeoReport } from '~/features/ceo-report/types/ceo-report.types'
 import { buildCeoReport, type Translate } from '~/features/ceo-report/utils/ceo-report-adapter.util'
 
 /** Adapta la respuesta de la API al modelo que dibujan las hojas del reporte. */
-export function useCeoReportView(report: MaybeRefOrGetter<Report | null | undefined>) {
+export function useCeoReportView(
+  report: MaybeRefOrGetter<Report | null | undefined>,
+  /** Dibuja el texto de IA aunque esté marcado «por revisar» (lo decide quien lo revisó). */
+  allowUnreviewed: MaybeRefOrGetter<boolean> = false,
+) {
   const { t, locale } = useI18n()
   const { organization } = useAuth()
 
@@ -21,6 +25,7 @@ export function useCeoReportView(report: MaybeRefOrGetter<Report | null | undefi
       t: translate,
       locale: locale.value,
       scopeLabel: company?.name ?? t('ceoReport.scope.company'),
+      allowUnreviewed: toValue(allowUnreviewed),
     })
   })
 

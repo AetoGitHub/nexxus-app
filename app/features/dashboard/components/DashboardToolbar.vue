@@ -25,13 +25,22 @@ const projectIds = defineModel<number[]>('projectIds', { required: true })
 
 const { t } = useI18n()
 
-const scopes: DashboardScope[] = ['mine', 'team']
+/** Acciones que aún no tienen backend. */
+const wipActions = [
+  { key: 'download', icon: 'i-lucide-download', variant: 'outline' },
+  { key: 'analyze', icon: 'i-lucide-sparkles', variant: 'soft' },
+] as const
+
+const scopes:DashboardScope[] = ['mine', 'team']
 const periods: DashboardPeriod[] = ['week', 'month', 'quarter', 'year']
 
 const compareItems = computed(() =>
   (['none', 'previous', 'last_year'] as const).map(value => ({
     value,
-    label: t(`dashboard.toolbar.compare.${value}`),
+    // «vs semana/mes/trimestre/año anterior» según el periodo; con rango personalizado queda «vs periodo anterior».
+    label: value === 'previous' && !customActive.value
+      ? t(`dashboard.toolbar.compare.previous_${period.value}`)
+      : t(`dashboard.toolbar.compare.${value}`),
   })),
 )
 
@@ -98,6 +107,7 @@ function selectCustom() {
       <div
         class="inline-flex rounded-lg bg-muted p-0.5"
         role="group"
+        :title="t('dashboard.toolbar.periodLabel')"
         :aria-label="t('dashboard.toolbar.periodLabel')"
       >
         <button
@@ -152,12 +162,34 @@ function selectCustom() {
         </span>
       </USelectMenu>
 
-      <div class="ml-auto">
+      <div class="ml-auto flex flex-wrap items-center gap-2">
         <DashboardPeriodPicker
           v-model:range="periodRange"
           :period="period"
           :disabled="customActive"
         />
+
+        <!-- Sin backend todavía: botones deshabilitados con la etiqueta WIP; el tooltip explica por qué. -->
+        <UTooltip
+          v-for="action in wipActions"
+          :key="action.key"
+          :text="`${t('common.wip.label')}. ${t('common.wip.description')}`"
+        >
+          <span class="inline-flex">
+            <UButton
+              color="neutral"
+              :variant="action.variant"
+              size="sm"
+              :icon="action.icon"
+              :label="t(`dashboard.toolbar.${action.key}`)"
+              disabled
+            >
+              <template #trailing>
+                <WipBadge compact />
+              </template>
+            </UButton>
+          </span>
+        </UTooltip>
       </div>
     </div>
 

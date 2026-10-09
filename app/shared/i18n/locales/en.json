@@ -22,6 +22,11 @@
     "logout": "Sign out",
     "back": "Back",
     "noData": "No data",
+    "wip": {
+      "label": "Work in progress",
+      "short": "WIP",
+      "description": "This section is not connected to the backend yet. It will be available soon."
+    },
     "noUsers": "No users available",
     "selectDateRange": "Select a date range"
   },
@@ -1111,6 +1116,7 @@
     "title": "Dashboard",
     "periodFilter": {
       "label": "Period filter",
+      "byDueDate": "Tasks are filtered by their due date.",
       "current": "Current period",
       "currentTag": "current",
       "disabledCustom": "Does not apply with a custom range",
@@ -1123,11 +1129,17 @@
       "quarter": "Q{n} {year}"
     },
     "toolbar": {
-      "periodLabel": "Dashboard period",
+      "periodLabel": "Dashboard period (by due date)",
       "compareLabel": "Comparison",
+      "download": "Download report",
+      "analyze": "Analyze with AI",
       "compare": {
         "none": "No comparison",
         "previous": "vs previous period",
+        "previous_week": "vs previous week",
+        "previous_month": "vs previous month",
+        "previous_quarter": "vs previous quarter",
+        "previous_year": "vs previous year",
         "last_year": "vs same period last year"
       },
       "scopeLabel": "Dashboard scope",
@@ -1135,7 +1147,7 @@
         "mine": "My tasks",
         "team": "Team"
       },
-      "dateRange": "Date range",
+      "dateRange": "Due date range",
       "rangeIncomplete": "Pick both dates to see the range.",
       "rangeInvalid": "The start date must be on or before the end date.",
       "projects": {
@@ -1155,14 +1167,15 @@
         "countEmpty": "—"
       },
       "created": {
-        "label": "Tasks created",
+        "label": "Tasks in the period",
         "mine": "{assigned} assigned to me · {created} created by me"
       },
       "iur": {
         "label": "Urgent tasks resolved · IUR"
       },
       "tpr": {
-        "label": "Average resolution time · TPR"
+        "label": "Average resolution time · TPR",
+        "empty": "No tasks worked on in the period"
       },
       "ica": {
         "label": "Weighted load · ICA"
@@ -1181,6 +1194,8 @@
       "productive": "Productive load distribution",
       "saturated": "{count} overloaded",
       "goal": "Target {goal}%",
+      "people": "No people | {count} person | {count} people",
+      "noRange": "No data",
       "empty": "There are no collaborators with load in this period yet."
     },
     "periods": {
@@ -1189,6 +1204,16 @@
       "quarter": "Quarter",
       "year": "Year",
       "custom": "Custom"
+    },
+    "nexxtepActivity": {
+      "title": "Nexxtep activity",
+      "byExecutive": "By virtual executive",
+      "tiles": {
+        "active": "Active cases",
+        "waiting": "Waiting",
+        "escalated": "Escalated",
+        "autonomous": "Resolved unassisted"
+      }
     },
     "individual": {
       "title": "Individual performance",
@@ -1250,39 +1275,39 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tasks Completed on Time",
-        "description": "Percentage of tasks with a due date that were completed on time (on or before the due date). Goal: ≥85%."
+        "description": "Percentage of the tasks due in the period that were closed on time (on or before their due date)."
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Completed tasks out of the tasks created in the period (excluding archived, deleted and backlog). Goal: ≥85%."
+        "description": "Percentage of the tasks due in the period that are already completed."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
-        "description": "Percentage of urgent or critical tasks that have been completed. Those still pending count as unattended. Goal: ≥85%."
+        "description": "Percentage of the urgent or critical tasks due in the period that have already been resolved."
       },
       "tpr": {
         "title": "TPR — Average Resolution Time",
-        "description": "Average hours from task creation to completion. Lower is better."
+        "description": "Average time, in hours, from when work on the task started (it moved to \"In progress\") until it was completed."
       },
       "ica": {
         "title": "ICA — Workload Completion Index",
-        "description": "Percentage of completed points out of the points assigned in the period. Goal: ≥85%."
+        "description": "Completed effort points ÷ total points of the tasks due in the period."
       },
       "tasks_created": {
-        "title": "Tasks created",
-        "description": "Tasks created in the period (excluding archived, deleted and backlog). Below: how many are assigned to you and how many you created. Goal: 160."
+        "title": "Tasks in the period",
+        "description": "Total tasks whose due date falls in the period. Below: how many are assigned to you and how many you created. Goal: 160."
       },
       "weighted_load": {
         "title": "Weighted load",
-        "description": "Completed points vs assigned points in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
+        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Points from the period's tasks that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Points from the tasks due in the period that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
         "title": "Effort distribution",
-        "description": "Number of tasks in the period by effort: R = quick, N = normal, C = complex."
+        "description": "Number of tasks due in the period by effort: R = quick, N = normal, C = complex."
       },
       "trend": {
         "title": "Trend",
@@ -1290,15 +1315,15 @@
       },
       "people_completed": {
         "title": "Completed",
-        "description": "Tasks assigned to the person in the period: completed / assigned (excluding archived, deleted and backlog)."
+        "description": "Tasks assigned to the person that are due in the period: completed / assigned (excluding archived, deleted and backlog)."
       },
       "completed": {
         "title": "Completed",
-        "description": "Completed tasks in the project vs all tasks created in the period."
+        "description": "Completed tasks in the project vs all tasks due in the period."
       },
       "active": {
         "title": "Active",
-        "description": "Period tasks that are still open in the project (pending, in progress, in review or reopened)."
+        "description": "Tasks due in the period that are still open in the project (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",
@@ -1314,7 +1339,7 @@
       },
       "load_distribution": {
         "title": "Productive load distribution",
-        "description": "Each person's ICA for the period. The dashed line marks the 85% goal."
+        "description": "Productive load of each person across the whole organization (Attended Load Index, ICA), considering the tasks of all their companies. Each bar counts how many people fall in the range; hover to see who they are and their percentage. Goal: ≥85%."
       }
     }
   },
@@ -1423,7 +1448,23 @@
       "assignedTo": "Assigned to",
       "metric": "Metric",
       "date": "Date",
-      "createTask": "Create as task"
+      "createTask": "Create as task",
+      "title": "Executive closing",
+      "decisionsEyebrow": "Suggested decisions",
+      "disclaimer": "Nexxa AI suggests these decisions from the metrics: review them before turning them into tasks.",
+      "needsReview": "to review",
+      "reviewDecision": "The AI was not sure about this decision: check the owner and the date."
+    },
+    "notes": {
+      "title": "Nexxa AI reading"
+    },
+    "aiReview": {
+      "reviewTitle": "The AI text needs review",
+      "reviewDescription": "Nexxa AI flagged this analysis for review, so it is hidden and must not be sent to the CEO yet.",
+      "showAnyway": "Show anyway",
+      "hide": "Hide AI text",
+      "errorTitle": "Nexxa AI could not write the analysis",
+      "errorDescription": "The report keeps its metrics; try recalculating it later."
     },
     "back": {
       "title": "Productivity report"
