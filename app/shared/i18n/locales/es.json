@@ -22,6 +22,11 @@
     "logout": "Cerrar sesión",
     "back": "Volver",
     "noData": "Sin datos",
+    "wip": {
+      "label": "Trabajo en proceso",
+      "short": "WIP",
+      "description": "Esta sección todavía no está conectada al backend. Estará disponible pronto."
+    },
     "noUsers": "Sin usuarios disponibles",
     "selectDateRange": "Selecciona un rango de fechas"
   },
@@ -1125,6 +1130,8 @@
     "toolbar": {
       "periodLabel": "Periodo del dashboard",
       "compareLabel": "Comparativa",
+      "download": "Descargar reporte",
+      "analyze": "Analizar con IA",
       "compare": {
         "none": "Sin comparar",
         "previous": "vs periodo anterior",
@@ -1189,6 +1196,16 @@
       "quarter": "Trimestre",
       "year": "Año",
       "custom": "Personalizado"
+    },
+    "nexxtepActivity": {
+      "title": "Actividad de Nexxtep",
+      "byExecutive": "Por ejecutivo virtual",
+      "tiles": {
+        "active": "Gestiones activas",
+        "waiting": "En espera",
+        "escalated": "Escaladas",
+        "autonomous": "Resueltas sin ayuda"
+      }
     },
     "individual": {
       "title": "Rendimiento individual",

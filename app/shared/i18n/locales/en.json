@@ -22,6 +22,11 @@
     "logout": "Sign out",
     "back": "Back",
     "noData": "No data",
+    "wip": {
+      "label": "Work in progress",
+      "short": "WIP",
+      "description": "This section is not connected to the backend yet. It will be available soon."
+    },
     "noUsers": "No users available",
     "selectDateRange": "Select a date range"
   },
@@ -1125,6 +1130,8 @@
     "toolbar": {
       "periodLabel": "Dashboard period",
       "compareLabel": "Comparison",
+      "download": "Download report",
+      "analyze": "Analyze with AI",
       "compare": {
         "none": "No comparison",
         "previous": "vs previous period",
@@ -1189,6 +1196,16 @@
       "quarter": "Quarter",
       "year": "Year",
       "custom": "Custom"
+    },
+    "nexxtepActivity": {
+      "title": "Nexxtep activity",
+      "byExecutive": "By virtual executive",
+      "tiles": {
+        "active": "Active cases",
+        "waiting": "Waiting",
+        "escalated": "Escalated",
+        "autonomous": "Resolved unassisted"
+      }
     },
     "individual": {
       "title": "Individual performance",
