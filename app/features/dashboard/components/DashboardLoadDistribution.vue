@@ -6,7 +6,7 @@ import type { ApiLoadDistributionResponse } from '~/features/dashboard/types/das
 import type { DashboardTone } from '~/features/dashboard/types/dashboard.types'
 import { RANGE_TONE } from '~/features/dashboard/utils/dashboard.util'
 
-/** Carga productiva por décima: una barra horizontal por cada 10 puntos de porcentaje con cuántas personas caen en ella; el tooltip lista quiénes y su porcentaje. */
+/** Carga productiva por décima: una barra vertical por cada 10 puntos de porcentaje con cuántas personas caen en ella; el tooltip lista quiénes y su porcentaje. */
 const props = defineProps<{
   load: ApiLoadDistributionResponse | undefined
   loading: boolean
@@ -34,12 +34,12 @@ function bucketOf(value: number): number {
   return Math.min(Math.max(Math.floor(Math.round(value) / 10), 0), 9)
 }
 
-/** Diez barras de 10 en 10 (de 90-100% a 0-9%) con sus personas, de mayor a menor porcentaje; sin dato va aparte, al final. */
+/** Diez barras de 10 en 10 (de 90-100% a 0-9%) con sus personas, de mayor a menor porcentaje; quien no tiene dato no se grafica. */
 const groups = computed(() => {
   const people = props.load?.bars ?? []
   const byValue = (a: { value: number | null }, b: { value: number | null }) => (b.value ?? -1) - (a.value ?? -1)
 
-  const result = Array.from({ length: 10 }, (_, index) => {
+  return Array.from({ length: 10 }, (_, index) => {
     const bucket = 9 - index
     const low = bucket * 10
     const high = bucket === 9 ? 100 : low + 9
@@ -48,20 +48,15 @@ const groups = computed(() => {
     return {
       key: String(bucket),
       label: `${low}–${high}%`,
+      shortLabel: String(low),
       limits: name,
       tone: tone as DashboardTone | null,
       people: people.filter(bar => bar.value != null && bucketOf(bar.value) === bucket).sort(byValue),
     }
   })
-
-  const withoutData = people.filter(bar => bar.value == null)
-  if (withoutData.length > 0) {
-    result.push({ key: 'none', label: t('dashboard.load.noRange'), limits: '', tone: null, people: withoutData })
-  }
-  return result
 })
 
-/** El largo de cada barra es relativo a la que tiene más personas. */
+/** El alto de cada barra es relativo a la que tiene más personas. */
 const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.people.length)))
 </script>
 
@@ -99,15 +94,16 @@ const maxCount = computed(() => Math.max(1, ...groups.value.map(group => group.p
       </template>
 
       <template v-if="load">
-        <div class="space-y-1">
+        <div class="flex h-40 items-stretch gap-1.5 sm:gap-3">
           <DashboardLoadRangeBar
             v-for="group in groups"
             :key="group.key"
             :label="group.label"
+            :short-label="group.shortLabel"
             :limits="group.limits"
             :tone="group.tone"
             :people="group.people"
-            :width="(group.people.length / maxCount) * 100"
+            :height="(group.people.length / maxCount) * 100"
           />
         </div>
       </template>
