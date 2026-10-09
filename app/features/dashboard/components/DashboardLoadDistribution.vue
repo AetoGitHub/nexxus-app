@@ -6,7 +6,7 @@ import type { ApiLoadDistributionResponse } from '~/features/dashboard/types/das
 import type { DashboardTone } from '~/features/dashboard/types/dashboard.types'
 import { RANGE_TONE } from '~/features/dashboard/utils/dashboard.util'
 
-/** Carga productiva por rango: una barra horizontal por rango con cuántas personas caen en él; el tooltip lista quiénes y su porcentaje. */
+/** Carga productiva por décima: una barra horizontal por cada 10 puntos de porcentaje con cuántas personas caen en ella; el tooltip lista quiénes y su porcentaje. */
 const props = defineProps<{
   load: ApiLoadDistributionResponse | undefined
   loading: boolean
@@ -22,41 +22,39 @@ const { t } = useI18n()
 
 const bars = computed(() => props.load?.bars ?? [])
 
-/** Rangos del backend con sus límites: `≥85`, `70-84`, `55-69`, `<55`. */
-const legend = computed(() => {
+/** Tono y nombre del rango del backend (Excelente, Bueno…) al que pertenece un porcentaje. */
+function rangeOfValue(value: number): { tone: DashboardTone, name: string } {
   const ranges = props.load?.ranges ?? []
+  const hit = ranges.find(item => value >= item.min_rate) ?? ranges[ranges.length - 1]
+  return hit ? { tone: RANGE_TONE[hit.range], name: t(`dashboard.ranges.${hit.range}`) } : { tone: 'neutral', name: '' }
+}
 
-  return ranges.map((item, index) => {
-    const upper = index > 0 ? ranges[index - 1]!.min_rate : null
-    let limits: string
-    if (upper == null) {
-      limits = `≥${item.min_rate}%`
-    }
-    else if (index === ranges.length - 1) {
-      limits = `<${upper}%`
-    }
-    else {
-      limits = `${item.min_rate}-${upper - 1}%`
-    }
+/** Cubeta de 10 en 10 (0 = 0-9 … 9 = 90-100) de un porcentaje; se redondea antes para coincidir con el que se muestra. */
+function bucketOf(value: number): number {
+  return Math.min(Math.max(Math.floor(Math.round(value) / 10), 0), 9)
+}
 
-    return { range: item.range, tone: RANGE_TONE[item.range], limits }
-  })
-})
-
-/** Una barra por rango (de mayor a menor) con sus personas, de mayor a menor porcentaje; sin dato va aparte, al final. */
+/** Diez barras de 10 en 10 (de 90-100% a 0-9%) con sus personas, de mayor a menor porcentaje; sin dato va aparte, al final. */
 const groups = computed(() => {
-  const bars = props.load?.bars ?? []
+  const people = props.load?.bars ?? []
   const byValue = (a: { value: number | null }, b: { value: number | null }) => (b.value ?? -1) - (a.value ?? -1)
 
-  const result = legend.value.map(item => ({
-    key: item.range as string,
-    label: t(`dashboard.ranges.${item.range}`),
-    limits: item.limits,
-    tone: item.tone as DashboardTone | null,
-    people: bars.filter(bar => bar.range === item.range).sort(byValue),
-  }))
+  const result = Array.from({ length: 10 }, (_, index) => {
+    const bucket = 9 - index
+    const low = bucket * 10
+    const high = bucket === 9 ? 100 : low + 9
+    // El tono sale del punto medio de la cubeta contra los rangos del backend.
+    const { tone, name } = rangeOfValue(low + 5)
+    return {
+      key: String(bucket),
+      label: `${low}–${high}%`,
+      limits: name,
+      tone: tone as DashboardTone | null,
+      people: people.filter(bar => bar.value != null && bucketOf(bar.value) === bucket).sort(byValue),
+    }
+  })
 
-  const withoutData = bars.filter(bar => bar.range == null)
+  const withoutData = people.filter(bar => bar.value == null)
   if (withoutData.length > 0) {
     result.push({ key: 'none', label: t('dashboard.load.noRange'), limits: '', tone: null, people: withoutData })
   }

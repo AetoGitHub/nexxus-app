@@ -53,11 +53,6 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
 
 const rows = computed(() => props.data?.people ?? [])
 
-/** Avance de completadas; sin tareas en el periodo la barra queda vacía (evita dividir entre 0). */
-function completedWidth(completed: number, total: number): string {
-  return total > 0 ? `${Math.min((completed / total) * 100, 100)}%` : '0%'
-}
-
 const TREND_ICONS: Record<NonNullable<ApiDirection>, string> = {
   up: 'i-lucide-arrow-up',
   down: 'i-lucide-arrow-down',
@@ -199,32 +194,21 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3 text-center">
-                <span
-                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                  :class="TONE_SOFT[rangeOf(row.tc)]"
-                >
-                  {{ formatPercent(row.tc) }}
-                </span>
-                <div
-                  class="mx-auto mt-1.5 w-20"
-                  :title="t('dashboard.metrics.people_completed.description')"
-                >
-                  <div class="h-1 rounded-full bg-muted">
-                    <div
-                      class="h-full rounded-full"
-                      :style="{
-                        width: completedWidth(row.completed, row.total),
-                        backgroundColor: avatarColor(row.id),
-                      }"
-                    />
-                  </div>
-                  <p
-                    class="mt-0.5 font-mono text-[10px]"
-                    :class="row.total > 0 ? 'text-foreground' : 'text-muted-foreground'"
+                <span class="inline-flex items-baseline gap-1.5">
+                  <span
+                    class="font-mono text-lg font-bold tabular-nums"
+                    :class="row.tc == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.tc)]"
+                  >
+                    {{ formatPercent(row.tc) }}
+                  </span>
+                  <span
+                    class="font-mono text-[11px] tabular-nums"
+                    :class="row.total > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
+                    :title="t('dashboard.metrics.people_completed.description')"
                   >
                     {{ row.completed }}/{{ row.total }}
-                  </p>
-                </div>
+                  </span>
+                </span>
               </td>
 
               <td class="px-2 py-3 text-center">
