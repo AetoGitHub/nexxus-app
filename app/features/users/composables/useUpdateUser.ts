@@ -25,8 +25,14 @@ export function useUpdateUser() {
           background_image: payload.background_image ?? configuration.value.background_image,
         })
       }
+      // El usuario en sesión (toolbar, sidebar) toma el username guardado; el nombre sale del catálogo de perfiles.
+      if (session.value?.user.id === id && payload.username) {
+        session.value = { ...session.value, user: { ...session.value.user, username: payload.username } }
+      }
       void nuxtApp.$refreshProfileAppearances()
       await Promise.all([
+        // Tarjeta de perfil propio (correo y listas).
+        queryClient.invalidateQueries({ queryKey: ['auth', 'profile-detail', id] }),
         queryClient.invalidateQueries({ queryKey: ['auth-profiles'] }),
         queryClient.invalidateQueries({ queryKey: ['auth', 'profiles'] }),
         queryClient.invalidateQueries({

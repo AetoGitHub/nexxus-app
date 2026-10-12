@@ -48,7 +48,8 @@
       "superuser": "Superuser",
       "copyEmail": "Copy email",
       "copied": "Email copied",
-      "copyError": "Could not copy to the clipboard"
+      "copyError": "Could not copy to the clipboard",
+      "editUser": "Edit user"
     }
   },
   "realtime": {
@@ -498,7 +499,15 @@
         "filledTitle": "Dictated task: review it and create",
         "reviewTitle": "Review before creating",
         "reviewHint": "Confirm these details in the form before creating the task.",
-        "dismiss": "Dismiss notice"
+        "dismiss": "Dismiss notice",
+        "recording": "Recording the dictation",
+        "hint": "You can start speaking",
+        "recordingAnnounce": "Recording. You can start speaking.",
+        "meter": "Microphone audio level",
+        "elapsed": "Recorded time",
+        "processingStatus": "Processing the audio with AI",
+        "repeatReview": "Repeating task: the repeat frequency was not mentioned, so a default was set. Review the repetition.",
+        "effortIgnoredUrgent": "It was marked as urgent, so no effort was selected."
       },
       "validation": {
         "nameRequired": "Name is required",
@@ -901,6 +910,8 @@
         "emptyValue": "---",
         "columns": {
           "username": "Username",
+          "firstName": "First name",
+          "lastName": "Last name",
           "email": "Email",
           "whatsapp": "WhatsApp",
           "organization": "Organization",
