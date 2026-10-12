@@ -18,6 +18,7 @@ import { useUpdateTask } from '~/features/tasks/composables/form/useUpdateTask'
 import { useUpdateBacklogTask } from '~/features/tasks/composables/form/useUpdateBacklogTask'
 import { useUpdateTaskFiles } from '~/features/tasks/composables/form/useUpdateTaskFiles'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
+import { useAllUsersDropdown } from '~/features/tasks/composables/shared/useAllUsersDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
@@ -528,6 +529,19 @@ const {
   { searchTerm: userSearchTerm },
 )
 
+/**
+ * Todos los usuarios (todas las páginas): `usersList` solo trae la primera página y lo que se busca, y el dictado por
+ * voz puede asignar a alguien de cualquier página; sin él no se podría deducir su grupo.
+ */
+const { list: allUsersList } = useAllUsersDropdown(() => open.value)
+
+/** Usuarios para consultar el grupo de un asignado: los del dropdown más los de todas las páginas. */
+const lookupUsers = computed(() => {
+  const byId = new Map(allUsersList.value.map(user => [user.id, user]))
+  usersList.value.forEach(user => byId.set(user.id, user))
+  return [...byId.values()]
+})
+
 function withSelectedItems<T extends { value: string | number }>(
   items: T[],
   selected: Array<string | number | undefined | null>,
@@ -632,7 +646,7 @@ const selfManagedGroupFallback = computed(() => {
 /** Grupo: del asignado, del manager logueado (fallback), del detalle, o prefill Kanban. */
 const selectedGroupLabel = computed(() => {
   for (const id of state.assignedTo) {
-    const match = usersList.value.find(user => user.id === id)
+    const match = lookupUsers.value.find(user => user.id === id)
     if (match?.group_name) {
       return match.group_name
     }
@@ -645,22 +659,26 @@ const selectedGroupLabel = computed(() => {
     ?? ''
 })
 
+/** Prioriza el grupo del asignado; si no hay, el que administra (fallback); si no, conserva el prefill de Kanban. */
+function groupIdForAssignees(ids: number[]): number | undefined {
+  const match = ids
+    .map(id => lookupUsers.value.find(user => user.id === id))
+    .find(user => user?.group_id != null)
+  return match?.group_id ?? selfManagedGroupFallback.value?.id ?? props.initialDefaults?.group ?? undefined
+}
+
 watch(
-  [() => [...state.assignedTo], usersList],
+  [() => [...state.assignedTo], lookupUsers],
   ([ids]) => {
     if (isReadOnly.value) {
       return
     }
-    const match = ids
-      .map(id => usersList.value.find(user => user.id === id))
-      .find(user => user?.group_id != null)
-    // Prioriza el grupo del asignado; si no hay, el que administra (fallback); si no, conserva el prefill de Kanban.
-    state.group = match?.group_id ?? selfManagedGroupFallback.value?.id ?? props.initialDefaults?.group ?? undefined
+    state.group = groupIdForAssignees(ids)
   },
 )
 
 /** Usuarios y proyectos que se le mandan a la IA para que resuelva nombres como «Héctor» o «NEXXUS TASK». */
-const voiceUsers = computed<VoiceTaskCatalogItem[]>(() => toVoiceUsers(usersList.value))
+const voiceUsers = computed<VoiceTaskCatalogItem[]>(() => toVoiceUsers(lookupUsers.value))
 
 const voiceProjects = computed<VoiceTaskCatalogItem[]>(() => toVoiceProjects(allProjectItems.value))
 
@@ -668,6 +686,10 @@ const voiceProjects = computed<VoiceTaskCatalogItem[]>(() => toVoiceProjects(all
 function applyVoiceTask(task: VoiceTaskResponse) {
   state.name = task.name
   state.description = task.description
+
+  // Avisos que se suman a las dudas de la IA: lo que el formulario completó por su cuenta y hay que revisar.
+  const ambiguities = [...task.ambiguities]
+  let needsReview = task.needs_review
 
   if (task.in_backlog) {
     isBacklog.value = true
@@ -677,6 +699,14 @@ function applyVoiceTask(task: VoiceTaskResponse) {
     if (type) {
       state.type = type
     }
+    if (type === 'repeat') {
+      // Una tarea repetitiva necesita su configuración para poder crearse: la dictada o, si no, una por defecto a revisar.
+      state.repeatConfig = task.repeat_config ? { ...task.repeat_config } : createDefaultRepeatConfig()
+      if (task.repeat_assumed || !task.repeat_config) {
+        ambiguities.push(t('tasks.form.voice.repeatReview'))
+        needsReview = true
+      }
+    }
   }
 
   if (task.project_id != null) {
@@ -685,13 +715,23 @@ function applyVoiceTask(task: VoiceTaskResponse) {
   if (task.assignee_ids.length) {
     state.assignedTo = [...task.assignee_ids]
   }
+  // El grupo es el del asignado; se fija aquí mismo (no solo con el watcher) para que no dependa del orden de las cargas.
+  state.group = groupIdForAssignees(state.assignedTo)
   if (task.due_date) {
     state.dueDate = task.due_date
   }
-  state.urgent = task.urgent
+  if (task.urgent) {
+    state.urgent = true
+  }
   const effort = resolveVoiceEffort(task.effort)
   if (effort) {
-    state.effort = effort
+    // Urgente y esfuerzo son excluyentes en el formulario (el watcher de urgente borra el esfuerzo).
+    if (state.urgent) {
+      ambiguities.push(t('tasks.form.voice.effortIgnoredUrgent'))
+    }
+    else {
+      state.effort = effort
+    }
   }
 
   const subtaskRowsFromVoice = voiceSubtaskRows(task.subtasks, task.assignee_ids[0] ?? user.value?.id)
@@ -701,8 +741,8 @@ function applyVoiceTask(task: VoiceTaskResponse) {
 
   voiceReview.value = {
     transcript: task.transcript,
-    ambiguities: task.ambiguities,
-    needs_review: task.needs_review,
+    ambiguities,
+    needs_review: needsReview,
   }
 }
 

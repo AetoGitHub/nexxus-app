@@ -12,6 +12,21 @@ const { t } = useI18n()
 const toast = useToast()
 const { user, organization } = useAuth()
 const { copy } = useClipboard()
+const { openEditDialog } = useUserManagementDialog()
+
+const emit = defineEmits<{
+  /** Se abrió el formulario de edición del usuario; el contenedor (popover/modal) decide si se cierra. */
+  edit: []
+}>()
+
+/** Abre el mismo formulario de Configuración → Usuarios → Editar (UserUpdateDialog, montado una sola vez en app.vue). */
+function editUser() {
+  if (user.value?.id == null) {
+    return
+  }
+  openEditDialog(user.value.id)
+  emit('edit')
+}
 
 const username = computed(() => user.value?.username ?? '')
 // Nombre y apellido salen del catálogo de perfiles (la sesión solo trae el username); mientras no llegue, el username.
@@ -74,7 +89,19 @@ const lists = computed(() => [
 </script>
 
 <template>
-  <div class="w-full min-w-0">
+  <div class="relative w-full min-w-0">
+    <UTooltip :text="t('user.profile.editUser')">
+      <UButton
+        icon="i-lucide-pencil"
+        color="neutral"
+        variant="ghost"
+        size="sm"
+        square
+        class="absolute right-0 top-0"
+        :aria-label="t('user.profile.editUser')"
+        @click="editUser"
+      />
+    </UTooltip>
     <div class="flex flex-col items-center gap-2 text-center">
       <UserAvatar
         :user-id="user?.id"

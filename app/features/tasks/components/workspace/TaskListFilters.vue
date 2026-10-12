@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
+import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
@@ -35,7 +36,7 @@ const { profiles: orgProfiles, profilesQuery: orgProfilesQuery } = useProfiles(
 )
 const userSelectItems = computed(() =>
   withEmptySelectItems(
-    orgProfiles.value.map(profile => ({ label: profile.username, value: profile.id })),
+    orgProfiles.value.map(profile => ({ label: profileFullName(profile), value: profile.id })),
     t('common.noData'),
     { pending: orgProfilesQuery.isPending.value },
   ),

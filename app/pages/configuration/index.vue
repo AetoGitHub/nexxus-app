@@ -11,7 +11,6 @@ import UserContextUpdateDialog from '~/features/user-context/components/UserCont
 import UserChangePasswordDialog from '~/features/users/components/UserChangePasswordDialog.vue'
 import UserCreateDialog from '~/features/users/components/UserCreateDialog.vue'
 import UserListTable from '~/features/users/components/UserListTable.vue'
-import UserUpdateDialog from '~/features/users/components/UserUpdateDialog.vue'
 import ConfigurationNavSidebar from '~/features/configuration/components/shared/ConfigurationNavSidebar.vue'
 import ConfigurationSelectOrganizationPrompt from '~/features/configuration/components/shared/ConfigurationSelectOrganizationPrompt.vue'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
@@ -258,7 +257,6 @@ useSeoMeta({
               v-else
               :message="t('configuration.user.filters.selectPrompt')"
             />
-            <UserUpdateDialog />
             <UserChangePasswordDialog />
             <CompanyMembershipCreateDialog />
             <CompanyMembershipUpdateDialog />

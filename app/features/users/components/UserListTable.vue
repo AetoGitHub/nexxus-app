@@ -87,6 +87,16 @@ const columns = computed<TableColumn<UserProfile>[]>(() => [
     cell: ({ row }) => displayCell(row.getValue('username')),
   },
   {
+    accessorKey: 'first_name',
+    header: t('configuration.user.list.columns.firstName'),
+    cell: ({ row }) => displayCell(row.getValue('first_name')),
+  },
+  {
+    accessorKey: 'last_name',
+    header: t('configuration.user.list.columns.lastName'),
+    cell: ({ row }) => displayCell(row.getValue('last_name')),
+  },
+  {
     accessorKey: 'email',
     header: t('configuration.user.list.columns.email'),
     cell: ({ row }) => displayCell(row.getValue('email')),

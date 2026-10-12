@@ -64,6 +64,7 @@ function toggleTheme() {
 }
 
 const search = ref('')
+const profileOpen = ref(false)
 </script>
 
 <template>
@@ -151,6 +152,7 @@ const search = ref('')
 
       <div class="ml-1">
         <UPopover
+          v-model:open="profileOpen"
           :content="{ side: 'bottom', align: 'end', sideOffset: 8 }"
           :ui="{ content: 'w-[min(20rem,calc(100vw-1.5rem))] p-4' }"
         >
@@ -169,7 +171,7 @@ const search = ref('')
           </button>
 
           <template #content>
-            <UserProfileCard>
+            <UserProfileCard @edit="profileOpen = false">
               <UButton
                 :label="t('common.logout')"
                 icon="i-lucide-log-out"

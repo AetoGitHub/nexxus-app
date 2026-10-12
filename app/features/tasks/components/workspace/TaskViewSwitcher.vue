@@ -49,8 +49,14 @@ watch(
         ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
         : 'text-muted-foreground'"
       :icon="viewOption.icon"
-      :label="t(viewOption.labelKey)"
+      :title="t(viewOption.labelKey)"
+      :aria-label="t(viewOption.labelKey)"
       @click="model = viewOption.value"
-    />
+    >
+      <!-- En pantallas angostas solo la vista activa muestra su nombre: así la fila deja espacio al micrófono. -->
+      <span :class="model === viewOption.value ? '' : 'hidden min-[480px]:inline'">
+        {{ t(viewOption.labelKey) }}
+      </span>
+    </UButton>
   </div>
 </template>
