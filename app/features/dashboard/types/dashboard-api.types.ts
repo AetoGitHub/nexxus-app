@@ -106,8 +106,17 @@ export interface ApiPersonRow {
   total: number
   weighted_load: { percentage: number | null, points_done: number, points: number }
   pending_load: { points: number, capacity: number, percentage: number, status: ApiLoadStatus }
-  distribution: { quick: number, normal: number, complex: number }
+  /** Tareas del periodo por prioridad: R (`low`), N (`normal`), A (`high`, llave `complex`) y U (urgentes + críticas); suman `total`. */
+  distribution: ApiPriorityDistribution
   trend: ApiRowTrend
+}
+
+/** Reparto por prioridad (R/N/A/U): `complex` son las altas y `urgent` las urgentes + críticas. */
+export interface ApiPriorityDistribution {
+  quick: number
+  normal: number
+  complex: number
+  urgent: number
 }
 
 export interface ApiPeopleResponse extends ApiPeriodInfo {
@@ -126,6 +135,8 @@ export interface ApiProjectRow {
   overdue: number
   max_overdue_days: number | null
   urgent: number
+  /** Tareas del periodo por prioridad (mismas llaves que en `people/`); `urgent` aquí son todas las del periodo, no solo las abiertas. */
+  distribution?: ApiPriorityDistribution
   members: { id: number, name: string }[]
   trend: ApiRowTrend
 }

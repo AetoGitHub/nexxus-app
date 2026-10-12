@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { TONE_STROKE } from '~/features/dashboard/utils/dashboard.util'
 
-/** Dona con el reparto de tareas por esfuerzo (rápidas, normales y complejas). */
+/** Naranja de las altas: queda entre el ámbar de las normales y el rojo de las urgentes. */
+const HIGH_STROKE = '#ea580c'
+
+/** Dona con el reparto de tareas por prioridad: rápidas (R), normales (N), altas (A) y urgentes (U). */
 const props = withDefaults(defineProps<{
   quick: number
   normal: number
-  complex: number
+  high: number
+  urgent: number
   size?: number
 }>(), {
   size: 32,
@@ -18,7 +22,8 @@ const segments = computed(() => {
   const parts = [
     { key: 'quick', value: props.quick, color: TONE_STROKE.good },
     { key: 'normal', value: props.normal, color: TONE_STROKE.warning },
-    { key: 'complex', value: props.complex, color: TONE_STROKE.danger },
+    { key: 'high', value: props.high, color: HIGH_STROKE },
+    { key: 'urgent', value: props.urgent, color: TONE_STROKE.danger },
   ]
   const total = parts.reduce((sum, part) => sum + part.value, 0) || 1
   let offset = 0

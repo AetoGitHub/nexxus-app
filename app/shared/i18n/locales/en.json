@@ -1230,6 +1230,7 @@
       "title": "Individual performance",
       "excel": "Excel",
       "periodLabel": "Performance period",
+      "urgentResolved": "Resolved urgent tasks / urgent tasks in the period",
       "columns": {
         "collaborator": "Collaborator",
         "completed": "Completed",
@@ -1252,7 +1253,8 @@
         "pendingStatus": "Pending load status",
         "quick": "Quick",
         "normal": "Normal",
-        "complex": "Complex"
+        "high": "High",
+        "urgent": "Urgent"
       }
     },
     "topics": {
@@ -1294,7 +1296,7 @@
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
-        "description": "Percentage of the urgent or critical tasks due in the period that have already been resolved."
+        "description": "Percentage of the urgent or critical tasks due in the period that have already been resolved. Below: resolved / urgent."
       },
       "tpr": {
         "title": "TPR — Average Resolution Time",
@@ -1310,7 +1312,7 @@
       },
       "weighted_load": {
         "title": "Weighted load",
-        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
+        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, high 8 pts."
       },
       "pending_load": {
         "title": "Pending load",
@@ -1318,7 +1320,7 @@
       },
       "distribution": {
         "title": "Effort distribution",
-        "description": "Number of tasks due in the period by effort: R = quick, N = normal, C = complex."
+        "description": "Number of tasks due in the period by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical)."
       },
       "trend": {
         "title": "Trend",

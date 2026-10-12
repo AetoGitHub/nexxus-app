@@ -37,6 +37,17 @@ const toast = useToast()
 /** Meta de carga productiva: marca la línea roja de cada barra de carga ponderada. */
 const LOAD_GOAL = 85
 
+/** Naranja de las altas (A): el mismo de su segmento en la dona. */
+const HIGH_TEXT = 'text-orange-600 dark:text-orange-500'
+
+/**
+ * Urgentes resueltas de la persona: el backend manda el IUR (%) y cuántas urgentes tiene en el periodo
+ * (`distribution.urgent`, el mismo universo del IUR), así que el conteo sale de ahí.
+ */
+function urgentResolved(row: ApiPersonRow): number {
+  return row.iur == null ? 0 : Math.round((row.iur * row.distribution.urgent) / 100)
+}
+
 /** `metric` es la llave del tooltip: # y Colaborador no miden nada y no llevan. */
 const columns = computed<{ key: string, label: string, align: string, metric?: MetricKey }[]>(() => [
   { key: 'rank', label: '#', align: 'text-left' },
@@ -185,11 +196,20 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3 text-center">
-                <span
-                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                  :class="TONE_SOFT[rangeOf(row.iur)]"
-                >
-                  {{ formatPercent(row.iur) }}
+                <span class="inline-flex flex-col items-end gap-0.5">
+                  <span
+                    class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
+                    :class="TONE_SOFT[rangeOf(row.iur)]"
+                  >
+                    {{ formatPercent(row.iur) }}
+                  </span>
+                  <span
+                    class="font-mono text-[11px] tabular-nums"
+                    :class="row.distribution.urgent > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
+                    :title="t('dashboard.individual.urgentResolved')"
+                  >
+                    {{ urgentResolved(row) }}/{{ row.distribution.urgent }}
+                  </span>
                 </span>
               </td>
 
@@ -273,7 +293,8 @@ async function exportExcel() {
                   <DashboardDonut
                     :quick="row.distribution.quick"
                     :normal="row.distribution.normal"
-                    :complex="row.distribution.complex"
+                    :high="row.distribution.complex"
+                    :urgent="row.distribution.urgent"
                   />
                   <ul class="font-mono text-[10px] leading-tight">
                     <li :class="TONE_TEXT.good">
@@ -282,8 +303,11 @@ async function exportExcel() {
                     <li :class="TONE_TEXT.warning">
                       N {{ row.distribution.normal }}
                     </li>
+                    <li :class="HIGH_TEXT">
+                      A {{ row.distribution.complex }}
+                    </li>
                     <li :class="TONE_TEXT.danger">
-                      C {{ row.distribution.complex }}
+                      U {{ row.distribution.urgent }}
                     </li>
                   </ul>
                 </div>

@@ -29,7 +29,8 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     t('dashboard.individual.excelColumns.pendingStatus'),
     t('dashboard.individual.excelColumns.quick'),
     t('dashboard.individual.excelColumns.normal'),
-    t('dashboard.individual.excelColumns.complex'),
+    t('dashboard.individual.excelColumns.high'),
+    t('dashboard.individual.excelColumns.urgent'),
     `${t('dashboard.individual.columns.trend')} (pp)`,
   ]
 
@@ -53,6 +54,7 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     person.distribution.quick,
     person.distribution.normal,
     person.distribution.complex,
+    person.distribution.urgent,
     person.trend.delta,
   ])
 

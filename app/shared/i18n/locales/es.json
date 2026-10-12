@@ -1230,6 +1230,7 @@
       "title": "Rendimiento individual",
       "excel": "Excel",
       "periodLabel": "Periodo del rendimiento",
+      "urgentResolved": "Urgentes resueltas / urgentes del periodo",
       "columns": {
         "collaborator": "Colaborador",
         "completed": "Completadas",
@@ -1252,7 +1253,8 @@
         "pendingStatus": "Estado de la carga pendiente",
         "quick": "Rápidas",
         "normal": "Normales",
-        "complex": "Complejas"
+        "high": "Altas",
+        "urgent": "Urgentes"
       }
     },
     "topics": {
@@ -1294,7 +1296,7 @@
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
-        "description": "Porcentaje de las tareas urgentes o críticas que vencen en el periodo y ya se resolvieron."
+        "description": "Porcentaje de las tareas urgentes o críticas que vencen en el periodo y ya se resolvieron. Debajo: resueltas / urgentes."
       },
       "tpr": {
         "title": "TPR — Tiempo Promedio de Resolución",
@@ -1310,7 +1312,7 @@
       },
       "weighted_load": {
         "title": "Carga ponderada",
-        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
+        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, alta 8 pts."
       },
       "pending_load": {
         "title": "Carga pendiente",
@@ -1318,7 +1320,7 @@
       },
       "distribution": {
         "title": "Distribución por esfuerzo",
-        "description": "Cantidad de tareas que vencen en el periodo por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
+        "description": "Cantidad de tareas que vencen en el periodo por tipo de esfuerzo: R = rápidas, N = normales, A = altas, U = urgentes (urgentes y críticas)."
       },
       "trend": {
         "title": "Tendencia",
