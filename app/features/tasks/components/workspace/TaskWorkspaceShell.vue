@@ -70,6 +70,20 @@ watch(showRefresh, (visible) => {
 /** Sheet de filtros solo en mobile (independiente del panel desktop). */
 const mobileFiltersOpen = ref(false)
 
+/**
+ * Misma condición que el CSS del final (barra de escritorio con ancho Y alto suficientes). Las dos barras viven en el
+ * DOM y el CSS alterna cuál se ve; el micrófono se monta solo en la que se ve para que nunca haya dos grabadoras.
+ */
+const isDesktopLayout = useMediaQuery('(min-width: 768px) and (min-height: 601px)')
+
+/** El micrófono está grabando o procesando: en la barra compacta se hace espacio para el visualizador. */
+const voiceBusy = ref(false)
+
+// Al cambiar de barra (p. ej. al girar el celular) el micrófono se desmonta y descarta la grabación.
+watch(isDesktopLayout, () => {
+  voiceBusy.value = false
+})
+
 /** Contador de filtros activos (sin búsqueda ni «Ver por»; van aparte en la barra). */
 const activeFilterCount = computed(() => {
   const f = listFilters.value
@@ -178,9 +192,15 @@ function goToStatusList() {
       </div>
 
       <div class="flex items-center gap-2 landscape-row">
-        <TaskViewSwitcher v-model="view" class="flex-1" :exclude="excludeViews" />
+        <TaskViewSwitcher
+          v-show="!voiceBusy"
+          v-model="view"
+          class="flex-1"
+          :exclude="excludeViews"
+        />
         <UButton
           v-if="showRefresh"
+          v-show="!voiceBusy"
           icon="i-lucide-archive"
           :color="showArchivedOnly ? 'primary' : 'neutral'"
           :variant="showArchivedOnly ? 'subtle' : 'outline'"
@@ -192,6 +212,7 @@ function goToStatusList() {
         />
         <UButton
           v-if="showRefresh"
+          v-show="!voiceBusy"
           icon="i-lucide-refresh-cw"
           color="neutral"
           variant="outline"
@@ -203,6 +224,18 @@ function goToStatusList() {
           :disabled="isRefreshing"
           @click="refresh"
         />
+
+        <!-- Micrófono (mobile / celular acostado): al grabar toma el ancho de la fila y oculta el resto de controles. -->
+        <div
+          v-if="!isDesktopLayout"
+          :class="voiceBusy ? 'min-w-48 flex-1 basis-48' : 'shrink-0'"
+        >
+          <TaskVoiceQuickButton
+            fill
+            @result="task => openNewTask(null, task)"
+            @update:busy="voiceBusy = $event"
+          />
+        </div>
       </div>
 
       <p class="text-xs text-muted-foreground px-0.5 truncate landscape-compact-summary">
@@ -249,7 +282,10 @@ function goToStatusList() {
             :label="t('tasks.newTask')"
             @click="openNewTask()"
           />
-          <TaskVoiceQuickButton @result="task => openNewTask(null, task)" />
+          <TaskVoiceQuickButton
+            v-if="isDesktopLayout"
+            @result="task => openNewTask(null, task)"
+          />
         </div>
       </TaskGroupByFilter>
 

@@ -8,6 +8,16 @@ import { VOICE_TIME_ZONE, formatMexicoNow, normalizeVoiceTask } from '~/features
 /** Tope de una grabación: el audio es para dictar una tarea, no una reunión. */
 const MAX_RECORDING_SECONDS = 90
 
+/** Cada cuánto se toma una muestra del volumen para el visualizador (ms); con movimiento reducido, mucho menos. */
+const LEVEL_INTERVAL_MS = 60
+const LEVEL_INTERVAL_REDUCED_MS = 250
+
+/** Barras del visualizador por defecto: el historial reciente de volumen, la más nueva a la derecha. */
+const DEFAULT_BAR_COUNT = 40
+
+/** Volumen (0-1) a partir del cual se considera que la persona ya está hablando. */
+const VOICE_THRESHOLD = 0.2
+
 /** Menos que esto casi seguro fue un toque accidental: no vale la pena mandarlo a la IA. */
 const MIN_RECORDING_MS = 800
 
@@ -29,13 +39,20 @@ function fileExtension(mimeType: string): string {
  * tarea ya entendida (nombre, responsable, fecha...). No usa `$api`: el webhook es de otro servidor y solo acepta el
  * header `Content-Type`, así que no puede llevar el token ni `Accept-Language`.
  */
-export function useVoiceTaskRecorder(options: { onLimit?: () => void } = {}) {
+export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?: number } = {}) {
   const { public: { n8nVoiceUrl } } = useRuntimeConfig()
   const toast = useToast()
   const { t } = useI18n()
 
   const status = ref<VoiceRecorderStatus>('idle')
   const elapsedSeconds = ref(0)
+
+  const barCount = options.barCount ?? DEFAULT_BAR_COUNT
+  /** Historial reciente del volumen del micrófono (0-1), la muestra más nueva al final: alimenta el visualizador. */
+  const levels = ref<number[]>(Array.from({ length: barCount }, () => 0))
+  /** Ya se detectó voz en esta grabación (el volumen superó el umbral al menos una vez). */
+  const hasVoice = ref(false)
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   const isSupported = computed(() =>
     import.meta.client
@@ -50,9 +67,86 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void } = {}) {
   let startedAt = 0
   let timer: ReturnType<typeof setInterval> | undefined
 
+  // Medidor de volumen (Web Audio): vive solo mientras se graba y se limpia al detener, cancelar o desmontar.
+  let audioContext: AudioContext | null = null
+  let meterSource: MediaStreamAudioSourceNode | null = null
+  let meterData: Uint8Array<ArrayBuffer> | null = null
+  let analyser: AnalyserNode | null = null
+  let frameId = 0
+  let lastSampleAt = 0
+
+  function resetLevels() {
+    levels.value = Array.from({ length: barCount }, () => 0)
+    hasVoice.value = false
+  }
+
+  function sampleLevel(time: number) {
+    frameId = requestAnimationFrame(sampleLevel)
+    const interval = prefersReducedMotion.value ? LEVEL_INTERVAL_REDUCED_MS : LEVEL_INTERVAL_MS
+    if (!analyser || !meterData || time - lastSampleAt < interval) {
+      return
+    }
+    lastSampleAt = time
+
+    analyser.getByteTimeDomainData(meterData)
+    let sum = 0
+    for (const value of meterData) {
+      const centered = (value - 128) / 128
+      sum += centered * centered
+    }
+    const rms = Math.sqrt(sum / meterData.length)
+    // Compuerta contra el ruido de fondo y curva para que la voz normal llene bien las barras.
+    const level = rms < 0.012 ? 0 : Math.min(1, (rms * 4) ** 0.8)
+
+    levels.value = [...levels.value.slice(1), level]
+    if (level >= VOICE_THRESHOLD) {
+      hasVoice.value = true
+    }
+  }
+
+  function startMeter(source: MediaStream) {
+    try {
+      const AudioContextClass = window.AudioContext
+        ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (!AudioContextClass) {
+        return
+      }
+      audioContext = new AudioContextClass()
+      void audioContext.resume()
+      meterSource = audioContext.createMediaStreamSource(source)
+      analyser = audioContext.createAnalyser()
+      analyser.fftSize = 512
+      analyser.smoothingTimeConstant = 0.5
+      meterData = new Uint8Array(analyser.fftSize)
+      // Solo se mide: no se conecta a la salida, así no se oye la propia voz.
+      meterSource.connect(analyser)
+      lastSampleAt = 0
+      frameId = requestAnimationFrame(sampleLevel)
+    }
+    catch {
+      // Sin medidor se graba igual; el visualizador queda plano.
+      stopMeter()
+    }
+  }
+
+  function stopMeter() {
+    cancelAnimationFrame(frameId)
+    frameId = 0
+    meterSource?.disconnect()
+    meterSource = null
+    analyser = null
+    meterData = null
+    if (audioContext && audioContext.state !== 'closed') {
+      void audioContext.close().catch(() => {})
+    }
+    audioContext = null
+    resetLevels()
+  }
+
   function releaseMicrophone() {
     clearInterval(timer)
     timer = undefined
+    stopMeter()
     stream?.getTracks().forEach(track => track.stop())
     stream = null
     recorder = null
@@ -96,6 +190,8 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void } = {}) {
     startedAt = Date.now()
     elapsedSeconds.value = 0
     status.value = 'recording'
+    resetLevels()
+    startMeter(stream)
 
     timer = setInterval(() => {
       elapsedSeconds.value = Math.floor((Date.now() - startedAt) / 1000)
@@ -145,7 +241,7 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void } = {}) {
       timeout: 60_000,
     })
 
-    return normalizeVoiceTask(response)
+    return normalizeVoiceTask(response, { users: context.users })
   }
 
   /** Termina de grabar, manda el audio a la IA y devuelve la tarea entendida (`null` si no se pudo). */
@@ -189,5 +285,5 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void } = {}) {
 
   onBeforeUnmount(cancel)
 
-  return { status, elapsedSeconds, isSupported, start, finish, cancel }
+  return { status, elapsedSeconds, levels, hasVoice, isSupported, start, finish, cancel }
 }

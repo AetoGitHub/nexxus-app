@@ -3,8 +3,9 @@ import { useVoiceTaskRecorder } from '~/features/tasks/composables/form/useVoice
 import type { VoiceTaskCatalogItem, VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 
 /**
- * Micrófono para dictar una tarea: un clic empieza a grabar, otro termina y manda el audio a la IA, que devuelve la
- * tarea entendida. No la crea: avisa con `result` para que el formulario se rellene y la persona la confirme.
+ * Micrófono para dictar una tarea: un clic empieza a grabar y muestra una píldora con el visualizador de audio en vivo,
+ * el cronómetro y un botón para detener; al detener se manda el audio a la IA, que devuelve la tarea entendida. No la
+ * crea: avisa con `result` para que el formulario se rellene y la persona la confirme.
  */
 const props = withDefaults(
   defineProps<{
@@ -14,25 +15,30 @@ const props = withDefaults(
     /** Proyecto que ya está elegido en el formulario; la IA solo cambia de proyecto si nombran otro. */
     defaultProjectId?: number | null
     disabled?: boolean
-    /** Solo el ícono del micrófono (el atajo junto a «Nueva tarea»); grabando muestra además el cronómetro. */
+    /** Solo el ícono del micrófono (el atajo junto a «Nueva tarea»); grabando muestra la píldora con el visualizador. */
     iconOnly?: boolean
     size?: 'xs' | 'sm'
+    /** Grabando o procesando, la píldora ocupa todo el ancho disponible en vez de un ancho fijo. */
+    fill?: boolean
   }>(),
   {
     defaultProjectId: null,
     disabled: false,
     iconOnly: false,
     size: 'xs',
+    fill: false,
   },
 )
 
 const emit = defineEmits<{
   result: [task: VoiceTaskResponse]
+  /** `true` mientras graba o procesa: el contenedor puede hacerle espacio al visualizador. */
+  'update:busy': [busy: boolean]
 }>()
 
 const { t } = useI18n()
 
-const { status, elapsedSeconds, isSupported, start, finish, cancel } = useVoiceTaskRecorder({
+const { status, elapsedSeconds, levels, hasVoice, isSupported, start, finish, cancel } = useVoiceTaskRecorder({
   onLimit: () => void stopAndSend(),
 })
 
@@ -44,6 +50,35 @@ const elapsedLabel = computed(() => {
   const seconds = String(elapsedSeconds.value % 60).padStart(2, '0')
   return `${minutes}:${seconds}`
 })
+
+/** Leyenda «Puedes empezar a hablar»: aparece al empezar y se va sola a los segundos o al detectar voz. */
+const HINT_MS = 2800
+const showHint = ref(false)
+let hintTimer: ReturnType<typeof setTimeout> | undefined
+
+const stopButton = useTemplateRef<{ $el: HTMLElement }>('stopButton')
+
+watch(isRecording, (recording) => {
+  clearTimeout(hintTimer)
+  showHint.value = recording
+  if (recording) {
+    hintTimer = setTimeout(() => {
+      showHint.value = false
+    }, HINT_MS)
+    // El micrófono desaparece al grabar: el foco pasa al botón de detener para quien usa teclado o lector.
+    void nextTick(() => stopButton.value?.$el?.focus())
+  }
+})
+
+watch(hasVoice, (detected) => {
+  if (detected) {
+    showHint.value = false
+  }
+})
+
+watch(status, busyStatus => emit('update:busy', busyStatus !== 'idle'))
+
+onBeforeUnmount(() => clearTimeout(hintTimer))
 
 async function stopAndSend() {
   if (props.userId == null) {
@@ -76,39 +111,151 @@ watch(() => props.disabled, (disabled) => {
     cancel()
   }
 })
+
+const pillHeight = computed(() => (props.size === 'sm' ? 'h-8' : 'h-7'))
+const pillWidth = computed(() => (props.fill ? 'w-full' : 'w-60 max-w-full'))
 </script>
 
 <template>
+  <!-- Grabando: visualizador en vivo + cronómetro + detener, como en WhatsApp. -->
+  <div
+    v-if="isSupported && isRecording"
+    role="group"
+    :aria-label="t('tasks.form.voice.recording')"
+    class="voice-pill flex min-w-0 shrink items-center gap-2 rounded-full bg-error/10 pl-3 pr-1 ring-1 ring-error/30"
+    :class="[pillHeight, pillWidth]"
+  >
+    <span
+      class="size-2 shrink-0 rounded-full bg-error motion-safe:animate-pulse"
+      aria-hidden="true"
+    />
+
+    <!-- Anuncio para lectores de pantalla; lo visible es la leyenda y las barras. -->
+    <span
+      class="sr-only"
+      aria-live="polite"
+    >
+      {{ showHint ? t('tasks.form.voice.recordingAnnounce') : '' }}
+    </span>
+
+    <div class="relative h-full min-w-0 flex-1 overflow-hidden">
+      <Transition
+        name="voice-swap"
+        mode="out-in"
+      >
+        <p
+          v-if="showHint"
+          key="hint"
+          class="absolute inset-0 flex items-center truncate text-xs font-medium text-error"
+          aria-hidden="true"
+        >
+          {{ t('tasks.form.voice.hint') }}
+        </p>
+        <div
+          v-else
+          key="bars"
+          class="absolute inset-0 flex items-center justify-end gap-[2px]"
+          role="img"
+          :aria-label="t('tasks.form.voice.meter')"
+        >
+          <span
+            v-for="(level, index) in levels"
+            :key="index"
+            class="voice-bar w-[3px] shrink-0 rounded-full bg-error"
+            :style="{ height: `${Math.max(12, Math.round(level * 100))}%` }"
+          />
+        </div>
+      </Transition>
+    </div>
+
+    <span
+      class="shrink-0 font-mono text-xs tabular-nums text-highlighted"
+      role="timer"
+      :aria-label="t('tasks.form.voice.elapsed')"
+    >{{ elapsedLabel }}</span>
+
+    <UButton
+      ref="stopButton"
+      type="button"
+      color="error"
+      variant="solid"
+      size="xs"
+      square
+      class="size-6 shrink-0 rounded-full"
+      :ui="{ leadingIcon: 'size-3 fill-current' }"
+      icon="i-lucide-square"
+      :title="t('tasks.form.voice.stop')"
+      :aria-label="t('tasks.form.voice.stop')"
+      @click="onClick"
+    />
+  </div>
+
+  <!-- Procesando: la IA está entendiendo el audio. -->
+  <div
+    v-else-if="isSupported && isProcessing"
+    role="status"
+    :aria-label="t('tasks.form.voice.processingStatus')"
+    class="flex shrink-0 items-center gap-2 rounded-full bg-elevated px-3 text-xs font-medium text-muted ring-1 ring-default"
+    :class="[pillHeight, fill ? 'w-full justify-center' : '']"
+  >
+    <UIcon
+      name="i-lucide-loader-circle"
+      class="size-4 shrink-0 animate-spin"
+      aria-hidden="true"
+    />
+    <span class="truncate">{{ t('tasks.form.voice.processing') }}</span>
+  </div>
+
+  <!-- Reposo: solo el micrófono (o con la etiqueta «Dictar» dentro del formulario). -->
   <UButton
-    v-if="isSupported"
+    v-else-if="isSupported"
     type="button"
     :size="size"
-    :square="iconOnly && !isRecording"
+    :square="iconOnly"
     :class="iconOnly ? 'h-8 shrink-0' : ''"
-    :title="isRecording ? t('tasks.form.voice.stop') : t('tasks.form.voice.start')"
-    :color="isRecording ? 'error' : 'neutral'"
-    :variant="isRecording ? 'soft' : 'ghost'"
-    :icon="isRecording ? 'i-lucide-square' : 'i-lucide-mic'"
-    :loading="isProcessing"
-    :disabled="disabled || isProcessing || userId == null"
-    :aria-label="isRecording ? t('tasks.form.voice.stop') : t('tasks.form.voice.start')"
-    :aria-pressed="isRecording"
+    :title="t('tasks.form.voice.start')"
+    color="neutral"
+    variant="ghost"
+    icon="i-lucide-mic"
+    :disabled="disabled || userId == null"
+    :aria-label="t('tasks.form.voice.start')"
     @click="onClick"
   >
-    <template v-if="isRecording">
-      <span class="inline-flex items-center gap-1.5">
-        <span class="size-1.5 animate-pulse rounded-full bg-error" />
-        <span class="font-mono tabular-nums">{{ elapsedLabel }}</span>
-        {{ t('tasks.form.voice.stopLabel') }}
-      </span>
-    </template>
-    <template v-else-if="isProcessing">
-      <template v-if="!iconOnly">
-        {{ t('tasks.form.voice.processing') }}
-      </template>
-    </template>
-    <template v-else-if="!iconOnly">
+    <template v-if="!iconOnly">
       {{ t('tasks.form.voice.label') }}
     </template>
   </UButton>
 </template>
+
+<style scoped>
+.voice-bar {
+  min-height: 3px;
+  transition: height 80ms linear;
+}
+
+.voice-swap-enter-active,
+.voice-swap-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.voice-swap-enter-from,
+.voice-swap-leave-to {
+  opacity: 0;
+  transform: translateY(0.25rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-bar,
+  .voice-swap-enter-active,
+  .voice-swap-leave-active {
+    transition: none;
+  }
+
+  .voice-swap-enter-from,
+  .voice-swap-leave-to {
+    transform: none;
+  }
+}
+</style>
