@@ -106,7 +106,14 @@ export interface CreateTaskPayload {
   subtasks?: CreateTaskSubtaskPayload[]
   /** Nombres de tareas extra: el backend crea una por cada uno con el mismo cuerpo (sin descripción). */
   more_tasks?: string[]
+  /** `"True"` si la tarea se rellenó dictando por voz; `"False"` si no. */
+  created_by_voice: VoiceOriginFlag
+  /** Lo que se dijo (transcripción); vacío si no se dictó. */
+  voice_text: string
 }
+
+/** Marca de origen por voz que espera el backend (texto `"True"` / `"False"`). */
+export type VoiceOriginFlag = 'True' | 'False'
 
 /** Respuesta de POST /api/tasks/create/: la tarea creada y los ids de las extra (`more_tasks`), en el mismo orden. */
 export type CreateTaskResponse = TaskDetail & { more_tasks_ids?: number[] }
@@ -119,6 +126,10 @@ export interface CreateBacklogTaskPayload {
   project: number
   /** Nombres de tareas extra: el backend crea un backlog por cada uno con el mismo proyecto. */
   more_tasks?: string[]
+  /** URLs de archivos ya subidos a Firebase (adjuntos de la tarea). */
+  files?: string[]
+  created_by_voice: VoiceOriginFlag
+  voice_text: string
 }
 
 /**

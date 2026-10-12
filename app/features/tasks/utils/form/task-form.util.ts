@@ -1,6 +1,7 @@
 import type {
   ApiTaskPriority,
   CreateBacklogTaskPayload,
+  VoiceOriginFlag,
   CreateTaskPayload,
   CreateTaskSubtaskPayload,
   NewTaskFormType,
@@ -163,10 +164,20 @@ function resolveTaskReviewers(reviewers: number[]): number[] {
   return unique
 }
 
+/**
+ * Marca de origen por voz del body de creación: `created_by_voice` (`"True"`/`"False"`) y `voice_text` (la transcripción).
+ * Sin texto dictado la tarea cuenta como creada a mano.
+ */
+export function buildVoiceOrigin(voiceText?: string | null): { created_by_voice: VoiceOriginFlag, voice_text: string } {
+  const text = voiceText?.trim() ?? ''
+  return { created_by_voice: text ? 'True' : 'False', voice_text: text }
+}
+
 export function buildCreateTaskPayload(
   form: NewTaskFormInput,
   subtasks?: CreateTaskSubtaskPayload[],
   moreTasks: string[] = [],
+  voiceText?: string | null,
 ): CreateTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -194,6 +205,7 @@ export function buildCreateTaskPayload(
     project: form.project,
     group: form.group,
     assigned_to: form.assignedTo,
+    ...buildVoiceOrigin(voiceText),
   }
 
   if (form.type === 'multiple_close') {
@@ -218,10 +230,15 @@ export function buildCreateTaskPayload(
   return payload
 }
 
-/** Payload de POST /api/tasks/backlog/create/: solo name/description/project, type fijo en manual. */
+/**
+ * Payload de POST /api/tasks/backlog/create/: name/description/project, type fijo en manual, los adjuntos ya subidos
+ * (`files`) y la marca de origen por voz.
+ */
 export function buildCreateBacklogTaskPayload(
   form: Pick<NewTaskFormInput, 'name' | 'description' | 'project'>,
   moreTasks: string[] = [],
+  files: string[] = [],
+  voiceText?: string | null,
 ): CreateBacklogTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -235,10 +252,15 @@ export function buildCreateBacklogTaskPayload(
     long_description: form.description.trim(),
     type: 'manual',
     project: form.project,
+    ...buildVoiceOrigin(voiceText),
   }
 
   if (moreTasks.length) {
     payload.more_tasks = moreTasks
+  }
+
+  if (files.length) {
+    payload.files = files
   }
 
   return payload
