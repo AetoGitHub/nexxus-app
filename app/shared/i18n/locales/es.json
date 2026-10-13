@@ -507,7 +507,8 @@
         "elapsed": "Tiempo grabado",
         "processingStatus": "Procesando el audio con la IA",
         "repeatReview": "Tarea repetitiva: no se indicó con qué frecuencia se repite, se dejó una por defecto. Revisa la repetición.",
-        "effortIgnoredUrgent": "Se marcó como urgente, así que no se eligió esfuerzo."
+        "effortIgnoredUrgent": "Se marcó como urgente, así que no se eligió esfuerzo.",
+        "nameMissing": "No se dijo qué hay que hacer: escribe el nombre de la tarea."
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",

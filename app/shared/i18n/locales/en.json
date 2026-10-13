@@ -507,7 +507,8 @@
         "elapsed": "Recorded time",
         "processingStatus": "Processing the audio with AI",
         "repeatReview": "Repeating task: the repeat frequency was not mentioned, so a default was set. Review the repetition.",
-        "effortIgnoredUrgent": "It was marked as urgent, so no effort was selected."
+        "effortIgnoredUrgent": "It was marked as urgent, so no effort was selected.",
+        "nameMissing": "It was not said what needs to be done: type the task name."
       },
       "validation": {
         "nameRequired": "Name is required",

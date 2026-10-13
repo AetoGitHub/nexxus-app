@@ -696,6 +696,9 @@ function applyVoiceTask(task: VoiceTaskResponse) {
   // Avisos que se suman a las dudas de la IA: lo que el formulario completó por su cuenta y hay que revisar.
   const ambiguities = [...task.ambiguities]
   let needsReview = task.needs_review
+  if (!task.name.trim() && !ambiguities.length) {
+    ambiguities.push(t('tasks.form.voice.nameMissing'))
+  }
 
   if (task.in_backlog) {
     isBacklog.value = true
