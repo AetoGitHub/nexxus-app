@@ -1290,27 +1290,27 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tareas Completadas a Tiempo",
-        "description": "Porcentaje de las tareas que vencen en el periodo que se cerraron a tiempo (antes o en su fecha límite)."
+        "description": "De las tareas completadas que vencen en el período, porcentaje que se cerró en tiempo y forma (en o antes de su fecha límite). Las tareas abiertas no cuentan. Meta: ≥85%."
       },
       "tc": {
         "title": "TC — Tasa de Cumplimiento",
-        "description": "Porcentaje de las tareas que vencen en el periodo que ya están completadas."
+        "description": "Porcentaje de tareas completadas (a tiempo o tarde) respecto a todas las que vencen en el período por fecha límite. Meta: ≥85%."
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
-        "description": "Porcentaje de las tareas urgentes o críticas que vencen en el periodo y ya se resolvieron. Debajo: resueltas / urgentes."
+        "description": "De las tareas urgentes o críticas que vencen en el período, porcentaje que ya se completó. Las que siguen pendientes se cuentan como sin atender. Meta: ≥85%."
       },
       "tpr": {
         "title": "TPR — Tiempo Promedio de Resolución",
-        "description": "Tiempo promedio, en horas, desde que se empezó a trabajar la tarea (pasó a \"En progreso\") hasta que se completó."
+        "description": "Horas promedio desde que una tarea pasa a En progreso hasta que se completa. Las que nunca pasaron por En progreso no cuentan. Menor es mejor."
       },
       "ica": {
         "title": "ICA — Índice de Carga Atendida",
-        "description": "Puntos de esfuerzo completados ÷ puntos totales de las tareas que vencen en el periodo."
+        "description": "Porcentaje de puntos completados sobre los puntos de las tareas que vencen en el período. Meta: ≥85%."
       },
       "tasks_created": {
-        "title": "Tareas del periodo",
-        "description": "Total de tareas cuya fecha límite cae en el periodo. Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
+        "title": "Tareas del período",
+        "description": "Total de tareas que vencen en el período por fecha límite (sin eliminadas, archivadas ni backlog). Meta: 160."
       },
       "weighted_load": {
         "title": "Carga ponderada",
@@ -1334,7 +1334,7 @@
       },
       "completed": {
         "title": "Completadas",
-        "description": "Tareas completadas del proyecto contra el total de tareas que vencen en el periodo."
+        "description": "Tareas completadas del tema contra el total de tareas que vencen en el período."
       },
       "active": {
         "title": "Activas",

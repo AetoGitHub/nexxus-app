@@ -1290,27 +1290,27 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tasks Completed on Time",
-        "description": "Percentage of the tasks due in the period that were closed on time (on or before their due date)."
+        "description": "Of the completed tasks due in the period, percentage closed on time (on or before the due date). Open tasks don't count. Goal: ≥85%."
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Percentage of the tasks due in the period that are already completed."
+        "description": "Percentage of completed tasks (on time or late) out of all tasks due in the period. Goal: ≥85%."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
-        "description": "Percentage of the urgent or critical tasks due in the period that have already been resolved. Below: resolved / urgent."
+        "description": "Of the urgent or critical tasks due in the period, percentage already completed. Those still pending count as unattended. Goal: ≥85%."
       },
       "tpr": {
         "title": "TPR — Average Resolution Time",
-        "description": "Average time, in hours, from when work on the task started (it moved to \"In progress\") until it was completed."
+        "description": "Average hours from when a task moves to In progress until it's completed. Tasks that never went In progress don't count. Lower is better."
       },
       "ica": {
         "title": "ICA — Workload Completion Index",
-        "description": "Completed effort points ÷ total points of the tasks due in the period."
+        "description": "Percentage of completed points out of the points of tasks due in the period. Goal: ≥85%."
       },
       "tasks_created": {
-        "title": "Tasks in the period",
-        "description": "Total tasks whose due date falls in the period. Below: how many are assigned to you and how many you created. Goal: 160."
+        "title": "Tasks in period",
+        "description": "Total tasks due in the period by due date (excluding deleted, archived and backlog). Goal: 160."
       },
       "weighted_load": {
         "title": "Weighted load",
@@ -1334,7 +1334,7 @@
       },
       "completed": {
         "title": "Completed",
-        "description": "Completed tasks in the project vs all tasks due in the period."
+        "description": "Completed tasks in the topic vs all tasks due in the period."
       },
       "active": {
         "title": "Active",
