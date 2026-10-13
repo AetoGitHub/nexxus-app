@@ -196,10 +196,10 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3 text-center">
-                <span class="inline-flex flex-col items-end gap-0.5">
+                <span class="inline-flex items-baseline gap-1.5">
                   <span
-                    class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                    :class="TONE_SOFT[rangeOf(row.iur)]"
+                    class="font-mono text-lg font-bold tabular-nums"
+                    :class="row.iur == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.iur)]"
                   >
                     {{ formatPercent(row.iur) }}
                   </span>
