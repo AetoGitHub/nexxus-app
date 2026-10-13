@@ -1173,7 +1173,8 @@
         "label": "User",
         "all": "All users",
         "search": "Search user…",
-        "disabledMine": "In “My tasks” you only see your own tasks. Switch to “Team” to pick a user."
+        "disabledMine": "In “My tasks” you only see your own tasks. Switch to “Team” to pick a user.",
+        "forbidden": "Could not filter by that user"
       }
     },
     "kpis": {
@@ -1242,6 +1243,7 @@
       "columns": {
         "collaborator": "Collaborator",
         "completed": "Completed",
+        "tcDistribution": "TC distribution",
         "weightedLoad": "Weighted load",
         "pendingLoad": "Pending load",
         "distribution": "Distribution",
@@ -1253,6 +1255,8 @@
         "saturated": "Saturated"
       },
       "empty": "There are no collaborators to show in this period.",
+      "workedCount": "Completed / tasks worked in the period (those that moved to In progress)",
+      "createdCount": "Completed / assigned tasks created in the period",
       "searchPlaceholder": "Search collaborator…",
       "noResults": "No results for \"{search}\"",
       "excelError": "Could not generate the Excel file",
@@ -1345,6 +1349,10 @@
       "trend": {
         "title": "Trend",
         "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
+      },
+      "tc_distribution": {
+        "title": "TC distribution",
+        "description": "Tasks worked in the period (those that moved to In progress), which are the base of TC, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical). They add up to the TC total."
       },
       "people_completed": {
         "title": "Completed",

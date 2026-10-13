@@ -9,6 +9,7 @@ import DashboardToolbar from '~/features/dashboard/components/DashboardToolbar.v
 import DashboardTopicsTable from '~/features/dashboard/components/DashboardTopicsTable.vue'
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import {
+  dashboardErrorMessage,
   useDashboardKpis,
   useDashboardLoadDistribution,
   useDashboardPeople,
@@ -88,6 +89,23 @@ const loadQuery = useDashboardLoadDistribution(globalFilters)
 const peopleQuery = useDashboardPeople({ ...globalFilters, compare }, peopleParams)
 const projectsQuery = useDashboardProjects({ ...globalFilters, compare }, projectsParams)
 const fetchAllPeople = useDashboardPeopleExport({ ...globalFilters, compare }, peopleParams)
+
+// Un usuario que dejó de ser miembro de la compañía responde 403: se muestra el mensaje del backend y se limpia el selector.
+const toast = useToast()
+watch(
+  () => [kpisQuery, loadQuery, peopleQuery, projectsQuery].map(query => query.error.value),
+  (errors) => {
+    const forbidden = errors.find(error => (error as { status?: number } | null)?.status === 403)
+    if (forbidden && userId.value != null) {
+      toast.add({
+        title: t('dashboard.toolbar.user.forbidden'),
+        description: dashboardErrorMessage(forbidden),
+        color: 'error',
+      })
+      userId.value = null
+    }
+  },
+)
 
 const kpiSet = computed(() => (kpisQuery.data.value ? buildDashboardKpis(kpisQuery.data.value.kpis) : null))
 

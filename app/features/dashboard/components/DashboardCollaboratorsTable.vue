@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
-import DashboardDonut from '~/features/dashboard/components/shared/DashboardDonut.vue'
+import DashboardPriorityDistribution from '~/features/dashboard/components/shared/DashboardPriorityDistribution.vue'
 import DashboardSortButton from '~/features/dashboard/components/shared/DashboardSortButton.vue'
 import DashboardTablePagination from '~/features/dashboard/components/shared/DashboardTablePagination.vue'
 import DashboardTableSearch from '~/features/dashboard/components/shared/DashboardTableSearch.vue'
@@ -52,9 +52,6 @@ const toast = useToast()
 /** Meta de carga productiva: marca la línea roja de cada barra de carga ponderada. */
 const LOAD_GOAL = 85
 
-/** Naranja de las altas (A): el mismo de su segmento en la dona. */
-const HIGH_TEXT = 'text-orange-600 dark:text-orange-500'
-
 /**
  * Urgentes resueltas de la persona: el backend manda el IUR (%) y cuántas urgentes tiene en el periodo
  * (`distribution.urgent`, el mismo universo del IUR), así que el conteo sale de ahí.
@@ -74,6 +71,7 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'tct', label: 'TCT', align: 'text-center', metric: 'tct', field: 'tct' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur', field: 'iur' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr', field: 'tpr', ascendingFirst: true },
+  { key: 'tcDistribution', label: t('dashboard.individual.columns.tcDistribution'), align: 'text-left', metric: 'tc_distribution' },
   { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc', field: 'tc' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load', field: 'ica' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load', field: 'pending_load' },
@@ -245,11 +243,20 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3 text-center">
-                <span
-                  class="font-mono text-lg font-bold tabular-nums"
-                  :class="row.tct == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.tct)]"
-                >
-                  {{ formatPercent(row.tct) }}
+                <span class="inline-flex items-baseline gap-1.5">
+                  <span
+                    class="font-mono text-lg font-bold tabular-nums"
+                    :class="row.tct == null ? 'text-muted-foreground' : TONE_TEXT[rangeOf(row.tct)]"
+                  >
+                    {{ formatPercent(row.tct) }}
+                  </span>
+                  <span
+                    class="font-mono text-[11px] tabular-nums"
+                    :class="row.total > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
+                    :title="t('dashboard.individual.workedCount')"
+                  >
+                    {{ row.completed }}/{{ row.total }}
+                  </span>
                 </span>
               </td>
 
@@ -281,6 +288,10 @@ async function exportExcel() {
                 </span>
               </td>
 
+              <td class="px-2 py-3">
+                <DashboardPriorityDistribution :distribution="row.tc_distribution" />
+              </td>
+
               <td class="px-2 py-3 text-center">
                 <span class="inline-flex items-baseline gap-1.5">
                   <span
@@ -291,10 +302,10 @@ async function exportExcel() {
                   </span>
                   <span
                     class="font-mono text-[11px] tabular-nums"
-                    :class="row.total > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
-                    :title="t('dashboard.metrics.people_completed.description')"
+                    :class="row.created > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
+                    :title="t('dashboard.individual.createdCount')"
                   >
-                    {{ row.completed }}/{{ row.total }}
+                    {{ row.completed }}/{{ row.created }}
                   </span>
                 </span>
               </td>
@@ -347,28 +358,7 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3">
-                <div class="flex items-center gap-2">
-                  <DashboardDonut
-                    :quick="row.distribution.quick"
-                    :normal="row.distribution.normal"
-                    :high="row.distribution.complex"
-                    :urgent="row.distribution.urgent"
-                  />
-                  <ul class="font-mono text-[10px] leading-tight">
-                    <li :class="TONE_TEXT.good">
-                      R {{ row.distribution.quick }}
-                    </li>
-                    <li :class="TONE_TEXT.warning">
-                      N {{ row.distribution.normal }}
-                    </li>
-                    <li :class="HIGH_TEXT">
-                      A {{ row.distribution.complex }}
-                    </li>
-                    <li :class="TONE_TEXT.danger">
-                      U {{ row.distribution.urgent }}
-                    </li>
-                  </ul>
-                </div>
+                <DashboardPriorityDistribution :distribution="row.distribution" />
               </td>
 
               <td class="px-2 py-3">

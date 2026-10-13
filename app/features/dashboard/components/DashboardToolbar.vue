@@ -63,9 +63,10 @@ const projectsLabel = computed(() => {
 })
 
 const userSearchTerm = ref('')
+// `admin`: todos los miembros de la compañía (con o sin grupo), los mismos que lista Rendimiento individual.
 const { users: usersQuery, items: fetchedUserItems, allItems: knownUserItems, isSearching: isSearchingUsers } = useUsersDropdown(
   true,
-  { searchTerm: userSearchTerm },
+  { searchTerm: userSearchTerm, admin: true },
 )
 
 /** El usuario elegido siempre está en la lista, aunque la búsqueda actual no lo incluya (si no, el selector mostraría el id). */

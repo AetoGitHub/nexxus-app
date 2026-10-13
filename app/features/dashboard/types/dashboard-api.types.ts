@@ -100,14 +100,18 @@ export interface ApiPersonRow {
   tc: number | null
   iur: number | null
   tpr: number | null
-  /** Tareas asignadas a la persona y creadas en el periodo que ya se completaron. */
+  /** Tareas trabajadas en el periodo (con paso a En progreso en el rango, sin importar su fecha límite) que ya se completaron: base del TC. */
   completed: number
-  /** Tareas asignadas a la persona y creadas en el periodo (sin archivadas, eliminadas ni backlog). */
+  /** Tareas de la persona trabajadas en el periodo (sin archivadas, eliminadas ni backlog): base del TC. */
   total: number
+  /** Tareas asignadas a la persona creadas (`created_at`) en el periodo. */
+  created: number
   weighted_load: { percentage: number | null, points_done: number, points: number }
   pending_load: { points: number, capacity: number, percentage: number, status: ApiLoadStatus }
   /** Tareas del periodo por prioridad: R (`low`), N (`normal`), A (`high`, llave `complex`) y U (urgentes + críticas); suman `total`. */
   distribution: ApiPriorityDistribution
+  /** Lo mismo que `distribution`, pero de las tareas trabajadas en el periodo (base del TC): sus 4 valores suman `total`. */
+  tc_distribution: ApiPriorityDistribution
   trend: ApiRowTrend
 }
 
@@ -155,6 +159,8 @@ export interface ApiProjectRow {
   urgent: number
   /** Tareas del periodo por prioridad (mismas llaves que en `people/`); `urgent` aquí son todas las del periodo, no solo las abiertas. */
   distribution?: ApiPriorityDistribution
+  /** Como `distribution`, de las tareas trabajadas en el periodo (base del TC); suma `total`. */
+  tc_distribution?: ApiPriorityDistribution
   /** Máximo 5; el total real viene en `members_count`. */
   members: { id: number, name: string }[]
   members_count: number

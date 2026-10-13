@@ -14,18 +14,25 @@ function userDisplayName(user: UserDropdown): string {
 /**
  * Dropdown de usuarios vía GET /api/tools/dropdown/users/.
  * Cada usuario puede traer group_id / group_name.
+ *
+ * Con `admin` pide `?admin=true`: todos los miembros de la compañía, con o sin grupo (los mismos que lista el Dashboard).
+ * Sin él, solo los que tienen grupo (los formularios de tareas): esa variante conserva la llave de caché de siempre
+ * (`['dropdowns', 'users']`, compartida con las demás consultas de usuarios) y la de `admin` tiene la suya.
  */
 export function useUsersDropdown(
   enabled: MaybeRefOrGetter<boolean> = true,
-  options: { searchTerm?: MaybeRefOrGetter<string> } = {},
+  options: { searchTerm?: MaybeRefOrGetter<string>, admin?: boolean } = {},
 ) {
   const { $api } = useNuxtApp()
   const isEnabled = computed(() => toValue(enabled))
+  /** Segmento extra de la llave: vacío para la variante de siempre. */
+  const scope = options.admin ? ['admin'] : []
+  const adminQuery: Record<string, string> = options.admin ? { admin: 'true' } : {}
 
   const users = useQuery({
-    queryKey: ['dropdowns', 'users'],
+    queryKey: ['dropdowns', 'users', ...scope],
     queryFn: () =>
-      $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/'),
+      $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/', { query: adminQuery }),
     enabled: isEnabled,
   })
 
@@ -44,10 +51,10 @@ export function useUsersDropdown(
   )
 
   const remoteUsers = useQuery({
-    queryKey: computed(() => ['dropdowns', 'users', 'search', remoteSearch.value]),
+    queryKey: computed(() => ['dropdowns', 'users', ...scope, 'search', remoteSearch.value]),
     queryFn: () =>
       $api<PaginatedResponse<UserDropdown>>('/api/tools/dropdown/users/', {
-        query: { username: remoteSearch.value },
+        query: { ...adminQuery, username: remoteSearch.value },
       }),
     enabled: computed(() => isEnabled.value && !!remoteSearch.value),
   })
