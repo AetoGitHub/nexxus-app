@@ -76,7 +76,7 @@ const mobileFiltersOpen = ref(false)
  */
 const isDesktopLayout = useMediaQuery('(min-width: 768px) and (min-height: 601px)')
 
-/** El micrófono está grabando o procesando: en la barra compacta se hace espacio para el visualizador. */
+/** El micrófono está grabando o procesando: el botón flotante se ensancha en una tarjeta y se oculta el «+». */
 const voiceBusy = ref(false)
 
 // Al cambiar de barra (p. ej. al girar el celular) el micrófono se desmonta y descarta la grabación.
@@ -193,14 +193,12 @@ function goToStatusList() {
 
       <div class="flex items-center gap-2 landscape-row">
         <TaskViewSwitcher
-          v-show="!voiceBusy"
           v-model="view"
           class="flex-1"
           :exclude="excludeViews"
         />
         <UButton
           v-if="showRefresh"
-          v-show="!voiceBusy"
           icon="i-lucide-archive"
           :color="showArchivedOnly ? 'primary' : 'neutral'"
           :variant="showArchivedOnly ? 'subtle' : 'outline'"
@@ -212,7 +210,6 @@ function goToStatusList() {
         />
         <UButton
           v-if="showRefresh"
-          v-show="!voiceBusy"
           icon="i-lucide-refresh-cw"
           color="neutral"
           variant="outline"
@@ -224,18 +221,6 @@ function goToStatusList() {
           :disabled="isRefreshing"
           @click="refresh"
         />
-
-        <!-- Micrófono (mobile / celular acostado): al grabar toma el ancho de la fila y oculta el resto de controles. -->
-        <div
-          v-if="!isDesktopLayout"
-          :class="voiceBusy ? 'min-w-48 flex-1 basis-48' : 'shrink-0'"
-        >
-          <TaskVoiceQuickButton
-            fill
-            @result="task => openNewTask(null, task)"
-            @update:busy="voiceBusy = $event"
-          />
-        </div>
       </div>
 
       <p class="text-xs text-muted-foreground px-0.5 truncate landscape-compact-summary">
@@ -368,9 +353,27 @@ function goToStatusList() {
       </template>
     </USlideover>
 
-    <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto. -->
-    <UButton
+    <!-- Micrófono mobile (y celular acostado): botón flotante arriba del «+». Al grabar se ensancha en una tarjeta en el
+         lugar del «+» (que se oculta) y, con el slideover abierto, se oculta junto con él. -->
+    <div
+      v-if="!isDesktopLayout"
       v-show="!newTaskOpen"
+      class="fixed z-40"
+      :class="voiceBusy
+        ? 'inset-x-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)]'
+        : 'right-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem+3.5rem+0.75rem)]'"
+    >
+      <TaskVoiceQuickButton
+        fab
+        fill
+        @result="task => openNewTask(null, task)"
+        @update:busy="voiceBusy = $event"
+      />
+    </div>
+
+    <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto o mientras el micrófono graba. -->
+    <UButton
+      v-show="!newTaskOpen && !voiceBusy"
       color="primary"
       size="xl"
       square

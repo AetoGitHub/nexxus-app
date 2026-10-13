@@ -20,6 +20,11 @@ const props = withDefaults(
     size?: 'xs' | 'sm'
     /** Grabando o procesando, la píldora ocupa todo el ancho disponible en vez de un ancho fijo. */
     fill?: boolean
+    /**
+     * Botón flotante del celular: círculo grande y, mientras graba, una tarjeta que además de la píldora dice qué
+     * conviene dictar (en la barra de escritorio no hay espacio para esa indicación y va como tooltip).
+     */
+    fab?: boolean
   }>(),
   {
     defaultProjectId: null,
@@ -27,6 +32,7 @@ const props = withDefaults(
     iconOnly: false,
     size: 'xs',
     fill: false,
+    fab: false,
   },
 )
 
@@ -112,8 +118,16 @@ watch(() => props.disabled, (disabled) => {
   }
 })
 
-const pillHeight = computed(() => (props.size === 'sm' ? 'h-8' : 'h-7'))
+const pillHeight = computed(() => {
+  if (props.fab) {
+    return 'h-12'
+  }
+  return props.size === 'sm' ? 'h-8' : 'h-7'
+})
 const pillWidth = computed(() => (props.fill ? 'w-full' : 'w-60 max-w-full'))
+
+/** Tooltip del micrófono en reposo: para qué sirve y qué conviene decir. */
+const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.form.voice.tip')}`)
 </script>
 
 <template>
@@ -122,72 +136,88 @@ const pillWidth = computed(() => (props.fill ? 'w-full' : 'w-60 max-w-full'))
     v-if="isSupported && isRecording"
     role="group"
     :aria-label="t('tasks.form.voice.recording')"
-    class="voice-pill flex min-w-0 shrink items-center gap-2 rounded-full bg-error/10 pl-3 pr-1 ring-1 ring-error/30"
-    :class="[pillHeight, pillWidth]"
+    class="voice-pill flex min-w-0 shrink"
+    :class="fab
+      ? 'w-full flex-col gap-2 rounded-2xl bg-elevated p-3 shadow-lg ring-1 ring-error/30'
+      : ['items-center gap-2 rounded-full bg-error/10 pl-3 pr-1 ring-1 ring-error/30', pillHeight, pillWidth]"
   >
-    <span
-      class="size-2 shrink-0 rounded-full bg-error motion-safe:animate-pulse"
-      aria-hidden="true"
-    />
-
-    <!-- Anuncio para lectores de pantalla; lo visible es la leyenda y las barras. -->
-    <span
-      class="sr-only"
-      aria-live="polite"
+    <!-- Indicación breve de qué dictar, visible todo el tiempo que graba. -->
+    <p
+      v-if="fab"
+      class="text-xs leading-snug text-muted"
     >
-      {{ showHint ? t('tasks.form.voice.recordingAnnounce') : '' }}
-    </span>
+      {{ t('tasks.form.voice.tip') }}
+    </p>
 
-    <div class="relative h-full min-w-0 flex-1 overflow-hidden">
-      <Transition
-        name="voice-swap"
-        mode="out-in"
+    <div
+      class="flex min-w-0 items-center gap-2"
+      :class="fab ? 'h-10 rounded-full bg-error/10 pl-3 pr-1' : 'h-full w-full'"
+    >
+      <span
+        class="size-2 shrink-0 rounded-full bg-error motion-safe:animate-pulse"
+        aria-hidden="true"
+      />
+
+      <!-- Anuncio para lectores de pantalla; lo visible es la leyenda y las barras. -->
+      <span
+        class="sr-only"
+        aria-live="polite"
       >
-        <p
-          v-if="showHint"
-          key="hint"
-          class="absolute inset-0 flex items-center truncate text-xs font-medium text-error"
-          aria-hidden="true"
+        {{ showHint ? t('tasks.form.voice.recordingAnnounce') : '' }}
+      </span>
+
+      <div class="relative h-full min-w-0 flex-1 overflow-hidden">
+        <Transition
+          name="voice-swap"
+          mode="out-in"
         >
-          {{ t('tasks.form.voice.hint') }}
-        </p>
-        <div
-          v-else
-          key="bars"
-          class="absolute inset-0 flex items-center justify-end gap-[2px]"
-          role="img"
-          :aria-label="t('tasks.form.voice.meter')"
-        >
-          <span
-            v-for="(level, index) in levels"
-            :key="index"
-            class="voice-bar w-[3px] shrink-0 rounded-full bg-error"
-            :style="{ height: `${Math.max(12, Math.round(level * 100))}%` }"
-          />
-        </div>
-      </Transition>
+          <p
+            v-if="showHint"
+            key="hint"
+            class="absolute inset-0 flex items-center truncate text-xs font-medium text-error"
+            aria-hidden="true"
+          >
+            {{ t('tasks.form.voice.hint') }}
+          </p>
+          <div
+            v-else
+            key="bars"
+            class="absolute inset-0 flex items-center justify-end gap-[2px]"
+            role="img"
+            :aria-label="t('tasks.form.voice.meter')"
+          >
+            <span
+              v-for="(level, index) in levels"
+              :key="index"
+              class="voice-bar w-[3px] shrink-0 rounded-full bg-error"
+              :style="{ height: `${Math.max(12, Math.round(level * 100))}%` }"
+            />
+          </div>
+        </Transition>
+      </div>
+
+      <span
+        class="shrink-0 font-mono text-xs tabular-nums text-highlighted"
+        role="timer"
+        :aria-label="t('tasks.form.voice.elapsed')"
+      >{{ elapsedLabel }}</span>
+
+      <UButton
+        ref="stopButton"
+        type="button"
+        color="error"
+        variant="solid"
+        size="xs"
+        square
+        class="shrink-0 rounded-full"
+        :class="fab ? 'size-8' : 'size-6'"
+        :ui="{ base: 'justify-center gap-0', leadingIcon: fab ? 'size-3.5 fill-current' : 'size-3 fill-current' }"
+        icon="i-lucide-square"
+        :title="t('tasks.form.voice.stop')"
+        :aria-label="t('tasks.form.voice.stop')"
+        @click="onClick"
+      />
     </div>
-
-    <span
-      class="shrink-0 font-mono text-xs tabular-nums text-highlighted"
-      role="timer"
-      :aria-label="t('tasks.form.voice.elapsed')"
-    >{{ elapsedLabel }}</span>
-
-    <UButton
-      ref="stopButton"
-      type="button"
-      color="error"
-      variant="solid"
-      size="xs"
-      square
-      class="size-6 shrink-0 rounded-full"
-      :ui="{ leadingIcon: 'size-3 fill-current' }"
-      icon="i-lucide-square"
-      :title="t('tasks.form.voice.stop')"
-      :aria-label="t('tasks.form.voice.stop')"
-      @click="onClick"
-    />
   </div>
 
   <!-- Procesando: la IA está entendiendo el audio. -->
@@ -196,7 +226,7 @@ const pillWidth = computed(() => (props.fill ? 'w-full' : 'w-60 max-w-full'))
     role="status"
     :aria-label="t('tasks.form.voice.processingStatus')"
     class="flex shrink-0 items-center gap-2 rounded-full bg-elevated px-3 text-xs font-medium text-muted ring-1 ring-default"
-    :class="[pillHeight, fill ? 'w-full justify-center' : '']"
+    :class="[pillHeight, fill ? 'w-full justify-center' : '', fab ? 'shadow-lg' : '']"
   >
     <UIcon
       name="i-lucide-loader-circle"
@@ -206,22 +236,23 @@ const pillWidth = computed(() => (props.fill ? 'w-full' : 'w-60 max-w-full'))
     <span class="truncate">{{ t('tasks.form.voice.processing') }}</span>
   </div>
 
-  <!-- Reposo: solo el micrófono (o con la etiqueta «Dictar» dentro del formulario). -->
+  <!-- Reposo: solo el micrófono (o con la etiqueta «Dictar» dentro del formulario); en el celular, el botón flotante. -->
   <UButton
     v-else-if="isSupported"
     type="button"
-    :size="size"
-    :square="iconOnly"
-    :class="iconOnly ? 'h-8 shrink-0' : ''"
-    :title="t('tasks.form.voice.start')"
+    :size="fab ? 'xl' : size"
+    :square="iconOnly || fab"
+    :class="fab ? 'size-14 shrink-0 rounded-full p-0! shadow-lg' : (iconOnly ? 'h-8 shrink-0' : '')"
+    :title="startTitle"
     color="neutral"
-    variant="ghost"
+    :variant="fab ? 'subtle' : 'ghost'"
     icon="i-lucide-mic"
+    :ui="fab ? { base: 'justify-center gap-0', leadingIcon: 'size-6 text-primary' } : undefined"
     :disabled="disabled || userId == null"
     :aria-label="t('tasks.form.voice.start')"
     @click="onClick"
   >
-    <template v-if="!iconOnly">
+    <template v-if="!iconOnly && !fab">
       {{ t('tasks.form.voice.label') }}
     </template>
   </UButton>
