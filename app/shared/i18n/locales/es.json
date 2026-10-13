@@ -1168,6 +1168,12 @@
         "all": "Todos los proyectos",
         "count": "{count} proyectos",
         "search": "Buscar proyecto…"
+      },
+      "user": {
+        "label": "Usuario",
+        "all": "Todos los usuarios",
+        "search": "Buscar usuario…",
+        "disabledMine": "En «Mis tareas» ya solo se ven tus tareas. Cambia a «Equipo» para elegir un usuario."
       }
     },
     "kpis": {
@@ -1247,6 +1253,8 @@
         "saturated": "Saturado"
       },
       "empty": "No hay colaboradores para mostrar en este periodo.",
+      "searchPlaceholder": "Buscar colaborador…",
+      "noResults": "Sin resultados para \"{search}\"",
       "excelError": "No se pudo generar el Excel",
       "excelColumns": {
         "pointsDone": "Puntos hechos",
@@ -1272,10 +1280,20 @@
       },
       "maxDays": "máx {days}d",
       "moreMembers": "{count} miembros más",
-      "empty": "No hay proyectos para mostrar en este periodo."
+      "andMore": "y {count} más",
+      "empty": "No hay proyectos para mostrar en este periodo.",
+      "searchPlaceholder": "Buscar proyecto…",
+      "noResults": "Sin resultados para \"{search}\""
     },
     "hero": {
       "goal": "meta ≥{goal}%"
+    },
+    "table": {
+      "sortBy": "Ordenar por {column}",
+      "sortedAsc": "{column}: orden ascendente. Pulsa para invertir",
+      "sortedDesc": "{column}: orden descendente. Pulsa para invertir",
+      "clearSearch": "Borrar búsqueda",
+      "range": "Mostrando {from}–{to} de {total}"
     },
     "state": {
       "loading": "Cargando…",

@@ -1168,6 +1168,12 @@
         "all": "All projects",
         "count": "{count} projects",
         "search": "Search project…"
+      },
+      "user": {
+        "label": "User",
+        "all": "All users",
+        "search": "Search user…",
+        "disabledMine": "In “My tasks” you only see your own tasks. Switch to “Team” to pick a user."
       }
     },
     "kpis": {
@@ -1247,6 +1253,8 @@
         "saturated": "Saturated"
       },
       "empty": "There are no collaborators to show in this period.",
+      "searchPlaceholder": "Search collaborator…",
+      "noResults": "No results for \"{search}\"",
       "excelError": "Could not generate the Excel file",
       "excelColumns": {
         "pointsDone": "Points done",
@@ -1272,10 +1280,20 @@
       },
       "maxDays": "max {days}d",
       "moreMembers": "{count} more members",
-      "empty": "There are no projects to show in this period."
+      "andMore": "and {count} more",
+      "empty": "There are no projects to show in this period.",
+      "searchPlaceholder": "Search project…",
+      "noResults": "No results for \"{search}\""
     },
     "hero": {
       "goal": "goal ≥{goal}%"
+    },
+    "table": {
+      "sortBy": "Sort by {column}",
+      "sortedAsc": "{column}: ascending order. Press to reverse",
+      "sortedDesc": "{column}: descending order. Press to reverse",
+      "clearSearch": "Clear search",
+      "range": "Showing {from}–{to} of {total}"
     },
     "state": {
       "loading": "Loading…",

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import DashboardMemberAvatars from '~/features/dashboard/components/shared/DashboardMemberAvatars.vue'
+import DashboardSortButton from '~/features/dashboard/components/shared/DashboardSortButton.vue'
+import DashboardTablePagination from '~/features/dashboard/components/shared/DashboardTablePagination.vue'
+import DashboardTableSearch from '~/features/dashboard/components/shared/DashboardTableSearch.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
 import MetricTooltip from '~/features/dashboard/components/shared/MetricTooltip.vue'
 import type { ApiDirection, ApiProjectsResponse } from '~/features/dashboard/types/dashboard-api.types'
@@ -8,13 +11,22 @@ import type { DashboardTone, MetricKey } from '~/features/dashboard/types/dashbo
 import { NO_DATA, TONE_SOFT, TONE_TEXT, formatPercent, rangeOf } from '~/features/dashboard/utils/dashboard.util'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 
-/** Rendimiento por proyecto: cumplimiento, avance, pendientes críticos, miembros y tendencia. */
+/**
+ * Rendimiento por proyecto: cumplimiento, avance, pendientes críticos, miembros y tendencia. La búsqueda, el orden y la
+ * página los resuelve el backend (`search`, `ordering`, `page`); esta tabla solo pinta la página que llega.
+ */
 const props = defineProps<{
   data: ApiProjectsResponse | undefined
   loading: boolean
   refreshing: boolean
   error: string
 }>()
+
+/** Lo escrito en el buscador (se manda al backend ~300 ms después de dejar de teclear). */
+const search = defineModel<string>('search', { required: true })
+/** `campo` ascendente o `-campo` descendente (`ordering` del backend). */
+const ordering = defineModel<string>('ordering', { required: true })
+const page = defineModel<number>('page', { required: true })
 
 defineEmits<{
   retry: []
@@ -25,14 +37,17 @@ const { t } = useI18n()
 /** Avatares visibles de la columna Miembros; el resto va como «+N». */
 const VISIBLE_MEMBERS = 3
 
-/** `metric` es la llave del tooltip: Proyecto no mide nada y no lleva. */
-const columns = computed<{ key: string, label: string, metric?: MetricKey }[]>(() => [
-  { key: 'topic', label: t('dashboard.topics.columns.topic') },
-  { key: 'tct', label: 'TCT', metric: 'tct' },
-  { key: 'completed', label: t('dashboard.topics.columns.completed'), metric: 'completed' },
-  { key: 'active', label: t('dashboard.topics.columns.active'), metric: 'active' },
-  { key: 'overdue', label: t('dashboard.topics.columns.overdue'), metric: 'overdue' },
-  { key: 'urgent', label: t('dashboard.topics.columns.urgent'), metric: 'urgent' },
+/**
+ * `metric` es la llave del tooltip: Proyecto no mide nada y no lleva. `field` es el `ordering` que acepta el backend
+ * (Miembros y Tendencia no se ordenan); `ascendingFirst` marca donde conviene empezar de menor a mayor (el nombre).
+ */
+const columns = computed<{ key: string, label: string, metric?: MetricKey, field?: string, ascendingFirst?: boolean }[]>(() => [
+  { key: 'topic', label: t('dashboard.topics.columns.topic'), field: 'name', ascendingFirst: true },
+  { key: 'tct', label: 'TCT', metric: 'tct', field: 'tct' },
+  { key: 'completed', label: t('dashboard.topics.columns.completed'), metric: 'completed', field: 'completed' },
+  { key: 'active', label: t('dashboard.topics.columns.active'), metric: 'active', field: 'active' },
+  { key: 'overdue', label: t('dashboard.topics.columns.overdue'), metric: 'overdue', field: 'overdue' },
+  { key: 'urgent', label: t('dashboard.topics.columns.urgent'), metric: 'urgent', field: 'urgent' },
   { key: 'members', label: t('dashboard.topics.columns.members'), metric: 'members' },
   { key: 'trend', label: t('dashboard.topics.columns.trend'), metric: 'trend' },
 ])
@@ -64,6 +79,25 @@ function countClass(value: number): string {
   return tone ? TONE_TEXT[tone] : 'text-muted-foreground'
 }
 
+/** `aria-sort` del encabezado según el orden que está activo. */
+function ariaSort(field: string | undefined): 'ascending' | 'descending' | 'none' | undefined {
+  if (!field) {
+    return undefined
+  }
+  if (ordering.value === field) {
+    return 'ascending'
+  }
+  return ordering.value === `-${field}` ? 'descending' : 'none'
+}
+
+/** Sin filas por la búsqueda: lo dice con la palabra buscada; sin búsqueda, el vacío de siempre. */
+const emptyText = computed(() => {
+  const term = search.value.trim()
+  return term
+    ? t('dashboard.topics.noResults', { search: term })
+    : t('dashboard.topics.empty')
+})
+
 /** Avance de completadas; sin tareas en el periodo la barra queda vacía (evita dividir entre 0). */
 function completedWidth(completed: number, total: number): string {
   return total > 0 ? `${Math.min((completed / total) * 100, 100)}%` : '0%'
@@ -72,16 +106,23 @@ function completedWidth(completed: number, total: number): string {
 
 <template>
   <section class="rounded-xl border border-border bg-card p-4">
-    <h2 class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-      {{ t('dashboard.topics.title') }}
-    </h2>
+    <header class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        {{ t('dashboard.topics.title') }}
+      </h2>
+
+      <DashboardTableSearch
+        v-model="search"
+        :placeholder="t('dashboard.topics.searchPlaceholder')"
+      />
+    </header>
 
     <DashboardBlockState
       class="mt-3"
       :loading="loading"
       :error="error"
       :empty="rows.length === 0"
-      :empty-text="t('dashboard.topics.empty')"
+      :empty-text="emptyText"
       :refreshing="refreshing"
       @retry="$emit('retry')"
     >
@@ -102,16 +143,27 @@ function completedWidth(completed: number, total: number): string {
                 :key="column.key"
                 scope="col"
                 class="px-2 pb-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+                :aria-sort="ariaSort(column.field)"
               >
-                <MetricTooltip
-                  v-if="column.metric"
-                  :metric="column.metric"
-                >
-                  {{ column.label }}
-                </MetricTooltip>
-                <template v-else>
-                  {{ column.label }}
-                </template>
+                <span class="inline-flex items-center gap-1">
+                  <MetricTooltip
+                    v-if="column.metric"
+                    :metric="column.metric"
+                  >
+                    {{ column.label }}
+                  </MetricTooltip>
+                  <template v-else>
+                    {{ column.label }}
+                  </template>
+                  <DashboardSortButton
+                    v-if="column.field"
+                    :field="column.field"
+                    :ordering="ordering"
+                    :label="column.label"
+                    :ascending-first="column.ascendingFirst"
+                    @sort="ordering = $event"
+                  />
+                </span>
               </th>
             </tr>
           </thead>
@@ -191,6 +243,7 @@ function completedWidth(completed: number, total: number): string {
               <td class="px-2 py-3">
                 <DashboardMemberAvatars
                   :members="topic.members"
+                  :total="topic.members_count"
                   :visible="VISIBLE_MEMBERS"
                 />
               </td>
@@ -225,5 +278,11 @@ function completedWidth(completed: number, total: number): string {
         </table>
       </div>
     </DashboardBlockState>
+
+    <DashboardTablePagination
+      v-model:page="page"
+      :pagination="data?.pagination"
+      :loading="refreshing"
+    />
   </section>
 </template>

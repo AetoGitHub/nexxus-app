@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DashboardPeriodPicker from '~/features/dashboard/components/DashboardPeriodPicker.vue'
 import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProjectsDropdown'
+import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import type {
   DashboardCompare,
   DashboardDateRange,
@@ -10,8 +11,9 @@ import type {
 import { isValidDateRange } from '~/features/dashboard/utils/dashboard-filters.util'
 
 /**
- * Filtros globales del Dashboard: alcance (Mis tareas / Equipo), periodo o rango personalizado, comparativa y proyectos.
- * Aplican a los KPI, la carga y los proyectos (y «Mis tareas» y los proyectos también a Rendimiento individual).
+ * Filtros globales del Dashboard: alcance (Mis tareas / Equipo), periodo o rango personalizado, comparativa, proyectos y
+ * usuario. Aplican a los KPI, la carga, Rendimiento individual y los proyectos. El usuario recalcula todo el dashboard con
+ * las tareas de esa persona (no es el buscador de las tablas, que solo reduce sus filas).
  */
 const scope = defineModel<DashboardScope>('scope', { required: true })
 const period = defineModel<DashboardPeriod>('period', { required: true })
@@ -22,6 +24,8 @@ const range = defineModel<DashboardDateRange>('range', { required: true })
 const periodRange = defineModel<DashboardDateRange | null>('periodRange', { required: true })
 const compare = defineModel<DashboardCompare>('compare', { required: true })
 const projectIds = defineModel<number[]>('projectIds', { required: true })
+/** Usuario elegido (`user=<id>`); `null` = todo el equipo. */
+const userId = defineModel<number | null>('userId', { required: true })
 
 const { t } = useI18n()
 
@@ -57,6 +61,26 @@ const projectsLabel = computed(() => {
   }
   return t('dashboard.toolbar.projects.count', { count })
 })
+
+const userSearchTerm = ref('')
+const { users: usersQuery, items: fetchedUserItems, allItems: knownUserItems, isSearching: isSearchingUsers } = useUsersDropdown(
+  true,
+  { searchTerm: userSearchTerm },
+)
+
+/** El usuario elegido siempre está en la lista, aunque la búsqueda actual no lo incluya (si no, el selector mostraría el id). */
+const userItems = computed(() => {
+  const items = fetchedUserItems.value
+  const selected = userId.value
+  if (selected == null || items.some(item => item.value === selected)) {
+    return items
+  }
+  const known = knownUserItems.value.find(item => item.value === selected)
+  return known ? [known, ...items] : items
+})
+
+/** En «Mis tareas» ya solo se ven las del usuario en sesión: el backend rechaza `user` junto con `my_tasks`. */
+const userDisabled = computed(() => scope.value === 'mine')
 
 /** Mensaje mientras el rango está incompleto o al revés: no se pide nada hasta que sea válido. */
 const rangeError = computed(() => {
@@ -161,6 +185,25 @@ function selectCustom() {
           {{ projectsLabel }}
         </span>
       </USelectMenu>
+
+      <USelectMenu
+        :model-value="userId ?? undefined"
+        v-model:search-term="userSearchTerm"
+        value-key="value"
+        :items="userItems"
+        :loading="usersQuery.isPending.value"
+        :disabled="userDisabled"
+        :title="userDisabled ? t('dashboard.toolbar.user.disabledMine') : undefined"
+        size="sm"
+        icon="i-lucide-user-search"
+        class="w-52"
+        :placeholder="t('dashboard.toolbar.user.all')"
+        :search-input="{ placeholder: t('dashboard.toolbar.user.search'), loading: isSearchingUsers }"
+        :aria-label="t('dashboard.toolbar.user.label')"
+        clear
+        ignore-filter
+        @update:model-value="userId = ($event as number | undefined) ?? null"
+      />
 
       <div class="ml-auto flex flex-wrap items-center gap-2">
         <DashboardPeriodPicker

@@ -119,8 +119,26 @@ export interface ApiPriorityDistribution {
   urgent: number
 }
 
+/** Paginación de las tablas (`page_size` activa); sin `page_size` o con `export=true` la respuesta trae `pagination: null`. */
+export interface ApiPagination {
+  page: number
+  page_size: number
+  /** Filas que cumplen `search` (no el total de la compañía). */
+  total: number
+  total_pages: number
+}
+
 export interface ApiPeopleResponse extends ApiPeriodInfo {
   people: ApiPersonRow[]
+  pagination: ApiPagination | null
+}
+
+/** Fila de `people/?export=true`: sin `trend.series` (el Excel solo usa `delta` y `direction`). */
+export type ApiPersonExportRow = Omit<ApiPersonRow, 'trend'> & { trend: Pick<ApiRowTrend, 'delta' | 'direction'> }
+
+export interface ApiPeopleExportResponse extends ApiPeriodInfo {
+  people: ApiPersonExportRow[]
+  pagination: null
 }
 
 export interface ApiProjectRow {
@@ -137,10 +155,13 @@ export interface ApiProjectRow {
   urgent: number
   /** Tareas del periodo por prioridad (mismas llaves que en `people/`); `urgent` aquí son todas las del periodo, no solo las abiertas. */
   distribution?: ApiPriorityDistribution
+  /** Máximo 5; el total real viene en `members_count`. */
   members: { id: number, name: string }[]
+  members_count: number
   trend: ApiRowTrend
 }
 
 export interface ApiProjectsResponse extends ApiPeriodInfo {
   projects: ApiProjectRow[]
+  pagination: ApiPagination | null
 }

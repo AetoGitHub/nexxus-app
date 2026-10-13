@@ -12,8 +12,10 @@ import {
   useDashboardKpis,
   useDashboardLoadDistribution,
   useDashboardPeople,
+  useDashboardPeopleExport,
   useDashboardProjects,
 } from '~/features/dashboard/composables/useDashboardApi'
+import { useDashboardTableState } from '~/features/dashboard/composables/useDashboardTableState'
 import type {
   DashboardCompare,
   DashboardDateRange,
@@ -38,6 +40,8 @@ const compare = ref<DashboardCompare>('previous')
 // «Mis tareas» (`my_tasks`) y los proyectos (`project`) aplican a todos los bloques.
 const scope = ref<DashboardScope>('team')
 const projectIds = ref<number[]>([])
+// Usuario elegido (`user`): recalcula todos los bloques con sus tareas. No convive con «Mis tareas» (`my_tasks`).
+const userId = ref<number | null>(null)
 // Rango personalizado: reemplaza al periodo en los bloques globales; solo se pide cuando está completo y es válido.
 const customActive = ref(false)
 const customRange = ref<DashboardDateRange>(defaultCustomRange())
@@ -55,11 +59,35 @@ const globalEnabled = computed(() => !customActive.value || validRange.value != 
 const myTasks = computed(() => scope.value === 'mine')
 
 // Cada bloque pide lo suyo: al cambiar un filtro solo se vuelven a pedir los que dependen de él.
-const globalFilters = { period, range: validRange, myTasks, projectIds, enabled: globalEnabled }
+const globalFilters = { period, range: validRange, myTasks, projectIds, userId, enabled: globalEnabled }
+
+// «Mis tareas» ya es el usuario en sesión: elegir ese alcance suelta el usuario (el backend responde 400 con ambos).
+watch(scope, (value) => {
+  if (value === 'mine') {
+    userId.value = null
+  }
+})
+
+// Búsqueda, orden y página de cada tabla (los resuelve el backend). La página vuelve a 1 con cualquier filtro global.
+const resetTablePageOn = [userId, scope, period, compare, projectIds, validRange, customActive]
+const peopleTable = useDashboardTableState({ defaultOrdering: '-tct', resetOn: resetTablePageOn })
+const projectsTable = useDashboardTableState({ defaultOrdering: '-tct', resetOn: resetTablePageOn })
+const { search: peopleSearch, ordering: peopleOrdering, page: peoplePage, params: peopleParams } = peopleTable
+const { search: projectsSearch, ordering: projectsOrdering, page: projectsPage, params: projectsParams } = projectsTable
+
+// Otra compañía: el usuario elegido ya no es miembro (403) y la búsqueda de la anterior no aplica.
+const { selectedCompanyId } = useAuth()
+watch(selectedCompanyId, () => {
+  userId.value = null
+  peopleTable.reset()
+  projectsTable.reset()
+})
+
 const kpisQuery = useDashboardKpis({ ...globalFilters, compare })
 const loadQuery = useDashboardLoadDistribution(globalFilters)
-const peopleQuery = useDashboardPeople({ ...globalFilters, compare })
-const projectsQuery = useDashboardProjects({ ...globalFilters, compare })
+const peopleQuery = useDashboardPeople({ ...globalFilters, compare }, peopleParams)
+const projectsQuery = useDashboardProjects({ ...globalFilters, compare }, projectsParams)
+const fetchAllPeople = useDashboardPeopleExport({ ...globalFilters, compare }, peopleParams)
 
 const kpiSet = computed(() => (kpisQuery.data.value ? buildDashboardKpis(kpisQuery.data.value.kpis) : null))
 
@@ -79,6 +107,7 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
       v-model:period-range="periodRange"
       v-model:compare="compare"
       v-model:project-ids="projectIds"
+      v-model:user-id="userId"
     />
 
     <DashboardBlockState
@@ -123,6 +152,10 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
     />
 
     <DashboardCollaboratorsTable
+      v-model:search="peopleSearch"
+      v-model:ordering="peopleOrdering"
+      v-model:page="peoplePage"
+      :fetch-all="fetchAllPeople"
       :data="peopleQuery.data.value"
       :loading="peopleQuery.isPending.value"
       :refreshing="peopleQuery.isPlaceholderData.value"
@@ -131,6 +164,9 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
     />
 
     <DashboardTopicsTable
+      v-model:search="projectsSearch"
+      v-model:ordering="projectsOrdering"
+      v-model:page="projectsPage"
       :data="projectsQuery.data.value"
       :loading="projectsQuery.isPending.value"
       :refreshing="projectsQuery.isPlaceholderData.value"

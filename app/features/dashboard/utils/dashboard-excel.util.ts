@@ -1,15 +1,15 @@
-import type { ApiPeopleResponse } from '~/features/dashboard/types/dashboard-api.types'
+import type { ApiPeopleExportResponse } from '~/features/dashboard/types/dashboard-api.types'
 
 type TranslateFn = (key: string) => string
 
 type ExcelCell = string | number | null | { value: string, fontWeight: 'bold' }
 
 /**
- * Rendimiento individual a Excel, con las filas que ya están cargadas en la tabla (no hay endpoint).
- * Una columna por cada columna de la tabla; los porcentajes van como número de 0 a 100 y lo que no tiene datos, vacío.
+ * Rendimiento individual a Excel, con todas las filas que cumplen los filtros y la búsqueda (`people/?export=true`: sin
+ * paginar y sin la serie de tendencia, que el Excel no usa). Una columna por cada columna de la tabla; los porcentajes van como número de 0 a 100 y lo que no tiene datos, vacío.
  * La librería se carga al exportar para no sumarla al peso inicial de la pantalla.
  */
-export async function exportPeopleToExcel(response: ApiPeopleResponse, t: TranslateFn): Promise<void> {
+export async function exportPeopleToExcel(response: ApiPeopleExportResponse, t: TranslateFn): Promise<void> {
   const { default: writeExcelFile } = await import('write-excel-file/browser')
 
   const headers = [

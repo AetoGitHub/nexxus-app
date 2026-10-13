@@ -7,15 +7,21 @@ import { getInitials } from '~/shared/utils/initials'
  * Miembros de un proyecto como círculos de iniciales con el color de cada persona (el mismo del Rendimiento
  * individual). Se muestran `visible` y el resto va como «+N»: al pasar el cursor (o con foco / tap en touch) un tooltip
  * lista a quienes no caben.
+ *
+ * El backend manda como máximo 5 miembros por proyecto y el total real en `total` (`members_count`): el «+N» sale de
+ * ahí (`total` menos los círculos pintados), y si el tooltip no alcanza a nombrar a todos, avisa cuántos más hay.
  */
 const props = withDefaults(
   defineProps<{
     members: { id: number, name: string }[]
     /** Círculos visibles antes del «+N». */
     visible?: number
+    /** Total real de miembros (`members_count`); sin él se cuenta con los que llegaron. */
+    total?: number
   }>(),
   {
     visible: 3,
+    total: undefined,
   },
 )
 
@@ -23,6 +29,10 @@ const { t } = useI18n()
 
 const shown = computed(() => props.members.slice(0, props.visible))
 const hidden = computed(() => props.members.slice(props.visible))
+/** Miembros que no se ven como círculo: los nombrados en el tooltip más los que el backend no mandó. */
+const extraCount = computed(() => Math.max((props.total ?? props.members.length) - shown.value.length, 0))
+/** Miembros que ni siquiera llegaron en la respuesta (no se pueden nombrar). */
+const unnamedCount = computed(() => Math.max(extraCount.value - hidden.value.length, 0))
 
 // En touch no hay hover: el tap abre y cierra el tooltip (ver `useTooltipTouchTap`).
 const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTouchTap()
@@ -44,7 +54,7 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
     />
 
     <UTooltip
-      v-if="hidden.length"
+      v-if="extraCount > 0"
       :open="open"
       :content="{ side: 'top', align: 'center', sideOffset: 6 }"
       :ui="{ content: 'h-auto max-w-[280px] items-start p-2.5' }"
@@ -53,13 +63,13 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
       <button
         type="button"
         class="ml-1.5 cursor-help rounded-sm px-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aeto-teal"
-        :aria-label="t('dashboard.topics.moreMembers', { count: hidden.length })"
+        :aria-label="t('dashboard.topics.moreMembers', { count: extraCount })"
         @pointerdown.capture="onPointerDown"
         @pointerup="endTouchTap"
         @pointercancel="endTouchTap"
         @click="onClick"
       >
-        +{{ hidden.length }}
+        +{{ extraCount }}
       </button>
 
       <template #content>
@@ -78,6 +88,12 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
               :name="member.name"
             />
             <span class="text-xs text-foreground">{{ member.name }}</span>
+          </li>
+          <li
+            v-if="unnamedCount > 0"
+            class="text-xs text-muted-foreground"
+          >
+            {{ t('dashboard.topics.andMore', { count: unnamedCount }) }}
           </li>
         </ul>
       </template>
