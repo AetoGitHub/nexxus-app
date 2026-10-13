@@ -54,8 +54,8 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'collaborator', label: t('dashboard.individual.columns.collaborator'), align: 'text-left' },
   { key: 'tct', label: 'TCT', align: 'text-center', metric: 'tct' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur' },
-  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr' },
+  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load' },
   { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
@@ -214,6 +214,16 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3 text-center">
+                <span
+                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
+                  :class="TONE_SOFT.neutral"
+                  :title="row.tpr == null ? t('dashboard.kpis.tpr.empty') : undefined"
+                >
+                  {{ formatHours(row.tpr) }}
+                </span>
+              </td>
+
+              <td class="px-2 py-3 text-center">
                 <span class="inline-flex items-baseline gap-1.5">
                   <span
                     class="font-mono text-lg font-bold tabular-nums"
@@ -228,16 +238,6 @@ async function exportExcel() {
                   >
                     {{ row.completed }}/{{ row.total }}
                   </span>
-                </span>
-              </td>
-
-              <td class="px-2 py-3 text-center">
-                <span
-                  class="inline-block rounded px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums"
-                  :class="TONE_SOFT.neutral"
-                  :title="row.tpr == null ? t('dashboard.kpis.tpr.empty') : undefined"
-                >
-                  {{ formatHours(row.tpr) }}
                 </span>
               </td>
 
