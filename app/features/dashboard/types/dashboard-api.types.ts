@@ -102,10 +102,12 @@ export interface ApiPersonRow {
   tpr: number | null
   /** Tareas trabajadas en el periodo (con paso a En progreso en el rango, sin importar su fecha límite) que ya se completaron: base del TC. */
   completed: number
-  /** Tareas de la persona trabajadas en el periodo (sin archivadas, eliminadas ni backlog): base del TC. */
+  /** Todas las tareas asignadas a la persona que vencen en el periodo (`limit_date`). */
   total: number
   /** Tareas asignadas a la persona creadas (`created_at`) en el periodo. */
   created: number
+  /** De las tareas que pasaron a En progreso en el periodo, las que ya están completadas: numerador del contador del TC. */
+  created_completed: number
   weighted_load: { percentage: number | null, points_done: number, points: number }
   pending_load: { points: number, capacity: number, percentage: number, status: ApiLoadStatus }
   /** Tareas del periodo por prioridad: R (`low`), N (`normal`), A (`high`, llave `complex`) y U (urgentes + críticas); suman `total`. */

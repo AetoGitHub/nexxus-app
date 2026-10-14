@@ -1256,7 +1256,7 @@
       },
       "empty": "No hay colaboradores para mostrar en este periodo.",
       "workedCount": "Completadas / tareas trabajadas en el periodo (las que pasaron a En progreso)",
-      "createdCount": "Completadas / tareas asignadas creadas en el periodo",
+      "createdCount": "Completadas (de las tareas que pasaron a En progreso en el periodo) / tareas asignadas creadas en el periodo",
       "searchPlaceholder": "Buscar colaborador…",
       "noResults": "Sin resultados para \"{search}\"",
       "excelError": "No se pudo generar el Excel",

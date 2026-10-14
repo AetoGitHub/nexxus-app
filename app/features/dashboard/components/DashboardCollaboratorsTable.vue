@@ -305,7 +305,7 @@ async function exportExcel() {
                     :class="row.created > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
                     :title="t('dashboard.individual.createdCount')"
                   >
-                    {{ row.completed }}/{{ row.created }}
+                    {{ row.created_completed }}/{{ row.created }}
                   </span>
                 </span>
               </td>

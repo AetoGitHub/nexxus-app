@@ -1256,7 +1256,7 @@
       },
       "empty": "There are no collaborators to show in this period.",
       "workedCount": "Completed / tasks worked in the period (those that moved to In progress)",
-      "createdCount": "Completed / assigned tasks created in the period",
+      "createdCount": "Completed (of the tasks that moved to In progress in the period) / assigned tasks created in the period",
       "searchPlaceholder": "Search collaborator…",
       "noResults": "No results for \"{search}\"",
       "excelError": "Could not generate the Excel file",
