@@ -1255,14 +1255,15 @@
         "saturated": "Saturated"
       },
       "empty": "There are no collaborators to show in this period.",
-      "workedCount": "Completed / tasks worked in the period (those that moved to In progress)",
-      "createdCount": "Completed / assigned tasks created in the period",
+      "workedCount": "Completed / tasks due in the period",
+      "createdCount": "Worked completed / worked in the period (those that moved to In progress)",
       "searchPlaceholder": "Search collaborator…",
       "noResults": "No results for \"{search}\"",
       "excelError": "Could not generate the Excel file",
       "excelColumns": {
         "pointsDone": "Points done",
-        "points": "Total points",
+        "points": "Worked points",
+        "available": "Available points",
         "capacity": "Capacity (pts)",
         "pendingStatus": "Pending load status",
         "quick": "Quick",
@@ -1311,12 +1312,16 @@
     },
     "metrics": {
       "tct": {
-        "title": "TCT — Tasks Completed on Time",
-        "description": "Of the completed tasks due in the period, percentage closed on time (on or before the due date). Open tasks don't count. Goal: ≥85%."
+        "title": "TCT — Tasks Completed",
+        "description": "Of the tasks due in the period (by due date), percentage already completed. Goal: ≥85%."
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Percentage of completed tasks (on time or late) out of all tasks due in the period. Goal: ≥85%."
+        "description": "Percentage of completed tasks out of all tasks due in the period (by due date). Goal: ≥85%."
+      },
+      "tc_worked": {
+        "title": "TC — Completion Rate",
+        "description": "Of the tasks worked in the period (moved to In progress within the range), percentage already completed. Goal: ≥85%."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
@@ -1328,7 +1333,7 @@
       },
       "ica": {
         "title": "ICA — Workload Completion Index",
-        "description": "Percentage of completed points out of the points of tasks due in the period. Goal: ≥85%."
+        "description": "Completed points out of the points of tasks due in the period. Quick 1 pt, normal 3, high 5, urgent 8. Goal: ≥85%."
       },
       "tasks_created": {
         "title": "Tasks in period",
@@ -1336,27 +1341,31 @@
       },
       "weighted_load": {
         "title": "Weighted load",
-        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, high 8 pts."
+        "description": "Points of the tasks the person worked in the period vs their capacity. Quick 1 pt, normal 3, high 5, urgent 8. Over 100% = took more work than their capacity."
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Points from the tasks due in the period that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Completed points of the tasks worked in the period vs the person's capacity; shows the points they still have available. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
-        "title": "TCT distribution",
-        "description": "Tasks due in the period, which are the base of TCT and IUR, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical)."
+        "title": "Priority distribution",
+        "description": "Tasks due in the period by priority: R = quick, N = normal, A = high, U = urgent."
+      },
+      "tc_distribution": {
+        "title": "Worked distribution",
+        "description": "Tasks worked in the period (moved to In progress within the range) by priority: R = quick, N = normal, A = high, U = urgent."
+      },
+      "created": {
+        "title": "Worked",
+        "description": "Assigned tasks that moved to In progress in the period."
+      },
+      "created_completed": {
+        "title": "Worked completed",
+        "description": "Of the tasks worked in the period, those already completed."
       },
       "trend": {
         "title": "Trend",
         "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
-      },
-      "tc_distribution": {
-        "title": "TC distribution",
-        "description": "Tasks worked in the period (those that moved to In progress), which are the base of TC, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical). They add up to the TC total."
-      },
-      "people_completed": {
-        "title": "Completed",
-        "description": "Tasks assigned to the person that are due in the period: completed / assigned (excluding archived, deleted and backlog)."
       },
       "completed": {
         "title": "Completed",
@@ -1364,7 +1373,7 @@
       },
       "active": {
         "title": "Active",
-        "description": "Tasks due in the period that are still open in the project (pending, in progress, in review or reopened)."
+        "description": "The period's tasks still open in the topic (pending, in progress, in review or reopened)."
       },
       "overdue": {
         "title": "Overdue",
@@ -1372,15 +1381,15 @@
       },
       "urgent": {
         "title": "Urgent",
-        "description": "Tasks with urgent or critical priority."
+        "description": "Open tasks with urgent or critical priority."
       },
       "members": {
         "title": "Members",
-        "description": "People with tasks assigned in this project."
+        "description": "People assigned to this topic."
       },
       "load_distribution": {
         "title": "Productive load distribution",
-        "description": "Productive load of each person across the whole organization (Attended Load Index, ICA), considering the tasks of all their companies. Each bar counts how many people fall in the range; hover to see who they are and their percentage. Goal: ≥85%."
+        "description": "Each person's ICA for the period (completed points out of the points of their tasks due). The dashed line marks the 85% goal."
       }
     }
   },

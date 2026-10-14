@@ -57,7 +57,8 @@ export interface DashboardKpi {
 
 /** Métricas con tooltip: cada una tiene `title` y `description` en `dashboard.metrics.<llave>`. */
 export type MetricKey =
-  | 'tct' | 'tc' | 'iur' | 'tpr' | 'ica' | 'tasks_created'
-  | 'weighted_load' | 'pending_load' | 'distribution' | 'tc_distribution' | 'trend'
-  | 'completed' | 'people_completed' | 'active' | 'overdue' | 'urgent' | 'members'
+  | 'tct' | 'tc' | 'tc_worked' | 'iur' | 'tpr' | 'ica' | 'tasks_created'
+  | 'weighted_load' | 'pending_load' | 'distribution' | 'tc_distribution'
+  | 'created' | 'created_completed' | 'trend'
+  | 'completed' | 'active' | 'overdue' | 'urgent' | 'members'
   | 'load_distribution'
