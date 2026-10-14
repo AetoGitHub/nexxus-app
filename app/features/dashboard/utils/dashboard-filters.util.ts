@@ -12,6 +12,23 @@ export interface DashboardQueryFilters {
   myTasks?: boolean
   /** Proyectos elegidos (`project=2,3`); vacío = todos. */
   projectIds?: number[]
+  /**
+   * Filtro por usuario (`user=<id>`): recalcula todo el dashboard con las tareas de esa persona. Con él no se manda
+   * `my_tasks` (el backend responde 400 si van juntos): «Mis tareas» equivale a `user=<mi id>`.
+   */
+  userId?: number | null
+  /** Solo `people/` y `projects/`: búsqueda, orden y paginación de la tabla. */
+  list?: DashboardListQuery
+}
+
+/** Parámetros de tabla de `people/` y `projects/`. Sin `pageSize` el backend regresa todas las filas. */
+export interface DashboardListQuery {
+  search?: string
+  ordering?: string
+  page?: number
+  pageSize?: number
+  /** `export=true`: todas las filas filtradas, sin paginar y sin `trend.series` (Excel). */
+  exportAll?: boolean
 }
 
 /**
@@ -32,11 +49,32 @@ export function buildDashboardQuery(filters: DashboardQueryFilters): Record<stri
   if (filters.compare) {
     query.compare = filters.compare
   }
-  if (filters.myTasks) {
+  if (filters.userId != null) {
+    query.user = String(filters.userId)
+  }
+  else if (filters.myTasks) {
     query.my_tasks = 'true'
   }
   if (filters.projectIds?.length) {
     query.project = filters.projectIds.join(',')
+  }
+
+  const list = filters.list
+  if (list) {
+    const search = list.search?.trim()
+    if (search) {
+      query.search = search
+    }
+    if (list.ordering) {
+      query.ordering = list.ordering
+    }
+    if (list.exportAll) {
+      query.export = 'true'
+    }
+    else if (list.pageSize) {
+      query.page_size = String(list.pageSize)
+      query.page = String(list.page ?? 1)
+    }
   }
 
   return query

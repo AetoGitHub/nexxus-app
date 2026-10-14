@@ -1,15 +1,15 @@
-import type { ApiPeopleResponse } from '~/features/dashboard/types/dashboard-api.types'
+import type { ApiPeopleExportResponse } from '~/features/dashboard/types/dashboard-api.types'
 
 type TranslateFn = (key: string) => string
 
 type ExcelCell = string | number | null | { value: string, fontWeight: 'bold' }
 
 /**
- * Rendimiento individual a Excel, con las filas que ya están cargadas en la tabla (no hay endpoint).
- * Una columna por cada columna de la tabla; los porcentajes van como número de 0 a 100 y lo que no tiene datos, vacío.
+ * Rendimiento individual a Excel, con todas las filas que cumplen los filtros y la búsqueda (`people/?export=true`: sin
+ * paginar y sin la serie de tendencia, que el Excel no usa). Una columna por cada columna de la tabla; los porcentajes van como número de 0 a 100 y lo que no tiene datos, vacío.
  * La librería se carga al exportar para no sumarla al peso inicial de la pantalla.
  */
-export async function exportPeopleToExcel(response: ApiPeopleResponse, t: TranslateFn): Promise<void> {
+export async function exportPeopleToExcel(response: ApiPeopleExportResponse, t: TranslateFn): Promise<void> {
   const { default: writeExcelFile } = await import('write-excel-file/browser')
 
   const headers = [
@@ -17,9 +17,9 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     t('dashboard.individual.columns.collaborator'),
     'TCT (%)',
     'IUR (%)',
+    'TPR (h)',
     'TC (%)',
     t('dashboard.individual.columns.completed'),
-    'TPR (h)',
     `${t('dashboard.individual.columns.weightedLoad')} (%)`,
     `${t('dashboard.individual.excelColumns.pointsDone')}`,
     `${t('dashboard.individual.excelColumns.points')}`,
@@ -29,7 +29,8 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     t('dashboard.individual.excelColumns.pendingStatus'),
     t('dashboard.individual.excelColumns.quick'),
     t('dashboard.individual.excelColumns.normal'),
-    t('dashboard.individual.excelColumns.complex'),
+    t('dashboard.individual.excelColumns.high'),
+    t('dashboard.individual.excelColumns.urgent'),
     `${t('dashboard.individual.columns.trend')} (pp)`,
   ]
 
@@ -40,9 +41,9 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     person.name,
     person.tct,
     person.iur,
+    person.tpr,
     person.tc,
     `${person.completed}/${person.total}`,
-    person.tpr,
     person.weighted_load.percentage,
     person.weighted_load.points_done,
     person.weighted_load.points,
@@ -53,6 +54,7 @@ export async function exportPeopleToExcel(response: ApiPeopleResponse, t: Transl
     person.distribution.quick,
     person.distribution.normal,
     person.distribution.complex,
+    person.distribution.urgent,
     person.trend.delta,
   ])
 

@@ -31,6 +31,20 @@ export function buildTaskUploadFileName(originalName: string): string {
 }
 
 /**
+ * Directorio de Storage para los adjuntos de una tarea de backlog que se crea con ellos:
+ * erp/task/{organization_id}/{company_id}/backlog/{draft_key}
+ * Sin task_id porque los archivos se suben antes de crear la tarea (las URLs van en `files` del body de
+ * POST /api/tasks/backlog/create/); `draftKey` identifica ese borrador.
+ */
+export function buildBacklogUploadDirectory(
+  organizationId: number,
+  companyId: number,
+  draftKey: string,
+): string {
+  return `erp/task/${organizationId}/${companyId}/backlog/${draftKey}`
+}
+
+/**
  * Directorio de Storage para imágenes de una subtarea creada junto con la tarea:
  * erp/task/{organization_id}/{company_id}/subtasks/{subtask_key}
  * Sin task_id porque las subtareas se suben antes de que la tarea exista

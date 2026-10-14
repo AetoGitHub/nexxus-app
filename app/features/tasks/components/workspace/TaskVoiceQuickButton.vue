@@ -15,8 +15,10 @@ import { toVoiceProjects, toVoiceUsers } from '~/features/tasks/utils/form/voice
  * `busy` avisa cuando está grabando o procesando, para que la barra donde vive le haga espacio al visualizador.
  */
 defineProps<{
-  /** Grabando o procesando, ocupa todo el ancho disponible de su contenedor (barra mobile). */
+  /** Grabando o procesando, ocupa todo el ancho disponible de su contenedor (botón flotante mobile). */
   fill?: boolean
+  /** Botón flotante redondo y grande del celular, con la indicación de qué dictar mientras graba. */
+  fab?: boolean
 }>()
 
 defineEmits<{
@@ -40,6 +42,7 @@ const projects = computed(() => toVoiceProjects(projectItems.value))
     icon-only
     size="sm"
     :fill="fill"
+    :fab="fab"
     :user-id="user?.id"
     :users="users"
     :projects="projects"

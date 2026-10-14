@@ -507,7 +507,9 @@
         "elapsed": "Tiempo grabado",
         "processingStatus": "Procesando el audio con la IA",
         "repeatReview": "Tarea repetitiva: no se indicó con qué frecuencia se repite, se dejó una por defecto. Revisa la repetición.",
-        "effortIgnoredUrgent": "Se marcó como urgente, así que no se eligió esfuerzo."
+        "effortIgnoredUrgent": "Se marcó como urgente, así que no se eligió esfuerzo.",
+        "tip": "Di qué hay que hacer, para quién y para cuándo. Ej.: «Revisar el inventario para Carlos el viernes, esfuerzo alto».",
+        "nameMissing": "No se dijo qué hay que hacer: escribe el nombre de la tarea."
       },
       "validation": {
         "nameRequired": "El nombre es obligatorio",
@@ -1166,6 +1168,13 @@
         "all": "Todos los proyectos",
         "count": "{count} proyectos",
         "search": "Buscar proyecto…"
+      },
+      "user": {
+        "label": "Usuario",
+        "all": "Todos los usuarios",
+        "search": "Buscar usuario…",
+        "disabledMine": "En «Mis tareas» ya solo se ven tus tareas. Cambia a «Equipo» para elegir un usuario.",
+        "forbidden": "No se pudo filtrar por ese usuario"
       }
     },
     "kpis": {
@@ -1230,12 +1239,14 @@
       "title": "Rendimiento individual",
       "excel": "Excel",
       "periodLabel": "Periodo del rendimiento",
+      "urgentResolved": "Urgentes resueltas / urgentes del periodo",
       "columns": {
         "collaborator": "Colaborador",
         "completed": "Completadas",
+        "tctDistribution": "Distribución TCT",
         "weightedLoad": "Carga ponderada",
         "pendingLoad": "Carga pendiente",
-        "distribution": "Distribución",
+        "tcDistribution": "Distribución TC",
         "trend": "Tendencia"
       },
       "pendingState": {
@@ -1244,6 +1255,10 @@
         "saturated": "Saturado"
       },
       "empty": "No hay colaboradores para mostrar en este periodo.",
+      "workedCount": "Completadas / tareas trabajadas en el periodo (las que pasaron a En progreso)",
+      "createdCount": "Completadas / tareas asignadas creadas en el periodo",
+      "searchPlaceholder": "Buscar colaborador…",
+      "noResults": "Sin resultados para \"{search}\"",
       "excelError": "No se pudo generar el Excel",
       "excelColumns": {
         "pointsDone": "Puntos hechos",
@@ -1252,7 +1267,8 @@
         "pendingStatus": "Estado de la carga pendiente",
         "quick": "Rápidas",
         "normal": "Normales",
-        "complex": "Complejas"
+        "high": "Altas",
+        "urgent": "Urgentes"
       }
     },
     "topics": {
@@ -1268,10 +1284,20 @@
       },
       "maxDays": "máx {days}d",
       "moreMembers": "{count} miembros más",
-      "empty": "No hay proyectos para mostrar en este periodo."
+      "andMore": "y {count} más",
+      "empty": "No hay proyectos para mostrar en este periodo.",
+      "searchPlaceholder": "Buscar proyecto…",
+      "noResults": "Sin resultados para \"{search}\""
     },
     "hero": {
       "goal": "meta ≥{goal}%"
+    },
+    "table": {
+      "sortBy": "Ordenar por {column}",
+      "sortedAsc": "{column}: orden ascendente. Pulsa para invertir",
+      "sortedDesc": "{column}: orden descendente. Pulsa para invertir",
+      "clearSearch": "Borrar búsqueda",
+      "range": "Mostrando {from}–{to} de {total}"
     },
     "state": {
       "loading": "Cargando…",
@@ -1286,43 +1312,47 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tareas Completadas a Tiempo",
-        "description": "Porcentaje de las tareas que vencen en el periodo que se cerraron a tiempo (antes o en su fecha límite)."
+        "description": "De las tareas completadas que vencen en el período, porcentaje que se cerró en tiempo y forma (en o antes de su fecha límite). Las tareas abiertas no cuentan. Meta: ≥85%."
       },
       "tc": {
         "title": "TC — Tasa de Cumplimiento",
-        "description": "Porcentaje de las tareas que vencen en el periodo que ya están completadas."
+        "description": "Porcentaje de tareas completadas (a tiempo o tarde) respecto a todas las que vencen en el período por fecha límite. Meta: ≥85%."
       },
       "iur": {
         "title": "IUR — Índice de Urgentes Resueltas",
-        "description": "Porcentaje de las tareas urgentes o críticas que vencen en el periodo y ya se resolvieron."
+        "description": "De las tareas urgentes o críticas que vencen en el período, porcentaje que ya se completó. Las que siguen pendientes se cuentan como sin atender. Meta: ≥85%."
       },
       "tpr": {
         "title": "TPR — Tiempo Promedio de Resolución",
-        "description": "Tiempo promedio, en horas, desde que se empezó a trabajar la tarea (pasó a \"En progreso\") hasta que se completó."
+        "description": "Horas promedio desde que una tarea pasa a En progreso hasta que se completa. Las que nunca pasaron por En progreso no cuentan. Menor es mejor."
       },
       "ica": {
         "title": "ICA — Índice de Carga Atendida",
-        "description": "Puntos de esfuerzo completados ÷ puntos totales de las tareas que vencen en el periodo."
+        "description": "Porcentaje de puntos completados sobre los puntos de las tareas que vencen en el período. Meta: ≥85%."
       },
       "tasks_created": {
-        "title": "Tareas del periodo",
-        "description": "Total de tareas cuya fecha límite cae en el periodo. Debajo: cuántas tienes asignadas y cuántas creaste tú. Meta: 160."
+        "title": "Tareas del período",
+        "description": "Total de tareas que vencen en el período por fecha límite (sin eliminadas, archivadas ni backlog). Meta: 160."
       },
       "weighted_load": {
         "title": "Carga ponderada",
-        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, compleja 8 pts."
+        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, alta 8 pts."
       },
       "pending_load": {
         "title": "Carga pendiente",
         "description": "Puntos de las tareas que vencen en el periodo y siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
-        "title": "Distribución por esfuerzo",
-        "description": "Cantidad de tareas que vencen en el periodo por tipo de esfuerzo: R = rápidas, N = normales, C = complejas."
+        "title": "Distribución del TCT",
+        "description": "Tareas que vencen en el periodo, que son la base del TCT y del IUR, por tipo de esfuerzo: R = rápidas, N = normales, A = altas, U = urgentes (urgentes y críticas)."
       },
       "trend": {
         "title": "Tendencia",
         "description": "Evolución del TCT dentro del período y la flecha indica si subió o bajó contra el período de comparación."
+      },
+      "tc_distribution": {
+        "title": "Distribución del TC",
+        "description": "Tareas trabajadas en el periodo (las que pasaron a En progreso), que son la base del TC, por tipo de esfuerzo: R = rápidas, N = normales, A = altas, U = urgentes (urgentes y críticas). Suman el total del TC."
       },
       "people_completed": {
         "title": "Completadas",
@@ -1330,7 +1360,7 @@
       },
       "completed": {
         "title": "Completadas",
-        "description": "Tareas completadas del proyecto contra el total de tareas que vencen en el periodo."
+        "description": "Tareas completadas del tema contra el total de tareas que vencen en el período."
       },
       "active": {
         "title": "Activas",

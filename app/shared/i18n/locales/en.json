@@ -507,7 +507,9 @@
         "elapsed": "Recorded time",
         "processingStatus": "Processing the audio with AI",
         "repeatReview": "Repeating task: the repeat frequency was not mentioned, so a default was set. Review the repetition.",
-        "effortIgnoredUrgent": "It was marked as urgent, so no effort was selected."
+        "effortIgnoredUrgent": "It was marked as urgent, so no effort was selected.",
+        "tip": "Say what needs to be done, for whom and by when. E.g.: “Review the inventory for Carlos on Friday, high effort”.",
+        "nameMissing": "It was not said what needs to be done: type the task name."
       },
       "validation": {
         "nameRequired": "Name is required",
@@ -1166,6 +1168,13 @@
         "all": "All projects",
         "count": "{count} projects",
         "search": "Search project…"
+      },
+      "user": {
+        "label": "User",
+        "all": "All users",
+        "search": "Search user…",
+        "disabledMine": "In “My tasks” you only see your own tasks. Switch to “Team” to pick a user.",
+        "forbidden": "Could not filter by that user"
       }
     },
     "kpis": {
@@ -1230,12 +1239,14 @@
       "title": "Individual performance",
       "excel": "Excel",
       "periodLabel": "Performance period",
+      "urgentResolved": "Resolved urgent tasks / urgent tasks in the period",
       "columns": {
         "collaborator": "Collaborator",
         "completed": "Completed",
+        "tctDistribution": "TCT distribution",
         "weightedLoad": "Weighted load",
         "pendingLoad": "Pending load",
-        "distribution": "Distribution",
+        "tcDistribution": "TC distribution",
         "trend": "Trend"
       },
       "pendingState": {
@@ -1244,6 +1255,10 @@
         "saturated": "Saturated"
       },
       "empty": "There are no collaborators to show in this period.",
+      "workedCount": "Completed / tasks worked in the period (those that moved to In progress)",
+      "createdCount": "Completed / assigned tasks created in the period",
+      "searchPlaceholder": "Search collaborator…",
+      "noResults": "No results for \"{search}\"",
       "excelError": "Could not generate the Excel file",
       "excelColumns": {
         "pointsDone": "Points done",
@@ -1252,7 +1267,8 @@
         "pendingStatus": "Pending load status",
         "quick": "Quick",
         "normal": "Normal",
-        "complex": "Complex"
+        "high": "High",
+        "urgent": "Urgent"
       }
     },
     "topics": {
@@ -1268,10 +1284,20 @@
       },
       "maxDays": "max {days}d",
       "moreMembers": "{count} more members",
-      "empty": "There are no projects to show in this period."
+      "andMore": "and {count} more",
+      "empty": "There are no projects to show in this period.",
+      "searchPlaceholder": "Search project…",
+      "noResults": "No results for \"{search}\""
     },
     "hero": {
       "goal": "goal ≥{goal}%"
+    },
+    "table": {
+      "sortBy": "Sort by {column}",
+      "sortedAsc": "{column}: ascending order. Press to reverse",
+      "sortedDesc": "{column}: descending order. Press to reverse",
+      "clearSearch": "Clear search",
+      "range": "Showing {from}–{to} of {total}"
     },
     "state": {
       "loading": "Loading…",
@@ -1286,43 +1312,47 @@
     "metrics": {
       "tct": {
         "title": "TCT — Tasks Completed on Time",
-        "description": "Percentage of the tasks due in the period that were closed on time (on or before their due date)."
+        "description": "Of the completed tasks due in the period, percentage closed on time (on or before the due date). Open tasks don't count. Goal: ≥85%."
       },
       "tc": {
         "title": "TC — Completion Rate",
-        "description": "Percentage of the tasks due in the period that are already completed."
+        "description": "Percentage of completed tasks (on time or late) out of all tasks due in the period. Goal: ≥85%."
       },
       "iur": {
         "title": "IUR — Urgent Resolution Index",
-        "description": "Percentage of the urgent or critical tasks due in the period that have already been resolved."
+        "description": "Of the urgent or critical tasks due in the period, percentage already completed. Those still pending count as unattended. Goal: ≥85%."
       },
       "tpr": {
         "title": "TPR — Average Resolution Time",
-        "description": "Average time, in hours, from when work on the task started (it moved to \"In progress\") until it was completed."
+        "description": "Average hours from when a task moves to In progress until it's completed. Tasks that never went In progress don't count. Lower is better."
       },
       "ica": {
         "title": "ICA — Workload Completion Index",
-        "description": "Completed effort points ÷ total points of the tasks due in the period."
+        "description": "Percentage of completed points out of the points of tasks due in the period. Goal: ≥85%."
       },
       "tasks_created": {
-        "title": "Tasks in the period",
-        "description": "Total tasks whose due date falls in the period. Below: how many are assigned to you and how many you created. Goal: 160."
+        "title": "Tasks in period",
+        "description": "Total tasks due in the period by due date (excluding deleted, archived and backlog). Goal: 160."
       },
       "weighted_load": {
         "title": "Weighted load",
-        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, complex 8 pts."
+        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, high 8 pts."
       },
       "pending_load": {
         "title": "Pending load",
         "description": "Points from the tasks due in the period that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
-        "title": "Effort distribution",
-        "description": "Number of tasks due in the period by effort: R = quick, N = normal, C = complex."
+        "title": "TCT distribution",
+        "description": "Tasks due in the period, which are the base of TCT and IUR, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical)."
       },
       "trend": {
         "title": "Trend",
         "description": "TCT evolution within the period; the arrow shows whether it went up or down vs the comparison period."
+      },
+      "tc_distribution": {
+        "title": "TC distribution",
+        "description": "Tasks worked in the period (those that moved to In progress), which are the base of TC, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical). They add up to the TC total."
       },
       "people_completed": {
         "title": "Completed",
@@ -1330,7 +1360,7 @@
       },
       "completed": {
         "title": "Completed",
-        "description": "Completed tasks in the project vs all tasks due in the period."
+        "description": "Completed tasks in the topic vs all tasks due in the period."
       },
       "active": {
         "title": "Active",

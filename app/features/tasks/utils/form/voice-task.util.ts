@@ -317,10 +317,8 @@ export function normalizeVoiceTask(raw: unknown, options: NormalizeVoiceTaskOpti
   if (!data) {
     return null
   }
+  // Sin nombre (no dijeron qué hay que hacer) la tarea aún sirve si trae otros datos: se muestra prellenada para confirmar.
   const name = asString(pick(data, ['name', 'task_name', 'title', 'short_description'])).trim()
-  if (!name) {
-    return null
-  }
 
   const users = options.users ?? []
   const today = (options.now ?? formatMexicoNow()).slice(0, 10)
@@ -350,20 +348,32 @@ export function normalizeVoiceTask(raw: unknown, options: NormalizeVoiceTaskOpti
   let repeatConfig: TaskRepeatConfig | null = null
   let repeatAssumed = false
   if (taskType === 'repeat') {
+    // Sin fecha dictada el formulario deja la de hoy: el día de la repetición se deduce de esa misma.
+    const repeatBase = dueDate ?? today
     for (const key of REPEAT_CONFIG_KEYS) {
-      repeatConfig = coerceRepeatConfig(data[key], dueDate)
+      repeatConfig = coerceRepeatConfig(data[key], repeatBase)
       if (repeatConfig) {
         break
       }
     }
     if (!repeatConfig) {
-      const guess = guessVoiceRepeat(transcript, dueDate)
+      const guess = guessVoiceRepeat(transcript, repeatBase)
       repeatConfig = guess.config
       repeatAssumed = !guess.explicit
     }
   }
 
   const projectId = asId(pick(data, ['project_id', 'project']))
+  const assigneeIds = resolveAssigneeIds(data, users, [transcript])
+  const urgent = isTruthyFlag(pick(data, ['urgent', 'is_urgent', 'urgente']))
+  const inBacklog = isTruthyFlag(pick(data, ['in_backlog', 'backlog']))
+  const subtasks = Array.isArray(data.subtasks) ? data.subtasks : []
+
+  const hasUsefulData = assigneeIds.length > 0 || dueDate !== null || projectId !== null || effort !== ''
+    || urgent || inBacklog || taskType === 'repeat' || subtasks.length > 0
+  if (!name && !hasUsefulData) {
+    return null
+  }
 
   return {
     name,
@@ -371,15 +381,16 @@ export function normalizeVoiceTask(raw: unknown, options: NormalizeVoiceTaskOpti
     task_type: taskType,
     project_id: projectId,
     due_date: dueDate,
-    assignee_ids: resolveAssigneeIds(data, users, [transcript, ambiguities.join(' ')]),
-    urgent: isTruthyFlag(pick(data, ['urgent', 'is_urgent', 'urgente'])),
+    // Solo lo dictado: el texto de `ambiguities` puede listar a varios candidatos y no es una asignación.
+    assignee_ids: assigneeIds,
+    urgent,
     effort,
-    subtasks: Array.isArray(data.subtasks) ? data.subtasks : [],
-    in_backlog: isTruthyFlag(pick(data, ['in_backlog', 'backlog'])),
+    subtasks,
+    in_backlog: inBacklog,
     repeat_config: repeatConfig,
     repeat_assumed: repeatAssumed,
     transcript,
-    needs_review: data.needs_review === true,
+    needs_review: data.needs_review === true || !name,
     ambiguities,
   }
 }

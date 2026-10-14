@@ -72,6 +72,7 @@ import {
   isRepeatConfigComplete,
 } from '~/features/tasks/utils/form/repeat-config.util'
 import {
+  buildBacklogUploadDirectory,
   buildTaskDocumentsUploadDirectory,
   buildTaskSubtaskUploadDirectory,
   buildTaskUploadFileName,
@@ -207,6 +208,11 @@ const moreTaskRows = ref<MoreTaskFormRow[]>([])
  * La tarea nunca se crea sola: el formulario se rellena y la persona la confirma con «Crear tarea».
  */
 const voiceReview = ref<Pick<VoiceTaskResponse, 'transcript' | 'ambiguities' | 'needs_review'> | null>(null)
+/**
+ * Transcripción de lo dictado: viaja en `voice_text` (y marca `created_by_voice`) al crear la tarea. A diferencia de
+ * `voiceReview`, no se borra al cerrar el aviso: la tarea sigue siendo "creada por voz" aunque se descarte el aviso.
+ */
+const voiceText = ref('')
 const isUploadingSubtaskImages = ref(false)
 
 const isSaving = computed(() =>
@@ -690,6 +696,9 @@ function applyVoiceTask(task: VoiceTaskResponse) {
   // Avisos que se suman a las dudas de la IA: lo que el formulario completó por su cuenta y hay que revisar.
   const ambiguities = [...task.ambiguities]
   let needsReview = task.needs_review
+  if (!task.name.trim() && !ambiguities.length) {
+    ambiguities.push(t('tasks.form.voice.nameMissing'))
+  }
 
   if (task.in_backlog) {
     isBacklog.value = true
@@ -744,6 +753,7 @@ function applyVoiceTask(task: VoiceTaskResponse) {
     ambiguities,
     needs_review: needsReview,
   }
+  voiceText.value = task.transcript.trim()
 }
 
 function resetForm() {
@@ -1061,6 +1071,34 @@ async function uploadPendingSubtaskImages() {
   }
 }
 
+/**
+ * Sube a Firebase los adjuntos de una tarea de backlog ANTES de crearla: sus URLs van en `files` del body de
+ * `POST /api/tasks/backlog/create/`. Un fallo aborta el envío (no se crea un backlog sin los archivos pedidos).
+ */
+async function uploadBacklogAttachments(): Promise<string[]> {
+  if (!pendingAttachments.value.length) {
+    return [...existingAttachments.value]
+  }
+
+  isAttachingFiles.value = true
+  try {
+    const organizationId = organization.value?.id
+    const companyId = selectedCompanyId.value
+    if (organizationId == null || companyId == null) {
+      throw new Error('missing_upload_context')
+    }
+
+    const directory = buildBacklogUploadDirectory(organizationId, companyId, String(Date.now()))
+    const uploaded = await Promise.all(
+      pendingAttachments.value.map(file => uploadFile(file, directory, buildTaskUploadFileName(file.name))),
+    )
+    return [...existingAttachments.value, ...uploaded]
+  }
+  finally {
+    isAttachingFiles.value = false
+  }
+}
+
 /** Descarta filas sin descripción (vacías) y resuelve el shape que espera el API. */
 function buildSubtasksPayload(): CreateTaskSubtaskPayload[] {
   return subtaskRows.value
@@ -1140,7 +1178,8 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
     }
 
     if (isBacklogMode.value) {
-      const payload = buildCreateBacklogTaskPayload(state, resolveMoreTaskNames(moreTaskRows.value))
+      const files = await uploadBacklogAttachments()
+      const payload = buildCreateBacklogTaskPayload(state, resolveMoreTaskNames(moreTaskRows.value), files, voiceText.value)
       await createBacklogTask(payload)
       close()
       return
@@ -1148,7 +1187,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
     validateSubtaskRows()
     await uploadPendingSubtaskImages()
-    const payload = buildCreateTaskPayload(state, buildSubtasksPayload(), resolveMoreTaskNames(moreTaskRows.value))
+    const payload = buildCreateTaskPayload(state, buildSubtasksPayload(), resolveMoreTaskNames(moreTaskRows.value), voiceText.value)
     const created = await createTask(payload)
     await attachPendingFiles(created.id, created.more_tasks_ids ?? [])
     close()
@@ -1201,6 +1240,7 @@ watch(open, (isOpen) => {
     subtaskRows.value = []
     moreTaskRows.value = []
     voiceReview.value = null
+    voiceText.value = ''
     return
   }
 
@@ -1774,8 +1814,9 @@ const slideoverUi = computed(() => {
             />
           </div>
 
+          <!-- En backlog solo al crear (los archivos viajan en el body); el detalle/edición de un backlog no los administra. -->
           <TaskAttachmentsField
-            v-if="!isBacklogMode"
+            v-if="!isBacklogMode || !isDetailView"
             v-model:pending-files="pendingAttachments"
             v-model:existing-files="existingAttachments"
             :disabled="isReadOnly"
