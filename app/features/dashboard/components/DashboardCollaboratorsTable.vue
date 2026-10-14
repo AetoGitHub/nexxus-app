@@ -72,7 +72,7 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur', field: 'iur' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr', field: 'tpr', ascendingFirst: true },
   { key: 'tctDistribution', label: t('dashboard.individual.columns.tctDistribution'), align: 'text-left', metric: 'distribution' },
-  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc', field: 'tc' },
+  { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc_worked', field: 'tc' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load', field: 'ica' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load', field: 'pending_load' },
   { key: 'tcDistribution', label: t('dashboard.individual.columns.tcDistribution'), align: 'text-left', metric: 'tc_distribution' },
@@ -318,7 +318,7 @@ async function exportExcel() {
                   {{ formatPercent(row.weighted_load.percentage) }}
                 </p>
                 <p class="text-[10px] text-muted-foreground">
-                  {{ row.weighted_load.points_done }}pts/{{ row.weighted_load.capacity }}pts
+                  {{ row.weighted_load.points }}pts/{{ row.weighted_load.capacity }}pts
                 </p>
                 <div class="relative mt-1 h-1 w-24 rounded-full bg-muted">
                   <div
@@ -339,8 +339,8 @@ async function exportExcel() {
                   <span
                     class="font-bold"
                     :class="TONE_TEXT[LOAD_STATUS_TONE[row.pending_load.status]]"
-                  >{{ row.pending_load.available }}</span>
-                  <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.capacity }}pts</span>
+                  >{{ row.pending_load.points }}</span>
+                  <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.available }}pts</span>
                 </p>
                 <div class="mt-1 h-1 w-24 rounded-full bg-muted">
                   <div
