@@ -1243,10 +1243,10 @@
       "columns": {
         "collaborator": "Colaborador",
         "completed": "Completadas",
-        "tcDistribution": "Distribución TC",
+        "tctDistribution": "Distribución TCT",
         "weightedLoad": "Carga ponderada",
         "pendingLoad": "Carga pendiente",
-        "distribution": "Distribución",
+        "tcDistribution": "Distribución TC",
         "trend": "Tendencia"
       },
       "pendingState": {
@@ -1343,8 +1343,8 @@
         "description": "Puntos de las tareas que vencen en el periodo y siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
-        "title": "Distribución por esfuerzo",
-        "description": "Cantidad de tareas que vencen en el periodo por tipo de esfuerzo: R = rápidas, N = normales, A = altas, U = urgentes (urgentes y críticas)."
+        "title": "Distribución del TCT",
+        "description": "Tareas que vencen en el periodo, que son la base del TCT y del IUR, por tipo de esfuerzo: R = rápidas, N = normales, A = altas, U = urgentes (urgentes y críticas)."
       },
       "trend": {
         "title": "Tendencia",

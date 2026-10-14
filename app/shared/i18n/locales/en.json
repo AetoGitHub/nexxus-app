@@ -1243,10 +1243,10 @@
       "columns": {
         "collaborator": "Collaborator",
         "completed": "Completed",
-        "tcDistribution": "TC distribution",
+        "tctDistribution": "TCT distribution",
         "weightedLoad": "Weighted load",
         "pendingLoad": "Pending load",
-        "distribution": "Distribution",
+        "tcDistribution": "TC distribution",
         "trend": "Trend"
       },
       "pendingState": {
@@ -1343,8 +1343,8 @@
         "description": "Points from the tasks due in the period that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
-        "title": "Effort distribution",
-        "description": "Number of tasks due in the period by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical)."
+        "title": "TCT distribution",
+        "description": "Tasks due in the period, which are the base of TCT and IUR, by effort: R = quick, N = normal, H = high, U = urgent (urgent and critical)."
       },
       "trend": {
         "title": "Trend",

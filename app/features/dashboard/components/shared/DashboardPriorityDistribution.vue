@@ -5,8 +5,8 @@ import { TONE_TEXT } from '~/features/dashboard/utils/dashboard.util'
 
 /**
  * Reparto de tareas por prioridad: la dona y la lista R / N / A / U (rápidas, normales, altas y urgentes). Lo usan las dos
- * columnas de Distribución de Rendimiento individual: la de siempre (`distribution`, por fecha límite) y la del TC
- * (`tc_distribution`, las tareas trabajadas en el periodo, que suman el total del TC).
+ * columnas de Distribución de Rendimiento individual: la del TCT (`distribution`, por fecha límite, junto a TPR) y la del TC
+ * (`tc_distribution`, las tareas trabajadas en el periodo, que suman el total del TC; antes de Tendencia).
  */
 defineProps<{
   distribution: ApiPriorityDistribution

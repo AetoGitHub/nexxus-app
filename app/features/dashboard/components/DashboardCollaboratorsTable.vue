@@ -71,11 +71,11 @@ const columns = computed<{ key: string, label: string, align: string, metric?: M
   { key: 'tct', label: 'TCT', align: 'text-center', metric: 'tct', field: 'tct' },
   { key: 'iur', label: 'IUR', align: 'text-center', metric: 'iur', field: 'iur' },
   { key: 'tpr', label: 'TPR', align: 'text-center', metric: 'tpr', field: 'tpr', ascendingFirst: true },
-  { key: 'tcDistribution', label: t('dashboard.individual.columns.tcDistribution'), align: 'text-left', metric: 'tc_distribution' },
+  { key: 'tctDistribution', label: t('dashboard.individual.columns.tctDistribution'), align: 'text-left', metric: 'distribution' },
   { key: 'tc', label: 'TC', align: 'text-center', metric: 'tc', field: 'tc' },
   { key: 'load', label: t('dashboard.individual.columns.weightedLoad'), align: 'text-left', metric: 'weighted_load', field: 'ica' },
   { key: 'pending', label: t('dashboard.individual.columns.pendingLoad'), align: 'text-left', metric: 'pending_load', field: 'pending_load' },
-  { key: 'distribution', label: t('dashboard.individual.columns.distribution'), align: 'text-left', metric: 'distribution' },
+  { key: 'tcDistribution', label: t('dashboard.individual.columns.tcDistribution'), align: 'text-left', metric: 'tc_distribution' },
   { key: 'trend', label: t('dashboard.individual.columns.trend'), align: 'text-left', metric: 'trend' },
 ])
 
@@ -289,7 +289,7 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3">
-                <DashboardPriorityDistribution :distribution="row.tc_distribution" />
+                <DashboardPriorityDistribution :distribution="row.distribution" />
               </td>
 
               <td class="px-2 py-3 text-center">
@@ -358,7 +358,7 @@ async function exportExcel() {
               </td>
 
               <td class="px-2 py-3">
-                <DashboardPriorityDistribution :distribution="row.distribution" />
+                <DashboardPriorityDistribution :distribution="row.tc_distribution" />
               </td>
 
               <td class="px-2 py-3">
