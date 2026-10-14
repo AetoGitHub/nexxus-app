@@ -108,8 +108,16 @@ export interface ApiPersonRow {
   created: number
   /** De las tareas que pasaron a En progreso en el periodo, las que ya están completadas: numerador del contador del TC. */
   created_completed: number
-  weighted_load: { percentage: number | null, points_done: number, points: number }
-  pending_load: { points: number, capacity: number, percentage: number, status: ApiLoadStatus }
+  /**
+   * Puntos (por prioridad) de las tareas trabajadas en el periodo: `points` son todos, `points_done` los de las ya completadas
+   * y `percentage` = `points_done` / `capacity`.
+   */
+  weighted_load: { percentage: number, points_done: number, points: number, capacity: number }
+  /**
+   * `points` = puntos completados de las tareas trabajadas, `available` = `capacity` - `points` (mínimo 0), `percentage` =
+   * `available` / `capacity` (lo que le sobra) y `status` según los puntos usados (≤80 % available, ≤100 % at_limit, >100 % saturated).
+   */
+  pending_load: { points: number, capacity: number, available: number, percentage: number, status: ApiLoadStatus }
   /** Tareas del periodo por prioridad: R (`low`), N (`normal`), A (`high`, llave `complex`) y U (urgentes + críticas); suman `total`. */
   distribution: ApiPriorityDistribution
   /** Lo mismo que `distribution`, pero de las tareas trabajadas en el periodo (base del TC): sus 4 valores suman `total`. */

@@ -1262,7 +1262,8 @@
       "excelError": "No se pudo generar el Excel",
       "excelColumns": {
         "pointsDone": "Puntos hechos",
-        "points": "Puntos totales",
+        "points": "Puntos trabajados",
+        "available": "Puntos disponibles",
         "capacity": "Capacidad (pts)",
         "pendingStatus": "Estado de la carga pendiente",
         "quick": "Rápidas",
@@ -1336,11 +1337,11 @@
       },
       "weighted_load": {
         "title": "Carga ponderada",
-        "description": "Puntos completados contra puntos totales de las tareas que vencen en el periodo. Cada tarea pesa según su esfuerzo: rápida 1 pt, normal 3 pts, alta 8 pts."
+        "description": "Puntos completados contra la capacidad de la persona, de las tareas que pasaron a En progreso en el periodo. Cada tarea pesa según su prioridad: rápida 1 pt, normal 3 pts, alta 5 pts, urgente 8 pts."
       },
       "pending_load": {
         "title": "Carga pendiente",
-        "description": "Puntos de las tareas que vencen en el periodo y siguen abiertas, asignadas a la persona, contra su capacidad. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+        "description": "Puntos que le quedan disponibles a la persona: su capacidad menos los puntos completados de las tareas que pasaron a En progreso en el periodo. La barra muestra el porcentaje disponible. Disponible ≤80% usado, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
         "title": "Distribución del TCT",

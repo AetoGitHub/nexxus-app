@@ -318,7 +318,7 @@ async function exportExcel() {
                   {{ formatPercent(row.weighted_load.percentage) }}
                 </p>
                 <p class="text-[10px] text-muted-foreground">
-                  {{ row.weighted_load.points_done }}pts/{{ row.weighted_load.points }}pts
+                  {{ row.weighted_load.points_done }}pts/{{ row.weighted_load.capacity }}pts
                 </p>
                 <div class="relative mt-1 h-1 w-24 rounded-full bg-muted">
                   <div
@@ -339,7 +339,7 @@ async function exportExcel() {
                   <span
                     class="font-bold"
                     :class="TONE_TEXT[LOAD_STATUS_TONE[row.pending_load.status]]"
-                  >{{ row.pending_load.points }}</span>
+                  >{{ row.pending_load.available }}</span>
                   <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.capacity }}pts</span>
                 </p>
                 <div class="mt-1 h-1 w-24 rounded-full bg-muted">

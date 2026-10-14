@@ -1262,7 +1262,8 @@
       "excelError": "Could not generate the Excel file",
       "excelColumns": {
         "pointsDone": "Points done",
-        "points": "Total points",
+        "points": "Worked points",
+        "available": "Available points",
         "capacity": "Capacity (pts)",
         "pendingStatus": "Pending load status",
         "quick": "Quick",
@@ -1336,11 +1337,11 @@
       },
       "weighted_load": {
         "title": "Weighted load",
-        "description": "Completed points vs total points of the tasks due in the period. Each task is weighted by effort: quick 1 pt, normal 3 pts, high 8 pts."
+        "description": "Completed points vs the person's capacity, from the tasks that moved to In progress in the period. Each task is weighted by priority: quick 1 pt, normal 3 pts, high 5 pts, urgent 8 pts."
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Points from the tasks due in the period that are still open, assigned to the person, vs their capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Points the person still has available: their capacity minus the completed points of the tasks that moved to In progress in the period. The bar shows the available percentage. Available ≤80% used, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
         "title": "TCT distribution",
