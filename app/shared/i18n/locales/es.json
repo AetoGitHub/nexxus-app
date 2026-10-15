@@ -1345,7 +1345,7 @@
       },
       "pending_load": {
         "title": "Carga pendiente",
-        "description": "Puntos completados de las tareas trabajadas en el período contra la capacidad de la persona; muestra los puntos que le quedan disponibles. Disponible ≤80%, En límite ≤100%, Saturado >100%."
+        "description": "Puntos completados de las tareas trabajadas en el período contra la capacidad de la persona. Disponible ≤80%, En límite ≤100%, Saturado >100%."
       },
       "distribution": {
         "title": "Distribución por prioridad",
