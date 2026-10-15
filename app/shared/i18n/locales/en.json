@@ -1255,6 +1255,17 @@
         "saturated": "Saturated"
       },
       "empty": "There are no collaborators to show in this period.",
+      "taskList": {
+        "tctTitle": "TCT tasks · {name}",
+        "tcTitle": "TC tasks · {name}",
+        "tctDescription": "Tasks due in the period, the base of the TCT.",
+        "tcDescription": "Tasks that moved to In progress in the period, the base of the TC.",
+        "empty": "There are no tasks in this period.",
+        "start": "Start",
+        "due": "Due",
+        "noDate": "No date",
+        "open": "See the task details"
+      },
       "workedCount": "Completed / tasks due in the period",
       "createdCount": "Worked completed / worked in the period (those that moved to In progress)",
       "searchPlaceholder": "Search collaborator…",
