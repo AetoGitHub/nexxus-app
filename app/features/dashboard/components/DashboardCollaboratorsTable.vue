@@ -340,7 +340,7 @@ async function exportExcel() {
                     class="font-bold"
                     :class="TONE_TEXT[LOAD_STATUS_TONE[row.pending_load.status]]"
                   >{{ row.pending_load.points }}</span>
-                  <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.available }}pts</span>
+                  <span class="text-[11px] text-muted-foreground">/{{ row.pending_load.capacity }}pts</span>
                 </p>
                 <div class="mt-1 h-1 w-24 rounded-full bg-muted">
                   <div

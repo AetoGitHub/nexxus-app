@@ -1345,7 +1345,7 @@
       },
       "pending_load": {
         "title": "Pending load",
-        "description": "Completed points of the tasks worked in the period vs the person's capacity; shows the points they still have available. Available ≤80%, At limit ≤100%, Saturated >100%."
+        "description": "Completed points of the tasks worked in the period vs the person's capacity. Available ≤80%, At limit ≤100%, Saturated >100%."
       },
       "distribution": {
         "title": "Priority distribution",
