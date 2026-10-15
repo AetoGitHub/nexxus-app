@@ -2,6 +2,7 @@
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
 import DashboardPriorityDistribution from '~/features/dashboard/components/shared/DashboardPriorityDistribution.vue'
 import DashboardSortButton from '~/features/dashboard/components/shared/DashboardSortButton.vue'
+import DashboardTaskListButton from '~/features/dashboard/components/shared/DashboardTaskListButton.vue'
 import DashboardTablePagination from '~/features/dashboard/components/shared/DashboardTablePagination.vue'
 import DashboardTableSearch from '~/features/dashboard/components/shared/DashboardTableSearch.vue'
 import DashboardTrendLine from '~/features/dashboard/components/shared/DashboardTrendLine.vue'
@@ -250,13 +251,14 @@ async function exportExcel() {
                   >
                     {{ formatPercent(row.tct) }}
                   </span>
-                  <span
-                    class="font-mono text-[11px] tabular-nums"
-                    :class="row.total > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
-                    :title="t('dashboard.individual.workedCount')"
-                  >
-                    {{ row.completed }}/{{ row.total }}
-                  </span>
+                  <DashboardTaskListButton
+                    :counter="`${row.completed}/${row.total}`"
+                    :tasks="row.tct_task ?? []"
+                    :title="t('dashboard.individual.taskList.tctTitle', { name: row.name })"
+                    :description="t('dashboard.individual.taskList.tctDescription')"
+                    :hint="t('dashboard.individual.workedCount')"
+                    :muted="row.total === 0"
+                  />
                 </span>
               </td>
 
@@ -300,13 +302,14 @@ async function exportExcel() {
                   >
                     {{ formatPercent(row.tc) }}
                   </span>
-                  <span
-                    class="font-mono text-[11px] tabular-nums"
-                    :class="row.created > 0 ? 'text-muted-foreground' : 'text-muted-foreground/60'"
-                    :title="t('dashboard.individual.createdCount')"
-                  >
-                    {{ row.created_completed }}/{{ row.created }}
-                  </span>
+                  <DashboardTaskListButton
+                    :counter="`${row.created_completed}/${row.created}`"
+                    :tasks="row.tc_task ?? []"
+                    :title="t('dashboard.individual.taskList.tcTitle', { name: row.name })"
+                    :description="t('dashboard.individual.taskList.tcDescription')"
+                    :hint="t('dashboard.individual.createdCount')"
+                    :muted="row.created === 0"
+                  />
                 </span>
               </td>
 

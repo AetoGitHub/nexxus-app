@@ -122,7 +122,21 @@ export interface ApiPersonRow {
   distribution: ApiPriorityDistribution
   /** Lo mismo que `distribution`, pero de las tareas trabajadas en el periodo (base del TC): sus 4 valores suman `total`. */
   tc_distribution: ApiPriorityDistribution
+  /** Tareas asignadas que vencen en el periodo (base del TCT: `completed` / `total`), ordenadas por fecha límite. */
+  tct_task: ApiDashboardTask[]
+  /** Tareas asignadas que pasaron a En progreso en el periodo (base del TC: `created_completed` / `created`), ordenadas por fecha límite. */
+  tc_task: ApiDashboardTask[]
   trend: ApiRowTrend
+}
+
+/** Tarea del detalle de TCT / TC: solo lo que manda el backend. */
+export interface ApiDashboardTask {
+  id: number
+  limit_date: string | null
+  start_date: string | null
+  /** Nombre de la tarea. */
+  short_description: string
+  project: { id: number | null, name: string | null }
 }
 
 /** Reparto por prioridad (R/N/A/U): `complex` son las altas y `urgent` las urgentes + críticas. */

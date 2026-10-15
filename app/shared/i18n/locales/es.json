@@ -1255,6 +1255,17 @@
         "saturated": "Saturado"
       },
       "empty": "No hay colaboradores para mostrar en este periodo.",
+      "taskList": {
+        "tctTitle": "Tareas del TCT · {name}",
+        "tcTitle": "Tareas del TC · {name}",
+        "tctDescription": "Tareas que vencen en el periodo, la base del TCT.",
+        "tcDescription": "Tareas que pasaron a En progreso en el periodo, la base del TC.",
+        "empty": "No hay tareas en este periodo.",
+        "start": "Inicio",
+        "due": "Vence",
+        "noDate": "Sin fecha",
+        "open": "Ver el detalle de las tareas"
+      },
       "workedCount": "Completadas / tareas que vencen en el periodo",
       "createdCount": "Trabajadas completadas / trabajadas en el periodo (las que pasaron a En progreso)",
       "searchPlaceholder": "Buscar colaborador…",
