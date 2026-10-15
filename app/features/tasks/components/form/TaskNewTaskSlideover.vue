@@ -175,11 +175,30 @@ const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 /** Preferencia persistida del switch "Agregarme a mí" al crear una tarea. */
 const assignSelfOnCreate = useAssignSelfToNewTask()
 
-/** Sincroniza el switch con `state.assignedTo` mientras se crea una tarea. */
-function onToggleAssignSelf(value: boolean) {
-  assignSelfOnCreate.value = value
+/**
+ * El switch "Agregarme a mí" se ofrece al crear una tarea y también al enviar un backlog a pendiente (mismo campo
+ * "Asignado a"); en el detalle normal de una tarea no.
+ */
+const showAssignSelfSwitch = computed(() => !isDetailView.value || isPromotingBacklog.value)
+
+/**
+ * Al crear, el switch refleja la preferencia guardada; al promover un backlog refleja si yo ya estoy en "Asignado a"
+ * (la promoción me precarga como asignado), sin tocar esa preferencia.
+ */
+const assignSelfChecked = computed(() => {
   const currentUserId = user.value?.id
-  if (isDetailView.value || currentUserId == null) {
+  return isPromotingBacklog.value
+    ? currentUserId != null && state.assignedTo.includes(currentUserId)
+    : assignSelfOnCreate.value
+})
+
+/** Sincroniza el switch con `state.assignedTo` mientras se crea una tarea o se promueve un backlog. */
+function onToggleAssignSelf(value: boolean) {
+  if (!isPromotingBacklog.value) {
+    assignSelfOnCreate.value = value
+  }
+  const currentUserId = user.value?.id
+  if ((isDetailView.value && !isPromotingBacklog.value) || currentUserId == null) {
     return
   }
   state.assignedTo = value
@@ -1890,8 +1909,8 @@ const slideoverUi = computed(() => {
                 class="w-full"
               />
               <USwitch
-                v-if="!isDetailView"
-                :model-value="assignSelfOnCreate"
+                v-if="showAssignSelfSwitch"
+                :model-value="assignSelfChecked"
                 :label="t('tasks.form.assignSelfOnCreate')"
                 class="mt-2"
                 @update:model-value="onToggleAssignSelf"
