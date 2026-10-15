@@ -71,7 +71,7 @@ watch(scope, (value) => {
 
 // Búsqueda, orden y página de cada tabla (los resuelve el backend). La página vuelve a 1 con cualquier filtro global.
 const resetTablePageOn = [userId, scope, period, compare, projectIds, validRange, customActive]
-const peopleTable = useDashboardTableState({ defaultOrdering: '-tct', resetOn: resetTablePageOn })
+const peopleTable = useDashboardTableState({ defaultOrdering: '-tc', resetOn: resetTablePageOn })
 const projectsTable = useDashboardTableState({ defaultOrdering: '-tct', resetOn: resetTablePageOn })
 const { search: peopleSearch, ordering: peopleOrdering, page: peoplePage, params: peopleParams } = peopleTable
 const { search: projectsSearch, ordering: projectsOrdering, page: projectsPage, params: projectsParams } = projectsTable
