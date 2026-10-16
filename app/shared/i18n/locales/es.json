@@ -664,6 +664,7 @@
       "give": "Dar toque",
       "ariaLabel": "Dar toque ({n} toque) | Dar toque ({n} toques)",
       "errorTitle": "No se pudo dar el toque",
+      "cooldown": "Ya diste un toque a esta tarea. Podrás dar otro en {n} s",
       "viewGivers": "Ver quién dio toques",
       "giversTitle": "Toques dados",
       "empty": "Nadie ha dado toques todavía",
@@ -1264,6 +1265,22 @@
         "start": "Inicio",
         "due": "Vence",
         "noDate": "Sin fecha",
+      "priorities": {
+        "low": "Rápida",
+        "normal": "Normal",
+        "high": "Alta",
+        "urgent": "Urgente",
+        "critical": "Crítica"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "wip": "En progreso",
+        "in_review": "En revisión",
+        "complete": "Completada",
+        "rejected": "Rechazada",
+        "reopened": "Reabierta",
+        "backlog": "Backlog"
+      },
         "open": "Ver el detalle de las tareas"
       },
       "workedCount": "Completadas / tareas que vencen en el periodo",

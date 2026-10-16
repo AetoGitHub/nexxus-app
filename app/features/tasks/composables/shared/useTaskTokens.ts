@@ -1,9 +1,13 @@
 import { useQueryClient } from '@tanstack/vue-query'
+import { useTaskTokenCooldown } from '~/features/tasks/composables/shared/useTaskTokenCooldown'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import type { CreateTaskTokenResponse, TaskDetail } from '~/features/tasks/types/task.types'
 import { bumpTokensByUser } from '~/features/tasks/utils/task-token.util'
 
-/** Dar un token a una tarea con actualización optimista (ver `useTaskTokenState` para el conteo). */
+/**
+ * Dar un token a una tarea con actualización optimista (ver `useTaskTokenState` para el conteo).
+ * Idempotente: un usuario solo puede dar un token por minuto a cada tarea (ver `useTaskTokenCooldown`).
+ */
 export function useTaskTokens() {
   const { $api } = useNuxtApp()
   const queryClient = useQueryClient()
@@ -11,9 +15,16 @@ export function useTaskTokens() {
   const { t } = useI18n()
   const { user } = useAuth()
   const { patch, displayCount, applyServerCount, sortByTokens } = useTaskTokenState()
+  const { tryLock, release } = useTaskTokenCooldown()
 
-  /** Sube el número al instante y manda el token; si falla, regresa al valor anterior. */
-  async function giveToken(taskId: number) {
+  /**
+   * Sube el número al instante y manda el token; si falla, regresa al valor anterior y libera la espera.
+   * Devuelve `false` (sin hacer nada) si ya se dio un token a esa tarea en el último minuto.
+   */
+  async function giveToken(taskId: number): Promise<boolean> {
+    if (!tryLock(taskId)) {
+      return false
+    }
     patch(taskId, current => ({ ...current, pending: current.pending + 1 }))
 
     try {
@@ -40,6 +51,7 @@ export function useTaskTokens() {
       void queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', taskId] })
     }
     catch (error) {
+      release(taskId)
       patch(taskId, current => ({ ...current, pending: Math.max(0, current.pending - 1) }))
       toast.add({
         title: t('tasks.tokens.errorTitle'),
@@ -47,6 +59,7 @@ export function useTaskTokens() {
         color: 'error',
       })
     }
+    return true
   }
 
   return { displayCount, applyServerCount, sortByTokens, giveToken }

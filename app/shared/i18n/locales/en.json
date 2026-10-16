@@ -664,6 +664,7 @@
       "give": "Give touch",
       "ariaLabel": "Give touch ({n} touch) | Give touch ({n} touches)",
       "errorTitle": "Could not give the touch",
+      "cooldown": "You already gave a touch to this task. You can give another in {n} s",
       "viewGivers": "See who gave touches",
       "giversTitle": "Touches given",
       "empty": "Nobody has given touches yet",
@@ -1264,6 +1265,22 @@
         "start": "Start",
         "due": "Due",
         "noDate": "No date",
+      "priorities": {
+        "low": "Quick",
+        "normal": "Normal",
+        "high": "High",
+        "urgent": "Urgent",
+        "critical": "Critical"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "wip": "In progress",
+        "in_review": "In review",
+        "complete": "Completed",
+        "rejected": "Rejected",
+        "reopened": "Reopened",
+        "backlog": "Backlog"
+      },
         "open": "See the task details"
       },
       "workedCount": "Completed / tasks due in the period",

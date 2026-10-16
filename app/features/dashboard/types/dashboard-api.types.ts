@@ -129,6 +129,9 @@ export interface ApiPersonRow {
   trend: ApiRowTrend
 }
 
+export type ApiTaskPriority = 'low' | 'normal' | 'high' | 'urgent' | 'critical'
+export type ApiTaskStatus = 'pending' | 'wip' | 'in_review' | 'complete' | 'rejected' | 'reopened' | 'backlog'
+
 /** Tarea del detalle de TCT / TC: solo lo que manda el backend. */
 export interface ApiDashboardTask {
   id: number
@@ -136,6 +139,8 @@ export interface ApiDashboardTask {
   start_date: string | null
   /** Nombre de la tarea. */
   short_description: string
+  priority: ApiTaskPriority
+  status: ApiTaskStatus
   project: { id: number | null, name: string | null }
 }
 

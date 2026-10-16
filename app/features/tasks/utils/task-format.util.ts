@@ -109,11 +109,16 @@ export function taskStatusMeta(status: string): TaskStatusMeta {
   return STATUS_META[status] ?? { labelKey: 'tasks.status.unknown', color: 'neutral' }
 }
 
+/** Color de la barra por prioridad (la que usa el Kanban cuando la tarea no trae color de proyecto). */
+export function taskPriorityBarColor(priority: string | null | undefined): string {
+  return PRIORITY_BAR_COLOR[priority ?? ''] ?? '#28ceab'
+}
+
 export function taskBarColor(task: Task): string {
   if (task.project_color?.trim()) {
     return resolveThemeColor(task.project_color)
   }
-  return PRIORITY_BAR_COLOR[task.priority] ?? '#28ceab'
+  return taskPriorityBarColor(task.priority)
 }
 
 /** Requiere atención cuando hay aprobaciones de cierre pendientes. */

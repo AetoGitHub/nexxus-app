@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SelectItem } from '@nuxt/ui'
+import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { createEmptySubtaskRow, type SubtaskFormRow } from '~/features/tasks/utils/form/task-form.util'
 
 const props = withDefaults(
@@ -20,6 +21,9 @@ const rows = defineModel<SubtaskFormRow[]>('rows', { default: () => [] })
 
 const { t } = useI18n()
 const toast = useToast()
+const { user } = useAuth()
+// Misma preferencia del switch «Agregarme a mí» de la tarea maestra: si está activa, la subtarea nueva ya trae mi usuario.
+const assignSelfOnCreate = useAssignSelfToNewTask()
 
 const fileInputEls = new Map<string, HTMLInputElement>()
 
@@ -33,7 +37,11 @@ function setFileInputEl(key: string, el: Element | null) {
 }
 
 function addRow() {
-  rows.value = [...rows.value, createEmptySubtaskRow()]
+  const row = createEmptySubtaskRow()
+  if (assignSelfOnCreate.value && user.value?.id != null) {
+    row.assignedTo = user.value.id
+  }
+  rows.value = [...rows.value, row]
 }
 
 function removeRow(key: string) {
