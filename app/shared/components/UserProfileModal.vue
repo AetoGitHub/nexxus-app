@@ -13,7 +13,8 @@ const { t } = useI18n()
     :ui="{ content: 'max-w-sm' }"
   >
     <template #body>
-      <UserProfileCard />
+      <!-- El formulario de edición es otro modal (app.vue): si éste sigue abierto, se dibuja detrás. Se cierra al abrirlo. -->
+      <UserProfileCard @edit="open = false" />
     </template>
   </UModal>
 </template>
