@@ -664,6 +664,7 @@
       "give": "Give touch",
       "ariaLabel": "Give touch ({n} touch) | Give touch ({n} touches)",
       "errorTitle": "Could not give the touch",
+      "cooldown": "You already gave a touch to this task. You can give another in {n} s",
       "viewGivers": "See who gave touches",
       "giversTitle": "Touches given",
       "empty": "Nobody has given touches yet",

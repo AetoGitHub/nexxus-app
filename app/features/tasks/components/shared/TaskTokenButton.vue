@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import TaskTokenGivers from '~/features/tasks/components/shared/TaskTokenGivers.vue'
+import { useTaskTokenCooldown } from '~/features/tasks/composables/shared/useTaskTokenCooldown'
 import { useTaskTokens } from '~/features/tasks/composables/shared/useTaskTokens'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import type { TaskTokenByUser } from '~/features/tasks/types/task.types'
 import { bumpTokensByUser } from '~/features/tasks/utils/task-token.util'
 
 /**
- * Botón de token (manita) de una tarea: cada clic da un token y el número sube al instante.
+ * Botón de token (manita) de una tarea: cada clic da un token y el número sube al instante. Solo se puede dar uno por
+ * minuto a cada tarea: después del clic el botón queda atenuado y el tooltip cuenta los segundos que faltan.
  * Con `givers` (detalle) el tooltip lista quién dio tokens y cuántos cada quien.
  */
 const props = withDefaults(
@@ -27,6 +29,13 @@ const { t } = useI18n()
 const { user } = useAuth()
 const { displayCount, giveToken } = useTaskTokens()
 const { states } = useTaskTokenState()
+const { remainingSeconds, isCoolingDown, ensureTicking } = useTaskTokenCooldown()
+
+const coolingDown = computed(() => isCoolingDown(props.taskId))
+const cooldownText = computed(() => t('tasks.tokens.cooldown', { n: remainingSeconds(props.taskId) }))
+
+// Tras recargar, una espera guardada necesita el reloj para ir contando.
+onMounted(ensureTicking)
 
 const total = computed(() => displayCount(props.taskId, props.count))
 
@@ -45,6 +54,9 @@ const giverRows = computed(() => {
 const popKey = ref(0)
 
 function onGive() {
+  if (coolingDown.value) {
+    return
+  }
   popKey.value += 1
   void giveToken(props.taskId)
 }
@@ -58,14 +70,18 @@ const giversOpen = ref(false)
   <span class="inline-flex shrink-0 items-center gap-0.5">
     <UTooltip
       :disabled="showGivers && !canHover"
-      :text="showGivers ? undefined : t('tasks.tokens.give')"
+      :text="showGivers ? undefined : (coolingDown ? cooldownText : t('tasks.tokens.give'))"
       :ui="{ content: showGivers ? 'h-auto max-w-none px-0 py-0' : '' }"
     >
       <button
         type="button"
         class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors hover:bg-muted hover:text-aeto-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-        :class="total > 0 ? 'text-foreground' : 'text-muted-foreground'"
-        :aria-label="t('tasks.tokens.ariaLabel', { n: total }, total)"
+        :class="[
+          total > 0 ? 'text-foreground' : 'text-muted-foreground',
+          coolingDown ? 'cursor-not-allowed opacity-60 hover:bg-transparent hover:text-inherit' : '',
+        ]"
+        :aria-disabled="coolingDown"
+        :aria-label="coolingDown ? `${t('tasks.tokens.ariaLabel', { n: total }, total)}. ${cooldownText}` : t('tasks.tokens.ariaLabel', { n: total }, total)"
         @click.stop="onGive"
         @dblclick.stop
         @keydown.enter.stop
@@ -91,6 +107,12 @@ const giversOpen = ref(false)
           <div class="px-2.5 pt-2 text-xs font-medium text-foreground">
             {{ t('tasks.tokens.give') }}
           </div>
+          <p
+            v-if="coolingDown"
+            class="px-2.5 pt-1 text-xs text-muted-foreground"
+          >
+            {{ cooldownText }}
+          </p>
           <TaskTokenGivers
             v-if="giverRows.length"
             :givers="giverRows"
