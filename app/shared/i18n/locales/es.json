@@ -1265,6 +1265,22 @@
         "start": "Inicio",
         "due": "Vence",
         "noDate": "Sin fecha",
+      "priorities": {
+        "low": "Rápida",
+        "normal": "Normal",
+        "high": "Alta",
+        "urgent": "Urgente",
+        "critical": "Crítica"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "wip": "En progreso",
+        "in_review": "En revisión",
+        "complete": "Completada",
+        "rejected": "Rechazada",
+        "reopened": "Reabierta",
+        "backlog": "Backlog"
+      },
         "open": "Ver el detalle de las tareas"
       },
       "workedCount": "Completadas / tareas que vencen en el periodo",
