@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import DashboardTaskDetailCard from '~/features/dashboard/components/shared/DashboardTaskDetailCard.vue'
+import { useDashboardTaskDetail } from '~/features/dashboard/composables/useDashboardTaskDetail'
 import type { ApiDashboardTask } from '~/features/dashboard/types/dashboard-api.types'
 
 /**
  * Contador de una celda (`5/6`) que al darle clic abre el detalle de las tareas que lo forman. Lo usan los contadores de
- * TCT (tareas que vencen en el periodo) y de TC (tareas que pasaron a En progreso) de Rendimiento individual.
+ * TCT (tareas que vencen en el periodo) y de TC (tareas que pasaron a En progreso) de Rendimiento individual. Al elegir una
+ * tarea de la lista se abre su detalle (slideover) y la lista **se queda abierta** debajo: al cerrar el detalle se sigue con
+ * el scroll y se abre la siguiente.
  */
 defineProps<{
   /** Texto del contador, p. ej. `5/6`. */
@@ -22,12 +25,26 @@ defineProps<{
 }>()
 
 const { t } = useI18n()
+const { open: detailOpen, openTask } = useDashboardTaskDetail()
+
+const open = ref(false)
+
+/** El detalle de la tarea es un modal encima: lo que cuente como «clic afuera» para la lista no debe cerrarla mientras esté. */
+function onUpdateOpen(value: boolean) {
+  if (!value && detailOpen.value) {
+    return
+  }
+  open.value = value
+}
 </script>
 
 <template>
   <UPopover
+    :open="open"
+    :portal="false"
     :content="{ side: 'bottom', align: 'start', sideOffset: 6 }"
-    :ui="{ content: 'w-[min(24rem,calc(100vw-1.5rem))] p-0 overflow-hidden' }"
+    :ui="{ content: 'z-40 w-[min(24rem,calc(100vw-1.5rem))] p-0 overflow-hidden' }"
+    @update:open="onUpdateOpen"
   >
     <button
       type="button"
@@ -59,7 +76,10 @@ const { t } = useI18n()
             v-for="task in tasks"
             :key="task.id"
           >
-            <DashboardTaskDetailCard :task="task" />
+            <DashboardTaskDetailCard
+              :task="task"
+              @select="openTask"
+            />
           </li>
         </ul>
         <p

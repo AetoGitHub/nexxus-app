@@ -8,6 +8,8 @@ import DashboardNexxtepActivity from '~/features/dashboard/components/DashboardN
 import DashboardToolbar from '~/features/dashboard/components/DashboardToolbar.vue'
 import DashboardTopicsTable from '~/features/dashboard/components/DashboardTopicsTable.vue'
 import DashboardBlockState from '~/features/dashboard/components/shared/DashboardBlockState.vue'
+import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSlideover.vue'
+import { useDashboardTaskDetail } from '~/features/dashboard/composables/useDashboardTaskDetail'
 import {
   dashboardErrorMessage,
   useDashboardKpis,
@@ -70,6 +72,9 @@ watch(scope, (value) => {
 })
 
 // Búsqueda, orden y página de cada tabla (los resuelve el backend). La página vuelve a 1 con cualquier filtro global.
+// Detalle de la tarea que se abre desde la lista de TCT / TC (un solo slideover para toda la página).
+const { open: taskDetailOpen, taskId: taskDetailId } = useDashboardTaskDetail()
+
 const resetTablePageOn = [userId, scope, period, compare, projectIds, validRange, customActive]
 const peopleTable = useDashboardTableState({ defaultOrdering: '-tc', resetOn: resetTablePageOn })
 const projectsTable = useDashboardTableState({ defaultOrdering: '-tct', resetOn: resetTablePageOn })
@@ -107,7 +112,7 @@ watch(
   },
 )
 
-const kpiSet = computed(() => (kpisQuery.data.value ? buildDashboardKpis(kpisQuery.data.value.kpis) : null))
+const kpiSet = computed(() => (kpisQuery.data.value ? buildDashboardKpis(kpisQuery.data.value.kpis, myTasks.value) : null))
 
 /** Con datos viejos en pantalla un error no los tapa del todo: se muestra el error y el reintento. */
 function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): string {
@@ -194,5 +199,10 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
 
     <!-- Sin backend todavía: maqueta marcada como trabajo en proceso. -->
     <DashboardNexxtepActivity />
+
+    <TaskNewTaskSlideover
+      v-model:open="taskDetailOpen"
+      v-model:task-id="taskDetailId"
+    />
   </div>
 </template>
