@@ -3,8 +3,8 @@ import { useReturnTaskProcess } from '~/features/tasks/composables/form/useRetur
 import type { ReturnTaskProcessTarget } from '~/features/tasks/types/task.types'
 
 /**
- * Confirmación al regresar una tarea a un estatus anterior (Pendiente → Backlog): comentario opcional y
- * POST al endpoint de regreso. Lo abren el drag & drop del Kanban y el botón del footer del detalle.
+ * Confirmación al regresar una tarea a un estatus anterior (Pendiente → Backlog, En progreso → Pendiente):
+ * comentario opcional y POST al endpoint de regreso. Lo abren el drag & drop del Kanban y el botón del footer del detalle.
  */
 const open = defineModel<boolean>('open', { default: false })
 

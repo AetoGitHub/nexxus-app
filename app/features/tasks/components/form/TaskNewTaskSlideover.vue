@@ -473,8 +473,14 @@ const showReturnToBacklog = computed(() =>
   && wasInBacklog.value,
 )
 
+/** In progress: regresar a pendiente. */
+const showReturnToPending = computed(() =>
+  showProcessActions.value
+  && taskDetailQuery.data.value?.status === 'wip',
+)
+
 /** Botón de regreso a un estatus anterior: va a la izquierda del footer, con la flecha hacia atrás. */
-const showReturnAction = computed(() => showReturnToBacklog.value)
+const showReturnAction = computed(() => showReturnToBacklog.value || showReturnToPending.value)
 
 /**
  * El footer del detalle solo lleva acciones (el panel se cierra con la X de arriba): si no hay ninguna,
@@ -2136,6 +2142,16 @@ const slideoverUi = computed(() => {
                 class="mr-auto"
                 :disabled="isSaving"
                 @click="openReturnProcessModal('backlog')"
+              />
+              <UButton
+                v-if="showReturnToPending"
+                :label="t('tasks.processReturn.pending.button')"
+                icon="i-lucide-arrow-left"
+                color="neutral"
+                variant="outline"
+                class="mr-auto"
+                :disabled="isSaving"
+                @click="openReturnProcessModal('pending')"
               />
               <UButton
                 v-if="showPromoteBacklogButton"

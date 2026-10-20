@@ -292,6 +292,13 @@
         "modalDescription": "La tarea volverá a Backlog. Puedes agregar un comentario de forma opcional.",
         "confirm": "Regresar a backlog",
         "success": "La tarea regresó a Backlog."
+      },
+      "pending": {
+        "button": "Pendiente",
+        "modalTitle": "Regresar a pendiente",
+        "modalDescription": "La tarea volverá a Pendiente. Puedes agregar un comentario de forma opcional.",
+        "confirm": "Regresar a pendiente",
+        "success": "La tarea regresó a Pendiente."
       }
     },
     "processClose": {

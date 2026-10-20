@@ -517,11 +517,12 @@ export interface StartTaskProcessPayload {
 
 /**
  * Estatus al que se regresa una tarea: `backlog` desde Pendiente
- * (POST /api/tasks/process/backlog/return/).
+ * (POST /api/tasks/process/backlog/return/) y `pending` desde En progreso
+ * (POST /api/tasks/process/pending/return/).
  */
-export type ReturnTaskProcessTarget = 'backlog'
+export type ReturnTaskProcessTarget = 'backlog' | 'pending'
 
-/** Payload de POST /api/tasks/process/backlog/return/. */
+/** Payload de POST /api/tasks/process/(backlog|pending)/return/. */
 export interface ReturnTaskProcessPayload {
   task: number
   target: ReturnTaskProcessTarget

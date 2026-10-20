@@ -6,6 +6,7 @@ import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 /** Endpoint de cada regreso de estatus. */
 const RETURN_ENDPOINTS: Record<ReturnTaskProcessTarget, string> = {
   backlog: '/api/tasks/process/backlog/return/',
+  pending: '/api/tasks/process/pending/return/',
 }
 
 function buildReturnProcessBody(payload: ReturnTaskProcessPayload): FormData | Record<string, unknown> {
@@ -32,8 +33,9 @@ function buildReturnProcessBody(payload: ReturnTaskProcessPayload): FormData | R
 }
 
 /**
- * Regresa una tarea a un estatus anterior: Pendiente → Backlog vía POST /api/tasks/process/backlog/return/.
- * El backend solo lo permite si la tarea nació en backlog; si no, responde 400 y se muestra su mensaje.
+ * Regresa una tarea a un estatus anterior: Pendiente → Backlog (POST /api/tasks/process/backlog/return/) o
+ * En progreso → Pendiente (POST /api/tasks/process/pending/return/).
+ * Al backlog el backend solo deja regresar las tareas que nacieron ahí; si no, responde 400 y se muestra su mensaje.
  */
 export function useReturnTaskProcess() {
   const { $api } = useNuxtApp()

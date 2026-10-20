@@ -57,6 +57,10 @@ export function resolveKanbanProcessMove(
     return { kind: 'start' }
   }
 
+  if (fromColumnId === 'wip' && toColumnId === 'pending') {
+    return { kind: 'return', target: 'pending' }
+  }
+
   if (fromColumnId === 'wip' && toColumnId === 'in_review') {
     return { kind: 'close', status: 'in_review' }
   }
