@@ -70,7 +70,7 @@ function buildRateKpi(key: string, kpi: ApiKpi, unattended = 0): DashboardKpi {
   }
 }
 
-function buildCreatedKpi(kpi: ApiTasksCreatedKpi): DashboardKpi {
+function buildCreatedKpi(kpi: ApiTasksCreatedKpi, mine: boolean): DashboardKpi {
   const reachedGoal = kpi.value != null && kpi.goal != null && kpi.value >= kpi.goal
 
   const result: DashboardKpi = {
@@ -83,8 +83,8 @@ function buildCreatedKpi(kpi: ApiTasksCreatedKpi): DashboardKpi {
     delta: buildDelta(kpi, '', 0),
     series: seriesOf(kpi),
   }
-  // Desglose del usuario en sesión («6 asignadas a mí · 3 creadas por mí»), solo si el backend lo manda.
-  if (kpi.assigned_to_me != null && kpi.created_by_me != null) {
+  // Desglose del usuario en sesión («6 asignadas a mí · 3 creadas por mí»): solo en «Mis tareas» y si el backend lo manda.
+  if (mine && kpi.assigned_to_me != null && kpi.created_by_me != null) {
     result.detail = {
       labelKey: 'dashboard.kpis.created.mine',
       params: { assigned: kpi.assigned_to_me, created: kpi.created_by_me },
@@ -115,8 +115,11 @@ function buildTcKpi(kpi: ApiTcKpi): DashboardKpi {
   return result
 }
 
-/** Convierte `GET /api/dashboard/kpis/` en lo que pintan la cabecera y las tarjetas. */
-export function buildDashboardKpis(kpis: ApiKpis): DashboardKpiSet {
+/**
+ * Convierte `GET /api/dashboard/kpis/` en lo que pintan la cabecera y las tarjetas. `mine` es la vista «Mis tareas»: solo ahí
+ * «Tareas del período» muestra el desglose «asignadas a mí · creadas por mí» (en «Equipo» no tiene sentido).
+ */
+export function buildDashboardKpis(kpis: ApiKpis, mine = false): DashboardKpiSet {
   const hero = buildRateKpi('tct', kpis.tct)
   if (kpis.tct.goal != null) {
     hero.goal = kpis.tct.goal
@@ -126,7 +129,7 @@ export function buildDashboardKpis(kpis: ApiKpis): DashboardKpiSet {
     hero,
     cards: [
       buildTcKpi(kpis.tc),
-      buildCreatedKpi(kpis.tasks_created),
+      buildCreatedKpi(kpis.tasks_created, mine),
       buildRateKpi('iur', kpis.iur, kpis.iur.unattended),
       buildTprKpi(kpis.tpr),
       buildRateKpi('ica', kpis.ica),

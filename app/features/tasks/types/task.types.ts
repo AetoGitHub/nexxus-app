@@ -515,6 +515,21 @@ export interface StartTaskProcessPayload {
   images?: File[]
 }
 
+/**
+ * Estatus al que se regresa una tarea: `backlog` desde Pendiente
+ * (POST /api/tasks/process/backlog/return/) y `pending` desde En progreso
+ * (POST /api/tasks/process/pending/return/).
+ */
+export type ReturnTaskProcessTarget = 'backlog' | 'pending'
+
+/** Payload de POST /api/tasks/process/(backlog|pending)/return/. */
+export interface ReturnTaskProcessPayload {
+  task: number
+  target: ReturnTaskProcessTarget
+  comment?: string
+  images?: File[]
+}
+
 /** Destino al cerrar proceso vía POST /api/tasks/process/close/. */
 export type CloseTaskProcessStatus = 'in_review' | 'complete'
 

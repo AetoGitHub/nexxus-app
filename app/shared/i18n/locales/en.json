@@ -280,6 +280,27 @@
       "successDescription": "The task moved to In progress.",
       "errorTitle": "Could not start the process"
     },
+    "processReturn": {
+      "comment": "Comment",
+      "optional": "Optional",
+      "commentPlaceholder": "Reason for the change",
+      "successTitle": "Task returned",
+      "errorTitle": "Could not return the task",
+      "backlog": {
+        "button": "Backlog",
+        "modalTitle": "Return to backlog",
+        "modalDescription": "The task will go back to Backlog. You can optionally add a comment.",
+        "confirm": "Return to backlog",
+        "success": "The task returned to Backlog."
+      },
+      "pending": {
+        "button": "Pending",
+        "modalTitle": "Return to pending",
+        "modalDescription": "The task will go back to Pending. You can optionally add a comment.",
+        "confirm": "Return to pending",
+        "success": "The task returned to Pending."
+      }
+    },
     "processClose": {
       "inReview": "In review",
       "complete": "Complete",

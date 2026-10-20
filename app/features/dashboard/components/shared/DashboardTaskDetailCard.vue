@@ -5,10 +5,15 @@ import { taskPriorityBarColor } from '~/features/tasks/utils/task-format.util'
 /**
  * Tarjeta de una tarea del detalle de TCT / TC (`tct_task` / `tc_task`). Mismo aspecto que la tarjeta del Kanban
  * (barra de color a la izquierda, nombre, proyecto y fechas), pero solo con lo que manda el endpoint: id, nombre
- * (`short_description`), proyecto, prioridad, estatus, fecha de inicio y fecha límite.
+ * (`short_description`), proyecto, prioridad, estatus, fecha de inicio y fecha límite. Al darle clic (o Enter / Espacio) avisa
+ * con `select` para abrir el detalle de la tarea.
  */
 const props = defineProps<{
   task: ApiDashboardTask
+}>()
+
+const emit = defineEmits<{
+  select: [taskId: number]
 }>()
 
 const { t, locale } = useI18n()
@@ -63,9 +68,15 @@ const dueLabel = computed(() => formatDate(props.task.limit_date, false))
 </script>
 
 <template>
+  <!-- div y no button: el contenido lleva badges y listas que un button no admite. -->
   <div
-    class="w-full space-y-2 rounded-lg border border-border bg-card p-3 text-left shadow-sm"
+    role="button"
+    tabindex="0"
+    class="w-full cursor-pointer space-y-2 rounded-lg border border-border bg-card p-3 text-left shadow-sm transition-[filter,border-color] hover:border-muted-foreground/50 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
     :style="{ borderLeft: `3px solid ${barColor}` }"
+    @click="emit('select', task.id)"
+    @keydown.enter.self.prevent="emit('select', task.id)"
+    @keydown.space.self.prevent="emit('select', task.id)"
   >
     <p class="text-sm font-medium leading-snug text-foreground line-clamp-2">
       {{ task.short_description }}

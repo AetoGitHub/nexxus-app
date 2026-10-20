@@ -5,6 +5,7 @@ import type {
   CloseTaskProcessStatus,
   CreateTaskSubtaskPayload,
   NewTaskFormType,
+  ReturnTaskProcessTarget,
   ReviewDecisionStatus,
   TaskEffort,
   TaskGroupBy,
@@ -44,6 +45,7 @@ import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnar
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
+import TaskReturnProcessModal from '~/features/tasks/components/form/TaskReturnProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
@@ -133,6 +135,8 @@ const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
 const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const reopenProcessModalOpen = ref(false)
+const returnProcessModalOpen = ref(false)
+const returnProcessTarget = ref<ReturnTaskProcessTarget>('backlog')
 const archiveProcessModalOpen = ref(false)
 const unarchiveProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
@@ -452,6 +456,49 @@ const showReviewCompleteAction = computed(() =>
 const showReopenProcess = computed(() =>
   showProcessActions.value
   && taskDetailQuery.data.value?.status === 'complete',
+)
+
+/**
+ * La tarea pasó por backlog (nació ahí): el backend solo la deja regresar a backlog en ese caso
+ * (si no, responde 400 «This task was never in backlog»), así que el botón solo se ofrece entonces.
+ */
+const wasInBacklog = computed(() =>
+  (taskDetailQuery.data.value?.process_tasks ?? []).some(entry => entry.status === 'backlog'),
+)
+
+/** Pending: regresar a backlog (solo tareas que nacieron en backlog). */
+const showReturnToBacklog = computed(() =>
+  showProcessActions.value
+  && taskDetailQuery.data.value?.status === 'pending'
+  && wasInBacklog.value,
+)
+
+/** In progress: regresar a pendiente. */
+const showReturnToPending = computed(() =>
+  showProcessActions.value
+  && taskDetailQuery.data.value?.status === 'wip',
+)
+
+/** Botón de regreso a un estatus anterior: va a la izquierda del footer, con la flecha hacia atrás. */
+const showReturnAction = computed(() => showReturnToBacklog.value || showReturnToPending.value)
+
+/**
+ * El footer del detalle solo lleva acciones (el panel se cierra con la X de arriba): si no hay ninguna,
+ * no se muestra la barra.
+ */
+const showDetailFooter = computed(() =>
+  isDetailView.value
+  && (
+    isPromotingBacklog.value
+    || isEditing.value
+    || showPromoteBacklogButton.value
+    || showAuthorizeActions.value
+    || showStartProcess.value
+    || showCloseProcess.value
+    || showReviewDecision.value
+    || showReopenProcess.value
+    || showReturnAction.value
+  ),
 )
 
 /** Detalle: archivar (oculto si ya está archivada). */
@@ -936,6 +983,11 @@ function openReopenProcessModal() {
   reopenProcessModalOpen.value = true
 }
 
+function openReturnProcessModal(target: ReturnTaskProcessTarget) {
+  returnProcessTarget.value = target
+  returnProcessModalOpen.value = true
+}
+
 function openArchiveProcessModal() {
   archiveProcessModalOpen.value = true
 }
@@ -957,6 +1009,10 @@ function onReviewDecision() {
 }
 
 function onProcessReopened() {
+  close()
+}
+
+function onProcessReturned() {
   close()
 }
 
@@ -1246,6 +1302,7 @@ watch(open, (isOpen) => {
     closeProcessModalOpen.value = false
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
+    returnProcessModalOpen.value = false
     archiveProcessModalOpen.value = false
     unarchiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
@@ -2034,8 +2091,8 @@ const slideoverUi = computed(() => {
           </UForm>
 
           <div
-            v-if="isDetailView"
-            class="flex shrink-0 items-center justify-end gap-2 border-t border-border px-4 py-3"
+            v-if="showDetailFooter"
+            class="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-border px-4 py-3"
           >
             <template v-if="isPromotingBacklog">
               <UButton
@@ -2075,12 +2132,26 @@ const slideoverUi = computed(() => {
               />
             </template>
             <template v-else>
+              <!-- El panel se cierra con la X de arriba: aquí solo van acciones. Regresar de estatus, a la izquierda. -->
               <UButton
-                :label="t('tasks.form.close')"
+                v-if="showReturnToBacklog"
+                :label="t('tasks.processReturn.backlog.button')"
+                icon="i-lucide-arrow-left"
                 color="neutral"
-                variant="ghost"
+                variant="outline"
+                class="mr-auto"
                 :disabled="isSaving"
-                @click="close"
+                @click="openReturnProcessModal('backlog')"
+              />
+              <UButton
+                v-if="showReturnToPending"
+                :label="t('tasks.processReturn.pending.button')"
+                icon="i-lucide-arrow-left"
+                color="neutral"
+                variant="outline"
+                class="mr-auto"
+                :disabled="isSaving"
+                @click="openReturnProcessModal('pending')"
               />
               <UButton
                 v-if="showPromoteBacklogButton"
@@ -2209,6 +2280,14 @@ const slideoverUi = computed(() => {
     v-model:open="reopenProcessModalOpen"
     :task-id="taskId"
     @success="onProcessReopened"
+  />
+
+  <TaskReturnProcessModal
+    v-if="taskId != null"
+    v-model:open="returnProcessModalOpen"
+    :task-id="taskId"
+    :target="returnProcessTarget"
+    @success="onProcessReturned"
   />
 
   <TaskArchiveProcessModal

@@ -1,6 +1,7 @@
 import type {
   CloseTaskProcessStatus,
   KanbanStatusColumnId,
+  ReturnTaskProcessTarget,
   ReviewDecisionStatus,
   Task,
 } from '~/features/tasks/types/task.types'
@@ -11,6 +12,7 @@ export type KanbanProcessMove =
   | { kind: 'close', status: CloseTaskProcessStatus }
   | { kind: 'review', status: ReviewDecisionStatus }
   | { kind: 'reopen' }
+  | { kind: 'return', target: ReturnTaskProcessTarget }
 
 const STATUS_COLUMNS = new Set<string>([
   'pending',
@@ -37,6 +39,11 @@ export function resolveKanbanProcessMove(
   toColumnId: string | number,
   task: Pick<Task, 'multiple_close' | 'type'>,
 ): KanbanProcessMove | null {
+  // Backlog no es una columna de status del flujo, pero sí es destino al regresar una tarea pendiente.
+  if (fromColumnId === 'pending' && toColumnId === 'backlog') {
+    return { kind: 'return', target: 'backlog' }
+  }
+
   if (!isStatusColumnId(fromColumnId) || !isStatusColumnId(toColumnId)) {
     return null
   }
@@ -48,6 +55,10 @@ export function resolveKanbanProcessMove(
 
   if (fromColumnId === 'pending' && toColumnId === 'wip') {
     return { kind: 'start' }
+  }
+
+  if (fromColumnId === 'wip' && toColumnId === 'pending') {
+    return { kind: 'return', target: 'pending' }
   }
 
   if (fromColumnId === 'wip' && toColumnId === 'in_review') {
