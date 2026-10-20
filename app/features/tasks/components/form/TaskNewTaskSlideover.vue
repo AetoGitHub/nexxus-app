@@ -110,6 +110,12 @@ const props = withDefaults(
     promotingBacklogTaskId?: number | null
     /** Tarea dictada con el atajo de voz: el formulario se abre ya rellenado con ella. */
     voiceDraft?: VoiceTaskResponse | null
+    /**
+     * Selector CSS de un elemento de la página que sigue siendo interactivo mientras el detalle está abierto
+     * (p. ej. la lista de tareas del Dashboard fijada a su izquierda). Con él el panel no es modal: sin overlay y
+     * sin cerrarse al hacer clic en ese elemento; un clic en cualquier otro lado lo cierra como siempre.
+     */
+    outsideInteractiveSelector?: string | null
   }>(),
   {
     view: 'list',
@@ -119,6 +125,7 @@ const props = withDefaults(
     toUpdateSection: null,
     promotingBacklogTaskId: null,
     voiceDraft: null,
+    outsideInteractiveSelector: null,
   },
 )
 
@@ -1358,6 +1365,22 @@ watch(
   },
 )
 
+/** Ver `outsideInteractiveSelector`: el clic en ese elemento no cuenta como «clic afuera». */
+const slideoverContent = computed(() => {
+  const selector = props.outsideInteractiveSelector
+  if (!selector) {
+    return undefined
+  }
+  return {
+    onInteractOutside: (event: Event) => {
+      const target = (event as CustomEvent<{ originalEvent?: Event }>).detail?.originalEvent?.target ?? event.target
+      if (target instanceof Element && target.closest(selector)) {
+        event.preventDefault()
+      }
+    },
+  }
+})
+
 const slideoverUi = computed(() => {
   if (isDetailView.value) {
     return {
@@ -1381,6 +1404,8 @@ const slideoverUi = computed(() => {
     v-model:open="open"
     side="right"
     :close="isDetailView ? false : true"
+    :modal="!outsideInteractiveSelector"
+    :content="slideoverContent"
     :ui="slideoverUi"
   >
     <template

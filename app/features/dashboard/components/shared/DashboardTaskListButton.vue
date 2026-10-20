@@ -6,8 +6,9 @@ import type { ApiDashboardTask } from '~/features/dashboard/types/dashboard-api.
 /**
  * Contador de una celda (`5/6`) que al darle clic abre el detalle de las tareas que lo forman. Lo usan los contadores de
  * TCT (tareas que vencen en el periodo) y de TC (tareas que pasaron a En progreso) de Rendimiento individual. Al elegir una
- * tarea de la lista se abre su detalle (slideover) y la lista **se queda abierta** debajo: al cerrar el detalle se sigue con
- * el scroll y se abre la siguiente.
+ * tarea de la lista se abre su detalle (slideover) y la lista **se queda abierta**: en pantallas anchas se fija a la
+ * izquierda del detalle, al mismo nivel visual, para seguir con el scroll y abrir la siguiente tarea sin cerrarlo
+ * (el detalle no es modal, ver `outsideInteractiveSelector`); en pantallas angostas queda debajo del detalle.
  */
 defineProps<{
   /** Texto del contador, p. ej. `5/6`. */
@@ -43,7 +44,7 @@ function onUpdateOpen(value: boolean) {
     :open="open"
     :portal="false"
     :content="{ side: 'bottom', align: 'start', sideOffset: 6 }"
-    :ui="{ content: 'z-40 w-[min(24rem,calc(100vw-1.5rem))] p-0 overflow-hidden' }"
+    :ui="{ content: ['z-40 w-[min(24rem,calc(100vw-1.5rem))] p-0 overflow-hidden', detailOpen && 'dashboard-task-list--docked'] }"
     @update:open="onUpdateOpen"
   >
     <button
@@ -57,7 +58,10 @@ function onUpdateOpen(value: boolean) {
     </button>
 
     <template #content>
-      <div class="flex flex-col">
+      <div
+        class="dashboard-task-list flex h-full flex-col"
+        data-dashboard-task-list
+      >
         <header class="border-b border-border px-3 py-2.5">
           <p class="text-sm font-semibold text-foreground">
             {{ title }}
@@ -70,7 +74,7 @@ function onUpdateOpen(value: boolean) {
 
         <ul
           v-if="tasks.length"
-          class="max-h-96 space-y-2 overflow-y-auto p-3"
+          class="dashboard-task-list__items max-h-96 min-h-0 flex-1 space-y-2 overflow-y-auto p-3"
         >
           <li
             v-for="task in tasks"
@@ -92,3 +96,31 @@ function onUpdateOpen(value: boolean) {
     </template>
   </UPopover>
 </template>
+
+<style>
+/*
+ * Con el detalle abierto la lista se fija a la izquierda del slideover (ancho 60rem, ver `TaskNewTaskSlideover`),
+ * a toda la altura y pegada a su borde. Se pisa el `transform` que Floating UI pone en el contenedor del popover.
+ * Por debajo de 76rem no hay espacio a su izquierda: la lista se queda como popover, detrás del detalle.
+ */
+@media (min-width: 76rem) {
+  [data-reka-popper-content-wrapper]:has(> .dashboard-task-list--docked) {
+    transform: none !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    right: 60rem !important;
+  }
+
+  .dashboard-task-list--docked {
+    height: 100%;
+    width: min(24rem, calc(100vw - 60rem));
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+  }
+
+  .dashboard-task-list--docked .dashboard-task-list__items {
+    max-height: none;
+  }
+}
+</style>
