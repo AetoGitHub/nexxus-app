@@ -280,6 +280,20 @@
       "successDescription": "La tarea pasó a En progreso.",
       "errorTitle": "No se pudo iniciar el proceso"
     },
+    "processReturn": {
+      "comment": "Comentario",
+      "optional": "Opcional",
+      "commentPlaceholder": "Motivo del cambio",
+      "successTitle": "Tarea regresada",
+      "errorTitle": "No se pudo regresar la tarea",
+      "backlog": {
+        "button": "Backlog",
+        "modalTitle": "Regresar a backlog",
+        "modalDescription": "La tarea volverá a Backlog. Puedes agregar un comentario de forma opcional.",
+        "confirm": "Regresar a backlog",
+        "success": "La tarea regresó a Backlog."
+      }
+    },
     "processClose": {
       "inReview": "En revisión",
       "complete": "Completar",

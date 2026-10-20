@@ -1,6 +1,7 @@
 import type {
   CloseTaskProcessStatus,
   KanbanTaskMove,
+  ReturnTaskProcessTarget,
   ReviewDecisionStatus,
   Task,
 } from '~/features/tasks/types/task.types'
@@ -20,6 +21,8 @@ export function useKanbanProcessMove() {
   const reviewDecisionModalOpen = ref(false)
   const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
   const reopenProcessModalOpen = ref(false)
+  const returnProcessModalOpen = ref(false)
+  const returnProcessTarget = ref<ReturnTaskProcessTarget>('backlog')
 
   function resetModals() {
     pendingTaskId.value = null
@@ -27,6 +30,7 @@ export function useKanbanProcessMove() {
     closeProcessModalOpen.value = false
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
+    returnProcessModalOpen.value = false
   }
 
   function requestMove(payload: KanbanTaskMove & { task: Task }) {
@@ -63,6 +67,12 @@ export function useKanbanProcessMove() {
       return true
     }
 
+    if (transition.kind === 'return') {
+      returnProcessTarget.value = transition.target
+      returnProcessModalOpen.value = true
+      return true
+    }
+
     reviewDecisionStatus.value = transition.status
     reviewDecisionModalOpen.value = true
     return true
@@ -80,6 +90,8 @@ export function useKanbanProcessMove() {
     reviewDecisionModalOpen,
     reviewDecisionStatus,
     reopenProcessModalOpen,
+    returnProcessModalOpen,
+    returnProcessTarget,
     requestMove,
     onProcessSuccess,
   }

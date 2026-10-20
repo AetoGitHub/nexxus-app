@@ -89,13 +89,17 @@ function onDrop(event: DragEvent) {
 </script>
 
 <template>
+  <!-- Colapsada también recibe drops (p. ej. Pendiente → Backlog): no hay que expandirla antes de soltar. -->
   <section
     v-if="collapsed"
     class="flex h-full min-h-0 w-12 shrink-0 flex-col"
+    @dragover="onDragOver"
+    @drop="onDrop"
   >
     <button
       type="button"
       class="flex h-full w-12 flex-col items-center gap-3 rounded-xl bg-kanban-column py-3 text-muted-foreground transition-colors hover:text-foreground"
+      :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
       :aria-label="t('tasks.kanban.expandColumn', { title: columnTitle })"
       @click="toggleCollapsed"
     >
