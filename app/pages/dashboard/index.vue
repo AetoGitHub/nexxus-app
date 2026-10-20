@@ -203,6 +203,7 @@ function errorOf(query: { isError: Ref<boolean>, errorMessage: Ref<string> }): s
     <TaskNewTaskSlideover
       v-model:open="taskDetailOpen"
       v-model:task-id="taskDetailId"
+      outside-interactive-selector="[data-dashboard-task-list]"
     />
   </div>
 </template>
