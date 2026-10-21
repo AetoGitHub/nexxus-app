@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { CatalogueGroup } from '~/features/task-settings/types/group.types'
 import TaskSettingsGroupCard from '~/features/task-settings/components/groups/TaskSettingsGroupCard.vue'
+import { matchesSearch } from '~/shared/utils/search-text.util'
 
-defineProps<{
+const props = defineProps<{
   groups: CatalogueGroup[]
   loading?: boolean
   error?: boolean
@@ -14,6 +15,16 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+/**
+ * Buscador por nombre de grupo. Solo filtra la lista que se muestra: `groups` completo sigue yendo a
+ * cada tarjeta para sus badges «manager de…».
+ */
+const search = ref('')
+const visibleGroups = computed(() =>
+  props.groups.filter(group => matchesSearch(group.name, search.value)),
+)
+const isSearching = computed(() => search.value.trim().length > 0)
 </script>
 
 <template>
@@ -45,6 +56,29 @@ const { t } = useI18n()
       </p>
     </div>
 
+    <UInput
+      v-model="search"
+      icon="i-lucide-search"
+      size="sm"
+      :placeholder="t('taskSettings.groups.searchPlaceholder')"
+      :aria-label="t('taskSettings.groups.searchPlaceholder')"
+      class="w-full"
+    >
+      <template
+        v-if="isSearching"
+        #trailing
+      >
+        <UButton
+          icon="i-lucide-x"
+          color="neutral"
+          variant="link"
+          size="xs"
+          :aria-label="t('taskSettings.groups.clearSearch')"
+          @click="search = ''"
+        />
+      </template>
+    </UInput>
+
     <div v-if="loading" class="space-y-2">
       <USkeleton
         v-for="n in 3"
@@ -67,12 +101,19 @@ const { t } = useI18n()
       {{ t('common.noData') }}
     </p>
 
+    <p
+      v-else-if="!visibleGroups.length"
+      class="text-sm text-muted-foreground py-4"
+    >
+      {{ t('taskSettings.groups.searchEmpty', { query: search.trim() }) }}
+    </p>
+
     <div
       v-else
       class="space-y-2"
     >
       <TaskSettingsGroupCard
-        v-for="group in groups"
+        v-for="group in visibleGroups"
         :key="group.id"
         :group="group"
         :all-groups="groups"
