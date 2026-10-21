@@ -102,6 +102,58 @@ const canSend = computed(() => {
   return hasContent || hasFiles
 })
 
+/**
+ * En pantallas táctiles (teclado en pantalla) Enter da salto de línea y solo el botón envía: ahí no existe Shift+Enter,
+ * así que con Enter = enviar no habría forma de escribir varios párrafos.
+ */
+const isTouchInput = useMediaQuery('(pointer: coarse)')
+
+/** Alto visible real: con el teclado abierto en el celular `innerHeight` no cambia, `visualViewport` sí. */
+const viewportHeight = ref(800)
+function updateViewportHeight() {
+  viewportHeight.value = window.visualViewport?.height ?? window.innerHeight
+}
+onMounted(updateViewportHeight)
+useEventListener(import.meta.client ? (window.visualViewport ?? window) : undefined, 'resize', updateViewportHeight)
+
+/** El campo crece hasta el 40 % del alto visible (nunca menos de los 112 px de antes) y a partir de ahí hace scroll. */
+const DRAFT_MIN_MAX_HEIGHT_PX = 112
+const draftMaxHeight = computed(() => Math.max(DRAFT_MIN_MAX_HEIGHT_PX, Math.round(viewportHeight.value * 0.4)))
+
+/** Con más de ~6 líneas se ofrece expandir el mensaje a un editor grande. */
+const DRAFT_EXPAND_FROM_PX = 120
+const isDraftExpandable = ref(false)
+const expandedOpen = ref(false)
+
+function measureDraft() {
+  const el = draftInput.value?.textareaRef
+  isDraftExpandable.value = el != null && el.scrollHeight > DRAFT_EXPAND_FROM_PX
+}
+
+watch(draft, () => {
+  void nextTick(measureDraft)
+}, { flush: 'post' })
+watch(draftMaxHeight, () => {
+  void nextTick(measureDraft)
+})
+
+watch(expandedOpen, (isOpen) => {
+  if (!isOpen) {
+    void nextTick(() => {
+      measureDraft()
+      draftInput.value?.textareaRef?.focus()
+    })
+  }
+})
+
+/** Enviar desde el editor expandido y cerrarlo si el mensaje salió (el borrador queda vacío). */
+async function sendFromExpanded() {
+  await sendMessage()
+  if (!draft.value.trim()) {
+    expandedOpen.value = false
+  }
+}
+
 const messageCount = computed(() =>
   messages.value.filter(message => !isSystemMessage(message.type)).length,
 )
@@ -461,6 +513,9 @@ async function submitEdit() {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (isTouchInput.value) {
+    return
+  }
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault()
     void sendMessage()
@@ -829,16 +884,32 @@ onUnmounted(() => {
             :aria-label="t('tasks.messenger.attachments.add')"
             @click="openFilePicker"
           />
-          <UTextarea
-            ref="draftInput"
-            v-model="draft"
-            :placeholder="t('tasks.messenger.placeholder')"
-            :rows="1"
-            autoresize
-            class="min-w-0 flex-1"
-            :ui="{ base: 'max-h-28' }"
-            @keydown="onKeydown"
-          />
+          <div
+            class="relative min-w-0 flex-1"
+            :style="{ '--draft-max-h': `${draftMaxHeight}px` }"
+          >
+            <UTextarea
+              ref="draftInput"
+              v-model="draft"
+              :placeholder="t('tasks.messenger.placeholder')"
+              :rows="1"
+              autoresize
+              class="w-full"
+              :ui="{ base: ['max-h-[var(--draft-max-h)]', isDraftExpandable && 'pr-9'] }"
+              @keydown="onKeydown"
+            />
+            <UButton
+              v-if="isDraftExpandable"
+              icon="i-lucide-maximize-2"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              class="absolute right-1.5 top-1.5"
+              :aria-label="t('tasks.messenger.expandDraft')"
+              @click="expandedOpen = true"
+            />
+          </div>
           <UButton
             :icon="editingMessage ? 'i-lucide-check' : 'i-lucide-send'"
             color="primary"
@@ -866,6 +937,36 @@ onUnmounted(() => {
         {{ t('tasks.messenger.attachments.dropHint') }}
       </p>
     </div>
+
+    <UModal
+      v-model:open="expandedOpen"
+      :title="t('tasks.messenger.expandedTitle')"
+      :description="isTouchInput ? undefined : t('tasks.messenger.expandedHint')"
+      :fullscreen="isTouchInput"
+      :ui="{ content: 'sm:max-w-2xl', body: 'flex-1 min-h-0 h-full', footer: 'justify-end' }"
+    >
+      <template #body>
+        <UTextarea
+          v-model="draft"
+          :placeholder="t('tasks.messenger.placeholder')"
+          :rows="isTouchInput ? 6 : 14"
+          class="w-full"
+          :ui="isTouchInput ? { root: 'h-full', base: 'h-full resize-none' } : { base: 'resize-none' }"
+          @keydown.ctrl.enter.prevent="sendFromExpanded"
+          @keydown.meta.enter.prevent="sendFromExpanded"
+        />
+      </template>
+      <template #footer>
+        <UButton
+          icon="i-lucide-send"
+          color="primary"
+          :label="t('tasks.messenger.send')"
+          :loading="isBusy"
+          :disabled="!canSend"
+          @click="sendFromExpanded"
+        />
+      </template>
+    </UModal>
 
     <TaskMessageDeleteConfirmModal
       v-if="deletingMessageId != null"
