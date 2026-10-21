@@ -1757,6 +1757,9 @@
       "options": "Opciones",
       "edit": "Editar proyecto",
       "empty": "No hay proyectos todavía",
+      "searchPlaceholder": "Buscar proyecto…",
+      "clearSearch": "Limpiar búsqueda",
+      "searchEmpty": "No se encontraron proyectos con «{query}»",
       "loadError": "No se pudieron cargar los proyectos",
       "archived": "Archivados ({count})"
     },
