@@ -23,18 +23,6 @@ export function buildTaskDocumentsUploadDirectory(
 }
 
 /**
- * Directorio de Storage para la evidencia que se adjunta al cerrar una tarea (`images` de POST /api/tasks/process/close/):
- * erp/task/{organization_id}/{company_id}/{task_id}/close
- */
-export function buildTaskCloseUploadDirectory(
-  organizationId: number,
-  companyId: number,
-  taskId: number,
-): string {
-  return `erp/task/${organizationId}/${companyId}/${taskId}/close`
-}
-
-/**
  * Nombre final del archivo subido: {timestamp_ms}_{nombre_original}.
  * El timestamp evita colisiones entre archivos con el mismo nombre.
  */

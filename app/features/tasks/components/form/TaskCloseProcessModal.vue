@@ -2,7 +2,7 @@
 import type { CloseTaskProcessStatus } from '~/features/tasks/types/task.types'
 import { useCloseEvidence } from '~/features/tasks/composables/form/useCloseEvidence'
 import { useCloseTaskProcess } from '~/features/tasks/composables/form/useCloseTaskProcess'
-import TaskCloseEvidenceField from '~/features/tasks/components/form/TaskCloseEvidenceField.vue'
+import TaskCloseEvidenceNotice from '~/features/tasks/components/form/TaskCloseEvidenceNotice.vue'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -20,7 +20,6 @@ const { mutateAsync: closeProcess, isPending } = useCloseTaskProcess()
 
 const comment = ref('')
 const evidence = useCloseEvidence(() => props.taskId, () => open.value)
-const isBusy = computed(() => isPending.value || evidence.isUploading.value)
 
 const modalTitle = computed(() =>
   props.targetStatus === 'complete'
@@ -36,7 +35,6 @@ const confirmLabel = computed(() =>
 
 function reset() {
   comment.value = ''
-  evidence.reset()
 }
 
 watch(open, (isOpen) => {
@@ -46,17 +44,11 @@ watch(open, (isOpen) => {
 })
 
 async function onConfirm() {
-  const images = await evidence.upload()
-  if (images === null) {
-    return
-  }
-
   try {
     await closeProcess({
       task: props.taskId,
       status: props.targetStatus,
       comment: comment.value.trim() || undefined,
-      images: images.length ? images : undefined,
     })
     open.value = false
     emit('success')
@@ -91,14 +83,7 @@ async function onConfirm() {
           />
         </UFormField>
 
-        <TaskCloseEvidenceField
-          :files="evidence.files.value"
-          :required="evidence.needsEvidence.value"
-          :satisfied="evidence.taskRequiresFile.value && evidence.hasEvidence.value"
-          :disabled="isBusy"
-          @add="evidence.addFiles"
-          @remove="evidence.removeFile"
-        />
+        <TaskCloseEvidenceNotice v-if="evidence.needsEvidence.value" />
       </div>
     </template>
 
@@ -107,14 +92,14 @@ async function onConfirm() {
         :label="t('tasks.form.cancel')"
         color="neutral"
         variant="outline"
-        :disabled="isBusy"
+        :disabled="isPending"
         @click="close()"
       />
       <UButton
         :label="confirmLabel"
         color="primary"
-        :loading="isBusy"
-        :disabled="isBusy || !evidence.canSubmit.value"
+        :loading="isPending"
+        :disabled="isPending || evidence.needsEvidence.value"
         @click="onConfirm"
       />
     </template>

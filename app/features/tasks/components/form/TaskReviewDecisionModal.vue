@@ -2,7 +2,7 @@
 import type { ReviewDecisionStatus } from '~/features/tasks/types/task.types'
 import { useCloseEvidence } from '~/features/tasks/composables/form/useCloseEvidence'
 import { useCloseTaskProcess } from '~/features/tasks/composables/form/useCloseTaskProcess'
-import TaskCloseEvidenceField from '~/features/tasks/components/form/TaskCloseEvidenceField.vue'
+import TaskCloseEvidenceNotice from '~/features/tasks/components/form/TaskCloseEvidenceNotice.vue'
 import { useRejectTaskProcess } from '~/features/tasks/composables/form/useRejectTaskProcess'
 
 const open = defineModel<boolean>('open', { default: false })
@@ -25,8 +25,8 @@ const comment = ref('')
 const isCompleting = computed(() => props.targetStatus === 'complete')
 const evidence = useCloseEvidence(() => props.taskId, () => open.value && isCompleting.value)
 
-const isPending = computed(() => isClosePending.value || isRejectPending.value || evidence.isUploading.value)
-const canConfirm = computed(() => !isCompleting.value || evidence.canSubmit.value)
+const isPending = computed(() => isClosePending.value || isRejectPending.value)
+const missingEvidence = computed(() => isCompleting.value && evidence.needsEvidence.value)
 
 const modalTitle = computed(() =>
   props.targetStatus === 'rejected'
@@ -46,7 +46,6 @@ const confirmColor = computed(() =>
 
 function reset() {
   comment.value = ''
-  evidence.reset()
 }
 
 watch(open, (isOpen) => {
@@ -66,15 +65,10 @@ async function onConfirm() {
       })
     }
     else {
-      const images = await evidence.upload()
-      if (images === null) {
-        return
-      }
       await closeProcess({
         task: props.taskId,
         status: 'complete',
         comment: trimmedComment,
-        images: images.length ? images : undefined,
       })
     }
     open.value = false
@@ -110,15 +104,7 @@ async function onConfirm() {
           />
         </UFormField>
 
-        <TaskCloseEvidenceField
-          v-if="isCompleting"
-          :files="evidence.files.value"
-          :required="evidence.needsEvidence.value"
-          :satisfied="evidence.taskRequiresFile.value && evidence.hasEvidence.value"
-          :disabled="isPending"
-          @add="evidence.addFiles"
-          @remove="evidence.removeFile"
-        />
+        <TaskCloseEvidenceNotice v-if="missingEvidence" />
       </div>
     </template>
 
@@ -134,7 +120,7 @@ async function onConfirm() {
         :label="confirmLabel"
         :color="confirmColor"
         :loading="isPending"
-        :disabled="isPending || !canConfirm"
+        :disabled="isPending || missingEvidence"
         @click="onConfirm"
       />
     </template>

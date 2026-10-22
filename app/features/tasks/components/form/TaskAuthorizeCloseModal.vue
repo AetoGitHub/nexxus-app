@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthorizeCloseApproval } from '~/features/tasks/composables/form/useAuthorizeCloseApproval'
 import { useCloseEvidence } from '~/features/tasks/composables/form/useCloseEvidence'
-import TaskCloseEvidenceField from '~/features/tasks/components/form/TaskCloseEvidenceField.vue'
+import TaskCloseEvidenceNotice from '~/features/tasks/components/form/TaskCloseEvidenceNotice.vue'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -20,7 +20,7 @@ const evidence = useCloseEvidence(() => props.taskId, () => open.value)
 
 /**
  * El backend solo exige la evidencia a la aprobación que completa la tarea (la última); las anteriores no se
- * bloquean, así que ahí no se muestra el campo.
+ * bloquean, así que ahí no se avisa ni se bloquea.
  */
 const isLastApproval = computed(() => {
   const approvals = evidence.detail.data.value?.close_approvals
@@ -29,25 +29,11 @@ const isLastApproval = computed(() => {
   }
   return !approvals.some(approval => approval.id !== props.approvalId && !approval.closed)
 })
-const needsEvidence = computed(() => isLastApproval.value && evidence.needsEvidence.value)
-const showEvidence = computed(() => isLastApproval.value && evidence.taskRequiresFile.value)
-const isBusy = computed(() => isPending.value || evidence.isUploading.value)
-const canConfirm = computed(() => !needsEvidence.value || evidence.files.value.length > 0)
-
-watch(open, (isOpen) => {
-  if (!isOpen) {
-    evidence.reset()
-  }
-})
+const missingEvidence = computed(() => isLastApproval.value && evidence.needsEvidence.value)
 
 async function onConfirm() {
-  const images = showEvidence.value ? await evidence.upload() : []
-  if (images === null) {
-    return
-  }
-
   try {
-    await authorizeCloseApproval({ approvalId: props.approvalId, images })
+    await authorizeCloseApproval(props.approvalId)
     open.value = false
     emit('success')
   }
@@ -68,17 +54,10 @@ async function onConfirm() {
     }"
   >
     <template
-      v-if="showEvidence"
+      v-if="missingEvidence"
       #body
     >
-      <TaskCloseEvidenceField
-        :files="evidence.files.value"
-        :required="needsEvidence"
-        :satisfied="evidence.hasEvidence.value"
-        :disabled="isBusy"
-        @add="evidence.addFiles"
-        @remove="evidence.removeFile"
-      />
+      <TaskCloseEvidenceNotice />
     </template>
 
     <template #footer="{ close }">
@@ -86,14 +65,14 @@ async function onConfirm() {
         :label="t('tasks.form.cancel')"
         color="neutral"
         variant="outline"
-        :disabled="isBusy"
+        :disabled="isPending"
         @click="close()"
       />
       <UButton
         :label="t('tasks.toUpdate.authorize.submit')"
         color="warning"
-        :loading="isBusy"
-        :disabled="isBusy || !canConfirm"
+        :loading="isPending"
+        :disabled="isPending || missingEvidence"
         @click="onConfirm"
       />
     </template>
