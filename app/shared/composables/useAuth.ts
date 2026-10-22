@@ -1,5 +1,5 @@
 import { removePushDeviceOnLogout } from '~/features/push/utils/push-device.util'
-import type { AuthLoginRequest, AuthLoginResponse } from '~/shared/types/auth.types'
+import type { AuthLoginRequest, AuthLoginResponse, AuthPasswordChangeRequest } from '~/shared/types/auth.types'
 
 export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedGroup, AuthProject } from '~/shared/types/auth.types'
 
@@ -19,6 +19,7 @@ export function useAuth() {
   const managedGroups = computed(() => user.value?.managed_groups ?? [])
   const isGroupManager = computed(() => managedGroups.value.length > 0)
   const userProjects = computed(() => user.value?.projects ?? [])
+  const mustChangePassword = computed(() => isLoggedIn.value && user.value?.must_change_password === true)
 
   async function login(username: string, password: string) {
     const body: AuthLoginRequest = {
@@ -39,6 +40,26 @@ export function useAuth() {
       organization: data.organization,
       profile_configurations: data.profile_configurations,
     }
+  }
+
+  /** Marca (o desmarca) en la sesión que el usuario debe cambiar su contraseña antes de usar la app. */
+  function setMustChangePassword(value: boolean) {
+    if (!session.value) {
+      return
+    }
+    session.value = { ...session.value, user: { ...session.value.user, must_change_password: value } }
+  }
+
+  /** Cambia la contraseña del usuario en sesión; si era el cambio obligatorio, libera el acceso a la app. */
+  async function changePassword(currentPassword: string, newPassword: string) {
+    const { $api } = useNuxtApp()
+    const body: AuthPasswordChangeRequest = {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }
+    // El FetchError original (400 con el mensaje del backend) se deja propagar: la UI lo formatea con parseFetchError.
+    await $api('/api/auth/password/change/', { method: 'POST', body })
+    setMustChangePassword(false)
   }
 
   async function logout() {
@@ -79,6 +100,9 @@ export function useAuth() {
     managedGroups,
     isGroupManager,
     userProjects,
+    mustChangePassword,
+    setMustChangePassword,
+    changePassword,
     login,
     logout,
   }

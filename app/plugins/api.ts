@@ -6,6 +6,8 @@
  * - Envía `Accept-Language` según el locale activo (mensajes de sistema, etc.).
  * - Si el backend responde 401 con el token de la sesión vigente (p. ej. se cerró
  *   sesión en otro dispositivo), cierra la sesión local y manda al login.
+ * - Si responde 403 `{"detail": "must_change_password"}` (contraseña temporal sin cambiar),
+ *   marca la sesión y manda a la pantalla de cambio de contraseña.
  *
  * @example
  * const { $api } = useNuxtApp()
@@ -43,6 +45,19 @@ export default defineNuxtPlugin((nuxtApp) => {
     }
   }
 
+  async function requirePasswordChange() {
+    await nuxtApp.runWithContext(async () => {
+      const current = useRouter().currentRoute.value
+      const { setMustChangePassword } = useAuth()
+      setMustChangePassword(true)
+
+      if (current.path === '/change-password' || current.path === '/login') {
+        return
+      }
+      await navigateTo({ path: '/change-password', query: { redirect: current.fullPath } })
+    })
+  }
+
   const api = $fetch.create({
     baseURL: apiBaseUrl as string,
     onRequest({ options }) {
@@ -59,6 +74,10 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
     },
     onResponseError({ response, options }) {
+      if (response.status === 403 && (response._data as { detail?: unknown } | undefined)?.detail === 'must_change_password') {
+        void requirePasswordChange()
+        return
+      }
       if (response.status !== 401) {
         return
       }
