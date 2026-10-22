@@ -110,6 +110,8 @@ export interface CreateTaskPayload {
   created_by_voice: VoiceOriginFlag
   /** Lo que se dijo (transcripción); vacío si no se dictó. */
   voice_text: string
+  /** Exige al menos un archivo (evidencia) para cerrar la tarea: en el chat o adjunto al cerrarla. */
+  requires_close_file?: boolean
 }
 
 /** Marca de origen por voz que espera el backend (texto `"True"` / `"False"`). */
@@ -150,6 +152,8 @@ export interface PromoteBacklogTaskPayload {
   assigned_to: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
+  /** Exige al menos un archivo (evidencia) para cerrar la tarea: en el chat o adjunto al cerrarla. */
+  requires_close_file?: boolean
 }
 
 /** Payload de PATCH /api/tasks/:id/update/. */
@@ -165,6 +169,8 @@ export interface UpdateTaskPayload {
   assigned_to: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
+  /** Exige al menos un archivo (evidencia) para cerrar la tarea: en el chat o adjunto al cerrarla. */
+  requires_close_file?: boolean
   /** Convierte esta instancia en la plantilla maestra. Solo si type=repeat y hay generated_from. */
   set_as_master?: boolean
   /** Aplica los cambios a todas las instancias de la serie. Solo si type=repeat. */
@@ -279,6 +285,8 @@ export interface Task {
   group?: number | null
   group_name?: string
   multiple_close: boolean
+  /** La tarea exige un archivo (evidencia) para cerrarse. El listado lo manda siempre; el detalle aún no (ver el contrato del backend). */
+  requires_close_file?: boolean
   /** Independiente de `status`: la tarea puede archivarse en cualquier estado del workflow. */
   archived?: boolean
   /** true cuando status=backlog. */
@@ -541,7 +549,8 @@ export interface CloseTaskProcessPayload {
   task: number
   status: CloseTaskProcessStatus
   comment?: string
-  images?: File[]
+  /** URLs de Firebase de la evidencia ya subida (el backend las guarda como strings). */
+  images?: string[]
 }
 
 /** Payload de POST /api/tasks/process/reject/. */

@@ -23,6 +23,7 @@ const emit = defineEmits<{
 const { columns, acceptedFilter } = useToUpdateKanban(() => props.filters)
 const {
   pendingApprovalId,
+  pendingTaskId,
   authorizeModalOpen,
   requestMove,
   onAuthorizeSuccess,
@@ -74,8 +75,9 @@ function onMove(payload: KanbanTaskMove) {
   </TaskKanbanBoard>
 
   <TaskAuthorizeCloseModal
-    v-if="pendingApprovalId != null"
+    v-if="pendingApprovalId != null && pendingTaskId != null"
     v-model:open="authorizeModalOpen"
+    :task-id="pendingTaskId"
     :approval-id="pendingApprovalId"
     @success="onAuthorizeSuccess"
   />

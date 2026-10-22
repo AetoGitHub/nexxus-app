@@ -11,6 +11,7 @@ export function useToUpdateKanbanMove() {
   const { user } = useAuth()
 
   const pendingApprovalId = ref<number | null>(null)
+  const pendingTaskId = ref<number | null>(null)
   const authorizeModalOpen = ref(false)
 
   function requestMove(payload: KanbanTaskMove & { task: Task }) {
@@ -38,17 +39,20 @@ export function useToUpdateKanbanMove() {
     }
 
     pendingApprovalId.value = approval.id
+    pendingTaskId.value = payload.task.id
     authorizeModalOpen.value = true
     return true
   }
 
   function onAuthorizeSuccess() {
     pendingApprovalId.value = null
+    pendingTaskId.value = null
     authorizeModalOpen.value = false
   }
 
   return {
     pendingApprovalId,
+    pendingTaskId,
     authorizeModalOpen,
     requestMove,
     onAuthorizeSuccess,

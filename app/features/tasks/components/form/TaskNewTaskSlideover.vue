@@ -546,6 +546,7 @@ const state = reactive<NewTaskFormState>({
   taskReviewer: [],
   dueDate: '',
   urgent: false,
+  requiresCloseFile: false,
   effort: undefined,
   volumeCountWhat: '',
   volumePeriodGoal: '',
@@ -839,6 +840,7 @@ function resetForm() {
   state.taskReviewer = []
   state.dueDate = ''
   state.urgent = false
+  state.requiresCloseFile = false
   state.effort = undefined
   state.volumeCountWhat = ''
   state.volumePeriodGoal = ''
@@ -862,6 +864,7 @@ function applyFormInput(input: NewTaskFormInput) {
   state.taskReviewer = [...input.taskReviewer]
   state.dueDate = input.dueDate
   state.urgent = input.urgent
+  state.requiresCloseFile = input.requiresCloseFile
   state.effort = input.effort
   state.repeatConfig = { ...input.repeatConfig }
   state.setAsMaster = false
@@ -1209,6 +1212,7 @@ function isSameAsStoredTask(payload: UpdateTaskPayload): boolean {
       input,
       detail.start_date,
       { generatedFrom: generatedFromId.value, setAsMaster: false, applyToAll: false },
+      detail.requires_close_file,
     )
     return JSON.stringify(payload) === JSON.stringify(original)
   }
@@ -1248,6 +1252,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
           setAsMaster: state.setAsMaster,
           applyToAll: state.applyToAll,
         },
+        taskDetailQuery.data.value?.requires_close_file,
       )
       if (isSameAsStoredTask(payload) && !pendingAttachments.value.length) {
         close()
@@ -2023,6 +2028,18 @@ const slideoverUi = computed(() => {
             />
           </UFormField>
 
+          <UFormField
+            v-if="!isBacklogMode"
+            name="requiresCloseFile"
+            :help="t('tasks.form.requiresCloseFileHelp')"
+          >
+            <USwitch
+              v-model="state.requiresCloseFile"
+              :label="t('tasks.form.requiresCloseFile')"
+              :disabled="isReadOnly"
+            />
+          </UFormField>
+
           <div
             v-if="!isBacklogMode"
             class="space-y-2"
@@ -2330,8 +2347,9 @@ const slideoverUi = computed(() => {
   />
 
   <TaskAuthorizeCloseModal
-    v-if="pendingApprovalForUser != null"
+    v-if="pendingApprovalForUser != null && taskId != null"
     v-model:open="authorizeModalOpen"
+    :task-id="taskId"
     :approval-id="pendingApprovalForUser.id"
     @success="onAuthorizeSuccess"
   />

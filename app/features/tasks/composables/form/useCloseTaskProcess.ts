@@ -3,29 +3,15 @@ import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTa
 import type { CloseTaskProcessPayload } from '~/features/tasks/types/task.types'
 import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
-function buildCloseProcessBody(payload: CloseTaskProcessPayload): FormData | Record<string, unknown> {
+function buildCloseProcessBody(payload: CloseTaskProcessPayload): Record<string, unknown> {
   const comment = payload.comment?.trim()
-  const images = payload.images?.filter(Boolean) ?? []
 
-  if (images.length === 0) {
-    return {
-      task: payload.task,
-      status: payload.status,
-      ...(comment ? { comment } : {}),
-      images: [],
-    }
+  return {
+    task: payload.task,
+    status: payload.status,
+    ...(comment ? { comment } : {}),
+    images: payload.images?.filter(Boolean) ?? [],
   }
-
-  const body = new FormData()
-  body.append('task', String(payload.task))
-  body.append('status', payload.status)
-  if (comment) {
-    body.append('comment', comment)
-  }
-  for (const file of images) {
-    body.append('images', file)
-  }
-  return body
 }
 
 /**

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { CloseTaskProcessStatus } from '~/features/tasks/types/task.types'
+import { useCloseEvidence } from '~/features/tasks/composables/form/useCloseEvidence'
 import { useCloseTaskProcess } from '~/features/tasks/composables/form/useCloseTaskProcess'
+import TaskCloseEvidenceField from '~/features/tasks/components/form/TaskCloseEvidenceField.vue'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -17,8 +19,8 @@ const { t } = useI18n()
 const { mutateAsync: closeProcess, isPending } = useCloseTaskProcess()
 
 const comment = ref('')
-// TODO: reactivar cuando Cloudinary esté listo
-// const images = ref<File[] | null | undefined>(null)
+const evidence = useCloseEvidence(() => props.taskId, () => open.value)
+const isBusy = computed(() => isPending.value || evidence.isUploading.value)
 
 const modalTitle = computed(() =>
   props.targetStatus === 'complete'
@@ -34,7 +36,7 @@ const confirmLabel = computed(() =>
 
 function reset() {
   comment.value = ''
-  // images.value = null
+  evidence.reset()
 }
 
 watch(open, (isOpen) => {
@@ -44,19 +46,17 @@ watch(open, (isOpen) => {
 })
 
 async function onConfirm() {
-  // TODO: reactivar imágenes cuando Cloudinary esté listo
-  // const files = Array.isArray(images.value)
-  //   ? images.value
-  //   : images.value
-  //     ? [images.value]
-  //     : []
+  const images = await evidence.upload()
+  if (images === null) {
+    return
+  }
 
   try {
     await closeProcess({
       task: props.taskId,
       status: props.targetStatus,
       comment: comment.value.trim() || undefined,
-      // images: files.length ? files : undefined,
+      images: images.length ? images : undefined,
     })
     open.value = false
     emit('success')
@@ -91,21 +91,14 @@ async function onConfirm() {
           />
         </UFormField>
 
-        <!-- TODO: reactivar cuando Cloudinary esté listo
-        <UFormField
-          :label="`${t('tasks.processClose.images')} (${t('tasks.processClose.optional')})`"
-          name="images"
-        >
-          <UFileUpload
-            v-model="images"
-            multiple
-            accept="image/svg+xml,image/png,image/jpeg,.svg,.png,.jpg,.jpeg"
-            :label="t('tasks.processClose.dropLabel')"
-            :description="t('tasks.processClose.dropDescription')"
-            class="w-full min-h-48"
-          />
-        </UFormField>
-        -->
+        <TaskCloseEvidenceField
+          :files="evidence.files.value"
+          :required="evidence.needsEvidence.value"
+          :satisfied="evidence.taskRequiresFile.value && evidence.hasEvidence.value"
+          :disabled="isBusy"
+          @add="evidence.addFiles"
+          @remove="evidence.removeFile"
+        />
       </div>
     </template>
 
@@ -114,14 +107,14 @@ async function onConfirm() {
         :label="t('tasks.form.cancel')"
         color="neutral"
         variant="outline"
-        :disabled="isPending"
+        :disabled="isBusy"
         @click="close()"
       />
       <UButton
         :label="confirmLabel"
         color="primary"
-        :loading="isPending"
-        :disabled="isPending"
+        :loading="isBusy"
+        :disabled="isBusy || !evidence.canSubmit.value"
         @click="onConfirm"
       />
     </template>
