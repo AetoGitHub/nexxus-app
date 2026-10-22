@@ -53,6 +53,34 @@ self.addEventListener('push', (event) => {
   })())
 })
 
+/**
+ * Le pide a la app abierta que vaya a `url` por su propio router (sin recargar) y espera su confirmación por un
+ * canal de mensajes. `false` si no responde a tiempo (app sin la versión que escucha el mensaje, página congelada).
+ */
+function askAppToOpen(client, url, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel()
+    const timer = setTimeout(() => resolve(false), timeoutMs)
+    channel.port1.onmessage = () => {
+      clearTimeout(timer)
+      resolve(true)
+    }
+    try {
+      client.postMessage({ type: 'notification-open', url }, [channel.port2])
+    }
+    catch {
+      clearTimeout(timer)
+      resolve(false)
+    }
+  })
+}
+
+/*
+ * Al tocar la notificación: si la app ya está abierta se enfoca y se le pide abrir la tarea; `WindowClient.navigate()`
+ * solo funciona con ventanas controladas por este service worker (y no en todos los navegadores móviles), así que en
+ * el celular la app quedaba al frente pero sin ir a la tarea. Solo si la app no responde se intenta `navigate()` y,
+ * como último recurso, una ventana nueva.
+ */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const url = new URL(event.notification.data?.url || '/', self.location.origin).href
@@ -60,12 +88,28 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
     const open = windows.find(client => new URL(client.url).origin === self.location.origin)
-    if (open) {
+    if (!open) {
+      return self.clients.openWindow(url)
+    }
+
+    try {
       await open.focus()
-      if ('navigate' in open) {
-        return open.navigate(url)
-      }
+    }
+    catch {
+      // Sin permiso para enfocar: igual se intenta llevar a la tarea.
+    }
+
+    if (await askAppToOpen(open, url)) {
       return undefined
+    }
+    try {
+      if ('navigate' in open) {
+        await open.navigate(url)
+        return undefined
+      }
+    }
+    catch {
+      // Ventana no controlada: se abre una nueva.
     }
     return self.clients.openWindow(url)
   })())

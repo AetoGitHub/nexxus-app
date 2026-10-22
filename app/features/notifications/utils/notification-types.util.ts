@@ -23,6 +23,7 @@ export const NOTIFICATION_TYPES: readonly NotificationTypeMeta[] = [
   { key: 'task_deleted', group: 'tasks', icon: 'i-lucide-trash-2' },
   { key: 'task_undeleted', group: 'tasks', icon: 'i-lucide-undo-2' },
   { key: 'task_message', group: 'messages', icon: 'i-lucide-message-circle' },
+  { key: 'task_mention', group: 'messages', icon: 'i-lucide-at-sign' },
   { key: 'close_approval_assigned', group: 'approval', icon: 'i-lucide-user-check' },
   { key: 'close_approval_approved', group: 'approval', icon: 'i-lucide-badge-check' },
   { key: 'task_archived', group: 'archive', icon: 'i-lucide-archive' },

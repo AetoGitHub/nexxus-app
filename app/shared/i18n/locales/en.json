@@ -1,4 +1,9 @@
 {
+  "mentions": {
+    "listLabel": "Users to mention",
+    "loading": "Loading…",
+    "empty": "No results"
+  },
   "auth": {
     "login": {
       "title": "Sign in",
@@ -86,6 +91,11 @@
     "toggleTheme": "Toggle theme"
   },
   "notifications": {
+    "mention": {
+      "title": "You were mentioned",
+      "description": "Check the task.",
+      "open": "Open task"
+    },
     "assigned": {
       "title": "New assigned task",
       "description": "A new task was assigned to you."
@@ -311,6 +321,8 @@
       "commentPlaceholder": "Example comment",
       "images": "Images",
       "optional": "Optional",
+      "evidenceMissingTitle": "Evidence is missing",
+      "evidenceMissingDescription": "This task needs at least one file to be closed. Upload it in the task chat and try again.",
       "dropLabel": "Drop your image here",
       "dropDescription": "SVG, PNG or JPG",
       "confirmInReview": "Send to review",
@@ -434,6 +446,8 @@
       "dueDate": "Due date",
       "datePlaceholder": "Select a date",
       "markUrgent": "Mark as urgent",
+      "requiresCloseFile": "Require evidence to close",
+      "requiresCloseFileHelp": "Closing the task needs at least one file: in the chat or attached when closing it.",
       "effort": "Effort",
       "effortOptional": "optional",
       "effortQuick": "Quick",
@@ -637,6 +651,9 @@
       "messageCount": "{n} messages",
       "placeholder": "Write a message",
       "send": "Send message",
+      "expandDraft": "Expand message",
+      "expandedTitle": "Write message",
+      "expandedHint": "Enter adds a new line; Ctrl + Enter sends.",
       "showMessages": "View messages",
       "showDetail": "View task detail",
       "empty": "No messages yet. Be the first to write.",
@@ -1682,6 +1699,9 @@
       "title": "Groups",
       "subtitle": "Organize work teams. Set a manager and invite the members you need.",
       "newGroup": "New group",
+      "searchPlaceholder": "Search group…",
+      "clearSearch": "Clear search",
+      "searchEmpty": "No groups found for “{query}”",
       "infoBanner": "Groups bring people together under a manager. Use them to assign work and coordinate responsibilities.",
       "options": "Options",
       "edit": "Edit",
@@ -1757,6 +1777,9 @@
       "options": "Options",
       "edit": "Edit project",
       "empty": "No projects yet",
+      "searchPlaceholder": "Search project…",
+      "clearSearch": "Clear search",
+      "searchEmpty": "No projects found for “{query}”",
       "loadError": "Could not load projects",
       "archived": "Archived ({count})"
     },
@@ -1969,6 +1992,7 @@
       "task_deleted": "Task deleted",
       "task_undeleted": "Task restored",
       "task_message": "Comment",
+      "task_mention": "Mention {'@'}",
       "close_approval_assigned": "Close approval assigned",
       "close_approval_approved": "Close approval granted",
       "task_archived": "Task archived",

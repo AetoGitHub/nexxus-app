@@ -76,6 +76,8 @@ export interface NewTaskFormInput {
   taskReviewer: number[]
   dueDate: string
   urgent: boolean
+  /** Exige un archivo (evidencia) para cerrar la tarea. */
+  requiresCloseFile: boolean
   effort: TaskEffort | undefined
   repeatConfig: TaskRepeatConfig
 }
@@ -104,6 +106,7 @@ export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
     taskReviewer: detail.close_approvals?.map(approval => approval.profile) ?? [],
     dueDate: isoToDateInput(detail.limit_date),
     urgent,
+    requiresCloseFile: detail.requires_close_file === true,
     effort: urgent ? undefined : priorityToEffort(detail.priority),
     repeatConfig: parseRepeatConfig(detail.repeat_config),
   }
@@ -206,6 +209,10 @@ export function buildCreateTaskPayload(
     group: form.group,
     assigned_to: form.assignedTo,
     ...buildVoiceOrigin(voiceText),
+  }
+
+  if (form.requiresCloseFile) {
+    payload.requires_close_file = true
   }
 
   if (form.type === 'multiple_close') {
@@ -320,6 +327,10 @@ export function buildPromoteBacklogTaskPayload(
     assigned_to: form.assignedTo,
   }
 
+  if (form.requiresCloseFile) {
+    payload.requires_close_file = true
+  }
+
   if (form.type === 'multiple_close') {
     payload.task_reviewer = resolveTaskReviewers(form.taskReviewer)
   }
@@ -344,11 +355,16 @@ export interface RepeatSeriesUpdateOptions {
 /**
  * Payload de PATCH /api/tasks/:id/update/.
  * Conserva `start_date` original; `group` puede ser null.
+ *
+ * `requires_close_file` solo viaja si cambió respecto a `storedRequiresCloseFile` (lo que devolvió el detalle):
+ * el PATCH sin ese campo conserva el valor actual, así que un guardado normal no puede apagarlo por accidente
+ * (p. ej. mientras el detalle del backend no lo incluya y el formulario lo muestre apagado).
  */
 export function buildUpdateTaskPayload(
   form: NewTaskFormInput,
   startDate: string | null | undefined,
   repeatSeries?: RepeatSeriesUpdateOptions,
+  storedRequiresCloseFile?: boolean,
 ): UpdateTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -373,6 +389,10 @@ export function buildUpdateTaskPayload(
     project: form.project,
     group: form.group ?? null,
     assigned_to: form.assignedTo,
+  }
+
+  if (form.requiresCloseFile !== (storedRequiresCloseFile ?? false)) {
+    payload.requires_close_file = form.requiresCloseFile
   }
 
   if (form.type === 'multiple_close') {

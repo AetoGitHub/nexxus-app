@@ -26,6 +26,8 @@ export interface AuthUser {
   managed_groups: AuthManagedGroup[]
   projects: AuthProject[]
   selected_company: AuthCompany | null
+  /** El backend lo manda en true con contraseña temporal: hasta cambiarla solo deja usar el cambio de contraseña. */
+  must_change_password?: boolean
 }
 
 export type ProfileDefaultView = 'list' | 'kanban' | 'calendar'
@@ -63,6 +65,11 @@ export interface AuthSession {
 export interface AuthLoginRequest {
   username: string
   password: string
+}
+
+export interface AuthPasswordChangeRequest {
+  current_password: string
+  new_password: string
 }
 
 export interface WsTicketResponse {

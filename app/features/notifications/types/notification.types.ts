@@ -1,6 +1,7 @@
 export type NotificationSocketEventName =
   | 'notification_message'
   | 'new_notification'
+  | 'notification_mention'
 
 export interface NotificationSocketEvent {
   event: NotificationSocketEventName
@@ -27,6 +28,7 @@ export interface NotificationCounts {
 }
 
 export type NotificationToastKind =
+  | 'mention'
   | 'assigned'
   | 'updated'
   | 'message'

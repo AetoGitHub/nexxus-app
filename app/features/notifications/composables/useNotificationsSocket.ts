@@ -21,7 +21,7 @@ function isNotificationSocketEvent(value: unknown): value is NotificationSocketE
   }
 
   const event = value as Partial<NotificationSocketEvent>
-  return (event.event === 'notification_message' || event.event === 'new_notification')
+  return (event.event === 'notification_message' || event.event === 'new_notification' || event.event === 'notification_mention')
     && typeof event.notification_pk === 'number'
     && Number.isInteger(event.notification_pk)
     && event.notification_pk > 0
@@ -33,6 +33,9 @@ function resolveToastKind(
 ): NotificationToastKind {
   const key = notification.key.trim().toLowerCase()
 
+  if (key === 'task_mention' || socketEvent.event === 'notification_mention') {
+    return 'mention'
+  }
   if (key.includes('token')) {
     return 'token'
   }
@@ -129,6 +132,11 @@ export function useNotificationsSocket() {
   ) {
     const kind = resolveToastKind(notification, socketEvent)
     const meta = {
+      mention: {
+        title: 'notifications.mention.title',
+        description: 'notifications.mention.description',
+        icon: 'i-lucide-at-sign',
+      },
       assigned: {
         title: 'notifications.assigned.title',
         description: 'notifications.assigned.description',
@@ -181,6 +189,15 @@ export function useNotificationsSocket() {
       ...(kind === 'token' ? { ui: { icon: 'rotate-90' } } : {}),
       color: 'primary',
       onClick: openTask,
+      // La mención es un aviso destacado: dura más y trae un botón que abre la tarea.
+      ...(kind === 'mention'
+        ? {
+            duration: 10_000,
+            actions: openTask
+              ? [{ label: t('notifications.mention.open'), color: 'primary' as const, variant: 'solid' as const, onClick: openTask }]
+              : [],
+          }
+        : {}),
     } as const
 
     toast.add(toastOptions)

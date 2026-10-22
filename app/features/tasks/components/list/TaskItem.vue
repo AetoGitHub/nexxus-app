@@ -109,7 +109,7 @@ function onCheckClick() {
           ? 'text-muted-foreground line-through'
           : 'text-foreground'"
       >
-        {{ task.short_description }}
+        <MentionText :text="task.short_description" />
       </span>
 
       <div class="col-start-2 row-start-2 flex min-w-0 flex-wrap items-center gap-1.5 md:shrink-0 md:flex-nowrap">

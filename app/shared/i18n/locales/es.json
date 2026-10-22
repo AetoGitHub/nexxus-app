@@ -1,4 +1,9 @@
 {
+  "mentions": {
+    "listLabel": "Usuarios para mencionar",
+    "loading": "Cargando…",
+    "empty": "Sin resultados"
+  },
   "auth": {
     "login": {
       "title": "Iniciar sesión",
@@ -86,6 +91,11 @@
     "toggleTheme": "Cambiar tema"
   },
   "notifications": {
+    "mention": {
+      "title": "Te mencionaron",
+      "description": "Revisa la tarea.",
+      "open": "Abrir tarea"
+    },
     "assigned": {
       "title": "Nueva tarea asignada",
       "description": "Se te asignó una nueva tarea."
@@ -311,6 +321,8 @@
       "commentPlaceholder": "Comentario de tipo ejemplo",
       "images": "Imágenes",
       "optional": "Opcional",
+      "evidenceMissingTitle": "Falta la evidencia",
+      "evidenceMissingDescription": "Esta tarea exige al menos un archivo para cerrarse. Súbelo en el chat de la tarea y vuelve a intentarlo.",
       "dropLabel": "Suelta tu imagen aquí",
       "dropDescription": "SVG, PNG o JPG",
       "confirmInReview": "Enviar a revisión",
@@ -434,6 +446,8 @@
       "dueDate": "Fecha Límite",
       "datePlaceholder": "Selecciona una fecha",
       "markUrgent": "Marcar como urgente",
+      "requiresCloseFile": "Exigir evidencia para cerrar",
+      "requiresCloseFileHelp": "Para cerrar la tarea se necesita al menos un archivo: en el chat o adjunto al cerrarla.",
       "effort": "Esfuerzo",
       "effortOptional": "opcional",
       "effortQuick": "Rápida",
@@ -637,6 +651,9 @@
       "messageCount": "{n} mensajes",
       "placeholder": "Escribe un mensaje",
       "send": "Enviar mensaje",
+      "expandDraft": "Expandir mensaje",
+      "expandedTitle": "Redactar mensaje",
+      "expandedHint": "Enter hace un salto de línea; Ctrl + Enter envía.",
       "showMessages": "Ver mensajes",
       "showDetail": "Ver detalle de la tarea",
       "empty": "Aún no hay mensajes. Sé el primero en escribir.",
@@ -1682,6 +1699,9 @@
       "title": "Grupos",
       "subtitle": "Organiza equipos de trabajo. Define un responsable e invita a los miembros que necesites.",
       "newGroup": "Nuevo grupo",
+      "searchPlaceholder": "Buscar grupo…",
+      "clearSearch": "Limpiar búsqueda",
+      "searchEmpty": "No se encontraron grupos con «{query}»",
       "infoBanner": "Los grupos agrupan personas bajo un responsable. Úsalos para asignar trabajo y coordinar responsabilidades.",
       "options": "Opciones",
       "edit": "Editar",
@@ -1757,6 +1777,9 @@
       "options": "Opciones",
       "edit": "Editar proyecto",
       "empty": "No hay proyectos todavía",
+      "searchPlaceholder": "Buscar proyecto…",
+      "clearSearch": "Limpiar búsqueda",
+      "searchEmpty": "No se encontraron proyectos con «{query}»",
       "loadError": "No se pudieron cargar los proyectos",
       "archived": "Archivados ({count})"
     },
@@ -1969,6 +1992,7 @@
       "task_deleted": "Tarea eliminada",
       "task_undeleted": "Tarea restaurada",
       "task_message": "Comentario",
+      "task_mention": "Llamado {'@'}",
       "close_approval_assigned": "Aprobación de cierre asignada",
       "close_approval_approved": "Aprobación de cierre otorgada",
       "task_archived": "Tarea archivada",

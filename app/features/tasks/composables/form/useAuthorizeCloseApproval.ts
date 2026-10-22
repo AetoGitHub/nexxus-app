@@ -4,6 +4,7 @@ import { TASK_SUCCESS_TOAST_MS } from '~/features/tasks/utils/task-toast.util'
 
 /**
  * Autoriza un close_approval vía PATCH /api/tasks/close_approvals/:id/update/.
+ * La aprobación que completa la tarea responde 400 si la tarea exige evidencia (un archivo en el chat) y no hay ninguna.
  */
 export function useAuthorizeCloseApproval() {
   const { $api } = useNuxtApp()

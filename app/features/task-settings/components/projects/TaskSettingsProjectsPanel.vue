@@ -2,8 +2,9 @@
 import type { EnterpriseProject } from '~/features/projects/types/project.types'
 import type { TaskSettingsProjectTab } from '~/features/task-settings/types/task-settings.types'
 import TaskSettingsProjectCard from '~/features/task-settings/components/projects/TaskSettingsProjectCard.vue'
+import { matchesSearch } from '~/shared/utils/search-text.util'
 
-defineProps<{
+const props = defineProps<{
   projects: EnterpriseProject[]
   loading?: boolean
   error?: boolean
@@ -19,6 +20,13 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const archivedOpen = ref(false)
+
+/** Buscador por nombre de proyecto: filtra la pestaña activa (Todos / Mis proyectos) sin volver a pedir datos. */
+const search = ref('')
+const visibleProjects = computed(() =>
+  props.projects.filter(project => matchesSearch(project.name, search.value)),
+)
+const isSearching = computed(() => search.value.trim().length > 0)
 
 const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
   { id: 'all', labelKey: 'taskSettings.projects.tabs.all' },
@@ -55,8 +63,8 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
       </p>
     </div>
 
-    <div class="border-b border-border">
-      <div class="flex gap-5">
+    <div class="sm:flex sm:items-end sm:justify-between sm:gap-4 sm:border-b sm:border-border">
+      <div class="flex gap-5 border-b border-border sm:border-b-0">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -74,6 +82,29 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
           />
         </button>
       </div>
+
+      <UInput
+        v-model="search"
+        icon="i-lucide-search"
+        size="sm"
+        :placeholder="t('taskSettings.projects.searchPlaceholder')"
+        :aria-label="t('taskSettings.projects.searchPlaceholder')"
+        class="mt-3 w-full sm:mb-2 sm:mt-0 sm:w-64"
+      >
+        <template
+          v-if="isSearching"
+          #trailing
+        >
+          <UButton
+            icon="i-lucide-x"
+            color="neutral"
+            variant="link"
+            size="xs"
+            :aria-label="t('taskSettings.projects.clearSearch')"
+            @click="search = ''"
+          />
+        </template>
+      </UInput>
     </div>
 
     <div v-if="loading" class="space-y-2">
@@ -98,12 +129,19 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
       {{ t('taskSettings.projects.empty') }}
     </p>
 
+    <p
+      v-else-if="!visibleProjects.length"
+      class="text-sm text-muted-foreground py-4"
+    >
+      {{ t('taskSettings.projects.searchEmpty', { query: search.trim() }) }}
+    </p>
+
     <div
       v-else
       class="space-y-2"
     >
       <TaskSettingsProjectCard
-        v-for="project in projects"
+        v-for="project in visibleProjects"
         :key="project.id"
         :project="project"
         @edit="emit('edit', $event)"

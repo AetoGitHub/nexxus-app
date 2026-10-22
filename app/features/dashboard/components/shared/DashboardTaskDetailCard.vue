@@ -79,7 +79,7 @@ const dueLabel = computed(() => formatDate(props.task.limit_date, false))
     @keydown.space.self.prevent="emit('select', task.id)"
   >
     <p class="text-sm font-medium leading-snug text-foreground line-clamp-2">
-      {{ task.short_description }}
+      <MentionText :text="task.short_description" />
     </p>
 
     <div class="flex flex-wrap items-center gap-1.5">
