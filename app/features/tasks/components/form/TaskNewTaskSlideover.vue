@@ -22,6 +22,7 @@ import { useProjectsDropdown } from '~/features/tasks/composables/shared/useProj
 import { useAllUsersDropdown } from '~/features/tasks/composables/shared/useAllUsersDropdown'
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import { useMentionCompany } from '~/features/tasks/composables/shared/useMentionCompany'
 import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
@@ -558,6 +559,9 @@ const state = reactive<NewTaskFormState>({
   setAsMaster: false,
   applyToAll: false,
 })
+
+/** Las menciones de nombre y descripción solo sugieren a miembros de la compañía del proyecto elegido. */
+const mentionCompanyId = useMentionCompany(() => state.project)
 
 const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: string }[] = [
   { value: 'manual', icon: 'i-lucide-hand', descriptionKey: 'tasks.form.typeDescriptions.manual' },
@@ -1686,9 +1690,10 @@ const slideoverUi = computed(() => {
                 @result="applyVoiceTask"
               />
             </template>
-            <UTextarea
+            <MentionTextarea
               v-if="!isReadOnly"
               v-model="state.name"
+              :company-id="mentionCompanyId"
               :placeholder="t('tasks.form.namePlaceholder')"
               :rows="1"
               autoresize
@@ -1698,7 +1703,7 @@ const slideoverUi = computed(() => {
               v-else
               class="text-sm text-foreground whitespace-pre-wrap break-words"
             >
-              {{ state.name }}
+              <MentionText :text="state.name" />
             </p>
           </UFormField>
 
@@ -1709,9 +1714,10 @@ const slideoverUi = computed(() => {
           />
 
           <UFormField :label="t('tasks.form.description')" name="description">
-            <UTextarea
+            <MentionTextarea
               v-if="!isReadOnly"
               v-model="state.description"
+              :company-id="mentionCompanyId"
               :placeholder="t('tasks.form.descriptionPlaceholder')"
               :rows="3"
               :maxrows="20"
@@ -1722,7 +1728,7 @@ const slideoverUi = computed(() => {
               v-else-if="state.description"
               class="text-sm text-foreground whitespace-pre-wrap break-words"
             >
-              {{ state.description }}
+              <MentionText :text="state.description" />
             </p>
             <p
               v-else

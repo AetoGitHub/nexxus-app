@@ -1,4 +1,9 @@
 {
+  "mentions": {
+    "listLabel": "Users to mention",
+    "loading": "Loading…",
+    "empty": "No results"
+  },
   "auth": {
     "login": {
       "title": "Sign in",
@@ -86,6 +91,11 @@
     "toggleTheme": "Toggle theme"
   },
   "notifications": {
+    "mention": {
+      "title": "You were mentioned",
+      "description": "Check the task.",
+      "open": "Open task"
+    },
     "assigned": {
       "title": "New assigned task",
       "description": "A new task was assigned to you."
@@ -1982,6 +1992,7 @@
       "task_deleted": "Task deleted",
       "task_undeleted": "Task restored",
       "task_message": "Comment",
+      "task_mention": "Mention {'@'}",
       "close_approval_assigned": "Close approval assigned",
       "close_approval_approved": "Close approval granted",
       "task_archived": "Task archived",

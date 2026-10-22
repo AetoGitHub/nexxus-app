@@ -1,4 +1,9 @@
 {
+  "mentions": {
+    "listLabel": "Usuarios para mencionar",
+    "loading": "Cargando…",
+    "empty": "Sin resultados"
+  },
   "auth": {
     "login": {
       "title": "Iniciar sesión",
@@ -86,6 +91,11 @@
     "toggleTheme": "Cambiar tema"
   },
   "notifications": {
+    "mention": {
+      "title": "Te mencionaron",
+      "description": "Revisa la tarea.",
+      "open": "Abrir tarea"
+    },
     "assigned": {
       "title": "Nueva tarea asignada",
       "description": "Se te asignó una nueva tarea."
@@ -1982,6 +1992,7 @@
       "task_deleted": "Tarea eliminada",
       "task_undeleted": "Tarea restaurada",
       "task_message": "Comentario",
+      "task_mention": "Llamado {'@'}",
       "close_approval_assigned": "Aprobación de cierre asignada",
       "close_approval_approved": "Aprobación de cierre otorgada",
       "task_archived": "Tarea archivada",

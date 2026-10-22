@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
+import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
+import { useMentionCompany } from '~/features/tasks/composables/shared/useMentionCompany'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import { useUpdateTaskMessage } from '~/features/tasks/composables/form/useUpdateTaskMessage'
@@ -58,6 +60,9 @@ const {
 const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId, {
   onAccessDenied: () => emit('accessLost'),
 })
+/** Las menciones del chat solo sugieren a miembros de la compañía del proyecto de la tarea. */
+const taskDetail = useTaskDetail(() => props.taskId)
+const mentionCompanyId = useMentionCompany(() => taskDetail.data.value?.project)
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
 const { mutateAsync: updateMessage, isPending: isUpdating } = useUpdateTaskMessage()
 
@@ -687,7 +692,10 @@ onUnmounted(() => {
                   v-if="messageContent(message)"
                   class="whitespace-pre-wrap wrap-break-word"
                 >
-                  {{ messageContent(message) }}
+                  <MentionText
+                    :text="messageContent(message)"
+                    tone="own"
+                  />
                 </p>
                 <TaskMessageAttachments
                   v-if="message.files?.length"
@@ -758,7 +766,7 @@ onUnmounted(() => {
                   v-if="messageContent(message)"
                   class="whitespace-pre-wrap wrap-break-word"
                 >
-                  {{ messageContent(message) }}
+                  <MentionText :text="messageContent(message)" />
                 </p>
                 <TaskMessageAttachments
                   v-if="message.files?.length"
@@ -888,13 +896,13 @@ onUnmounted(() => {
             class="relative min-w-0 flex-1"
             :style="{ '--draft-max-h': `${draftMaxHeight}px` }"
           >
-            <UTextarea
+            <MentionTextarea
               ref="draftInput"
               v-model="draft"
+              :company-id="mentionCompanyId"
               :placeholder="t('tasks.messenger.placeholder')"
               :rows="1"
               autoresize
-              class="w-full"
               :ui="{ base: ['max-h-[var(--draft-max-h)]', isDraftExpandable && 'pr-9'] }"
               @keydown="onKeydown"
             />
@@ -946,8 +954,9 @@ onUnmounted(() => {
       :ui="{ content: 'sm:max-w-2xl', body: 'flex-1 min-h-0 h-full', footer: 'justify-end' }"
     >
       <template #body>
-        <UTextarea
+        <MentionTextarea
           v-model="draft"
+          :company-id="mentionCompanyId"
           :placeholder="t('tasks.messenger.placeholder')"
           :rows="isTouchInput ? 6 : 14"
           class="w-full"

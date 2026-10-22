@@ -91,7 +91,7 @@ function onDragEnd() {
       @keydown.space.self.prevent="onSelect"
     >
       <p class="text-sm font-medium text-foreground leading-snug line-clamp-2">
-        {{ task.short_description }}
+        <MentionText :text="task.short_description" />
       </p>
 
       <div class="flex flex-wrap items-center gap-1.5">
