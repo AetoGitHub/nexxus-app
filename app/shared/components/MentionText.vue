@@ -38,8 +38,11 @@ const segments = computed(() => parseMentions(props.text ?? ''))
   font-weight: 500;
 }
 
+/* Sobre la burbuja propia (fondo de color) un chip más claro que el fondo le quita contraste al texto blanco: aquí el
+   chip se oscurece, para que el nombre siga legible, y lleva un borde claro que lo separa de la burbuja. */
 .mention-chip--own {
-  background: rgb(255 255 255 / 0.22);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
+  background: rgb(0 0 0 / 0.42);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.4);
+  font-weight: 600;
 }
 </style>
