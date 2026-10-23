@@ -1834,13 +1834,12 @@
         "stop": "Stop sound",
         "savedTitle": "Sound updated",
         "savedDescription": "This tone will be used for notifications.",
-        "muteLabel": "Mute notifications",
-        "muteDescription": "Nothing plays when you receive notifications in this browser. You still see them in the bell.",
         "options": {
           "chime": "Classic",
           "pop": "Pop",
           "tone": "Alert"
-        }
+        },
+        "disabledNotice": "Sound is off in your notification preferences: alerts arrive silently. You can turn it back on in the Notifications section."
       },
       "capacity": {
         "section": "Team capacity",
@@ -1913,6 +1912,30 @@
       "edit": "Edit",
       "close": "Close",
       "openDetail": "View details of the project {name}"
+    },
+    "notificationPreferences": {
+      "title": "Notification preferences",
+      "help": "Choose which alerts you want to receive. What you turn off is no longer shown as an alert or in the list, even though the system still records it.",
+      "errorTitle": "Couldn't save the preference",
+      "loadError": "Couldn't load your notification preferences",
+      "items": {
+        "token": "Poke notifications",
+        "tokenHelp": "When someone pokes you on a task.",
+        "message": "Message notifications",
+        "messageHelp": "When someone comments on one of your tasks.",
+        "phase": "Phase change notifications",
+        "phaseHelp": "Started, sent to review, closed, rejected, reopened, back to pending, to backlog, updated, archived or deleted.",
+        "approval": "Pending approval notifications",
+        "approvalHelp": "When a task is waiting for your approval or gets approved.",
+        "tag": "Tag notifications",
+        "tagHelp": "When a task is assigned to you.",
+        "taskCreated": "New task notifications",
+        "taskCreatedHelp": "When a new task is created in your project.",
+        "mention": "Mention notifications ({'@'}user)",
+        "mentionHelp": "When someone mentions you in a task or its chat.",
+        "sound": "Sound when a notification arrives",
+        "soundHelp": "A tone plays when an alert arrives. When off, alerts appear without sound."
+      }
     }
   },
   "pushSettings": {
