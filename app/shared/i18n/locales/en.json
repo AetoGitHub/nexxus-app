@@ -708,6 +708,23 @@
       "empty": "Nobody has given touches yet",
       "unknownUser": "User",
       "givenCount": "{n} touch | {n} touches"
+    },
+    "repeatArchive": {
+      "submit": "Delete",
+      "modalTitle": "Delete recurring task",
+      "modalDescription": "The task will be archived.",
+      "futureLabel": "Also archive the future tasks of this series (from {date})",
+      "futureLabelNoDate": "Also archive the future tasks of this series",
+      "futureHelp": "Earlier tasks are left untouched and the series will stop generating new tasks.",
+      "futureAria": "Also archive the future tasks of this series",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for deleting",
+      "optional": "Optional",
+      "confirm": "Delete",
+      "successOne": "Task deleted",
+      "successMany": "{count} tasks deleted",
+      "recurrencePaused": "The series will no longer generate new tasks",
+      "errorTitle": "Couldn't delete the task"
     }
   },
   "settings": {

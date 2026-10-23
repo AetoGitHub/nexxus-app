@@ -708,6 +708,23 @@
       "empty": "Nadie ha dado toques todavía",
       "unknownUser": "Usuario",
       "givenCount": "{n} toque | {n} toques"
+    },
+    "repeatArchive": {
+      "submit": "Eliminar",
+      "modalTitle": "Eliminar tarea repetitiva",
+      "modalDescription": "La tarea se archivará.",
+      "futureLabel": "Archivar también las tareas futuras de esta serie (desde el {date})",
+      "futureLabelNoDate": "Archivar también las tareas futuras de esta serie",
+      "futureHelp": "Las tareas anteriores no se tocan y la serie dejará de generar tareas nuevas.",
+      "futureAria": "Archivar también las tareas futuras de esta serie",
+      "comment": "Comentario",
+      "commentPlaceholder": "Motivo de la eliminación",
+      "optional": "Opcional",
+      "confirm": "Eliminar",
+      "successOne": "Tarea eliminada",
+      "successMany": "Se eliminaron {count} tareas",
+      "recurrencePaused": "La serie ya no generará tareas nuevas",
+      "errorTitle": "No se pudo eliminar la tarea"
     }
   },
   "settings": {

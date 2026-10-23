@@ -42,6 +42,7 @@ import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedBy
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
+import TaskArchiveRepeatModal from '~/features/tasks/components/form/TaskArchiveRepeatModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
@@ -146,6 +147,7 @@ const reopenProcessModalOpen = ref(false)
 const returnProcessModalOpen = ref(false)
 const returnProcessTarget = ref<ReturnTaskProcessTarget>('backlog')
 const archiveProcessModalOpen = ref(false)
+const archiveRepeatModalOpen = ref(false)
 const unarchiveProcessModalOpen = ref(false)
 const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
@@ -517,6 +519,9 @@ const showArchiveProcess = computed(() =>
   && !isArchived.value
   && canModifyThisTask.value,
 )
+
+/** Las tareas repetitivas se eliminan con su propio flujo: pueden archivar también las futuras de la serie. */
+const isRepeatTask = computed(() => taskDetailQuery.data.value?.type === 'repeat')
 
 /** Detalle: desarchivar (solo si ya está archivada). */
 const showUnarchiveProcess = computed(() =>
@@ -1003,6 +1008,10 @@ function openReturnProcessModal(target: ReturnTaskProcessTarget) {
 }
 
 function openArchiveProcessModal() {
+  if (isRepeatTask.value) {
+    archiveRepeatModalOpen.value = true
+    return
+  }
   archiveProcessModalOpen.value = true
 }
 
@@ -1031,6 +1040,10 @@ function onProcessReturned() {
 }
 
 function onProcessArchived() {
+  close()
+}
+
+function onRepeatArchived() {
   close()
 }
 
@@ -1320,6 +1333,7 @@ watch(open, (isOpen) => {
     reopenProcessModalOpen.value = false
     returnProcessModalOpen.value = false
     archiveProcessModalOpen.value = false
+    archiveRepeatModalOpen.value = false
     unarchiveProcessModalOpen.value = false
     authorizeModalOpen.value = false
     isEditing.value = false
@@ -1541,7 +1555,7 @@ const slideoverUi = computed(() => {
               />
               <UTooltip
                 v-if="showArchiveProcess"
-                :text="t('tasks.processArchive.submit')"
+                :text="isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit')"
               >
                 <UButton
                   icon="i-lucide-trash-2"
@@ -1549,7 +1563,7 @@ const slideoverUi = computed(() => {
                   variant="soft"
                   size="md"
                   square
-                  :aria-label="t('tasks.processArchive.submit')"
+                  :aria-label="isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit')"
                   @click="openArchiveProcessModal"
                 />
               </UTooltip>
@@ -2343,6 +2357,14 @@ const slideoverUi = computed(() => {
     v-model:open="archiveProcessModalOpen"
     :task-id="taskId"
     @success="onProcessArchived"
+  />
+
+  <TaskArchiveRepeatModal
+    v-if="taskId != null && isRepeatTask"
+    v-model:open="archiveRepeatModalOpen"
+    :task-id="taskId"
+    :start-date="taskDetailQuery.data.value?.start_date"
+    @success="onRepeatArchived"
   />
 
   <TaskUnarchiveProcessModal
