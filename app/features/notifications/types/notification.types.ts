@@ -6,6 +6,8 @@ export type NotificationSocketEventName =
 export interface NotificationSocketEvent {
   event: NotificationSocketEventName
   notification_pk: number
+  /** false = el usuario apagó este tipo en su configuración: no se muestra (ni toast ni sonido). Ausente = se muestra. */
+  show?: boolean
 }
 
 export interface AppNotification {
@@ -17,6 +19,8 @@ export interface AppNotification {
   read: boolean
   read_at: string | null
   created_at: string
+  /** false = el usuario apagó este tipo en su configuración. Ausente = se muestra. */
+  show?: boolean
 }
 
 /** Respuesta de GET /api/notifications/counts/. */

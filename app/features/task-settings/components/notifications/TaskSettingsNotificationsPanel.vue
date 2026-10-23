@@ -10,6 +10,7 @@ import type {
 import { NOTIFICATION_FILTER_KEYS, notificationKeyLabelPath } from '~/features/notifications/utils/notification-key.util'
 import PushNotificationsCard from '~/features/push/components/PushNotificationsCard.vue'
 import TaskSettingsNotificationCard from '~/features/task-settings/components/notifications/TaskSettingsNotificationCard.vue'
+import TaskSettingsNotificationPreferences from '~/features/task-settings/components/notifications/TaskSettingsNotificationPreferences.vue'
 
 const { t } = useI18n()
 const markRead = useMarkNotificationRead()
@@ -88,6 +89,8 @@ watch([readTab, selectedKey], () => {
     </div>
 
     <PushNotificationsCard />
+
+    <TaskSettingsNotificationPreferences />
 
     <div class="flex items-start gap-2.5 rounded-lg bg-muted/60 border border-border px-3.5 py-3">
       <UIcon

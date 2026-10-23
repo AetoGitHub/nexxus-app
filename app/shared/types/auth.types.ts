@@ -32,7 +32,24 @@ export interface AuthUser {
 
 export type ProfileDefaultView = 'list' | 'kanban' | 'calendar'
 
-export interface ProfileConfiguration {
+/** Interruptores de notificaciones del perfil (todos vienen en true por defecto). */
+export const NOTIFICATION_PREFERENCE_KEYS = [
+  'enable_token_notifications',
+  'enable_message_notifications',
+  'enable_phase_notifications',
+  'enable_approval_notifications',
+  'enable_tag_notifications',
+  'enable_task_created_notifications',
+  'enable_mention_notifications',
+  'enable_notification_sound',
+] as const
+
+export type NotificationPreferenceKey = (typeof NOTIFICATION_PREFERENCE_KEYS)[number]
+
+/** Ausentes en sesiones guardadas antes de existir: se leen como encendidos. */
+export type NotificationPreferences = Partial<Record<NotificationPreferenceKey, boolean>>
+
+export interface ProfileConfiguration extends NotificationPreferences {
   id: number
   enable_puesto_tasks: boolean
   enable_manual_tasks: boolean

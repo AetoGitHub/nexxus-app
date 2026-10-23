@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   edit: [project: EnterpriseProject]
+  view: [project: EnterpriseProject]
 }>()
 
 const { t } = useI18n()
@@ -41,7 +42,7 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
 
 <template>
   <div
-    class="border border-border rounded-lg px-3.5 py-3 relative bg-card"
+    class="border border-border rounded-lg px-3.5 py-3 relative bg-card transition-colors hover:bg-muted/40"
     :style="{
       borderWidth: '0.5px 0.5px 0.5px 3px',
       borderLeftStyle: 'solid',
@@ -49,7 +50,12 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
     }"
   >
     <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0 flex-1">
+      <button
+        type="button"
+        class="min-w-0 flex-1 text-left cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        :aria-label="t('taskSettings.projectDetail.openDetail', { name: project.name })"
+        @click="emit('view', project)"
+      >
         <div class="flex items-center gap-2 min-w-0">
           <span
             class="w-2.5 h-2.5 rounded-full shrink-0"
@@ -81,7 +87,7 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
             {{ membersLabel }}
           </span>
         </div>
-      </div>
+      </button>
 
       <UDropdownMenu
         :items="menuItems"

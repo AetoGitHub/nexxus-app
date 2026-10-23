@@ -679,7 +679,7 @@ onUnmounted(() => {
             v-else-if="isOwnMessage(message.profile, message.profile_username)"
             class="group flex max-w-[85%] items-end gap-1"
           >
-            <div class="min-w-0 rounded-2xl rounded-br-md bg-primary/70 px-3 py-2 text-sm text-white">
+            <div class="min-w-0 rounded-2xl rounded-br-md bg-primary-700 px-3 py-2 text-sm text-white dark:bg-primary/70">
               <p
                 v-if="message.deleted"
                 class="flex items-center gap-1.5 italic text-white/70"

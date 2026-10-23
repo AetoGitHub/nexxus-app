@@ -46,7 +46,10 @@ export function useNotifications(
     enabled: computed(() => toValue(enabled)),
   })
 
-  const notifications = computed(() => notificationsQuery.data.value?.results ?? [])
+  /** El backend sigue mandando las notificaciones apagadas por el usuario, con `show: false`: no se pintan. */
+  const notifications = computed(() =>
+    (notificationsQuery.data.value?.results ?? []).filter(notification => notification.show !== false),
+  )
 
   const errorMessage = computed(() =>
     notificationsQuery.error.value ? parseFetchError(notificationsQuery.error.value) : '',

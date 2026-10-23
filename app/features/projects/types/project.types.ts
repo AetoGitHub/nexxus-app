@@ -6,6 +6,8 @@ export interface Project {
 export interface ProjectMember {
   id: number
   username: string
+  first_name?: string
+  last_name?: string
 }
 
 /** Proyecto de empresa (GET /api/enterprise/projects/). */
@@ -15,6 +17,11 @@ export interface EnterpriseProject {
   color: string
   company: number
   members: ProjectMember[]
+  /** Responsable del proyecto (opcional: los proyectos anteriores no lo tienen). */
+  responsible: number | null
+  responsible_username?: string
+  responsible_first_name?: string
+  responsible_last_name?: string
   task_count: number
 }
 
@@ -23,6 +30,7 @@ export interface CreateEnterpriseProjectPayload {
   company: number
   color: string
   members: number[]
+  responsible: number | null
 }
 
 export interface UpdateEnterpriseProjectPayload {
@@ -30,6 +38,7 @@ export interface UpdateEnterpriseProjectPayload {
   company: number
   color: string
   members: number[]
+  responsible: number | null
 }
 
 export interface ThemeColorOption {

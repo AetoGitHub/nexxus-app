@@ -205,6 +205,12 @@ export function useNotificationsSocket() {
 
   async function handleNotification(socketEvent: NotificationSocketEvent) {
     const notificationId = socketEvent.notification_pk
+    // Tipo apagado por el usuario: llega igual, pero no se pide el detalle ni se muestra toast ni suena; solo se
+    // refresca el conteo.
+    if (socketEvent.show === false) {
+      refreshCounts()
+      return
+    }
     if (hasProcessed(notificationId) || pendingNotificationIds.has(notificationId)) {
       return
     }

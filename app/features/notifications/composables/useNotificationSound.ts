@@ -9,7 +9,6 @@ import {
 } from '~/features/notifications/utils/notification-sound.util'
 
 const SOUND_COOKIE = 'notification_sound'
-const MUTED_COOKIE = 'notification_sound_muted'
 
 let currentAudio: HTMLAudioElement | null = null
 const playingSoundId = ref<NotificationSoundId | null>(null)
@@ -51,8 +50,10 @@ function playAudio(id: NotificationSoundId) {
   })
 }
 
-/** Reproduce y persiste el sonido de notificación elegido en este cliente. */
+/** Reproduce el sonido de notificación elegido en este cliente y persiste cuál es; si suena o no lo manda la cuenta. */
 export function useNotificationSound() {
+  const { configuration } = useProfileConfigurationStore()
+
   const selectedSoundId = useCookie<NotificationSoundId>(SOUND_COOKIE, {
     default: () => DEFAULT_NOTIFICATION_SOUND,
     sameSite: 'lax',
@@ -64,25 +65,18 @@ export function useNotificationSound() {
       : DEFAULT_NOTIFICATION_SOUND,
   )
 
-  // Silencio por navegador: lo que suena solo al llegar una notificación se calla; la vista previa de la lista sigue sonando.
-  const soundMuted = useCookie<boolean>(MUTED_COOKIE, {
-    default: () => false,
-    sameSite: 'lax',
-  })
+  /**
+   * Preferencia «Sonido al recibir una notificación» de la cuenta (`enable_notification_sound`): apagada, lo que suena solo
+   * al llegar una notificación se calla; la vista previa de la lista sigue sonando. Sin dato (sesión anterior) = encendido.
+   */
+  const soundEnabled = computed(() => configuration.value?.enable_notification_sound !== false)
 
   function setNotificationSound(id: NotificationSoundId) {
     selectedSoundId.value = id
   }
 
-  function setSoundMuted(muted: boolean) {
-    soundMuted.value = muted
-    if (muted) {
-      stopNotificationAudio()
-    }
-  }
-
   function playNotificationSound(id: NotificationSoundId = resolvedSoundId.value) {
-    if (soundMuted.value) {
+    if (!soundEnabled.value) {
       return
     }
     playAudio(id)
@@ -100,8 +94,7 @@ export function useNotificationSound() {
     sounds: NOTIFICATION_SOUNDS,
     selectedSoundId: resolvedSoundId,
     playingSoundId,
-    soundMuted,
-    setSoundMuted,
+    soundEnabled,
     setNotificationSound,
     playNotificationSound,
     toggleNotificationSoundPreview,

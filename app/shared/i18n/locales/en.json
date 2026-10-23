@@ -708,6 +708,23 @@
       "empty": "Nobody has given touches yet",
       "unknownUser": "User",
       "givenCount": "{n} touch | {n} touches"
+    },
+    "repeatArchive": {
+      "submit": "Delete",
+      "modalTitle": "Delete recurring task",
+      "modalDescription": "The task will be archived.",
+      "futureLabel": "Also archive the future tasks of this series (from {date})",
+      "futureLabelNoDate": "Also archive the future tasks of this series",
+      "futureHelp": "Earlier tasks are left untouched and the series will stop generating new tasks.",
+      "futureAria": "Also archive the future tasks of this series",
+      "comment": "Comment",
+      "commentPlaceholder": "Reason for deleting",
+      "optional": "Optional",
+      "confirm": "Delete",
+      "successOne": "Task deleted",
+      "successMany": "{count} tasks deleted",
+      "recurrencePaused": "The series will no longer generate new tasks",
+      "errorTitle": "Couldn't delete the task"
     }
   },
   "settings": {
@@ -1303,22 +1320,22 @@
         "start": "Start",
         "due": "Due",
         "noDate": "No date",
-      "priorities": {
-        "low": "Quick",
-        "normal": "Normal",
-        "high": "High",
-        "urgent": "Urgent",
-        "critical": "Critical"
-      },
-      "statuses": {
-        "pending": "Pending",
-        "wip": "In progress",
-        "in_review": "In review",
-        "complete": "Completed",
-        "rejected": "Rejected",
-        "reopened": "Reopened",
-        "backlog": "Backlog"
-      },
+        "priorities": {
+          "low": "Quick",
+          "normal": "Normal",
+          "high": "High",
+          "urgent": "Urgent",
+          "critical": "Critical"
+        },
+        "statuses": {
+          "pending": "Pending",
+          "wip": "In progress",
+          "in_review": "In review",
+          "complete": "Completed",
+          "rejected": "Rejected",
+          "reopened": "Reopened",
+          "backlog": "Backlog"
+        },
         "open": "See the task details"
       },
       "workedCount": "Completed / tasks due in the period",
@@ -1760,7 +1777,10 @@
       "createErrorTitle": "Could not create project",
       "updatedTitle": "Project updated",
       "updatedDescription": "The project was updated successfully.",
-      "updateErrorTitle": "Could not update project"
+      "updateErrorTitle": "Could not update project",
+      "responsible": "Owner",
+      "responsiblePlaceholder": "Select the owner",
+      "noResponsible": "No owner"
     },
     "projects": {
       "title": "Projects",
@@ -1831,13 +1851,12 @@
         "stop": "Stop sound",
         "savedTitle": "Sound updated",
         "savedDescription": "This tone will be used for notifications.",
-        "muteLabel": "Mute notifications",
-        "muteDescription": "Nothing plays when you receive notifications in this browser. You still see them in the bell.",
         "options": {
           "chime": "Classic",
           "pop": "Pop",
           "tone": "Alert"
-        }
+        },
+        "disabledNotice": "Sound is off in your notification preferences: alerts arrive silently. You can turn it back on in the Notifications section."
       },
       "capacity": {
         "section": "Team capacity",
@@ -1898,6 +1917,41 @@
         "release": "Release access",
         "releaseToastTitle": "Access released",
         "releaseToastDescription": "The user's access was released (mock)."
+      }
+    },
+    "projectDetail": {
+      "title": "Project details",
+      "name": "Project name",
+      "responsible": "Owner",
+      "noResponsible": "No owner assigned",
+      "members": "Members",
+      "noMembers": "This project has no members yet.",
+      "edit": "Edit",
+      "close": "Close",
+      "openDetail": "View details of the project {name}"
+    },
+    "notificationPreferences": {
+      "title": "Notification preferences",
+      "help": "Choose which alerts you want to receive. What you turn off is no longer shown as an alert or in the list, even though the system still records it.",
+      "errorTitle": "Couldn't save the preference",
+      "loadError": "Couldn't load your notification preferences",
+      "items": {
+        "token": "Poke notifications",
+        "tokenHelp": "When someone pokes you on a task.",
+        "message": "Message notifications",
+        "messageHelp": "When someone comments on one of your tasks.",
+        "phase": "Phase change notifications",
+        "phaseHelp": "Started, sent to review, closed, rejected, reopened, back to pending, to backlog, updated, archived or deleted.",
+        "approval": "Pending approval notifications",
+        "approvalHelp": "When a task is waiting for your approval or gets approved.",
+        "tag": "Tag notifications",
+        "tagHelp": "When a task is assigned to you.",
+        "taskCreated": "New task notifications",
+        "taskCreatedHelp": "When a new task is created in your project.",
+        "mention": "Mention notifications ({'@'}user)",
+        "mentionHelp": "When someone mentions you in a task or its chat.",
+        "sound": "Sound when a notification arrives",
+        "soundHelp": "A tone plays when an alert arrives. When off, alerts appear without sound."
       }
     }
   },

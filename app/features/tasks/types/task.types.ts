@@ -573,6 +573,21 @@ export interface ArchiveTaskProcessPayload {
   comment?: string
 }
 
+/** Payload de POST /api/tasks/process/repeat/archive/?future=<true|false> (`future` va en la query). */
+export interface ArchiveRepeatTaskPayload {
+  task: number
+  /** true = archiva también las tareas de la serie con fecha de inicio igual o posterior. */
+  future: boolean
+  comment?: string
+}
+
+/** Respuesta de POST /api/tasks/process/repeat/archive/. */
+export interface ArchiveRepeatTaskResponse {
+  archived_ids: number[]
+  /** true = la serie ya no generará tareas nuevas. */
+  recurrence_paused: boolean
+}
+
 /** Payload de POST /api/tasks/process/unarchive/. */
 export interface UnarchiveTaskProcessPayload {
   task: number

@@ -708,6 +708,23 @@
       "empty": "Nadie ha dado toques todavía",
       "unknownUser": "Usuario",
       "givenCount": "{n} toque | {n} toques"
+    },
+    "repeatArchive": {
+      "submit": "Eliminar",
+      "modalTitle": "Eliminar tarea repetitiva",
+      "modalDescription": "La tarea se archivará.",
+      "futureLabel": "Archivar también las tareas futuras de esta serie (desde el {date})",
+      "futureLabelNoDate": "Archivar también las tareas futuras de esta serie",
+      "futureHelp": "Las tareas anteriores no se tocan y la serie dejará de generar tareas nuevas.",
+      "futureAria": "Archivar también las tareas futuras de esta serie",
+      "comment": "Comentario",
+      "commentPlaceholder": "Motivo de la eliminación",
+      "optional": "Opcional",
+      "confirm": "Eliminar",
+      "successOne": "Tarea eliminada",
+      "successMany": "Se eliminaron {count} tareas",
+      "recurrencePaused": "La serie ya no generará tareas nuevas",
+      "errorTitle": "No se pudo eliminar la tarea"
     }
   },
   "settings": {
@@ -1303,22 +1320,22 @@
         "start": "Inicio",
         "due": "Vence",
         "noDate": "Sin fecha",
-      "priorities": {
-        "low": "Rápida",
-        "normal": "Normal",
-        "high": "Alta",
-        "urgent": "Urgente",
-        "critical": "Crítica"
-      },
-      "statuses": {
-        "pending": "Pendiente",
-        "wip": "En progreso",
-        "in_review": "En revisión",
-        "complete": "Completada",
-        "rejected": "Rechazada",
-        "reopened": "Reabierta",
-        "backlog": "Backlog"
-      },
+        "priorities": {
+          "low": "Rápida",
+          "normal": "Normal",
+          "high": "Alta",
+          "urgent": "Urgente",
+          "critical": "Crítica"
+        },
+        "statuses": {
+          "pending": "Pendiente",
+          "wip": "En progreso",
+          "in_review": "En revisión",
+          "complete": "Completada",
+          "rejected": "Rechazada",
+          "reopened": "Reabierta",
+          "backlog": "Backlog"
+        },
         "open": "Ver el detalle de las tareas"
       },
       "workedCount": "Completadas / tareas que vencen en el periodo",
@@ -1760,7 +1777,10 @@
       "createErrorTitle": "No se pudo crear el proyecto",
       "updatedTitle": "Proyecto actualizado",
       "updatedDescription": "El proyecto se actualizó correctamente.",
-      "updateErrorTitle": "No se pudo actualizar el proyecto"
+      "updateErrorTitle": "No se pudo actualizar el proyecto",
+      "responsible": "Responsable",
+      "responsiblePlaceholder": "Selecciona al responsable",
+      "noResponsible": "Sin responsable"
     },
     "projects": {
       "title": "Proyectos",
@@ -1831,13 +1851,12 @@
         "stop": "Detener sonido",
         "savedTitle": "Sonido actualizado",
         "savedDescription": "Este tono se usará en las notificaciones.",
-        "muteLabel": "Silenciar notificaciones",
-        "muteDescription": "No suena nada al recibir notificaciones en este navegador. Sigues viéndolas en la campana.",
         "options": {
           "chime": "Clásico",
           "pop": "Pop",
           "tone": "Alerta"
-        }
+        },
+        "disabledNotice": "El sonido está apagado en tus preferencias de notificaciones: los avisos llegan sin sonido. Puedes encenderlo en la sección Notificaciones."
       },
       "capacity": {
         "section": "Capacidad del equipo",
@@ -1898,6 +1917,41 @@
         "release": "Liberar acceso",
         "releaseToastTitle": "Acceso liberado",
         "releaseToastDescription": "El acceso del usuario fue liberado (mock)."
+      }
+    },
+    "projectDetail": {
+      "title": "Detalle del proyecto",
+      "name": "Nombre del proyecto",
+      "responsible": "Responsable",
+      "noResponsible": "Sin responsable asignado",
+      "members": "Miembros",
+      "noMembers": "Este proyecto aún no tiene miembros.",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "openDetail": "Ver el detalle del proyecto {name}"
+    },
+    "notificationPreferences": {
+      "title": "Preferencias de notificaciones",
+      "help": "Elige qué avisos quieres recibir. Lo que apagues deja de mostrarse como aviso y en la lista, aunque el sistema siga registrándolo.",
+      "errorTitle": "No se pudo guardar la preferencia",
+      "loadError": "No se pudieron cargar tus preferencias de notificaciones",
+      "items": {
+        "token": "Notificaciones de toques",
+        "tokenHelp": "Cuando alguien te da un toque en una tarea.",
+        "message": "Notificaciones de mensajes",
+        "messageHelp": "Cuando alguien comenta en una tarea tuya.",
+        "phase": "Notificaciones de cambio de fase",
+        "phaseHelp": "Iniciada, enviada a revisión, cerrada, rechazada, reabierta, a pendiente, a backlog, actualizada, archivada o eliminada.",
+        "approval": "Notificaciones de pendiente de aprobar",
+        "approvalHelp": "Cuando una tarea espera tu aprobación o la aprueban.",
+        "tag": "Notificaciones de tageo",
+        "tagHelp": "Cuando te asignan una tarea.",
+        "taskCreated": "Notificaciones de crear tarea",
+        "taskCreatedHelp": "Cuando se crea una tarea nueva en tu proyecto.",
+        "mention": "Notificaciones de menciones ({'@'}usuario)",
+        "mentionHelp": "Cuando alguien te menciona en una tarea o en su chat.",
+        "sound": "Sonido al recibir una notificación",
+        "soundHelp": "Suena un tono cuando llega un aviso. Apagado, los avisos aparecen sin sonido."
       }
     }
   },
