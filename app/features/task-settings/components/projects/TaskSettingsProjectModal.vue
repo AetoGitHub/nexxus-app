@@ -27,6 +27,21 @@ const memberSelectItems = computed(() =>
   }),
 )
 
+/** Valor del ítem «Sin responsable»: USelect no admite `null` como valor, el formulario guarda `null`. */
+const NO_RESPONSIBLE = '__none__'
+
+const responsibleSelectItems = computed(() => [
+  { label: t('taskSettings.projectModal.noResponsible'), value: NO_RESPONSIBLE },
+  ...profileItems.value,
+])
+
+const responsibleModel = computed({
+  get: () => form.value.responsible ?? undefined,
+  set: (value: number | string | undefined) => {
+    form.value.responsible = typeof value === 'number' ? value : null
+  },
+})
+
 const inputClass = 'w-full px-3 py-2 text-sm rounded-md bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring'
 
 const modalTitle = computed(() =>
@@ -105,6 +120,19 @@ function onSubmit() {
               />
             </span>
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+            {{ t('taskSettings.projectModal.responsible') }}
+          </label>
+          <USelect
+            v-model="responsibleModel"
+            :items="responsibleSelectItems"
+            :loading="profilesQuery.isPending.value"
+            :placeholder="t('taskSettings.projectModal.responsiblePlaceholder')"
+            class="w-full"
+          />
         </div>
 
         <div>

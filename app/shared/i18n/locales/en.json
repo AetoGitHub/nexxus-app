@@ -1303,22 +1303,22 @@
         "start": "Start",
         "due": "Due",
         "noDate": "No date",
-      "priorities": {
-        "low": "Quick",
-        "normal": "Normal",
-        "high": "High",
-        "urgent": "Urgent",
-        "critical": "Critical"
-      },
-      "statuses": {
-        "pending": "Pending",
-        "wip": "In progress",
-        "in_review": "In review",
-        "complete": "Completed",
-        "rejected": "Rejected",
-        "reopened": "Reopened",
-        "backlog": "Backlog"
-      },
+        "priorities": {
+          "low": "Quick",
+          "normal": "Normal",
+          "high": "High",
+          "urgent": "Urgent",
+          "critical": "Critical"
+        },
+        "statuses": {
+          "pending": "Pending",
+          "wip": "In progress",
+          "in_review": "In review",
+          "complete": "Completed",
+          "rejected": "Rejected",
+          "reopened": "Reopened",
+          "backlog": "Backlog"
+        },
         "open": "See the task details"
       },
       "workedCount": "Completed / tasks due in the period",
@@ -1760,7 +1760,10 @@
       "createErrorTitle": "Could not create project",
       "updatedTitle": "Project updated",
       "updatedDescription": "The project was updated successfully.",
-      "updateErrorTitle": "Could not update project"
+      "updateErrorTitle": "Could not update project",
+      "responsible": "Owner",
+      "responsiblePlaceholder": "Select the owner",
+      "noResponsible": "No owner"
     },
     "projects": {
       "title": "Projects",
@@ -1899,6 +1902,17 @@
         "releaseToastTitle": "Access released",
         "releaseToastDescription": "The user's access was released (mock)."
       }
+    },
+    "projectDetail": {
+      "title": "Project details",
+      "name": "Project name",
+      "responsible": "Owner",
+      "noResponsible": "No owner assigned",
+      "members": "Members",
+      "noMembers": "This project has no members yet.",
+      "edit": "Edit",
+      "close": "Close",
+      "openDetail": "View details of the project {name}"
     }
   },
   "pushSettings": {

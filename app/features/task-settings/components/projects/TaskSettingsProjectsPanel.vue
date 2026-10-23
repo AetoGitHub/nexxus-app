@@ -15,6 +15,7 @@ const activeTab = defineModel<TaskSettingsProjectTab>('tab', { default: 'all' })
 const emit = defineEmits<{
   newProject: []
   edit: [project: EnterpriseProject]
+  view: [project: EnterpriseProject]
 }>()
 
 const { t } = useI18n()
@@ -145,6 +146,7 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
         :key="project.id"
         :project="project"
         @edit="emit('edit', $event)"
+        @view="emit('view', $event)"
       />
     </div>
 

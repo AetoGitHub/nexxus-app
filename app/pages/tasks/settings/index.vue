@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskSettingsGroupModal from '~/features/task-settings/components/groups/TaskSettingsGroupModal.vue'
+import TaskSettingsProjectDetailModal from '~/features/task-settings/components/projects/TaskSettingsProjectDetailModal.vue'
 import TaskSettingsGroupsPanel from '~/features/task-settings/components/groups/TaskSettingsGroupsPanel.vue'
 import TaskSettingsGeneralPanel from '~/features/task-settings/components/general/TaskSettingsGeneralPanel.vue'
 import TaskSettingsNotificationsPanel from '~/features/task-settings/components/notifications/TaskSettingsNotificationsPanel.vue'
@@ -61,6 +62,8 @@ const projectsTab = ref<TaskSettingsProjectTab>('all')
 const projectModalOpen = ref(false)
 const projectForm = ref<ProjectFormState>(createEmptyProjectForm())
 const editingProjectId = ref<number | null>(null)
+const projectDetailOpen = ref(false)
+const detailProjectId = ref<number | null>(null)
 const groupModalOpen = ref(false)
 const groupForm = ref<GroupFormState>(createEmptyGroupForm())
 const editingGroupId = ref<number | null>(null)
@@ -98,6 +101,16 @@ const isProjectMutating = computed(
 const isGroupMutating = computed(
   () => createGroup.isPending.value || updateGroup.isPending.value,
 )
+
+/** El detalle se busca por id en el listado: si se refresca, muestra los datos al día. */
+const detailProject = computed(() =>
+  projects.value.find(project => project.id === detailProjectId.value) ?? null,
+)
+
+function openProjectDetail(project: EnterpriseProject) {
+  detailProjectId.value = project.id
+  projectDetailOpen.value = true
+}
 
 function openNewProjectModal() {
   editingProjectId.value = null
@@ -154,6 +167,7 @@ async function onSubmitProject() {
     company: companyId.value,
     color: projectForm.value.color,
     members: projectForm.value.members,
+    responsible: projectForm.value.responsible,
   }
 
   try {
@@ -244,6 +258,7 @@ useSeoMeta({
           :error="projectsQuery.isError.value"
           @new-project="openNewProjectModal"
           @edit="openEditProjectModal"
+          @view="openProjectDetail"
         />
 
         <TaskSettingsGroupsPanel
@@ -270,6 +285,12 @@ useSeoMeta({
         />
       </div>
     </div>
+
+    <TaskSettingsProjectDetailModal
+      v-model:open="projectDetailOpen"
+      :project="detailProject"
+      @edit="openEditProjectModal"
+    />
 
     <TaskSettingsProjectModal
       v-model:open="projectModalOpen"

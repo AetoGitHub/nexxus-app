@@ -1303,22 +1303,22 @@
         "start": "Inicio",
         "due": "Vence",
         "noDate": "Sin fecha",
-      "priorities": {
-        "low": "Rápida",
-        "normal": "Normal",
-        "high": "Alta",
-        "urgent": "Urgente",
-        "critical": "Crítica"
-      },
-      "statuses": {
-        "pending": "Pendiente",
-        "wip": "En progreso",
-        "in_review": "En revisión",
-        "complete": "Completada",
-        "rejected": "Rechazada",
-        "reopened": "Reabierta",
-        "backlog": "Backlog"
-      },
+        "priorities": {
+          "low": "Rápida",
+          "normal": "Normal",
+          "high": "Alta",
+          "urgent": "Urgente",
+          "critical": "Crítica"
+        },
+        "statuses": {
+          "pending": "Pendiente",
+          "wip": "En progreso",
+          "in_review": "En revisión",
+          "complete": "Completada",
+          "rejected": "Rechazada",
+          "reopened": "Reabierta",
+          "backlog": "Backlog"
+        },
         "open": "Ver el detalle de las tareas"
       },
       "workedCount": "Completadas / tareas que vencen en el periodo",
@@ -1760,7 +1760,10 @@
       "createErrorTitle": "No se pudo crear el proyecto",
       "updatedTitle": "Proyecto actualizado",
       "updatedDescription": "El proyecto se actualizó correctamente.",
-      "updateErrorTitle": "No se pudo actualizar el proyecto"
+      "updateErrorTitle": "No se pudo actualizar el proyecto",
+      "responsible": "Responsable",
+      "responsiblePlaceholder": "Selecciona al responsable",
+      "noResponsible": "Sin responsable"
     },
     "projects": {
       "title": "Proyectos",
@@ -1899,6 +1902,17 @@
         "releaseToastTitle": "Acceso liberado",
         "releaseToastDescription": "El acceso del usuario fue liberado (mock)."
       }
+    },
+    "projectDetail": {
+      "title": "Detalle del proyecto",
+      "name": "Nombre del proyecto",
+      "responsible": "Responsable",
+      "noResponsible": "Sin responsable asignado",
+      "members": "Miembros",
+      "noMembers": "Este proyecto aún no tiene miembros.",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "openDetail": "Ver el detalle del proyecto {name}"
     }
   },
   "pushSettings": {
