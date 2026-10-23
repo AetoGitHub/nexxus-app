@@ -5,6 +5,7 @@ import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { resolveAvatarColor } from '~/features/task-settings/utils/groups/group-avatar.util'
 import { useGroupDetail } from '~/features/task-settings/composables/groups/useGroupDetail'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
+import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 import { getInitials } from '~/shared/utils/initials'
 
 const props = defineProps<{
@@ -43,6 +44,12 @@ function resolveUsername(userId: number): string {
   }
   const fromProfiles = profiles.value.find(profile => profile.id === userId)
   return fromProfiles?.username ?? `#${userId}`
+}
+
+/** Nombre y apellido de un miembro: el detalle del grupo solo trae su username, el nombre sale del catálogo de perfiles. */
+function memberName(member: { id: number, username: string }): string {
+  const profile = profiles.value.find(item => item.id === member.id)
+  return profile ? profileFullName(profile) : member.username
 }
 
 /** Nombre y apellido del responsable; si no tiene, su username. */
@@ -236,15 +243,15 @@ function onToggle() {
             >
               <UserAvatar
                 :user-id="member.id"
-                :initials="getInitials(member.username)"
-                :name="member.username"
+                :initials="getInitials(memberName(member))"
+                :name="memberName(member)"
                 :size="28"
                 :font-size="11"
                 :fallback-color="resolveAvatarColor(member.id)"
               />
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-medium text-foreground truncate">
-                  {{ member.username }}
+                  {{ memberName(member) }}
                 </p>
               </div>
               <div
