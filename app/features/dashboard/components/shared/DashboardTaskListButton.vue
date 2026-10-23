@@ -10,7 +10,7 @@ import type { ApiDashboardTask } from '~/features/dashboard/types/dashboard-api.
  * izquierda del detalle, al mismo nivel visual, para seguir con el scroll y abrir la siguiente tarea sin cerrarlo
  * (el detalle no es modal, ver `outsideInteractiveSelector`); en pantallas angostas queda debajo del detalle.
  */
-defineProps<{
+const props = defineProps<{
   /** Texto del contador, p. ej. `5/6`. */
   counter: string
   /** Tareas del detalle (`tct_task` / `tc_task`). */
@@ -23,12 +23,39 @@ defineProps<{
   hint?: string
   /** Contador sin tareas: se ve más tenue. */
   muted?: boolean
+  /**
+   * Divide la lista en dos: arriba las tareas sin completar (pendientes, en progreso, en revisión…) y debajo las
+   * completadas, cada grupo con su separador. Es la lectura del TCT: lo que falta y lo que ya cuenta.
+   */
+  groupByStatus?: boolean
 }>()
 
 const { t } = useI18n()
 const { open: detailOpen, openTask } = useDashboardTaskDetail()
 
 const open = ref(false)
+
+interface TaskSection {
+  key: 'open' | 'done' | 'all'
+  /** Etiqueta del separador; sin ella (lista sin dividir) no hay separador. */
+  label?: string
+  color?: 'neutral' | 'success'
+  tasks: ApiDashboardTask[]
+}
+
+/** Las secciones vacías no se pintan; dentro de cada una se conserva el orden en que llegan las tareas. */
+const sections = computed<TaskSection[]>(() => {
+  if (!props.groupByStatus) {
+    return [{ key: 'all', tasks: props.tasks }]
+  }
+
+  const done = props.tasks.filter(task => task.status === 'complete')
+  const pending = props.tasks.filter(task => task.status !== 'complete')
+  return [
+    { key: 'open' as const, label: t('dashboard.individual.taskList.sectionOpen', { count: pending.length }), color: 'neutral' as const, tasks: pending },
+    { key: 'done' as const, label: t('dashboard.individual.taskList.sectionDone', { count: done.length }), color: 'success' as const, tasks: done },
+  ].filter(section => section.tasks.length > 0)
+})
 
 /** El detalle de la tarea es un modal encima: lo que cuente como «clic afuera» para la lista no debe cerrarla mientras esté. */
 function onUpdateOpen(value: boolean) {
@@ -72,20 +99,34 @@ function onUpdateOpen(value: boolean) {
           </p>
         </header>
 
-        <ul
+        <div
           v-if="tasks.length"
-          class="dashboard-task-list__items max-h-96 min-h-0 flex-1 space-y-2 overflow-y-auto p-3"
+          class="dashboard-task-list__items max-h-96 min-h-0 flex-1 space-y-4 overflow-y-auto p-3"
         >
-          <li
-            v-for="task in tasks"
-            :key="task.id"
+          <section
+            v-for="section in sections"
+            :key="section.key"
+            class="space-y-2"
           >
-            <DashboardTaskDetailCard
-              :task="task"
-              @select="openTask"
+            <USeparator
+              v-if="section.label"
+              :label="section.label"
+              :color="section.color"
+              :ui="{ label: 'text-[11px] font-semibold uppercase tracking-wide' }"
             />
-          </li>
-        </ul>
+            <ul class="space-y-2">
+              <li
+                v-for="task in section.tasks"
+                :key="task.id"
+              >
+                <DashboardTaskDetailCard
+                  :task="task"
+                  @select="openTask"
+                />
+              </li>
+            </ul>
+          </section>
+        </div>
         <p
           v-else
           class="px-3 py-6 text-center text-sm text-muted-foreground"

@@ -1336,7 +1336,9 @@
           "reopened": "Reopened",
           "backlog": "Backlog"
         },
-        "open": "See the task details"
+        "open": "See the task details",
+        "sectionOpen": "Not completed · {count}",
+        "sectionDone": "Completed · {count}"
       },
       "workedCount": "Completed / tasks due in the period",
       "createdCount": "Worked completed / worked in the period (those that moved to In progress)",

@@ -258,6 +258,7 @@ async function exportExcel() {
                     :description="t('dashboard.individual.taskList.tctDescription')"
                     :hint="t('dashboard.individual.workedCount')"
                     :muted="row.total === 0"
+                    group-by-status
                   />
                 </span>
               </td>

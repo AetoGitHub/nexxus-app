@@ -1336,7 +1336,9 @@
           "reopened": "Reabierta",
           "backlog": "Backlog"
         },
-        "open": "Ver el detalle de las tareas"
+        "open": "Ver el detalle de las tareas",
+        "sectionOpen": "Sin completar · {count}",
+        "sectionDone": "Completadas · {count}"
       },
       "workedCount": "Completadas / tareas que vencen en el periodo",
       "createdCount": "Trabajadas completadas / trabajadas en el periodo (las que pasaron a En progreso)",
