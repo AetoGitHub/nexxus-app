@@ -226,6 +226,14 @@ export function useNotificationsSocket() {
       if (!notification.read) {
         incrementUnread()
       }
+      // Mencionaron al usuario: se vuelven a pedir las listas para que la tarea aparezca resaltada sin recargar.
+      if (socketEvent.event === 'notification_mention') {
+        void queryClient.invalidateQueries({
+          queryKey: ['tasks'],
+          type: 'active',
+          predicate: query => query.queryKey[1] !== 'messages',
+        })
+      }
       void queryClient.invalidateQueries({ queryKey: notificationListQueryKey })
       showNotificationToast(notification, socketEvent)
     }

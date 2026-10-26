@@ -302,6 +302,14 @@ export interface TaskAssignee {
   group_color?: string
 }
 
+/** Persona mencionada (`@[Nombre](id)`) en la descripción o el chat de una tarea. */
+export interface TaskMention {
+  id: number
+  username: string
+  first_name: string | null
+  last_name: string | null
+}
+
 export interface Task {
   id: number
   short_description: string
@@ -329,6 +337,8 @@ export interface Task {
   assigned_to?: TaskAssignee[]
   /** Tokens (manita) que le dieron a la tarea; 0 si no tiene. */
   tokens_count?: number
+  /** Una entrada por persona mencionada en la tarea (descripción o chat), sin repetir; [] si no hay. */
+  mentions?: TaskMention[]
 }
 
 /** Respuesta de POST /api/tasks/tokens/create/: `tokens_count` es el total DESPUÉS de dar el token. */

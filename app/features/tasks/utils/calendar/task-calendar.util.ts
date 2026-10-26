@@ -4,6 +4,7 @@ import type {
   CalendarMonth,
   Task,
   TaskCalendarPhase,
+  TaskMention,
 } from '~/features/tasks/types/task.types'
 import { getReadableTextColor } from '~/features/projects/utils/project-color.util'
 import { taskBarColor } from '~/features/tasks/utils/task-format.util'
@@ -117,6 +118,7 @@ export interface CalendarEventMeta {
   projectName: string
   status: string
   type: string
+  mentions: TaskMention[]
 }
 
 function calendarEventMeta(task: Task): CalendarEventMeta {
@@ -125,6 +127,7 @@ function calendarEventMeta(task: Task): CalendarEventMeta {
     projectName: task.project_name?.trim() ?? '',
     status: task.status,
     type: task.type,
+    mentions: task.mentions ?? [],
   }
 }
 

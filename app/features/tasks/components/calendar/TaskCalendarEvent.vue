@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
+import type { TaskMention } from '~/features/tasks/types/task.types'
+
 const props = withDefaults(
   defineProps<{
     title: string
     projectName?: string
     status: string
     type: string
+    mentions?: TaskMention[]
     /** Color legible (negro/blanco) según el fondo elegido por el usuario. */
     textColor?: string
     /** En barras multi-día, los chips van solo en el tramo inicial. */
@@ -12,6 +16,7 @@ const props = withDefaults(
   }>(),
   {
     projectName: '',
+    mentions: () => [],
     textColor: 'currentColor',
     showBadges: true,
   },
@@ -47,6 +52,10 @@ const BADGE_SCRIM_STYLE = {
       v-if="showBadges"
       class="dark fc-event-badges"
     >
+      <TaskMentionBadge
+        :mentions="mentions"
+        size="xs"
+      />
       <UBadge
         v-if="resolvedProjectName"
         icon="i-lucide-folder-kanban"

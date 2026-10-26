@@ -16,14 +16,21 @@ const props = withDefaults(
   },
 )
 
+const { user } = useAuth()
+
 const segments = computed(() => parseMentions(props.text ?? ''))
+
+/** La mención es al usuario logueado: su chip usa el color de acento (`--mention-me`) y los demás el normal. */
+function isMe(id: number): boolean {
+  return user.value != null && user.value.id === id
+}
 </script>
 
 <template>
   <span><template v-for="(segment, index) in segments" :key="index"><span
     v-if="segment.type === 'mention'"
     class="mention-chip"
-    :class="{ 'mention-chip--own': tone === 'own' }"
+    :class="{ 'mention-chip--own': tone === 'own', 'mention-chip--me': isMe(segment.id) }"
     :title="`@${segment.name}`"
   >@{{ segment.name }}</span><template v-else>{{ segment.text }}</template></template></span>
 </template>
@@ -44,5 +51,14 @@ const segments = computed(() => parseMentions(props.text ?? ''))
   background: rgb(0 0 0 / 0.42);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.4);
   font-weight: 600;
+}
+
+/* Mención al usuario logueado: acento ámbar con texto oscuro (AA en claro, oscuro y sobre la burbuja propia). Va al
+   final para ganarle al estilo de la burbuja propia. */
+.mention-chip--me {
+  background: var(--mention-me-fill);
+  box-shadow: 0 0 0 1px var(--mention-me);
+  color: var(--mention-me-foreground);
+  font-weight: 700;
 }
 </style>

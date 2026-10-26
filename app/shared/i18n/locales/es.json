@@ -796,6 +796,13 @@
         "renamed": "Filtro renombrado",
         "deleted": "Filtro eliminado"
       }
+    },
+    "mentions": {
+      "me": "Te mencionaron",
+      "meAria": "Te mencionaron en esta tarea",
+      "you": "Tú",
+      "countAria": "{count} mencionados en esta tarea: {names}",
+      "tooltipTitle": "Mencionados ({count})"
     }
   },
   "settings": {

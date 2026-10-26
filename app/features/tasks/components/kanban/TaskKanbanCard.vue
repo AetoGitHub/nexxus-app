@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
 import type { Task } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -38,6 +40,7 @@ const {
   isOverdue,
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
+const { mentionsMe } = useTaskMentions(() => props.task.mentions)
 
 const didDrag = ref(false)
 
@@ -84,7 +87,7 @@ function onDragEnd() {
       role="button"
       tabindex="0"
       class="relative w-full cursor-pointer text-left rounded-lg border border-border bg-card p-3 shadow-sm hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 space-y-2"
-      :class="selected ? 'ring-2 ring-aeto-teal/50' : ''"
+      :class="[selected ? 'ring-2 ring-aeto-teal/50' : '', mentionsMe ? 'task-mention-me' : '']"
       :style="{ borderLeft: `3px solid ${barColor}` }"
       @click="onSelect"
       @keydown.enter.self.prevent="onSelect"
@@ -95,6 +98,7 @@ function onDragEnd() {
       </p>
 
       <div class="flex flex-wrap items-center gap-1.5">
+        <TaskMentionBadge :mentions="task.mentions" />
         <UBadge
           v-if="projectName"
           icon="i-lucide-folder-kanban"

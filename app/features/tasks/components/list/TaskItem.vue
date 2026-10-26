@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
 import type { Task } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -48,6 +50,7 @@ const {
   isOverdue,
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
+const { mentionsMe } = useTaskMentions(() => props.task.mentions)
 
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
@@ -70,6 +73,7 @@ function onCheckClick() {
     role="button"
     tabindex="0"
     class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
+    :class="{ 'task-mention-me': mentionsMe }"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -113,6 +117,7 @@ function onCheckClick() {
       </span>
 
       <div class="col-start-2 row-start-2 flex min-w-0 flex-wrap items-center gap-1.5 md:shrink-0 md:flex-nowrap">
+        <TaskMentionBadge :mentions="task.mentions" />
         <UBadge
           v-if="projectName"
           icon="i-lucide-folder-kanban"
