@@ -1,3 +1,5 @@
+import { generateFileThumbnail, thumbnailFileNameFor } from '~/shared/utils/file-thumbnail.util'
+
 /**
  * Sube un archivo directo a Firebase Storage vía el webhook de n8n
  * (`upload-firebase-general`). El backend nunca recibe el archivo crudo:
@@ -24,5 +26,29 @@ export function useFirebaseUpload() {
     return response.url
   }
 
-  return { uploadFile }
+  /**
+   * Sube el archivo y, si es de un tipo con miniatura (PDF, docx/xlsx/pptx y ODF con vista previa embebida), también su
+   * miniatura `{fileName}.thumb.png` en el mismo directorio. Devuelve la URL del archivo y, si la hubo, la de la
+   * miniatura (que viaja en la misma lista de `files`). Que la miniatura falle nunca hace fallar la subida.
+   */
+  async function uploadFileWithPreview(file: File, directory: string, fileName: string): Promise<string[]> {
+    const [url, thumbnail] = await Promise.all([
+      uploadFile(file, directory, fileName),
+      generateFileThumbnail(file),
+    ])
+    if (!thumbnail) {
+      return [url]
+    }
+
+    const thumbnailName = thumbnailFileNameFor(fileName)
+    try {
+      const thumbnailUrl = await uploadFile(new File([thumbnail], thumbnailName, { type: 'image/png' }), directory, thumbnailName)
+      return [url, thumbnailUrl]
+    }
+    catch {
+      return [url]
+    }
+  }
+
+  return { uploadFile, uploadFileWithPreview }
 }

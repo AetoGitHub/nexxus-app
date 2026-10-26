@@ -15,6 +15,7 @@ import {
   buildTaskUploadFileName,
 } from '~/features/tasks/utils/form/task-file-upload.util'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
+import { removeFileWithThumbnail, splitFilesAndThumbnails } from '~/features/tasks/utils/form/file-thumbnail-pair.util'
 import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
@@ -47,7 +48,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n()
 const { user, organization, selectedCompanyId } = useAuth()
-const { uploadFile } = useFirebaseUpload()
+const { uploadFileWithPreview } = useFirebaseUpload()
 const toast = useToast()
 
 const {
@@ -254,8 +255,11 @@ function cancelEditMessage() {
   pendingFiles.value = []
 }
 
-function removeEditingExistingFile(index: number) {
-  editingExistingFiles.value = editingExistingFiles.value.filter((_, i) => i !== index)
+/** Al editar solo se listan los archivos: sus miniaturas viajan con ellos y se quitan juntos. */
+const visibleEditingFiles = computed(() => splitFilesAndThumbnails(editingExistingFiles.value).files)
+
+function removeEditingExistingFile(fileUrl: string) {
+  editingExistingFiles.value = removeFileWithThumbnail(editingExistingFiles.value, fileUrl)
 }
 
 function isMessageEdited(message: TaskMessage) {
@@ -423,11 +427,12 @@ async function uploadPendingFiles(): Promise<string[]> {
 
   isUploadingFiles.value = true
   try {
-    return await Promise.all(
+    const uploaded = await Promise.all(
       pendingFiles.value.map(file =>
-        uploadFile(file, directory, buildTaskUploadFileName(file.name)),
+        uploadFileWithPreview(file, directory, buildTaskUploadFileName(file.name)),
       ),
     )
+    return uploaded.flat()
   }
   finally {
     isUploadingFiles.value = false
@@ -815,11 +820,11 @@ onUnmounted(() => {
         </div>
 
         <ul
-          v-if="editingExistingFiles.length"
+          v-if="visibleEditingFiles.length"
           class="flex flex-wrap gap-1.5"
         >
           <li
-            v-for="(fileUrl, index) in editingExistingFiles"
+            v-for="fileUrl in visibleEditingFiles"
             :key="fileUrl"
             class="flex max-w-56 min-w-0 items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
           >
@@ -839,7 +844,7 @@ onUnmounted(() => {
               square
               :disabled="isBusy"
               :aria-label="t('tasks.messenger.attachments.remove')"
-              @click="removeEditingExistingFile(index)"
+              @click="removeEditingExistingFile(fileUrl)"
             />
           </li>
         </ul>

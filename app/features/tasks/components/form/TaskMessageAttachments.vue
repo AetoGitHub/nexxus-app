@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import FileTypePlaceholder from '~/features/tasks/components/shared/FileTypePlaceholder.vue'
 import {
+  documentKindOf,
   fileNameFromUrl,
   fileTypeIcon,
   isAudioFileUrl,
   isImageFileUrl,
 } from '~/features/tasks/utils/form/task-message.util'
+import { splitFilesAndThumbnails } from '~/features/tasks/utils/form/file-thumbnail-pair.util'
 import { downloadFileFromUrl } from '~/shared/utils/file-download.util'
 
 const props = withDefaults(
@@ -20,8 +23,18 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
-const audioFiles = computed(() => props.files.filter(isAudioFileUrl))
-const otherFiles = computed(() => props.files.filter(fileUrl => !isAudioFileUrl(fileUrl)))
+/** Las miniaturas (primera página de un PDF, vista previa de un documento) viajan en `files`: acompañan a su archivo, no se listan aparte. */
+const parts = computed(() => splitFilesAndThumbnails(props.files))
+const audioFiles = computed(() => parts.value.files.filter(isAudioFileUrl))
+const otherFiles = computed(() => parts.value.files.filter(fileUrl => !isAudioFileUrl(fileUrl)))
+
+/** Miniatura que no cargó: el archivo vuelve a verse como chip con ícono. */
+const erroredThumbnails = reactive<Record<string, boolean>>({})
+
+function thumbnailOf(fileUrl: string): string | null {
+  const thumbnailUrl = parts.value.thumbnails[fileUrl]
+  return thumbnailUrl && !erroredThumbnails[thumbnailUrl] ? thumbnailUrl : null
+}
 
 /** Se guarda por URL (no por mensaje): una imagen ya cargada no vuelve a mostrar el loader. */
 const loadedImages = reactive<Record<string, boolean>>({})
@@ -152,34 +165,60 @@ const iconButtonHoverClass = computed(() =>
 
         <div
           v-else
-          class="flex max-w-64 min-w-0 items-center gap-0.5 rounded-lg text-xs"
-          :class="chipClass"
+          class="flex max-w-64 min-w-0 flex-col overflow-hidden rounded-lg text-xs"
+          :class="[chipClass, thumbnailOf(fileUrl) || documentKindOf(fileUrl) ? 'w-52' : '']"
         >
           <a
+            v-if="thumbnailOf(fileUrl) || documentKindOf(fileUrl)"
             :href="fileUrl"
             target="_blank"
             rel="noopener noreferrer"
-            :title="fileNameFromUrl(fileUrl)"
-            class="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 pl-2"
+            :aria-label="fileNameFromUrl(fileUrl)"
+            class="block w-full bg-white ring-1 ring-inset ring-black/10"
           >
-            <UIcon
-              :name="fileTypeIcon(fileUrl)"
-              class="h-4 w-4 shrink-0"
-            />
-            <span class="min-w-0 truncate">{{ fileNameFromUrl(fileUrl) }}</span>
+            <img
+              v-if="thumbnailOf(fileUrl)"
+              :src="thumbnailOf(fileUrl)!"
+              :alt="fileNameFromUrl(fileUrl)"
+              loading="lazy"
+              class="block max-h-44 w-full object-cover object-top"
+              @error="erroredThumbnails[thumbnailOf(fileUrl)!] = true"
+            >
+            <!-- Sin miniatura (no se generó o no cargó): imagen predeterminada del tipo de documento. -->
+            <span
+              v-else
+              class="flex h-32 w-full items-center justify-center bg-slate-50"
+            >
+              <FileTypePlaceholder :kind="documentKindOf(fileUrl)!" />
+            </span>
           </a>
-          <button
-            type="button"
-            class="mr-1 shrink-0 rounded-md p-1.5 transition-colors"
-            :class="iconButtonHoverClass"
-            :aria-label="t('tasks.messenger.attachments.download')"
-            @click="download(fileUrl)"
-          >
-            <UIcon
-              name="i-lucide-download"
-              class="h-3.5 w-3.5"
-            />
-          </button>
+          <div class="flex min-w-0 items-center gap-0.5">
+            <a
+              :href="fileUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              :title="fileNameFromUrl(fileUrl)"
+              class="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 pl-2"
+            >
+              <UIcon
+                :name="fileTypeIcon(fileUrl)"
+                class="h-4 w-4 shrink-0"
+              />
+              <span class="min-w-0 truncate">{{ fileNameFromUrl(fileUrl) }}</span>
+            </a>
+            <button
+              type="button"
+              class="mr-1 shrink-0 rounded-md p-1.5 transition-colors"
+              :class="iconButtonHoverClass"
+              :aria-label="t('tasks.messenger.attachments.download')"
+              @click="download(fileUrl)"
+            >
+              <UIcon
+                name="i-lucide-download"
+                class="h-3.5 w-3.5"
+              />
+            </button>
+          </div>
         </div>
       </template>
     </div>

@@ -61,6 +61,30 @@ export function isAudioFileUrl(url: string): boolean {
   return AUDIO_EXTENSIONS.has(extensionOf(fileNameFromUrl(url)))
 }
 
+export type DocumentKind = 'pdf' | 'word' | 'excel' | 'powerpoint'
+
+const DOCUMENT_KIND_BY_EXTENSION: Record<string, DocumentKind> = {
+  pdf: 'pdf',
+  doc: 'word',
+  docx: 'word',
+  docm: 'word',
+  dotx: 'word',
+  xls: 'excel',
+  xlsx: 'excel',
+  xlsm: 'excel',
+  xltx: 'excel',
+  ppt: 'powerpoint',
+  pptx: 'powerpoint',
+  pptm: 'powerpoint',
+  ppsx: 'powerpoint',
+  potx: 'powerpoint',
+}
+
+/** Tipo de documento (PDF, Word, Excel, PowerPoint) por extensión: decide la imagen predeterminada si no hay miniatura. */
+export function documentKindOf(nameOrUrl: string): DocumentKind | null {
+  return DOCUMENT_KIND_BY_EXTENSION[extensionOf(fileNameFromUrl(nameOrUrl))] ?? null
+}
+
 const ICON_BY_EXTENSION: Record<string, string> = {
   pdf: 'i-lucide-file-text',
   doc: 'i-lucide-file-text',
