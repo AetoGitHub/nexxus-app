@@ -11,6 +11,16 @@ import type { VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-defaults.util'
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 import { useProfileConfigurationStore } from '~/features/auth/composables/useProfileConfigurationStore'
+import { useSavedTaskFilters } from '~/features/tasks/composables/filters/useSavedTaskFilters'
+import {
+  hasTaskFilters,
+  normalizeTaskFilters,
+  paramsToTaskFilters,
+  TASK_FILTER_PARAM_KEYS,
+  taskFiltersFromQuery,
+  taskFiltersKey,
+  taskFiltersToParams,
+} from '~/features/tasks/utils/task-filter-params.util'
 
 const VALID_VIEWS: TaskView[] = ['list', 'kanban', 'calendar']
 const VALID_GROUP_BY: TaskGroupBy[] = ['all', 'due', 'project', 'user', 'group', 'status']
@@ -76,11 +86,20 @@ function buildWorkspaceQuery(
     groupBy: TaskGroupBy
     calendarPhase: TaskCalendarPhase
     calendarMonth: CalendarMonth
+    /** Filtros de la lista en la URL; `null` = esta pantalla no los sincroniza. */
+    filters: TaskListFilters | null
   },
 ): LocationQueryRaw {
   const next: LocationQueryRaw = { ...current }
 
   next.view = state.view
+
+  if (state.filters) {
+    for (const key of TASK_FILTER_PARAM_KEYS) {
+      delete next[key]
+    }
+    Object.assign(next, taskFiltersToParams(state.filters))
+  }
 
   if (state.groupBy === 'all') {
     delete next.groupBy
@@ -120,6 +139,11 @@ function sameQuery(a: LocationQueryRaw, b: LocationQuery): boolean {
 /** Estado compartido del workspace de tareas (filtros, vista, slideover). */
 export function useTaskWorkspaceState(options: {
   excludeViews?: MaybeRefOrGetter<TaskView[]>
+  /**
+   * Los filtros de la lista viajan en la URL (compartible y sobrevive al recargar) y el filtro guardado
+   * predeterminado se aplica al entrar. Solo en las listas que soportan los filtros del backend.
+   */
+  syncFilters?: boolean
 } = {}) {
   const { t } = useI18n()
   const route = useRoute()
@@ -148,8 +172,11 @@ export function useTaskWorkspaceState(options: {
 
   const initialTaskId = parseTaskId(pickQueryString(route.query, 'task'))
 
+  const syncFilters = options.syncFilters === true
+  const initialFilters = syncFilters ? taskFiltersFromQuery(route.query) : {}
+
   const view = ref<TaskView>(initialView)
-  const search = ref('')
+  const search = ref(initialFilters.short_description ?? '')
   const groupBy = ref<TaskGroupBy>(initialGroupBy)
   const calendarPhase = ref<TaskCalendarPhase>(initialPhase)
   const calendarMonth = ref<CalendarMonth>(initialCalendarMonth)
@@ -165,7 +192,14 @@ export function useTaskWorkspaceState(options: {
   const promotingBacklogTaskId = ref<number | null>(null)
 
   const debouncedSearch = refDebounced(search, 300)
-  const listFilters = ref<TaskListFilters>({})
+  const listFilters = ref<TaskListFilters>(initialFilters)
+
+  /** Reemplaza los filtros activos (no se combinan) y deja la búsqueda en sintonía con `short_description`. */
+  function applyFilters(filters: TaskListFilters) {
+    const next = normalizeTaskFilters(filters)
+    listFilters.value = next
+    search.value = next.short_description ?? ''
+  }
 
   /** Evita bucles al sincronizar URL ↔ estado. */
   let syncingFromRoute = false
@@ -214,6 +248,36 @@ export function useTaskWorkspaceState(options: {
     view.value = resolveView(view.value)
   })
 
+  if (syncFilters) {
+    // URL (back/forward o enlace compartido) → filtros
+    watch(
+      () => TASK_FILTER_PARAM_KEYS.map(key => pickQueryString(route.query, key)),
+      () => {
+        const fromUrl = taskFiltersFromQuery(route.query)
+        if (taskFiltersKey(fromUrl) !== taskFiltersKey(listFilters.value)) {
+          applyFilters(fromUrl)
+        }
+      },
+    )
+
+    // Filtro guardado predeterminado: solo al entrar y si la URL no trae filtros propios.
+    const { savedFiltersQuery, defaultFilter } = useSavedTaskFilters()
+    let defaultHandled = hasTaskFilters(listFilters.value)
+    watch(
+      () => savedFiltersQuery.isSuccess.value,
+      (loaded) => {
+        if (!loaded || defaultHandled) {
+          return
+        }
+        defaultHandled = true
+        if (defaultFilter.value) {
+          applyFilters(paramsToTaskFilters(defaultFilter.value.params))
+        }
+      },
+      { immediate: true },
+    )
+  }
+
   watch([view, groupBy], ([value, selectedGroupBy]) => {
     if (value === 'calendar' && selectedGroupBy === 'due') {
       groupBy.value = 'all'
@@ -224,9 +288,9 @@ export function useTaskWorkspaceState(options: {
     }
   }, { immediate: true })
 
-  // Estado → URL
+  // Estado → URL (vista, agrupación, calendario y filtros en una sola navegación)
   watch(
-    [view, groupBy, calendarPhase, calendarMonth],
+    [view, groupBy, calendarPhase, calendarMonth, listFilters],
     () => {
       if (syncingFromRoute || import.meta.server) {
         return
@@ -237,6 +301,7 @@ export function useTaskWorkspaceState(options: {
         groupBy: groupBy.value,
         calendarPhase: calendarPhase.value,
         calendarMonth: calendarMonth.value,
+        filters: syncFilters ? listFilters.value : null,
       })
 
       if (sameQuery(nextQuery, route.query)) {
@@ -245,7 +310,7 @@ export function useTaskWorkspaceState(options: {
 
       router.replace({ query: nextQuery })
     },
-    { immediate: true },
+    { immediate: true, deep: true },
   )
 
   // URL (back/forward o deep link) → estado
@@ -332,6 +397,7 @@ export function useTaskWorkspaceState(options: {
     toUpdateSection,
     promotingBacklogTaskId,
     listFilters,
+    applyFilters,
     activeGroupByLabel,
     setCalendarMonth,
     openNewTask,

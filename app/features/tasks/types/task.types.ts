@@ -240,6 +240,35 @@ export interface TaskListFilters {
   overdue?: boolean
   completed?: boolean
   multiple_close?: boolean
+  /** Quién creó la tarea (ids de perfil). */
+  created_by?: number[]
+  /** «Fecha de creación»: rango YYYY-MM-DD, ambos extremos inclusivos y opcionales. */
+  start_date_from?: string
+  start_date_to?: string
+  /** «Inicio de trabajo»: primera vez que alguien dio «Iniciar». */
+  wip_date_from?: string
+  wip_date_to?: string
+  /** «Finalización»: al usarla se agrega `completed=true` automáticamente. */
+  final_date_from?: string
+  final_date_to?: string
+  /** Pendientes a las que nunca se les dio «Iniciar». */
+  not_started?: boolean
+}
+
+/** Filtro de tareas guardado por el usuario (GET /api/auth/profiles/filters/). `params` usa las llaves del query de las listas, todo en texto. */
+export interface SavedTaskFilter {
+  id: number
+  name: string
+  params: Record<string, string>
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SavedTaskFilterPayload {
+  name?: string
+  params?: Record<string, string>
+  is_default?: boolean
 }
 
 export interface TaskCloseApproval {

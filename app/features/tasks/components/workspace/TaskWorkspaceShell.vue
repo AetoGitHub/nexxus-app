@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TaskAdvancedFilters from '~/features/tasks/components/workspace/TaskAdvancedFilters.vue'
 import TaskCalendarPhaseFilter from '~/features/tasks/components/workspace/TaskCalendarPhaseFilter.vue'
 import TaskGroupByFilter from '~/features/tasks/components/workspace/TaskGroupByFilter.vue'
 import TaskListFilters from '~/features/tasks/components/workspace/TaskListFilters.vue'
@@ -47,6 +48,8 @@ const {
   openTaskFromBacklog,
 } = useTaskWorkspaceState({
   excludeViews: () => props.excludeViews,
+  // Pendientes de aprobación no usa los filtros del backend de las listas de tareas.
+  syncFilters: !props.authorizeMode,
 })
 
 const { refresh, isRefreshing } = useRefreshTaskWorkspace()
@@ -93,6 +96,11 @@ const activeFilterCount = computed(() => {
   if (f.overdue === true) count += 1
   if (f.completed === true) count += 1
   if (f.multiple_close === true) count += 1
+  if (f.not_started === true) count += 1
+  if (f.created_by?.length) count += 1
+  if (f.start_date_from || f.start_date_to) count += 1
+  if (f.wip_date_from || f.wip_date_to) count += 1
+  if (f.final_date_from || f.final_date_to) count += 1
   return count
 })
 
@@ -170,6 +178,13 @@ function goToStatusList() {
           />
         </UChip>
 
+        <TaskAdvancedFilters
+          v-if="!authorizeMode"
+          v-model="listFilters"
+          v-model:search="search"
+          compact
+        />
+
         <!-- «Ver por» fuera del sheet de filtros, en el espacio libre de la barra. -->
         <TaskGroupByFilter
           v-if="!hideGroupBy"
@@ -236,6 +251,11 @@ function goToStatusList() {
         :exclude="excludeGroupBy"
       >
         <div class="flex items-center gap-2">
+          <TaskAdvancedFilters
+            v-if="!authorizeMode"
+            v-model="listFilters"
+            v-model:search="search"
+          />
           <UButton
             v-if="showRefresh"
             icon="i-lucide-archive"
