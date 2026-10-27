@@ -802,7 +802,8 @@
       "meAria": "You were mentioned in this task",
       "you": "You",
       "countAria": "{count} people mentioned in this task: {names}",
-      "tooltipTitle": "Mentioned ({count})"
+      "tooltipTitle": "Mentioned ({count})",
+      "tooltipHeader": "Mentioned"
     },
     "quickAdvance": {
       "start": "Start: move to In progress",

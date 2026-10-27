@@ -802,7 +802,8 @@
       "meAria": "Te mencionaron en esta tarea",
       "you": "Tú",
       "countAria": "{count} mencionados en esta tarea: {names}",
-      "tooltipTitle": "Mencionados ({count})"
+      "tooltipTitle": "Mencionados ({count})",
+      "tooltipHeader": "Mencionados"
     },
     "quickAdvance": {
       "start": "Iniciar: pasar a En progreso",
