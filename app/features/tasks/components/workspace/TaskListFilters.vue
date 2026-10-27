@@ -2,6 +2,7 @@
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
@@ -58,11 +59,19 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
   { value: 'trigger', dotClass: 'bg-warning' },
 ]
 
-/** Proyectos vistos alguna vez (primera página y búsquedas): así los seleccionados conservan su nombre al cambiar el texto buscado. */
+const { projects: privateProjects } = usePrivateProjects()
+
+/**
+ * Proyectos vistos alguna vez (primera página, búsquedas y mis privados): así los seleccionados conservan su nombre al
+ * cambiar el texto buscado o al abrir un proyecto privado desde el menú lateral (el dropdown solo trae los de la compañía).
+ */
 const knownProjects = reactive(new Map<number, { label: string, value: number }>())
 watchEffect(() => {
   for (const item of allProjectItems.value) {
     knownProjects.set(item.value, item)
+  }
+  for (const project of privateProjects.value) {
+    knownProjects.set(project.id, { label: project.name, value: project.id })
   }
 })
 

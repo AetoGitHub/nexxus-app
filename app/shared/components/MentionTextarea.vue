@@ -20,12 +20,14 @@ import {
  * - Al teclear «@» se abre la lista de usuarios (↑/↓, Enter o Tab para elegir, Esc para cerrar, o clic).
  * - Backspace/Supr junto a un chip lo borra completo.
  * - `companyId`: solo se sugiere a miembros de esa compañía (la del proyecto de la tarea).
+ * - `mentionsEnabled`: en `false` no se abre el autocompletado (tareas de un proyecto privado: el backend no admite menciones).
  */
 const model = defineModel<string>({ default: '' })
 
 const props = withDefaults(
   defineProps<{
     companyId?: number | null
+    mentionsEnabled?: boolean
     placeholder?: string
     rows?: number
     maxrows?: number
@@ -35,6 +37,7 @@ const props = withDefaults(
   }>(),
   {
     companyId: null,
+    mentionsEnabled: true,
     placeholder: undefined,
     rows: 1,
     maxrows: 0,
@@ -146,7 +149,7 @@ function closeMenu() {
 
 function refreshSuggest() {
   const textarea = textareaRef.value
-  if (!textarea || props.disabled || document.activeElement !== textarea || textarea.selectionStart !== textarea.selectionEnd) {
+  if (!props.mentionsEnabled || !textarea || props.disabled || document.activeElement !== textarea || textarea.selectionStart !== textarea.selectionEnd) {
     closeMenu()
     return
   }

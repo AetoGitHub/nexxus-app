@@ -2145,5 +2145,50 @@
       "task_backlog_completed": "Backlog task completed",
       "task_token_given": "Touch received"
     }
+  },
+  "privateProjects": {
+    "section": "My private projects",
+    "onlyYou": "Only you",
+    "new": "New private project",
+    "empty": "You don't have any private projects yet.",
+    "loadError": "Your private projects couldn't be loaded.",
+    "open": "View tasks",
+    "makePublic": "Make public",
+    "options": "{name} options",
+    "lockTooltip": "Private task: only you can see it",
+    "lockAria": "Private task",
+    "create": {
+      "title": "New private project",
+      "description": "Only you will see this project and its tasks: they don't count in the company dashboard or reports.",
+      "name": "Name",
+      "namePlaceholder": "Home, Ideas, Reading…",
+      "color": "Color",
+      "submit": "Create project",
+      "successTitle": "Private project created",
+      "successDescription": "«{name}» is now in your private projects.",
+      "errorTitle": "The project couldn't be created"
+    },
+    "publish": {
+      "title": "Make «{name}» public",
+      "warning": "The project and ALL its tasks will move to the company you choose. The team will see them and they will count in the dashboard and reports. This cannot be undone.",
+      "company": "Company",
+      "companyPlaceholder": "Choose a company",
+      "noCompanies": "You have no companies available",
+      "submit": "Make public",
+      "successTitle": "Project published",
+      "successDescription": "«{name}» is now a company project.",
+      "errorTitle": "The project couldn't be made public"
+    },
+    "form": {
+      "companyGroup": "Company projects",
+      "privateGroup": "My private projects",
+      "onlyYou": "Private task: only you can be assigned.",
+      "noMentions": "Private tasks don't support mentions.",
+      "projectLocked": "A private task can't be moved to another project."
+    },
+    "unavailable": {
+      "title": "Not available",
+      "description": "This task doesn't exist or you don't have access to it."
+    }
   }
 }

@@ -81,6 +81,7 @@ function closeMore() {
   >
     <template #body>
       <AppNavList @navigate="closeMore" />
+      <AppPrivateProjects @navigate="closeMore" />
     </template>
   </USlideover>
 </template>

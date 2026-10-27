@@ -125,12 +125,13 @@ function onApproveClick() {
         <TaskMentionBadge :mentions="task.mentions" />
         <UBadge
           v-if="projectName"
-          icon="i-lucide-folder-kanban"
+          :icon="task.is_personal ? 'i-lucide-lock' : 'i-lucide-folder-kanban'"
           :label="projectName"
           color="primary"
           variant="soft"
           size="sm"
-          :aria-label="t('tasks.projectName', { name: projectName })"
+          :title="task.is_personal ? t('privateProjects.lockTooltip') : undefined"
+          :aria-label="task.is_personal ? `${t('tasks.projectName', { name: projectName })} · ${t('privateProjects.lockAria')}` : t('tasks.projectName', { name: projectName })"
         />
         <UBadge
           v-if="showStatus"

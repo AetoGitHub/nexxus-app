@@ -15,7 +15,10 @@ export interface EnterpriseProject {
   id: number
   name: string
   color: string
-  company: number
+  /** `null` en un proyecto privado (no pertenece a ninguna compañía). */
+  company: number | null
+  /** Proyecto privado del usuario: solo él lo ve; sin compañía. */
+  is_personal?: boolean
   members: ProjectMember[]
   /** Responsable del proyecto (opcional: los proyectos anteriores no lo tienen). */
   responsible: number | null
@@ -31,6 +34,19 @@ export interface CreateEnterpriseProjectPayload {
   color: string
   members: number[]
   responsible: number | null
+}
+
+/** Proyecto privado (GET /api/enterprise/projects/private/): mismos campos que uno de empresa, con `is_personal: true` y `company: null`. */
+export type PrivateProject = EnterpriseProject
+
+export interface CreatePrivateProjectPayload {
+  name: string
+  /** Color nombrado o hex; opcional. */
+  color?: string
+}
+
+export interface PublishProjectPayload {
+  company: number
 }
 
 export interface UpdateEnterpriseProjectPayload {

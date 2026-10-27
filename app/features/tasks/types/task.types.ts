@@ -337,6 +337,8 @@ export interface Task {
   assigned_to?: TaskAssignee[]
   /** Tokens (manita) que le dieron a la tarea; 0 si no tiene. */
   tokens_count?: number
+  /** La tarea es de un proyecto privado (solo la ve su dueño): se marca con un candado. */
+  is_personal?: boolean
   /** Una entrada por persona mencionada en la tarea (descripción o chat), sin repetir; [] si no hay. */
   mentions?: TaskMention[]
 }

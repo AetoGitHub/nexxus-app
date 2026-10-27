@@ -32,7 +32,8 @@ export function useEnterpriseProjects(
     },
   })
 
-  const projects = computed(() => projectsQuery.data.value?.results ?? [])
+  // Esta lista es de la compañía: un proyecto privado (is_personal) nunca entra aquí (tiene su propia lista).
+  const projects = computed(() => (projectsQuery.data.value?.results ?? []).filter(project => project.is_personal !== true))
 
   const createProject = useMutation({
     mutationFn: (payload: CreateEnterpriseProjectPayload) =>

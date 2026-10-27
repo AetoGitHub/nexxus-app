@@ -23,6 +23,7 @@ import { useAllUsersDropdown } from '~/features/tasks/composables/shared/useAllU
 import { useUsersDropdown } from '~/features/tasks/composables/shared/useUsersDropdown'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useMentionCompany } from '~/features/tasks/composables/shared/useMentionCompany'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import { useAssignSelfToNewTask } from '~/features/tasks/composables/shared/useAssignSelfToNewTask'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import TaskAttachmentsField from '~/features/tasks/components/form/TaskAttachmentsField.vue'
@@ -565,8 +566,25 @@ const state = reactive<NewTaskFormState>({
   applyToAll: false,
 })
 
-/** Las menciones de nombre y descripción solo sugieren a miembros de la compañía del proyecto elegido. */
-const mentionCompanyId = useMentionCompany(() => state.project)
+const { projects: privateProjects, isPrivateProject } = usePrivateProjects()
+
+/** 404 al abrir una tarea (p. ej. el enlace de una tarea privada ajena): se avisa «No disponible» en vez de un error genérico. */
+const detailNotFound = computed(() => {
+  const error = taskDetailQuery.error.value as { status?: number, statusCode?: number } | null
+  return (error?.status ?? error?.statusCode) === 404
+})
+
+/**
+ * El proyecto de la tarea es privado (el elegido al crear o el de la tarea abierta): tarea personal. El backend rechaza con
+ * 400 que tenga otros asignados, revisores, cierre múltiple, menciones o que cambie de proyecto; aquí se evitan.
+ */
+const isPersonalProject = computed(() =>
+  isPrivateProject(state.project) || taskDetailQuery.data.value?.is_personal === true,
+)
+
+/** Las menciones de nombre y descripción solo sugieren a miembros de la compañía del proyecto elegido; en una tarea personal no hay menciones. */
+const companyForMentions = useMentionCompany(() => state.project)
+const mentionCompanyId = computed(() => (isPersonalProject.value ? null : companyForMentions.value))
 
 const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: string }[] = [
   { value: 'manual', icon: 'i-lucide-hand', descriptionKey: 'tasks.form.typeDescriptions.manual' },
@@ -576,11 +594,15 @@ const taskTypeOptions: { value: NewTaskFormType, icon: string, descriptionKey: s
 ]
 
 /** En backlog el único tipo disponible es Manual. */
-const visibleTaskTypeOptions = computed(() =>
-  isBacklogMode.value
-    ? taskTypeOptions.filter(option => option.value === 'manual')
-    : taskTypeOptions,
-)
+const visibleTaskTypeOptions = computed(() => {
+  if (isBacklogMode.value) {
+    return taskTypeOptions.filter(option => option.value === 'manual')
+  }
+  // Una tarea personal no tiene revisores: sin «cierre múltiple».
+  return isPersonalProject.value
+    ? taskTypeOptions.filter(option => option.value !== 'multiple_close')
+    : taskTypeOptions
+})
 
 const effortOptions: { value: TaskEffort, icon: string, labelKey: string, hintKey: string }[] = [
   { value: 'quick', icon: 'i-lucide-zap', labelKey: 'tasks.form.effortQuick', hintKey: 'tasks.form.effortQuickHint' },
@@ -694,21 +716,64 @@ const detailProjectFallbackItems = computed(() => {
   return [{ label: detail.project_name || String(detail.project), value: detail.project }]
 })
 
+/**
+ * Mis proyectos privados como destino de una tarea nueva. Solo al crear: una tarea de la empresa nunca se mueve a un
+ * privado ni una personal sale de él, así que en el detalle no se ofrecen.
+ */
+const privateProjectItems = computed(() => {
+  if (isDetailView.value) {
+    return []
+  }
+  const term = projectSearchTerm.value.trim().toLowerCase()
+  return privateProjects.value
+    .filter(project => !term || project.name.toLowerCase().includes(term))
+    .map(project => ({ label: project.name, value: project.id, icon: 'i-lucide-lock' }))
+})
+
 const projectItems = computed(() => {
   const items = withSelectedItems(
     fetchedProjectItems.value,
     [state.project],
     [...allProjectItems.value, ...detailProjectFallbackItems.value],
   )
-  if (!projectsQuery.isPending.value && !isSearchingProjects.value && fetchedProjectItems.value.length === 0) {
+  const privateItems = privateProjectItems.value
+  if (!projectsQuery.isPending.value && !isSearchingProjects.value && fetchedProjectItems.value.length === 0 && !privateItems.length) {
     return [{
       label: t('tasks.form.createProject'),
       value: CREATE_PROJECT_VALUE,
       icon: 'i-lucide-plus',
     }]
   }
-  return items
+  if (!privateItems.length) {
+    return items
+  }
+  // Dos grupos: los de la compañía y «Mis proyectos privados».
+  return [
+    [...(items.length ? [{ type: 'label' as const, label: t('privateProjects.form.companyGroup') }] : []), ...items],
+    [{ type: 'label' as const, label: t('privateProjects.form.privateGroup') }, ...privateItems],
+  ]
 })
+
+/** Al elegir un proyecto privado la tarea queda solo para mí: sin otros asignados, sin revisores ni cierre múltiple. */
+watch(isPersonalProject, (personal) => {
+  const currentUserId = user.value?.id
+  if (!personal || isDetailView.value || currentUserId == null) {
+    return
+  }
+  state.assignedTo = [currentUserId]
+  state.taskReviewer = []
+  if (state.type === 'multiple_close') {
+    state.type = 'manual'
+  }
+  for (const row of subtaskRows.value) {
+    row.assignedTo = currentUserId
+  }
+})
+
+/** Selector de asignado de las subtareas: en una tarea personal solo yo. */
+const subtaskUserItems = computed(() =>
+  isPersonalProject.value ? currentUserFallbackItems.value : userSelectItems.value,
+)
 
 function onProjectSelect(value: string | number | undefined | null) {
   if (value === CREATE_PROJECT_VALUE) {
@@ -1637,7 +1702,8 @@ const slideoverUi = computed(() => {
                 v-else-if="isDetailView && taskDetailQuery.isError.value"
                 color="error"
                 variant="subtle"
-                :title="t('tasks.loadError')"
+                :title="detailNotFound ? t('privateProjects.unavailable.title') : t('tasks.loadError')"
+                :description="detailNotFound ? t('privateProjects.unavailable.description') : undefined"
                 class="mb-2"
               />
 
@@ -1708,6 +1774,7 @@ const slideoverUi = computed(() => {
               v-if="!isReadOnly"
               v-model="state.name"
               :company-id="mentionCompanyId"
+              :mentions-enabled="!isPersonalProject"
               :placeholder="t('tasks.form.namePlaceholder')"
               :rows="1"
               autoresize
@@ -1732,6 +1799,7 @@ const slideoverUi = computed(() => {
               v-if="!isReadOnly"
               v-model="state.description"
               :company-id="mentionCompanyId"
+              :mentions-enabled="!isPersonalProject"
               :placeholder="t('tasks.form.descriptionPlaceholder')"
               :rows="3"
               :maxrows="20"
@@ -1755,7 +1823,7 @@ const slideoverUi = computed(() => {
           <TaskSubtasksField
             v-if="!isBacklogMode && !isDetailView"
             v-model:rows="subtaskRows"
-            :user-items="userSelectItems"
+            :user-items="subtaskUserItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
 
@@ -1766,7 +1834,7 @@ const slideoverUi = computed(() => {
             :disabled="isTaskLocked"
             :restricted="!canModifyThisTask"
             :editing="isEditing"
-            :user-items="userSelectItems"
+            :user-items="subtaskUserItems"
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
 
@@ -1962,7 +2030,7 @@ const slideoverUi = computed(() => {
                 :items="projectItems"
                 :placeholder="t('tasks.form.projectPlaceholder')"
                 :loading="projectsQuery.isPending.value"
-                :disabled="isReadOnly"
+                :disabled="isReadOnly || (isDetailView && isPersonalProject)"
                 :search-input="{
                   icon: 'i-lucide-search',
                   placeholder: t('tasks.form.projectSearchPlaceholder'),
@@ -1972,6 +2040,16 @@ const slideoverUi = computed(() => {
                 class="w-full"
                 @update:model-value="onProjectSelect"
               />
+              <p
+                v-if="isDetailView && isPersonalProject"
+                class="mt-1 flex items-center gap-1 text-xs text-muted-foreground"
+              >
+                <UIcon
+                  name="i-lucide-lock"
+                  class="h-3 w-3 shrink-0"
+                />
+                {{ t('privateProjects.form.projectLocked') }}
+              </p>
             </UFormField>
 
             <UFormField
@@ -1993,6 +2071,7 @@ const slideoverUi = computed(() => {
             class="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             <UFormField
+              v-if="!isPersonalProject"
               :label="t('tasks.form.assignedTo')"
               name="assignedTo"
               :required="!isReadOnly"
@@ -2022,6 +2101,20 @@ const slideoverUi = computed(() => {
                 class="mt-2"
                 @update:model-value="onToggleAssignSelf"
               />
+            </UFormField>
+
+            <UFormField
+              v-else
+              :label="t('tasks.form.assignedTo')"
+              name="assignedTo"
+            >
+              <p class="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                <UIcon
+                  name="i-lucide-lock"
+                  class="h-3.5 w-3.5 shrink-0"
+                />
+                {{ t('privateProjects.form.onlyYou') }}
+              </p>
             </UFormField>
 
             <UFormField

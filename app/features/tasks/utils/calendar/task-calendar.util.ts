@@ -119,6 +119,8 @@ export interface CalendarEventMeta {
   status: string
   type: string
   mentions: TaskMention[]
+  /** Tarea de un proyecto privado: se marca con candado. */
+  isPersonal: boolean
 }
 
 function calendarEventMeta(task: Task): CalendarEventMeta {
@@ -128,6 +130,7 @@ function calendarEventMeta(task: Task): CalendarEventMeta {
     status: task.status,
     type: task.type,
     mentions: task.mentions ?? [],
+    isPersonal: task.is_personal === true,
   }
 }
 
