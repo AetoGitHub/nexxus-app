@@ -2,6 +2,7 @@
 import type { Task } from '~/features/tasks/types/task.types'
 import TaskItem from '~/features/tasks/components/list/TaskItem.vue'
 import TaskSectionBadgeFallback from '~/features/tasks/components/shared/TaskSectionBadgeFallback.vue'
+import { useQuickAdvanceTask } from '~/features/tasks/composables/shared/useQuickAdvanceTask'
 
 const props = withDefaults(
   defineProps<{
@@ -24,8 +25,8 @@ const props = withDefaults(
     minimal?: boolean
     /** Botón de eliminar (hover) en cada fila, p. ej. en la vista de archivadas. */
     deletable?: boolean
-    /** Qué hace el check de cada fila: abrir el detalle (default) o autorizar directo. */
-    checkAction?: 'select' | 'approve'
+    /** Qué hace el círculo de cada fila: avanzar la tarea de estado con un clic (default) o autorizar directo. */
+    checkAction?: 'advance' | 'approve'
     /** Ids de tareas con la autorización en curso (solo checkAction="approve"). */
     approvingIds?: Set<number>
   }>(),
@@ -41,7 +42,7 @@ const props = withDefaults(
     defaultOpen: true,
     minimal: false,
     deletable: false,
-    checkAction: 'select',
+    checkAction: 'advance',
     approvingIds: () => new Set(),
   },
 )
@@ -55,6 +56,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Una tarea que exige evidencia no se puede cerrar de un clic: se abre su detalle para subirla al chat.
+const quickAdvance = useQuickAdvanceTask({ onNeedsEvidence: taskId => emit('select', taskId) })
 const loadMoreSentinel = useTemplateRef<HTMLElement>('loadMoreSentinel')
 
 useIntersectionObserver(loadMoreSentinel, ([entry]) => {
@@ -140,8 +143,10 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
             :deletable="deletable"
             :check-action="checkAction"
             :approve-loading="approvingIds.has(task.id)"
+            :advancing="quickAdvance.isAdvancing(task.id)"
             @select="emit('select', $event)"
             @approve="emit('approve', $event)"
+            @advance="quickAdvance.advance(task)"
             @delete="emit('delete', $event)"
           />
         </TransitionGroup>

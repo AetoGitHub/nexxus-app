@@ -2,6 +2,7 @@
 import type { SavedTaskFilter, TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import { useSavedTaskFilters } from '~/features/tasks/composables/filters/useSavedTaskFilters'
 import {
   hasTaskFilters,
@@ -66,6 +67,7 @@ defineProps<{
 const { t } = useI18n()
 const toast = useToast()
 const { projects, items: projectItems } = useProjectsDropdown()
+const { projects: privateProjects } = usePrivateProjects()
 const { organization } = useAuth()
 const { isAdminActive, isGroupActive, isProjectActive } = useTaskAdminView()
 
@@ -209,8 +211,17 @@ const typeItems = computed(() =>
   TYPE_VALUES.map(type => ({ label: t(`tasks.types.${type}`), value: type })),
 )
 
+/** Los proyectos de la compañía y, solo para conservar su nombre, mis proyectos privados (p. ej. al abrir uno desde el menú lateral). */
+const projectsWithPrivate = computed(() => {
+  const shown = new Set(projectItems.value.map(item => item.value))
+  const extra = privateProjects.value
+    .filter(project => !shown.has(project.id) && (draft.value.project ?? []).includes(project.id))
+    .map(project => ({ label: project.name, value: project.id }))
+  return [...projectItems.value, ...extra]
+})
+
 const projectSelectItems = computed(() =>
-  withEmptySelectItems(projectItems.value, t('common.noData'), { pending: projects.isPending.value }),
+  withEmptySelectItems(projectsWithPrivate.value, t('common.noData'), { pending: projects.isPending.value }),
 )
 
 const profileItems = computed(() =>
@@ -307,7 +318,10 @@ function isInUse(saved: SavedTaskFilter): boolean {
 const buttonLabel = computed(() => activeSaved.value?.name ?? t('tasks.advancedFilters.button'))
 
 const profileNames = computed(() => new Map(orgProfiles.value.map(profile => [profile.id, profileFullName(profile)])))
-const projectNames = computed(() => new Map(projectItems.value.map(item => [item.value, item.label])))
+const projectNames = computed(() => new Map([
+  ...projectItems.value.map(item => [item.value, item.label] as const),
+  ...privateProjects.value.map(project => [project.id, project.name] as const),
+]))
 
 /** Resumen legible de un filtro guardado para la lista. */
 function describeFilters(params: Record<string, string>): string[] {
@@ -564,12 +578,14 @@ const modalDescription = computed(() => {
                 @update:model-value="draft = { ...draft, short_description: String($event) || undefined }"
               />
 
-              <USelect
+              <USelectMenu
                 v-else-if="fieldId === 'type' || fieldId === 'project' || fieldId === 'users' || fieldId === 'created_by'"
                 :model-value="listValue(fieldId)"
                 multiple
+                value-key="value"
                 :items="listItems(fieldId)"
                 :placeholder="t('tasks.advancedFilters.listPlaceholder')"
+                :search-input="fieldId === 'type' ? false : { placeholder: t('tasks.filterSelectSearch') }"
                 size="sm"
                 class="w-full"
                 @update:model-value="setListValue(fieldId, $event as (number | string)[])"

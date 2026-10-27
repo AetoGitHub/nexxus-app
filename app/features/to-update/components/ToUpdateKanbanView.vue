@@ -62,6 +62,7 @@ function onMove(payload: KanbanTaskMove) {
     :selected-task-id="selectedTaskId"
     confirm-before-move
     :show-create="false"
+    :quick-advance="false"
     @select="onSelect"
     @move="onMove"
   >

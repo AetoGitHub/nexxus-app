@@ -2,6 +2,7 @@ import { useQueries, useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import type {
   ProjectDropdown,
@@ -91,7 +92,7 @@ export function useCalendarProjectTasks(
         id: project.id,
         name: project.name,
         color: PROJECT_COLORS[index % PROJECT_COLORS.length]!,
-        tasks: extractResults(result?.data),
+        tasks: withoutPersonalTasks(extractResults(result?.data)),
         loading: result?.isPending ?? false,
         error: result?.isError ?? false,
       }

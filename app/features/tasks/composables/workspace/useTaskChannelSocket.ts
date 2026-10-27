@@ -1,12 +1,15 @@
 import { FetchError } from 'ofetch'
-import { useQueryClient } from '@tanstack/vue-query'
+import { useQueryClient, type InfiniteData } from '@tanstack/vue-query'
 import { useTaskTokens } from '~/features/tasks/composables/shared/useTaskTokens'
 import { useTaskCreatedSync } from '~/features/tasks/composables/workspace/useTaskCreatedSync'
 import type {
   CreateMultipleTasksChannelEvent,
   CreateTaskChannelEvent,
+  Task,
   UpdateTaskChannelEvent,
 } from '~/features/tasks/types/task.types'
+import type { PaginatedResponse } from '~/shared/types/api.types'
+import { removeTaskFromInfiniteData } from '~/features/tasks/utils/task-infinite.util'
 import { useRealtimeStatus } from '~/shared/composables/useRealtimeStatus'
 import { useSessionClosing } from '~/shared/composables/useSessionClosing'
 import { useWsTicket } from '~/shared/composables/useWsTicket'
@@ -295,6 +298,25 @@ export function useTaskChannelSocket() {
   }
 
   /**
+   * La tarea ya no existe para este usuario (404 al pedirla: se borró, o es privada y dejó de ser suya): se saca de todas
+   * las listas y tableros en caché y se descarta su detalle, en vez de dejar una tarjeta que ya no abre.
+   */
+  function forgetTask(taskPk: number) {
+    queryClient.setQueriesData<unknown>(
+      {
+        queryKey: ['tasks'],
+        predicate: query => query.queryKey[1] !== 'messages' && query.queryKey[1] !== 'detail',
+      },
+      (current) => {
+        const data = current as InfiniteData<PaginatedResponse<Task>> | PaginatedResponse<Task> | undefined
+        const isList = data != null && typeof data === 'object' && ('pages' in data || Array.isArray((data as PaginatedResponse<Task>).results))
+        return isList ? removeTaskFromInfiniteData(data, taskPk) : current
+      },
+    )
+    queryClient.removeQueries({ queryKey: ['tasks', 'detail', taskPk], exact: true })
+  }
+
+  /**
    * Otra persona cambió la tarea (p. ej. le dio un token): trae su conteo real para que el número
    * se actualice al instante; el resync general que sigue reordena las listas como las manda el backend.
    */
@@ -305,7 +327,10 @@ export function useTaskChannelSocket() {
         applyServerCount(taskPk, task.tokens_count)
       }
     }
-    catch {
+    catch (error) {
+      if (error instanceof FetchError && error.status === 404) {
+        forgetTask(taskPk)
+      }
       // El refetch general recupera la consistencia.
     }
   }
@@ -384,7 +409,10 @@ export function useTaskChannelSocket() {
               scheduleBoardResync()
             }
           })
-          .catch(() => {
+          .catch((error) => {
+            if (error instanceof FetchError && error.status === 404) {
+              forgetTask(event.task_pk)
+            }
             // Si falla una consulta puntual, recuperamos consistencia por refetch.
             scheduleBoardResync()
           })

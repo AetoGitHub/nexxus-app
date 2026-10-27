@@ -802,8 +802,18 @@
       "meAria": "Te mencionaron en esta tarea",
       "you": "Tú",
       "countAria": "{count} mencionados en esta tarea: {names}",
-      "tooltipTitle": "Mencionados ({count})"
-    }
+      "tooltipTitle": "Mencionados ({count})",
+      "tooltipHeader": "Mencionados"
+    },
+    "quickAdvance": {
+      "start": "Iniciar: pasar a En progreso",
+      "review": "Enviar a revisión",
+      "complete": "Completar tarea",
+      "state": "Estado: {status}",
+      "blockedTitle": "No se puede completar con un clic",
+      "blockedInReview": "Está en revisión: la completan quienes deben confirmar su cierre."
+    },
+    "filterSelectSearch": "Buscar…"
   },
   "settings": {
     "title": "Configuración",
@@ -2134,6 +2144,51 @@
       "task_backlog_created": "Tarea de backlog creada",
       "task_backlog_completed": "Tarea de backlog completada",
       "task_token_given": "Toque recibido"
+    }
+  },
+  "privateProjects": {
+    "section": "Mis proyectos privados",
+    "onlyYou": "Solo tú",
+    "new": "Nuevo proyecto privado",
+    "empty": "Todavía no tienes proyectos privados.",
+    "loadError": "No se pudieron cargar tus proyectos privados.",
+    "open": "Ver tareas",
+    "makePublic": "Hacer público",
+    "options": "Opciones de {name}",
+    "lockTooltip": "Tarea privada: solo tú la ves",
+    "lockAria": "Tarea privada",
+    "create": {
+      "title": "Nuevo proyecto privado",
+      "description": "Solo tú verás este proyecto y sus tareas: no cuentan en el dashboard ni en los reportes de la empresa.",
+      "name": "Nombre",
+      "namePlaceholder": "Casa, Ideas, Lectura…",
+      "color": "Color",
+      "submit": "Crear proyecto",
+      "successTitle": "Proyecto privado creado",
+      "successDescription": "«{name}» ya está en tus proyectos privados.",
+      "errorTitle": "No se pudo crear el proyecto"
+    },
+    "publish": {
+      "title": "Hacer público «{name}»",
+      "warning": "El proyecto y TODAS sus tareas pasarán a la compañía que elijas. Las verá el equipo y contarán en dashboard y reportes. Esta acción no se puede deshacer.",
+      "company": "Compañía",
+      "companyPlaceholder": "Elige una compañía",
+      "noCompanies": "No tienes compañías disponibles",
+      "submit": "Hacer público",
+      "successTitle": "Proyecto publicado",
+      "successDescription": "«{name}» ya es un proyecto de la compañía.",
+      "errorTitle": "No se pudo hacer público"
+    },
+    "form": {
+      "companyGroup": "Proyectos de la compañía",
+      "privateGroup": "Mis proyectos privados",
+      "onlyYou": "Tarea privada: solo tú puedes ser el asignado.",
+      "noMentions": "Las tareas privadas no admiten menciones.",
+      "projectLocked": "Una tarea privada no se puede mover a otro proyecto."
+    },
+    "unavailable": {
+      "title": "No disponible",
+      "description": "Esta tarea no existe o no tienes acceso a ella."
     }
   }
 }

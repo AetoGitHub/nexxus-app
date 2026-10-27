@@ -1,6 +1,16 @@
 import type { MaybeRefOrGetter } from 'vue'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
+import type { TaskDetail, TaskMessage } from '~/features/tasks/types/task.types'
+
+/** Misma regla del backend: archivo en un mensaje no borrado del chat o imagen de un paso previo del proceso. */
+export function hasCloseEvidence(
+  messages: Array<Pick<TaskMessage, 'deleted' | 'files'>>,
+  detail: Pick<TaskDetail, 'process_tasks'> | null | undefined,
+): boolean {
+  return messages.some(message => !message.deleted && (message.files?.length ?? 0) > 0)
+    || (detail?.process_tasks ?? []).some(step => (step.images?.length ?? 0) > 0)
+}
 
 /**
  * Evidencia de cierre de una tarea con `requires_close_file`.
@@ -21,11 +31,7 @@ export function useCloseEvidence(
 
   /** La tarea exige evidencia. */
   const taskRequiresFile = computed(() => detail.data.value?.requires_close_file === true)
-  /** Misma regla del backend: archivo en un mensaje no borrado del chat o imagen de un paso previo del proceso. */
-  const hasEvidence = computed(() =>
-    messages.value.some(message => !message.deleted && (message.files?.length ?? 0) > 0)
-    || (detail.data.value?.process_tasks ?? []).some(step => (step.images?.length ?? 0) > 0),
-  )
+  const hasEvidence = computed(() => hasCloseEvidence(messages.value, detail.data.value))
   /** Falta subir al menos un archivo al chat para poder cerrar. */
   const needsEvidence = computed(() => taskRequiresFile.value && !hasEvidence.value)
 

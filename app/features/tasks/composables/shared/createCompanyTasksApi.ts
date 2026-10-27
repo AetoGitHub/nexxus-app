@@ -4,6 +4,7 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import type { Task, TaskListFilters } from '~/features/tasks/types/task.types'
 import { getPaginatedNextPageParam } from '~/shared/utils/paginated.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { withoutPersonalPages } from '~/features/tasks/utils/task-personal.util'
 
 /**
  * Factory compartido para queries de tareas por empresa.
@@ -19,6 +20,8 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
     ...adminQuery.value,
   }))
   const hasCompany = computed(() => companyId.value != null)
+  /** Vista total, por grupo o por proyecto (admin/manager): ahí nunca se muestran tareas de proyectos privados. */
+  const isTeamView = computed(() => Object.keys(adminQuery.value).length > 0)
 
   function companyPath(path: string): string {
     const normalized = path.startsWith('/') ? path : `/${path}`
@@ -62,6 +65,7 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
           ? $api<PaginatedResponse<Task>>(pageParam)
           : $api<PaginatedResponse<Task>>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
       getNextPageParam: getPaginatedNextPageParam,
+      select: data => (isTeamView.value ? withoutPersonalPages(data) : data),
       enabled: computed(() =>
         hasCompany.value
         && (options.enabled === undefined ? true : toValue(options.enabled)),

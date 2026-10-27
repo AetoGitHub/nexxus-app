@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { TaskMention } from '~/features/tasks/types/task.types'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
+import { personInitials } from '~/features/tasks/utils/task-initials.util'
 
 /**
  * Indicador «@» de una tarea con menciones: gris con el número de mencionados, o ámbar «Te mencionaron» si el usuario
- * logueado es uno de ellos (no depende solo del color: lleva texto, ícono «@» y aria-label). El tooltip lista los nombres.
+ * logueado es uno de ellos (no depende solo del color: lleva texto, ícono «@» y aria-label). El tooltip es una tarjeta con
+ * los mencionados (avatar y nombre), el usuario logueado primero y marcado como «Tú».
  */
 const props = withDefaults(
   defineProps<{
@@ -19,7 +21,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { count, mentionsMe, names } = useTaskMentions(() => props.mentions)
+const { count, mentionsMe, names, people } = useTaskMentions(() => props.mentions)
 
 const ariaLabel = computed(() =>
   mentionsMe.value
@@ -31,7 +33,8 @@ const ariaLabel = computed(() =>
 <template>
   <UTooltip
     v-if="count > 0"
-    :content="{ side: 'top' }"
+    :content="{ side: 'top', sideOffset: 8 }"
+    :ui="{ content: 'h-auto max-w-none overflow-hidden z-50 rounded-xl bg-elevated p-0 text-default shadow-xl ring-1 ring-default' }"
   >
     <span
       class="task-mention-badge"
@@ -48,17 +51,41 @@ const ariaLabel = computed(() =>
     </span>
 
     <template #content>
-      <div class="max-w-64 space-y-1 py-0.5 text-xs">
-        <p class="font-semibold">
-          {{ t('tasks.mentions.tooltipTitle', { count }) }}
-        </p>
-        <ul class="space-y-0.5">
+      <div class="w-56 max-w-[calc(100vw-2rem)]">
+        <div class="flex items-center gap-2 border-b border-border px-3 py-2">
+          <span
+            class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[11px] font-bold"
+            :class="mentionsMe ? 'task-mention-badge--me' : 'bg-muted text-muted-foreground'"
+            aria-hidden="true"
+          >@</span>
+          <span class="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">
+            {{ t('tasks.mentions.tooltipHeader') }}
+          </span>
+          <span class="shrink-0 rounded-full bg-muted px-1.5 text-[11px] font-semibold tabular-nums leading-4 text-muted-foreground">
+            {{ count }}
+          </span>
+        </div>
+
+        <ul class="max-h-56 space-y-0.5 overflow-y-auto p-1.5">
           <li
-            v-for="(name, index) in names"
-            :key="`${index}-${name}`"
-            :class="mentionsMe && index === 0 ? 'font-semibold' : ''"
+            v-for="person in people"
+            :key="person.id"
+            class="flex items-center gap-2 rounded-lg px-1.5 py-1"
+            :class="person.isMe ? 'bg-[color-mix(in_oklab,var(--mention-me-fill)_16%,transparent)]' : ''"
           >
-            {{ name }}
+            <UserAvatar
+              :user-id="person.id"
+              :initials="personInitials(person.name)"
+              :name="person.name"
+              :size="24"
+              :font-size="10"
+              fallback-color="#28ceab"
+            />
+            <span class="min-w-0 flex-1 truncate text-xs text-foreground">{{ person.name }}</span>
+            <span
+              v-if="person.isMe"
+              class="task-mention-badge--me shrink-0 rounded-md px-1.5 text-[10px] font-bold leading-4"
+            >{{ t('tasks.mentions.you') }}</span>
           </li>
         </ul>
       </div>

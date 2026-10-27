@@ -2,6 +2,7 @@
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
@@ -23,7 +24,14 @@ withDefaults(
 )
 
 const { t } = useI18n()
-const { projects, items: projectItems } = useProjectsDropdown()
+/** Texto del buscador del filtro de proyecto: busca primero en lo ya cargado y, si no hay coincidencia, en la API. */
+const projectSearchTerm = ref('')
+const {
+  projects,
+  items: projectItems,
+  allItems: allProjectItems,
+  isSearching: isSearchingProjects,
+} = useProjectsDropdown({ searchTerm: projectSearchTerm })
 const { organization } = useAuth()
 const { isAdminActive, isGroupActive, isProjectActive } = useTaskAdminView()
 
@@ -51,11 +59,21 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
   { value: 'trigger', dotClass: 'bg-warning' },
 ]
 
-const projectSelectItems = computed(() =>
-  withEmptySelectItems(projectItems.value, t('common.noData'), {
-    pending: projects.isPending.value,
-  }),
-)
+const { projects: privateProjects } = usePrivateProjects()
+
+/**
+ * Proyectos vistos alguna vez (primera página, búsquedas y mis privados): así los seleccionados conservan su nombre al
+ * cambiar el texto buscado o al abrir un proyecto privado desde el menú lateral (el dropdown solo trae los de la compañía).
+ */
+const knownProjects = reactive(new Map<number, { label: string, value: number }>())
+watchEffect(() => {
+  for (const item of allProjectItems.value) {
+    knownProjects.set(item.value, item)
+  }
+  for (const project of privateProjects.value) {
+    knownProjects.set(project.id, { label: project.name, value: project.id })
+  }
+})
 
 const selectedTypes = computed(() => filters.value.type ?? [])
 
@@ -70,6 +88,17 @@ const selectedProjects = computed({
       project: value.length ? value : undefined,
     }
   },
+})
+
+/** Resultado de la búsqueda más los proyectos ya seleccionados (para que su nombre no desaparezca de la lista). */
+const projectSelectItems = computed(() => {
+  const shown = new Set(projectItems.value.map(item => item.value))
+  const selectedExtra = selectedProjects.value
+    .filter(id => !shown.has(id))
+    .flatMap(id => knownProjects.get(id) ?? [])
+  return withEmptySelectItems([...projectItems.value, ...selectedExtra], t('common.noData'), {
+    pending: projects.isPending.value,
+  })
 })
 
 const selectedUsers = computed({
@@ -212,11 +241,15 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       :label="t('tasks.filterProject')"
       :class="stacked ? 'w-full' : 'min-w-36'"
     >
-      <USelect
+      <USelectMenu
         v-model="selectedProjects"
         multiple
+        value-key="value"
+        v-model:search-term="projectSearchTerm"
         :items="projectSelectItems"
         :placeholder="t('tasks.filterProjectPlaceholder')"
+        :search-input="{ placeholder: t('tasks.filterSelectSearch'), loading: isSearchingProjects }"
+        ignore-filter
         :loading="projects.isPending.value"
         size="sm"
         :class="stacked ? 'w-full' : 'w-48'"
@@ -228,11 +261,13 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       :label="t('tasks.filterUsers')"
       :class="stacked ? 'w-full' : 'min-w-36'"
     >
-      <USelect
+      <USelectMenu
         v-model="selectedUsers"
         multiple
+        value-key="value"
         :items="userSelectItems"
         :placeholder="t('tasks.filterUsersPlaceholder')"
+        :search-input="{ placeholder: t('tasks.filterSelectSearch') }"
         :loading="orgProfilesQuery.isPending.value"
         size="sm"
         :class="stacked ? 'w-full' : 'w-48'"

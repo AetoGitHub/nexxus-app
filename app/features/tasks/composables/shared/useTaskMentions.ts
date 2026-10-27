@@ -19,5 +19,16 @@ export function useTaskMentions(mentions: MaybeRefOrGetter<TaskMention[] | null 
     return mentionsMe.value ? [t('tasks.mentions.you'), ...others] : others
   })
 
-  return { mentions: list, count: computed(() => list.value.length), mentionsMe, names }
+  /** Lo mismo que `names` pero con el id (para el avatar) y si es el usuario logueado; él va primero. */
+  const people = computed(() => {
+    const mine = list.value.filter(mention => mention.id === user.value?.id)
+    const others = list.value.filter(mention => mention.id !== user.value?.id)
+    return [...mine, ...others].map(mention => ({
+      id: mention.id,
+      name: profileFullName(mention),
+      isMe: mention.id === user.value?.id,
+    }))
+  })
+
+  return { mentions: list, people, count: computed(() => list.value.length), mentionsMe, names }
 }

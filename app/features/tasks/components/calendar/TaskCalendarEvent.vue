@@ -9,6 +9,8 @@ const props = withDefaults(
     status: string
     type: string
     mentions?: TaskMention[]
+    /** Tarea de un proyecto privado: el chip del proyecto lleva candado. */
+    isPersonal?: boolean
     /** Color legible (negro/blanco) según el fondo elegido por el usuario. */
     textColor?: string
     /** En barras multi-día, los chips van solo en el tramo inicial. */
@@ -17,6 +19,7 @@ const props = withDefaults(
   {
     projectName: '',
     mentions: () => [],
+    isPersonal: false,
     textColor: 'currentColor',
     showBadges: true,
   },
@@ -58,13 +61,14 @@ const BADGE_SCRIM_STYLE = {
       />
       <UBadge
         v-if="resolvedProjectName"
-        icon="i-lucide-folder-kanban"
+        :icon="isPersonal ? 'i-lucide-lock' : 'i-lucide-folder-kanban'"
         :label="resolvedProjectName"
         color="primary"
         variant="soft"
         size="xs"
         :style="BADGE_SCRIM_STYLE"
-        :aria-label="t('tasks.projectName', { name: resolvedProjectName })"
+        :title="isPersonal ? t('privateProjects.lockTooltip') : undefined"
+        :aria-label="isPersonal ? `${t('tasks.projectName', { name: resolvedProjectName })} · ${t('privateProjects.lockAria')}` : t('tasks.projectName', { name: resolvedProjectName })"
       />
       <UBadge
         :label="t(statusMeta.labelKey)"

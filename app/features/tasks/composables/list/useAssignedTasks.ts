@@ -9,6 +9,7 @@ import type {
   UserDropdown,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
@@ -71,7 +72,7 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
     return userList.value.map((user, index) => {
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(user.id) ?? 0
-      const loadedTasks = total > 0 ? extractResults(queryResult?.data) : []
+      const loadedTasks = total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : []
       const tasks = sortByTokens(loadedTasks)
       const fallbackColor = GROUP_SECTION_COLORS[index % GROUP_SECTION_COLORS.length] ?? '#6b7280'
 

@@ -111,6 +111,7 @@ function backToHub() {
 
     <nav class="flex-1 overflow-y-auto px-3">
       <AppNavList :collapsed="collapsed" />
+      <AppPrivateProjects :collapsed="collapsed" />
     </nav>
 
     <div class="p-2 border-t border-sidebar-border">

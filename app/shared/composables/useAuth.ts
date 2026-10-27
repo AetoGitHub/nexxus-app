@@ -1,7 +1,27 @@
+import { clearStoredCatalog } from '~/features/auth/utils/profile-appearance.util'
 import { removePushDeviceOnLogout } from '~/features/push/utils/push-device.util'
 import type { AuthLoginRequest, AuthLoginResponse, AuthPasswordChangeRequest } from '~/shared/types/auth.types'
 
 export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedGroup, AuthProject } from '~/shared/types/auth.types'
+
+/**
+ * Borra todo rastro de la sesión que se cierra o se abre: la caché de consultas (tareas, proyectos privados, detalle y
+ * chats) y el estado en memoria y en localStorage ligado a tareas, para que otra cuenta en el mismo navegador no vea
+ * nada de la anterior.
+ */
+function clearSessionCaches() {
+  useNuxtApp().$queryClient.clear()
+  for (const key of ['task-tokens', 'task-token-cooldowns', 'notifications-processed-ids', 'dashboard-task-detail-id', 'dashboard-task-detail-open']) {
+    clearNuxtState(key)
+  }
+  clearStoredCatalog()
+  try {
+    localStorage.removeItem('nexxus-tasks-token-cooldowns')
+  }
+  catch {
+    // Sin almacenamiento no hay nada que borrar.
+  }
+}
 
 export function useAuth() {
   const apiBaseUrl = useApiBaseUrl()
@@ -34,6 +54,8 @@ export function useAuth() {
       body,
     })
 
+    // Cuenta nueva en el mismo navegador: nada de la sesión anterior (tareas privadas incluidas) debe quedar en memoria.
+    clearSessionCaches()
     session.value = {
       token: data.token,
       user: data.user,
@@ -85,7 +107,7 @@ export function useAuth() {
       sessionClosing.value = false
       await navigateTo('/login')
       // Ya sin pantallas montadas: evita que el siguiente usuario vea datos en caché de esta sesión.
-      useNuxtApp().$queryClient.clear()
+      clearSessionCaches()
     }
   }
 

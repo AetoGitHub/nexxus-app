@@ -3,6 +3,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import type {
   Task,
@@ -81,7 +82,7 @@ export function useCalendarGroupTasks(
         color: group.color?.trim()
           ? resolveThemeColor(group.color)
           : FALLBACK_GROUP_COLORS[index % FALLBACK_GROUP_COLORS.length]!,
-        tasks: extractResults(result?.data),
+        tasks: withoutPersonalTasks(extractResults(result?.data)),
         loading: result?.isPending ?? false,
         error: result?.isError ?? false,
       }

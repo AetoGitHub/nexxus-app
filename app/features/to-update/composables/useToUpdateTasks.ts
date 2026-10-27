@@ -11,6 +11,7 @@ import {
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { useToUpdateCounts } from '~/features/to-update/composables/useToUpdateCounts'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
 
 /**
  * Server state de Pending approval (vista Lista) vía TanStack Query.
@@ -54,7 +55,7 @@ export function useToUpdateTasks(
         labelKey: meta.labelKey,
         color: meta.color,
         count: totals?.[id],
-        tasks: extractResults(sectionQuery.data.value),
+        tasks: withoutPersonalTasks(extractResults(sectionQuery.data.value)),
         loading: sectionQuery.isPending.value,
         error: sectionQuery.isError.value,
         defaultOpen: meta.defaultOpen,

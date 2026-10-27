@@ -3,6 +3,7 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import { useCreateTaskMessage } from '~/features/tasks/composables/form/useCreateTaskMessage'
 import { useTaskDetail } from '~/features/tasks/composables/form/useTaskDetail'
 import { useMentionCompany } from '~/features/tasks/composables/shared/useMentionCompany'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import { useTaskMessages } from '~/features/tasks/composables/form/useTaskMessages'
 import { useTaskMessagesSocket } from '~/features/tasks/composables/form/useTaskMessagesSocket'
 import { useUpdateTaskMessage } from '~/features/tasks/composables/form/useUpdateTaskMessage'
@@ -63,7 +64,13 @@ const { status: socketStatus } = useTaskMessagesSocket(() => props.taskId, {
 })
 /** Las menciones del chat solo sugieren a miembros de la compañía del proyecto de la tarea. */
 const taskDetail = useTaskDetail(() => props.taskId)
-const mentionCompanyId = useMentionCompany(() => taskDetail.data.value?.project)
+const companyForMentions = useMentionCompany(() => taskDetail.data.value?.project)
+const { isPrivateProject } = usePrivateProjects()
+/** En una tarea de un proyecto privado no hay menciones (el backend responde 400): se apaga el autocompletado. */
+const isPersonalTask = computed(() =>
+  taskDetail.data.value?.is_personal === true || isPrivateProject(taskDetail.data.value?.project),
+)
+const mentionCompanyId = computed(() => (isPersonalTask.value ? null : companyForMentions.value))
 const { mutateAsync: createMessage, isPending: isSending } = useCreateTaskMessage()
 const { mutateAsync: updateMessage, isPending: isUpdating } = useUpdateTaskMessage()
 
@@ -905,6 +912,7 @@ onUnmounted(() => {
               ref="draftInput"
               v-model="draft"
               :company-id="mentionCompanyId"
+              :mentions-enabled="!isPersonalTask"
               :placeholder="t('tasks.messenger.placeholder')"
               :rows="1"
               autoresize
@@ -962,6 +970,7 @@ onUnmounted(() => {
         <MentionTextarea
           v-model="draft"
           :company-id="mentionCompanyId"
+              :mentions-enabled="!isPersonalTask"
           :placeholder="t('tasks.messenger.placeholder')"
           :rows="isTouchInput ? 6 : 14"
           class="w-full"
