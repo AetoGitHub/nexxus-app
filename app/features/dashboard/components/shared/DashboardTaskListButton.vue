@@ -25,7 +25,7 @@ const props = defineProps<{
   muted?: boolean
   /**
    * Divide la lista en dos: arriba las tareas sin completar (pendientes, en progreso, en revisión…) y debajo las
-   * completadas, cada grupo con su separador. Es la lectura del TCT: lo que falta y lo que ya cuenta.
+   * completadas, cada grupo con su separador. Es la lectura del TCT y del TC: lo que falta y lo que ya cuenta.
    */
   groupByStatus?: boolean
 }>()
@@ -101,18 +101,24 @@ function onUpdateOpen(value: boolean) {
 
         <div
           v-if="tasks.length"
-          class="dashboard-task-list__items max-h-96 min-h-0 flex-1 space-y-4 overflow-y-auto p-3"
+          class="dashboard-task-list__items max-h-96 min-h-0 flex-1 space-y-6 overflow-y-auto p-3"
         >
           <section
             v-for="section in sections"
             :key="section.key"
-            class="space-y-2"
+            class="space-y-3"
           >
+            <!-- Separador marcado: línea gruesa y etiqueta grande, con aire antes de las tarjetas de su grupo. -->
             <USeparator
               v-if="section.label"
               :label="section.label"
               :color="section.color"
-              :ui="{ label: 'text-[11px] font-semibold uppercase tracking-wide' }"
+              size="md"
+              class="pb-1"
+              :ui="{
+                border: section.color === 'success' ? 'border-success/70' : 'border-muted-foreground/60',
+                label: 'px-1 text-xs font-bold uppercase tracking-wider text-foreground',
+              }"
             />
             <ul class="space-y-2">
               <li
