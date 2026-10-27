@@ -184,7 +184,7 @@ const { mutateAsync: promoteBacklogTask, isPending: isPromotingBacklogTask } = u
 const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask()
 const { mutateAsync: updateBacklogTask, isPending: isUpdatingBacklog } = useUpdateBacklogTask()
 const { mutateAsync: updateTaskFiles } = useUpdateTaskFiles()
-const { uploadFile } = useFirebaseUpload()
+const { uploadFile, uploadFileWithPreview } = useFirebaseUpload()
 const taskDetailQuery = useTaskDetail(() => (open.value ? taskId.value : null))
 /** Preferencia persistida del switch "Agregarme a mí" al crear una tarea. */
 const assignSelfOnCreate = useAssignSelfToNewTask()
@@ -1083,11 +1083,11 @@ async function attachPendingFiles(taskId: number, extraTaskIds: number[] = []) {
     }
 
     const directory = buildTaskDocumentsUploadDirectory(organizationId, companyId, taskId)
-    const uploaded = await Promise.all(
+    const uploaded = (await Promise.all(
       pendingAttachments.value.map(file =>
-        uploadFile(file, directory, buildTaskUploadFileName(file.name)),
+        uploadFileWithPreview(file, directory, buildTaskUploadFileName(file.name)),
       ),
-    )
+    )).flat()
     const files = [...existingAttachments.value, ...uploaded]
     await updateTaskFiles({ taskId, payload: { files } })
     // Las tareas extra son copias de esta: llevan los mismos archivos (ya subidos, no se vuelven a subir).
@@ -1191,9 +1191,9 @@ async function uploadBacklogAttachments(): Promise<string[]> {
     }
 
     const directory = buildBacklogUploadDirectory(organizationId, companyId, String(Date.now()))
-    const uploaded = await Promise.all(
-      pendingAttachments.value.map(file => uploadFile(file, directory, buildTaskUploadFileName(file.name))),
-    )
+    const uploaded = (await Promise.all(
+      pendingAttachments.value.map(file => uploadFileWithPreview(file, directory, buildTaskUploadFileName(file.name))),
+    )).flat()
     return [...existingAttachments.value, ...uploaded]
   }
   finally {

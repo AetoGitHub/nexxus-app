@@ -24,6 +24,7 @@ import type {
   TaskCalendarPhase,
   TaskGroupBy,
   TaskListFilters,
+  TaskMention,
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import TaskCalendarEvent from '~/features/tasks/components/calendar/TaskCalendarEvent.vue'
@@ -59,6 +60,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { user } = useAuth()
 
 const phase = computed(() => props.phase ?? 'start')
 /** Modo "por proyecto": tareas coloreadas por proyecto. */
@@ -407,6 +409,11 @@ const calendarOptions = reactive<CalendarOptions>({
   moreLinkText: 'más...',
   moreLinkClick: handleMoreLinkClick,
   eventClick: handleEventClick,
+  // Tarea donde mencionan al usuario: contorno de acento (el badge «Te mencionaron» va en el contenido).
+  eventClassNames: arg =>
+    ((arg.event.extendedProps.mentions as TaskMention[] | undefined) ?? []).some(mention => mention.id === user.value?.id)
+      ? ['fc-event--mention-me']
+      : [],
   // Carriles estables: primero por inicio, luego las más largas arriba.
   eventOrder: 'start,-duration,title',
   eventOrderStrict: true,
@@ -616,6 +623,7 @@ watch(
             :project-name="String(arg.event.extendedProps.projectName ?? '')"
             :status="String(arg.event.extendedProps.status ?? '')"
             :type="String(arg.event.extendedProps.type ?? '')"
+            :mentions="(arg.event.extendedProps.mentions as TaskMention[] | undefined) ?? []"
             :text-color="arg.event.textColor || 'var(--foreground)'"
             :show-badges="arg.isStart"
           />
@@ -905,6 +913,13 @@ watch(
 .task-calendar.is-events-exiting :deep(.fc .fc-more-link) {
   opacity: 0;
   transform: translateY(4px);
+}
+
+/* El color del evento lo elige el usuario y puede ser ámbar/naranja: el contorno de acento lleva un hueco que lo separa
+   del fondo del evento. */
+.task-calendar :deep(.fc .fc-daygrid-event.fc-event--mention-me) {
+  outline: 2px solid var(--mention-me);
+  outline-offset: 1px;
 }
 
 .task-calendar :deep(.fc .fc-daygrid-event.fc-event-enter) {

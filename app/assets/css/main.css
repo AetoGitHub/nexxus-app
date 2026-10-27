@@ -21,6 +21,12 @@
   --aeto-teal: #28ceab;
   --aeto-teal-light: rgba(40, 206, 171, 0.12);
   --aeto-teal-dark: #0d7a66;
+  /* Menciones al usuario logueado: ámbar (distinto del gris neutro de «hay menciones» y del teal de marca). Con el
+     texto oscuro `--mention-me-foreground` pasa AA sobre el ámbar en ambos modos. */
+  --mention-me: #d97706;
+  /* Relleno del badge/chip (más claro en modo claro para que el texto oscuro llegue a ~7:1). */
+  --mention-me-fill: #f59e0b;
+  --mention-me-foreground: #1c1917;
 }
 
 .dark {
@@ -38,6 +44,9 @@
   --aeto-teal: #28ceab;
   --aeto-teal-light: rgba(40, 206, 171, 0.15);
   --aeto-teal-dark: #34d6b3;
+  --mention-me: #fbbf24;
+  --mention-me-fill: #fbbf24;
+  --mention-me-foreground: #1c1917;
 }
 
 @theme inline {
@@ -55,4 +64,15 @@
   --color-aeto-teal: var(--aeto-teal);
   --color-aeto-teal-light: var(--aeto-teal-light);
   --color-aeto-teal-dark: var(--aeto-teal-dark);
+  --color-mention-me: var(--mention-me);
+  --color-mention-me-foreground: var(--mention-me-foreground);
+}
+
+/* Tarjeta o fila de una tarea donde mencionan al usuario: contorno de acento (borde + línea exterior, sin tocar el
+   box-shadow del anillo de selección ni del foco). Fuera de las capas de Tailwind para ganarle al borde por defecto. */
+.task-mention-me,
+.task-mention-me:hover {
+  border-color: var(--mention-me);
+  outline: 1px solid var(--mention-me);
+  outline-offset: 0;
 }

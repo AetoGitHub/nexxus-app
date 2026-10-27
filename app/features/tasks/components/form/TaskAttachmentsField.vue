@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { fileNameFromUrl, fileTypeIcon, isImageFileUrl } from '~/features/tasks/utils/form/task-message.util'
+import { removeFileWithThumbnail, splitFilesAndThumbnails } from '~/features/tasks/utils/form/file-thumbnail-pair.util'
 
 const props = withDefaults(
   defineProps<{
@@ -32,6 +33,10 @@ interface AttachmentItem {
   isImage: boolean
   kind: 'existing' | 'pending'
   index: number
+  /** Archivo ya subido: su URL. */
+  url?: string
+  /** Miniatura de la primera página / vista previa, si se generó al subirlo. */
+  thumbnailUrl?: string
 }
 
 function formatSize(bytes: number): string {
@@ -48,10 +53,16 @@ function formatSize(bytes: number): string {
   return `${value.toFixed(1)} ${units[unitIndex]}`
 }
 
+/** Las miniaturas viajan en la misma lista que los archivos: aquí no se listan aparte, acompañan a su archivo. */
+const existingWithThumbnails = computed(() => splitFilesAndThumbnails(existingFiles.value))
+const erroredThumbnails = reactive<Record<string, boolean>>({})
+
 const items = computed<AttachmentItem[]>(() => [
-  ...existingFiles.value.map((url, index): AttachmentItem => {
+  ...existingWithThumbnails.value.files.map((url, index): AttachmentItem => {
     const isImage = isImageFileUrl(url)
     return {
+      url,
+      thumbnailUrl: existingWithThumbnails.value.thumbnails[url],
       key: `existing-${url}`,
       name: fileNameFromUrl(url),
       sizeLabel: null,
@@ -144,7 +155,7 @@ function onFilesSelected(event: Event) {
 
 function removeItem(item: AttachmentItem) {
   if (item.kind === 'existing') {
-    existingFiles.value = existingFiles.value.filter((_, i) => i !== item.index)
+    existingFiles.value = removeFileWithThumbnail(existingFiles.value, item.url!)
   }
   else {
     pendingFiles.value = pendingFiles.value.filter((_, i) => i !== item.index)
@@ -175,7 +186,7 @@ const isPreviewOpen = computed({
 
 function openItem(item: AttachmentItem) {
   const url = item.kind === 'existing'
-    ? existingFiles.value[item.index]!
+    ? item.url!
     : objectUrlFor(pendingFiles.value[item.index]!)
 
   if (item.isImage) {
@@ -251,7 +262,15 @@ onUnmounted(() => {
           class="flex min-w-0 flex-1 items-center gap-2 text-left"
           @click="openItem(item)"
         >
+          <img
+            v-if="item.thumbnailUrl && !erroredThumbnails[item.thumbnailUrl]"
+            :src="item.thumbnailUrl"
+            :alt="item.name"
+            class="h-9 w-7 shrink-0 rounded-sm border border-border bg-white object-cover object-top"
+            @error="erroredThumbnails[item.thumbnailUrl!] = true"
+          >
           <UIcon
+            v-else
             :name="item.icon"
             class="h-4 w-4 shrink-0 text-muted-foreground"
           />
