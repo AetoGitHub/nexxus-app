@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircle.vue'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
 import type { Task } from '~/features/tasks/types/task.types'
+import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
 
 const props = withDefaults(
   defineProps<{
@@ -14,25 +16,30 @@ const props = withDefaults(
     /** Botón de eliminar (hover), p. ej. en la vista de archivadas. */
     deletable?: boolean
     /**
-     * Qué hace el círculo de check: abrir el detalle (default) o autorizar
-     * la tarea directamente, sin modal ni slideover (Pendiente de aprobación).
+     * Qué hace el círculo: avanzar la tarea al siguiente estado con un clic, sin modal (default; si la tarea no se
+     * puede avanzar es solo el indicador de su estado) o autorizarla directamente, sin modal ni slideover
+     * (Pendiente de aprobación).
      */
-    checkAction?: 'select' | 'approve'
+    checkAction?: 'advance' | 'approve'
     /** Spinner en el check mientras se autoriza (solo checkAction="approve"). */
     approveLoading?: boolean
+    /** Spinner en el círculo mientras la tarea avanza (solo checkAction="advance"). */
+    advancing?: boolean
   }>(),
   {
     selected: false,
     showStatus: false,
     deletable: false,
-    checkAction: 'select',
+    checkAction: 'advance',
     approveLoading: false,
+    advancing: false,
   },
 )
 
 const emit = defineEmits<{
   select: [taskId: number]
   approve: [taskId: number]
+  advance: [taskId: number]
   delete: [taskId: number]
 }>()
 
@@ -51,6 +58,8 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null)
+const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
 
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
@@ -59,12 +68,8 @@ function onSelect() {
   emit('select', props.task.id)
 }
 
-function onCheckClick() {
-  if (props.checkAction === 'approve') {
-    emit('approve', props.task.id)
-    return
-  }
-  onSelect()
+function onApproveClick() {
+  emit('approve', props.task.id)
 }
 </script>
 
@@ -73,7 +78,7 @@ function onCheckClick() {
     role="button"
     tabindex="0"
     class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
-    :class="{ 'task-mention-me': mentionsMe }"
+    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '']"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -84,32 +89,32 @@ function onCheckClick() {
     />
 
     <button
+      v-if="checkAction === 'approve'"
       type="button"
-      class="h-5 w-5 rounded-full border-2 shrink-0 transition-colors flex items-center justify-center"
-      :class="checkAction === 'select' && selected
-        ? 'border-aeto-teal bg-aeto-teal text-white'
-        : 'border-muted-foreground/40 hover:border-aeto-teal'"
-      :disabled="checkAction === 'approve' && approveLoading"
-      :aria-label="checkAction === 'approve' ? t('tasks.toUpdate.authorize.submit') : t('tasks.complete')"
-      :aria-pressed="checkAction === 'select' && selected"
-      @click.stop="onCheckClick"
+      class="h-5 w-5 rounded-full border-2 shrink-0 transition-colors flex items-center justify-center border-muted-foreground/40 hover:border-aeto-teal"
+      :disabled="approveLoading"
+      :aria-label="t('tasks.toUpdate.authorize.submit')"
+      @click.stop="onApproveClick"
     >
       <UIcon
-        v-if="checkAction === 'approve' && approveLoading"
+        v-if="approveLoading"
         name="i-lucide-loader-circle"
         class="h-3 w-3 animate-spin text-muted-foreground"
       />
-      <UIcon
-        v-else-if="checkAction === 'select' && selected"
-        name="i-lucide-check"
-        class="h-3 w-3"
-      />
     </button>
+    <TaskStatusCircle
+      v-else
+      :status="task.status"
+      :step="advanceStep"
+      :blocked="advanceBlocked"
+      :loading="advancing"
+      @advance="emit('advance', task.id)"
+    />
 
     <div class="contents md:flex md:min-w-0 md:flex-1 md:items-center md:gap-2">
       <span
         class="col-start-2 row-start-1 min-w-0 text-sm break-words max-md:line-clamp-2 md:truncate transition-colors"
-        :class="selected
+        :class="task.status === 'complete'
           ? 'text-muted-foreground line-through'
           : 'text-foreground'"
       >

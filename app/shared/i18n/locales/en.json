@@ -803,6 +803,14 @@
       "you": "You",
       "countAria": "{count} people mentioned in this task: {names}",
       "tooltipTitle": "Mentioned ({count})"
+    },
+    "quickAdvance": {
+      "start": "Start: move to In progress",
+      "review": "Send to review",
+      "complete": "Complete task",
+      "state": "Status: {status}",
+      "blockedTitle": "Can't be completed with one click",
+      "blockedInReview": "It is in review: it is completed by the people who must confirm its closing."
     }
   },
   "settings": {

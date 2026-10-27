@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssigneeAvatars.vue'
+import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircle.vue'
+import { QUICK_ADVANCE_KEY } from '~/features/tasks/composables/shared/useQuickAdvanceTask'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
@@ -41,6 +43,10 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+
+// Solo hay círculo cuando el tablero lo provee (no en Pendientes de aprobación).
+const quickAdvance = inject(QUICK_ADVANCE_KEY, null)
+const advanceStep = computed(() => quickAdvance?.stepOf(props.task) ?? null)
 
 const didDrag = ref(false)
 
@@ -93,9 +99,20 @@ function onDragEnd() {
       @keydown.enter.self.prevent="onSelect"
       @keydown.space.self.prevent="onSelect"
     >
-      <p class="text-sm font-medium text-foreground leading-snug line-clamp-2">
-        <MentionText :text="task.short_description" />
-      </p>
+      <div class="flex items-start gap-2">
+        <TaskStatusCircle
+          v-if="quickAdvance"
+          class="mt-px"
+          :status="task.status"
+          :step="advanceStep"
+          :blocked="quickAdvance.isBlocked(task)"
+          :loading="quickAdvance.isAdvancing(task.id)"
+          @advance="quickAdvance.advance(task)"
+        />
+        <p class="min-w-0 flex-1 text-sm font-medium text-foreground leading-snug line-clamp-2">
+          <MentionText :text="task.short_description" />
+        </p>
+      </div>
 
       <div class="flex flex-wrap items-center gap-1.5">
         <TaskMentionBadge :mentions="task.mentions" />

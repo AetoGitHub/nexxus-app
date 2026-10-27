@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { KanbanColumn, KanbanCreateColumn, KanbanTaskMove } from '~/features/tasks/types/task.types'
 import TaskKanbanColumn from '~/features/tasks/components/kanban/TaskKanbanColumn.vue'
+import { QUICK_ADVANCE_KEY, useQuickAdvanceTask } from '~/features/tasks/composables/shared/useQuickAdvanceTask'
 
 const props = withDefaults(
   defineProps<{
@@ -17,6 +18,8 @@ const props = withDefaults(
     showCreate?: boolean
     /** Si se define, el botón solo aparece en esas columnas. */
     createColumnIds?: Array<string | number> | null
+    /** Las tarjetas llevan el círculo que avanza la tarea de estado con un clic (no aplica a Pendientes de aprobación). */
+    quickAdvance?: boolean
   }>(),
   {
     selectedTaskId: null,
@@ -25,6 +28,7 @@ const props = withDefaults(
     confirmBeforeMove: false,
     showCreate: true,
     createColumnIds: null,
+    quickAdvance: true,
   },
 )
 
@@ -38,6 +42,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { localColumns, moveTask } = useKanbanBoardState(() => props.columns)
+
+// Una tarea que exige evidencia no se puede cerrar de un clic: se abre su detalle para subirla al chat.
+const quickAdvanceApi = useQuickAdvanceTask({ onNeedsEvidence: taskId => emit('select', taskId) })
+if (props.quickAdvance) {
+  provide(QUICK_ADVANCE_KEY, quickAdvanceApi)
+}
 
 const draggingTaskId = ref<number | null>(null)
 const dropTargetId = ref<string | number | null>(null)

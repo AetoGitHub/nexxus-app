@@ -803,6 +803,14 @@
       "you": "Tú",
       "countAria": "{count} mencionados en esta tarea: {names}",
       "tooltipTitle": "Mencionados ({count})"
+    },
+    "quickAdvance": {
+      "start": "Iniciar: pasar a En progreso",
+      "review": "Enviar a revisión",
+      "complete": "Completar tarea",
+      "state": "Estado: {status}",
+      "blockedTitle": "No se puede completar con un clic",
+      "blockedInReview": "Está en revisión: la completan quienes deben confirmar su cierre."
     }
   },
   "settings": {
