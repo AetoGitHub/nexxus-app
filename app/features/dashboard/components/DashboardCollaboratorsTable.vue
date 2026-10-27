@@ -310,6 +310,7 @@ async function exportExcel() {
                     :description="t('dashboard.individual.taskList.tcDescription')"
                     :hint="t('dashboard.individual.createdCount')"
                     :muted="row.created === 0"
+                    group-by-status
                   />
                 </span>
               </td>

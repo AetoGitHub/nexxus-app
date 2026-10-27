@@ -174,6 +174,14 @@ function clearAll() {
   activeFields.value = []
 }
 
+/** «Limpiar todo»: vacía el constructor y quita también los filtros que ya estaban aplicados a la lista. */
+function clearAllAndApply() {
+  clearAll()
+  if (hasTaskFilters(filters.value)) {
+    applyToList({})
+  }
+}
+
 function listValue(key: ListKey): (number | string)[] {
   return draft.value[key] ?? []
 }
@@ -205,7 +213,13 @@ const hasInvalidRange = computed(() =>
 
 const draftFilters = computed(() => normalizeTaskFilters(draft.value))
 const draftHasFilters = computed(() => hasTaskFilters(draftFilters.value))
+/** Guardar un filtro exige que tenga al menos una condición. */
 const canSubmitDraft = computed(() => draftHasFilters.value && !hasInvalidRange.value)
+/**
+ * Aplicar también vale con el constructor vacío cuando ya hay filtros aplicados: es la forma de quitarlos (borrar las
+ * filas y aplicar deja la lista sin filtros).
+ */
+const canApplyDraft = computed(() => (draftHasFilters.value || hasTaskFilters(filters.value)) && !hasInvalidRange.value)
 
 const typeItems = computed(() =>
   TYPE_VALUES.map(type => ({ label: t(`tasks.types.${type}`), value: type })),
@@ -251,7 +265,7 @@ function applyToList(next: TaskListFilters) {
 }
 
 function applyDraft() {
-  if (!canSubmitDraft.value) {
+  if (!canApplyDraft.value) {
     return
   }
   applyToList(draftFilters.value)
@@ -678,9 +692,9 @@ const modalDescription = computed(() => {
             variant="ghost"
             size="sm"
             icon="i-lucide-eraser"
-            :disabled="!activeFields.length"
+            :disabled="!activeFields.length && !hasTaskFilters(filters)"
             :label="t('tasks.advancedFilters.clearAll')"
-            @click="clearAll"
+            @click="clearAllAndApply"
           />
         </div>
       </template>
@@ -939,7 +953,7 @@ const modalDescription = computed(() => {
         />
         <UButton
           icon="i-lucide-check"
-          :disabled="!canSubmitDraft"
+          :disabled="!canApplyDraft"
           :label="t('tasks.advancedFilters.apply')"
           @click="applyDraft"
         />
