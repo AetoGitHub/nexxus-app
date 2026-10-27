@@ -812,7 +812,8 @@
       "state": "Estado: {status}",
       "blockedTitle": "No se puede completar con un clic",
       "blockedInReview": "Está en revisión: la completan quienes deben confirmar su cierre."
-    }
+    },
+    "filterSelectSearch": "Buscar…"
   },
   "settings": {
     "title": "Configuración",

@@ -564,12 +564,14 @@ const modalDescription = computed(() => {
                 @update:model-value="draft = { ...draft, short_description: String($event) || undefined }"
               />
 
-              <USelect
+              <USelectMenu
                 v-else-if="fieldId === 'type' || fieldId === 'project' || fieldId === 'users' || fieldId === 'created_by'"
                 :model-value="listValue(fieldId)"
                 multiple
+                value-key="value"
                 :items="listItems(fieldId)"
                 :placeholder="t('tasks.advancedFilters.listPlaceholder')"
+                :search-input="fieldId === 'type' ? false : { placeholder: t('tasks.filterSelectSearch') }"
                 size="sm"
                 class="w-full"
                 @update:model-value="setListValue(fieldId, $event as (number | string)[])"

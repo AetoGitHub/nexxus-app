@@ -812,7 +812,8 @@
       "state": "Status: {status}",
       "blockedTitle": "Can't be completed with one click",
       "blockedInReview": "It is in review: it is completed by the people who must confirm its closing."
-    }
+    },
+    "filterSelectSearch": "Search…"
   },
   "settings": {
     "title": "Settings",
