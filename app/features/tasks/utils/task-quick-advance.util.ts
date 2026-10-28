@@ -34,7 +34,8 @@ function isMultipleClose(task: QuickAdvanceSource): boolean {
 /**
  * Siguiente paso del flujo pendiente → en progreso → en revisión → completada, o `null` si el círculo no puede mover
  * la tarea. Mismas reglas que los botones del detalle: solo quien tiene la tarea asignada, nunca archivada ni en
- * backlog, y el cierre múltiple se queda en revisión (lo completan las confirmaciones, no un clic).
+ * backlog, y el cierre múltiple se queda en revisión (lo completan las confirmaciones, no un clic). Las tareas
+ * manuales se saltan la revisión: de en progreso pasan directo a completada.
  */
 export function resolveQuickAdvance(task: QuickAdvanceSource, userId: number | null | undefined): QuickAdvanceStep | null {
   if (!isMine(task, userId)) {
@@ -45,7 +46,7 @@ export function resolveQuickAdvance(task: QuickAdvanceSource, userId: number | n
     case 'pending':
       return STEPS.start
     case 'wip':
-      return STEPS.review
+      return task.type === 'manual' ? STEPS.complete : STEPS.review
     case 'in_review':
       return isMultipleClose(task) ? null : STEPS.complete
     default:
