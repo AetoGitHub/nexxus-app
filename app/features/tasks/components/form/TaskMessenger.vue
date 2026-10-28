@@ -17,6 +17,7 @@ import {
 } from '~/features/tasks/utils/form/task-file-upload.util'
 import { useFirebaseUpload } from '~/shared/composables/useFirebaseUpload'
 import { removeFileWithThumbnail, splitFilesAndThumbnails } from '~/features/tasks/utils/form/file-thumbnail-pair.util'
+import { pastedFiles } from '~/shared/utils/clipboard-files.util'
 import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
@@ -378,6 +379,7 @@ function openFilePicker() {
   fileInputEl.value?.click()
 }
 
+
 function onFilesSelected(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files ? Array.from(input.files) : []
@@ -388,6 +390,44 @@ function onFilesSelected(event: Event) {
 function removePendingFile(index: number) {
   pendingFiles.value = pendingFiles.value.filter((_, i) => i !== index)
 }
+
+/**
+ * Ctrl+V con una imagen (captura de pantalla, imagen copiada) o archivos copiados: se adjunta directo, sin guardarla
+ * antes en el equipo. Si el portapapeles trae texto, el pegado sigue normal. No se propaga para que el campo de adjuntos
+ * del formulario (que también escucha el pegado) no la tome por segunda vez.
+ */
+function onPaste(event: ClipboardEvent) {
+  if (props.readonly) {
+    return
+  }
+  const files = pastedFiles(event)
+  if (!files.length) {
+    return
+  }
+  event.preventDefault()
+  event.stopPropagation()
+  pendingFiles.value = [...pendingFiles.value, ...files]
+}
+
+/** Miniatura de las imágenes por adjuntar (incluidas las pegadas); se liberan al quitarlas o al cerrar el chat. */
+const previewUrls = new Map<File, string>()
+
+function previewUrl(file: File): string | null {
+  if (!file.type.startsWith('image/')) {
+    return null
+  }
+  let url = previewUrls.get(file)
+  if (!url) {
+    url = URL.createObjectURL(file)
+    previewUrls.set(file, url)
+  }
+  return url
+}
+
+onUnmounted(() => {
+  previewUrls.forEach(url => URL.revokeObjectURL(url))
+  previewUrls.clear()
+})
 
 function isFileDrag(event: DragEvent) {
   return Array.from(event.dataTransfer?.types ?? []).includes('Files')
@@ -587,6 +627,7 @@ onUnmounted(() => {
     @dragover.prevent
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onFilesDropped"
+    @paste="onPaste"
   >
     <UCard
       variant="outline"
@@ -865,7 +906,14 @@ onUnmounted(() => {
             :key="`${file.name}-${index}`"
             class="flex max-w-56 min-w-0 items-center gap-1.5 rounded-lg border border-border bg-muted/40 py-1 pl-2 pr-1 text-xs text-foreground"
           >
+            <img
+              v-if="previewUrl(file)"
+              :src="previewUrl(file)!"
+              alt=""
+              class="h-5 w-5 shrink-0 rounded object-cover"
+            >
             <UIcon
+              v-else
               :name="fileTypeIcon(file.name)"
               class="h-3.5 w-3.5 shrink-0 text-muted-foreground"
             />

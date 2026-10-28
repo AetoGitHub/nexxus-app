@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { fileNameFromUrl, fileTypeIcon, isImageFileUrl } from '~/features/tasks/utils/form/task-message.util'
 import { removeFileWithThumbnail, splitFilesAndThumbnails } from '~/features/tasks/utils/form/file-thumbnail-pair.util'
+import { pastedFiles } from '~/shared/utils/clipboard-files.util'
 
 const props = withDefaults(
   defineProps<{
@@ -124,6 +125,25 @@ function addFiles(files: File[]) {
     pendingFiles.value = [...pendingFiles.value, ...accepted]
   }
 }
+
+/**
+ * Ctrl+V con una imagen o archivos copiados en cualquier parte del formulario: se adjunta directo, sin guardarla antes
+ * en el equipo. Con texto en el portapapeles el pegado sigue normal, y si el chat de la tarea ya tomó el pegado
+ * (`defaultPrevented`) no se adjunta dos veces.
+ */
+function onPaste(event: ClipboardEvent) {
+  if (props.disabled || event.defaultPrevented) {
+    return
+  }
+  const files = pastedFiles(event)
+  if (!files.length) {
+    return
+  }
+  event.preventDefault()
+  addFiles(files)
+}
+
+useEventListener(document, 'paste', onPaste)
 
 function onDrop(event: DragEvent) {
   dragDepth = 0
