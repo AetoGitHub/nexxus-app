@@ -133,7 +133,7 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
-const { user, managedGroups, organization, selectedCompanyId } = useAuth()
+const { user, managedGroups, organization, selectedCompanyId, isSuperuser } = useAuth()
 const toast = useToast()
 const queryClient = useQueryClient()
 
@@ -169,6 +169,12 @@ const isReadOnly = computed(() => isDetailView.value && !isEditing.value)
 const mobilePanel = ref<'detail' | 'messages'>('detail')
 /** Modo creación rápida en backlog: solo name/description/project, type fijo en manual. */
 const isBacklog = ref(false)
+
+/**
+ * Responsables opcionales de un backlog nuevo (y de sus `more_tasks`). Aparte de `state.assignedTo`: el backlog nace
+ * sin dueño por defecto y el interruptor «Agregarme a mí» (que precarga `assignedTo`) no debe asignarlo sin querer.
+ */
+const backlogAssignedTo = ref<number[]>([])
 
 /** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
 const minDueDate = computed(() => {
@@ -512,13 +518,31 @@ const showDetailFooter = computed(() =>
   ),
 )
 
+/**
+ * Archivar. Un backlog lo archivan su creador, sus asignados y un superusuario (el backend rechaza a cualquier otro: antes
+ * bastaba con ser el creador); el resto de las tareas, quien puede modificarlas.
+ */
+const canArchiveThisTask = computed(() => {
+  const detail = taskDetailQuery.data.value
+  if (!detail) {
+    return false
+  }
+  if (isBacklogTask.value) {
+    const userId = user.value?.id
+    return isSuperuser.value
+      || (userId != null && detail.created_by?.id === userId)
+      || (detail.assigned_to ?? []).some(assignee => assignee.id === userId)
+  }
+  return canModifyThisTask.value
+})
+
 /** Detalle: archivar (oculto si ya está archivada). */
 const showArchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
   && taskDetailQuery.data.value != null
   && !isArchived.value
-  && canModifyThisTask.value,
+  && canArchiveThisTask.value,
 )
 
 /** Las tareas repetitivas se eliminan con su propio flujo: pueden archivar también las futuras de la serie. */
@@ -689,7 +713,7 @@ const detailAssignedToFallbackItems = computed(() =>
 const userItems = computed(() =>
   withSelectedItems(
     fetchedUserItems.value,
-    state.assignedTo,
+    [...state.assignedTo, ...backlogAssignedTo.value],
     [...allUserItems.value, ...currentUserFallbackItems.value, ...detailAssignedToFallbackItems.value],
   ),
 )
@@ -757,6 +781,10 @@ const projectItems = computed(() => {
 /** Al elegir un proyecto privado la tarea queda solo para mí: sin otros asignados, sin revisores ni cierre múltiple. */
 watch(isPersonalProject, (personal) => {
   const currentUserId = user.value?.id
+  if (personal && !isDetailView.value && currentUserId != null) {
+    // En un proyecto privado el único responsable posible del backlog es el dueño.
+    backlogAssignedTo.value = backlogAssignedTo.value.filter(id => id === currentUserId)
+  }
   if (!personal || isDetailView.value || currentUserId == null) {
     return
   }
@@ -768,6 +796,25 @@ watch(isPersonalProject, (personal) => {
   for (const row of subtaskRows.value) {
     row.assignedTo = currentUserId
   }
+})
+
+/** Selector de responsables del backlog: en un proyecto privado solo el dueño. */
+const backlogAssigneeItems = computed(() =>
+  isPersonalProject.value ? currentUserFallbackItems.value : userSelectItems.value,
+)
+
+/** Crear un backlog permite elegirlos; en el detalle de un backlog que ya los tiene se muestran de solo lectura. */
+const showBacklogAssignees = computed(() =>
+  isBacklogMode.value && (!isDetailView.value || state.assignedTo.length > 0),
+)
+
+const backlogAssigneesModel = computed<number[]>({
+  get: () => (isDetailView.value ? state.assignedTo : backlogAssignedTo.value),
+  set: (value) => {
+    if (!isDetailView.value) {
+      backlogAssignedTo.value = value
+    }
+  },
 })
 
 /** Selector de asignado de las subtareas: en una tarea personal solo yo. */
@@ -926,6 +973,7 @@ function resetForm() {
   state.setAsMaster = false
   state.applyToAll = false
   isBacklog.value = false
+  backlogAssignedTo.value = []
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -1312,7 +1360,9 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
   try {
     if (isPromotingBacklog.value && taskId.value != null) {
-      const payload = buildPromoteBacklogTaskPayload(state, taskId.value)
+      // Sin cambios en los asignados no se manda `assigned_to`: el backend conserva los que ya tenía el backlog.
+      const storedAssignedTo = (taskDetailQuery.data.value?.assigned_to ?? []).map(assignee => assignee.id)
+      const payload = buildPromoteBacklogTaskPayload(state, taskId.value, storedAssignedTo)
       await promoteBacklogTask(payload)
       close()
       return
@@ -1348,7 +1398,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 
     if (isBacklogMode.value) {
       const files = await uploadBacklogAttachments()
-      const payload = buildCreateBacklogTaskPayload(state, resolveMoreTaskNames(moreTaskRows.value), files, voiceText.value)
+      const payload = buildCreateBacklogTaskPayload(state, resolveMoreTaskNames(moreTaskRows.value), files, voiceText.value, backlogAssignedTo.value)
       await createBacklogTask(payload)
       close()
       return
@@ -1410,6 +1460,7 @@ watch(open, (isOpen) => {
     existingAttachments.value = []
     subtaskRows.value = []
     moreTaskRows.value = []
+    backlogAssignedTo.value = []
     voiceReview.value = null
     voiceText.value = ''
     return
@@ -2129,6 +2180,32 @@ const slideoverUi = computed(() => {
               />
             </UFormField>
           </div>
+
+          <UFormField
+            v-if="showBacklogAssignees"
+            :label="isDetailView ? t('tasks.form.assignedTo') : t('tasks.form.backlogAssignedTo')"
+            name="backlogAssignedTo"
+            :help="isDetailView ? undefined : t('tasks.form.backlogAssignedToHelp')"
+          >
+            <USelectMenu
+              v-model="backlogAssigneesModel"
+              v-model:search-term="userSearchTerm"
+              multiple
+              value-key="value"
+              :items="backlogAssigneeItems"
+              :placeholder="t('tasks.form.backlogAssignedToPlaceholder')"
+              :loading="usersQuery.isPending.value"
+              :disabled="isDetailView"
+              icon="i-lucide-user-search"
+              :search-input="{
+                icon: 'i-lucide-search',
+                placeholder: t('tasks.form.assignedToSearchPlaceholder'),
+                loading: isSearchingUsers,
+              }"
+              ignore-filter
+              class="w-full"
+            />
+          </UFormField>
 
           <UFormField
             v-if="!isBacklogMode"

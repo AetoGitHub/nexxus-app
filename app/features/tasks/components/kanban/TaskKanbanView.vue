@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
+import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklogMineToggle.vue'
 import TaskKanbanCompleteFilter from '~/features/tasks/components/kanban/TaskKanbanCompleteFilter.vue'
 import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
@@ -77,6 +78,7 @@ function onMove(payload: KanbanTaskMove) {
           v-model:mode="completeFilter.mode.value"
           v-model:range="completeFilter.range.value"
         />
+        <TaskBacklogMineToggle v-else-if="column.id === 'backlog'" />
       </template>
     </TaskKanbanBoard>
   </div>

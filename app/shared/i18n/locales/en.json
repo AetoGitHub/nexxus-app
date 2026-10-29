@@ -195,6 +195,7 @@
       "upcoming": "Upcoming",
       "archived": "Archived"
     },
+    "backlogMine": "Assigned to me",
     "groupBy": {
       "all": "All",
       "status": "Status",
@@ -644,7 +645,10 @@
       "projectSearchPlaceholder": "Search project...",
       "createProject": "Create project",
       "readOnly": "Read only",
-      "readOnlyHint": "You are not part of this task: you can only view it."
+      "readOnlyHint": "You are not part of this task: you can only view it.",
+      "backlogAssignedTo": "Assignees",
+      "backlogAssignedToPlaceholder": "Unassigned",
+      "backlogAssignedToHelp": "Optional: the idea is born with an owner even without dates. It stays in Backlog until it is planned."
     },
     "messenger": {
       "title": "Activity and chat",

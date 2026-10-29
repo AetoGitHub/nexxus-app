@@ -246,6 +246,7 @@ export function buildCreateBacklogTaskPayload(
   moreTasks: string[] = [],
   files: string[] = [],
   voiceText?: string | null,
+  assignedTo: number[] = [],
 ): CreateBacklogTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -260,6 +261,11 @@ export function buildCreateBacklogTaskPayload(
     type: 'manual',
     project: form.project,
     ...buildVoiceOrigin(voiceText),
+  }
+
+  // Opcional: sin responsable la idea nace sin dueño, como siempre. El backend lo aplica también a more_tasks.
+  if (assignedTo.length) {
+    payload.assigned_to = [...new Set(assignedTo)]
   }
 
   if (moreTasks.length) {
@@ -300,6 +306,8 @@ export function buildUpdateBacklogTaskPayload(
 export function buildPromoteBacklogTaskPayload(
   form: NewTaskFormInput,
   taskId: number,
+  /** Asignados que ya tenía el backlog: si el usuario no los cambió, no se manda `assigned_to` y el backend los conserva. */
+  storedAssignedTo: number[] = [],
 ): PromoteBacklogTaskPayload {
   if (!form.name.trim()) {
     throw new Error('name_required')
@@ -324,7 +332,13 @@ export function buildPromoteBacklogTaskPayload(
     limit_date: dateInputToLimitISO(form.dueDate),
     project: form.project,
     group: form.group ?? null,
-    assigned_to: form.assignedTo,
+  }
+
+  const unchanged = storedAssignedTo.length > 0
+    && storedAssignedTo.length === form.assignedTo.length
+    && storedAssignedTo.every(id => form.assignedTo.includes(id))
+  if (!unchanged) {
+    payload.assigned_to = form.assignedTo
   }
 
   if (form.requiresCloseFile) {
