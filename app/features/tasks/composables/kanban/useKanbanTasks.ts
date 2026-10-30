@@ -4,6 +4,7 @@ import { createCompanyTasksApi } from '~/features/tasks/composables/shared/creat
 import { useKanbanCompleteDateFilter } from '~/features/tasks/composables/kanban/useKanbanCompleteDateFilter'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
+import { useBacklogMine } from '~/features/tasks/composables/shared/useBacklogMine'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
@@ -21,9 +22,11 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   const counts = api.countsQuery<KanbanCounts>(scope, '/kanban/counts/', { extraQuery: completeFilter.query })
 
-  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/')
+  // «Asignadas a mí» solo afecta al backlog (lista y contador).
+  const { extraQuery: backlogMineQuery } = useBacklogMine()
+  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/', { extraQuery: backlogMineQuery })
   const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
-  const backlog = api.listQuery(['backlog'], '/backlog/')
+  const backlog = api.listQuery(['backlog'], '/backlog/', { extraQuery: backlogMineQuery })
 
   const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/')
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')

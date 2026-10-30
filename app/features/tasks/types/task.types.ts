@@ -126,6 +126,8 @@ export interface CreateBacklogTaskPayload {
   long_description?: string
   type: 'manual'
   project: number
+  /** Responsables desde que nace (opcional); aplica también a las tareas de `more_tasks`. En un proyecto privado solo el dueño. */
+  assigned_to?: number[]
   /** Nombres de tareas extra: el backend crea un backlog por cada uno con el mismo proyecto. */
   more_tasks?: string[]
   /** URLs de archivos ya subidos a Firebase (adjuntos de la tarea). */
@@ -149,7 +151,11 @@ export interface PromoteBacklogTaskPayload {
   limit_date: string
   project: number
   group: number | null
-  assigned_to: number[]
+  /**
+   * Sin este campo el backend conserva los asignados que ya tenía el backlog; con una lista los reemplaza ([] deja la
+   * tarea sin asignados).
+   */
+  assigned_to?: number[]
   task_reviewer?: number[]
   repeat_config?: TaskRepeatConfig
   /** Exige al menos un archivo (evidencia) para cerrar la tarea: en el chat o adjunto al cerrarla. */

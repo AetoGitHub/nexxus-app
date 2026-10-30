@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskSection from '~/features/tasks/components/list/TaskSection.vue'
+import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklogMineToggle.vue'
 import type { KanbanCreateColumn, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
@@ -45,7 +46,11 @@ function onCreate(sectionId: TaskSectionKey) {
         show-status
         @select="emit('select', $event)"
         @load-more="loadMore('backlog')"
-      />
+      >
+        <template #toolbar>
+          <TaskBacklogMineToggle />
+        </template>
+      </TaskSection>
 
       <TaskSection
         :title="t('tasks.sections.urgent')"

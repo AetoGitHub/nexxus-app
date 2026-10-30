@@ -112,6 +112,13 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
     </template>
 
     <template #content>
+      <div
+        v-if="$slots.toolbar"
+        class="mb-2 flex justify-end"
+      >
+        <slot name="toolbar" />
+      </div>
+
       <div v-if="loading" class="space-y-1.5">
         <USkeleton v-for="n in 3" :key="n" class="h-11 w-full rounded-lg" />
       </div>

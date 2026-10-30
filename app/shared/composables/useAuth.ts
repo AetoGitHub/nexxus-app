@@ -11,7 +11,7 @@ export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedG
  */
 function clearSessionCaches() {
   useNuxtApp().$queryClient.clear()
-  for (const key of ['task-tokens', 'task-token-cooldowns', 'notifications-processed-ids', 'dashboard-task-detail-id', 'dashboard-task-detail-open']) {
+  for (const key of ['task-tokens', 'task-token-cooldowns', 'backlog-mine', 'notifications-processed-ids', 'dashboard-task-detail-id', 'dashboard-task-detail-open']) {
     clearNuxtState(key)
   }
   clearStoredCatalog()
