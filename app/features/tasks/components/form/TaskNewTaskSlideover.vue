@@ -6,7 +6,6 @@ import type {
   CreateTaskSubtaskPayload,
   NewTaskFormType,
   ReturnTaskProcessTarget,
-  ReviewDecisionStatus,
   TaskEffort,
   TaskGroupBy,
   TaskView,
@@ -41,16 +40,14 @@ import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksFiel
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
-import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskArchiveRepeatModal from '~/features/tasks/components/form/TaskArchiveRepeatModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
-import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReturnProcessModal from '~/features/tasks/components/form/TaskReturnProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
-import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
+import { useTaskProcessActions } from '~/features/tasks/composables/shared/useTaskProcessActions'
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import TaskRepeatConfigFields from '~/features/tasks/components/form/TaskRepeatConfigFields.vue'
 import {
@@ -139,18 +136,13 @@ const queryClient = useQueryClient()
 
 const formId = 'new-task-form'
 const submitError = ref('')
-const startProcessModalOpen = ref(false)
-const closeProcessModalOpen = ref(false)
-const closeProcessStatus = ref<CloseTaskProcessStatus>('in_review')
 const reviewDecisionModalOpen = ref(false)
-const reviewDecisionStatus = ref<ReviewDecisionStatus>('complete')
 const reopenProcessModalOpen = ref(false)
 const returnProcessModalOpen = ref(false)
 const returnProcessTarget = ref<ReturnTaskProcessTarget>('backlog')
 const archiveProcessModalOpen = ref(false)
 const archiveRepeatModalOpen = ref(false)
 const unarchiveProcessModalOpen = ref(false)
-const authorizeModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
 const isEditing = ref(false)
@@ -1097,17 +1089,45 @@ function showMobileDetail() {
   mobilePanel.value = 'detail'
 }
 
-function openStartProcessModal() {
-  startProcessModalOpen.value = true
+/**
+ * Avanzar de estado (iniciar, enviar a revisión, completar, autorizar) se aplica directo, sin modal ni comentario; al
+ * terminar se cierra el panel. Si la tarea exige evidencia y falta, se avisa y el panel sigue abierto: el chat de la
+ * tarea está justo ahí para subir el archivo.
+ */
+const { startTask, closeTask, authorizeTask } = useTaskProcessActions()
+const isAdvancing = ref(false)
+
+async function advanceTask(run: () => Promise<boolean>) {
+  if (isAdvancing.value) {
+    return
+  }
+  isAdvancing.value = true
+  try {
+    if (await run()) {
+      close()
+    }
+  }
+  finally {
+    isAdvancing.value = false
+  }
 }
 
-function openCloseProcessModal(status: CloseTaskProcessStatus) {
-  closeProcessStatus.value = status
-  closeProcessModalOpen.value = true
+function startProcess() {
+  if (taskId.value != null) {
+    const id = taskId.value
+    void advanceTask(() => startTask(id))
+  }
 }
 
-function openReviewDecisionModal(status: ReviewDecisionStatus) {
-  reviewDecisionStatus.value = status
+function closeProcess(status: CloseTaskProcessStatus) {
+  if (taskId.value != null) {
+    const id = taskId.value
+    void advanceTask(() => closeTask(id, status, taskDetailQuery.data.value?.requires_close_file))
+  }
+}
+
+/** Rechazar es un regreso: sigue pidiendo confirmación y comentario. */
+function openRejectModal() {
   reviewDecisionModalOpen.value = true
 }
 
@@ -1130,14 +1150,6 @@ function openArchiveProcessModal() {
 
 function openUnarchiveProcessModal() {
   unarchiveProcessModalOpen.value = true
-}
-
-function onProcessStarted() {
-  close()
-}
-
-function onProcessClosed() {
-  close()
 }
 
 function onReviewDecision() {
@@ -1165,15 +1177,12 @@ function onProcessUnarchived() {
 }
 
 function onAuthorize() {
-  if (!pendingApprovalForUser.value) {
+  const approval = pendingApprovalForUser.value
+  const id = taskId.value
+  if (!approval || id == null) {
     return
   }
-  authorizeModalOpen.value = true
-}
-
-function onAuthorizeSuccess() {
-  authorizeModalOpen.value = false
-  close()
+  void advanceTask(() => authorizeTask(id, approval.id))
 }
 
 /**
@@ -1442,15 +1451,12 @@ watch(open, (isOpen) => {
     projectSearchTerm.value = ''
     userSearchTerm.value = ''
     submitError.value = ''
-    startProcessModalOpen.value = false
-    closeProcessModalOpen.value = false
     reviewDecisionModalOpen.value = false
     reopenProcessModalOpen.value = false
     returnProcessModalOpen.value = false
     archiveProcessModalOpen.value = false
     archiveRepeatModalOpen.value = false
     unarchiveProcessModalOpen.value = false
-    authorizeModalOpen.value = false
     isEditing.value = false
     isPromotingBacklog.value = false
     mobilePanel.value = 'detail'
@@ -2397,12 +2403,13 @@ const slideoverUi = computed(() => {
                   :label="t('tasks.processReview.rejected')"
                   color="error"
                   variant="solid"
-                  @click="openReviewDecisionModal('rejected')"
+                  @click="openRejectModal"
                 />
                 <UButton
                   :label="t('tasks.toUpdate.authorize.submit')"
                   color="warning"
-                  :disabled="!canAuthorize"
+                  :loading="isAdvancing"
+                  :disabled="!canAuthorize || isAdvancing"
                   @click="onAuthorize"
                 />
               </template>
@@ -2410,20 +2417,25 @@ const slideoverUi = computed(() => {
                 v-else-if="showStartProcess"
                 :label="t('tasks.processStart.submit')"
                 color="primary"
-                @click="openStartProcessModal"
+                :loading="isAdvancing"
+                :disabled="isAdvancing"
+                @click="startProcess"
               />
               <template v-else-if="showCloseProcess">
                 <UButton
                   :label="t('tasks.processClose.inReview')"
                   color="neutral"
                   variant="outline"
-                  @click="openCloseProcessModal('in_review')"
+                  :disabled="isAdvancing"
+                  @click="closeProcess('in_review')"
                 />
                 <UButton
                   v-if="showCompleteAction"
                   :label="t('tasks.processClose.complete')"
                   color="primary"
-                  @click="openCloseProcessModal('complete')"
+                  :loading="isAdvancing"
+                  :disabled="isAdvancing"
+                  @click="closeProcess('complete')"
                 />
               </template>
               <template v-else-if="showReviewDecision">
@@ -2431,20 +2443,23 @@ const slideoverUi = computed(() => {
                   :label="t('tasks.processReview.rejected')"
                   color="error"
                   variant="solid"
-                  @click="openReviewDecisionModal('rejected')"
+                  @click="openRejectModal"
                 />
                 <UButton
                   v-if="showReviewAuthorizeActions"
                   :label="t('tasks.toUpdate.authorize.submit')"
                   color="warning"
-                  :disabled="!canAuthorize"
+                  :loading="isAdvancing"
+                  :disabled="!canAuthorize || isAdvancing"
                   @click="onAuthorize"
                 />
                 <UButton
                   v-else-if="showReviewCompleteAction"
                   :label="t('tasks.processReview.complete')"
                   color="primary"
-                  @click="openReviewDecisionModal('complete')"
+                  :loading="isAdvancing"
+                  :disabled="isAdvancing"
+                  @click="closeProcess('complete')"
                 />
               </template>
               <UButton
@@ -2484,26 +2499,11 @@ const slideoverUi = computed(() => {
     </template>
   </USlideover>
 
-  <TaskStartProcessModal
-    v-if="taskId != null"
-    v-model:open="startProcessModalOpen"
-    :task-id="taskId"
-    @success="onProcessStarted"
-  />
-
-  <TaskCloseProcessModal
-    v-if="taskId != null"
-    v-model:open="closeProcessModalOpen"
-    :task-id="taskId"
-    :target-status="closeProcessStatus"
-    @success="onProcessClosed"
-  />
-
   <TaskReviewDecisionModal
     v-if="taskId != null"
     v-model:open="reviewDecisionModalOpen"
     :task-id="taskId"
-    :target-status="reviewDecisionStatus"
+    target-status="rejected"
     @success="onReviewDecision"
   />
 
@@ -2542,13 +2542,5 @@ const slideoverUi = computed(() => {
     v-model:open="unarchiveProcessModalOpen"
     :task-id="taskId"
     @success="onProcessUnarchived"
-  />
-
-  <TaskAuthorizeCloseModal
-    v-if="pendingApprovalForUser != null && taskId != null"
-    v-model:open="authorizeModalOpen"
-    :task-id="taskId"
-    :approval-id="pendingApprovalForUser.id"
-    @success="onAuthorizeSuccess"
   />
 </template>

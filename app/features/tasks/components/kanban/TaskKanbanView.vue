@@ -2,11 +2,9 @@
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklogMineToggle.vue'
 import TaskKanbanCompleteFilter from '~/features/tasks/components/kanban/TaskKanbanCompleteFilter.vue'
-import TaskCloseProcessModal from '~/features/tasks/components/form/TaskCloseProcessModal.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReturnProcessModal from '~/features/tasks/components/form/TaskReturnProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
-import TaskStartProcessModal from '~/features/tasks/components/form/TaskStartProcessModal.vue'
 import type { KanbanCreateColumn, KanbanTaskMove, TaskListFilters } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -27,19 +25,16 @@ const emit = defineEmits<{
 }>()
 
 const { columns, loadMore, completeFilter } = useKanbanTasks(() => props.filters)
+// Una tarea que exige evidencia no se puede cerrar al soltarla: se abre su detalle para subirla al chat.
 const {
   pendingTaskId,
-  startProcessModalOpen,
-  closeProcessModalOpen,
-  closeProcessStatus,
   reviewDecisionModalOpen,
-  reviewDecisionStatus,
   reopenProcessModalOpen,
   returnProcessModalOpen,
   returnProcessTarget,
   requestMove,
   onProcessSuccess,
-} = useKanbanProcessMove()
+} = useKanbanProcessMove({ onNeedsEvidence: taskId => emit('select', taskId) })
 
 function onMove(payload: KanbanTaskMove) {
   const task = columns.value
@@ -83,26 +78,11 @@ function onMove(payload: KanbanTaskMove) {
     </TaskKanbanBoard>
   </div>
 
-  <TaskStartProcessModal
-    v-if="pendingTaskId != null"
-    v-model:open="startProcessModalOpen"
-    :task-id="pendingTaskId"
-    @success="onProcessSuccess"
-  />
-
-  <TaskCloseProcessModal
-    v-if="pendingTaskId != null"
-    v-model:open="closeProcessModalOpen"
-    :task-id="pendingTaskId"
-    :target-status="closeProcessStatus"
-    @success="onProcessSuccess"
-  />
-
   <TaskReviewDecisionModal
     v-if="pendingTaskId != null"
     v-model:open="reviewDecisionModalOpen"
     :task-id="pendingTaskId"
-    :target-status="reviewDecisionStatus"
+    target-status="rejected"
     @success="onProcessSuccess"
   />
 

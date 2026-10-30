@@ -1,18 +1,32 @@
 import type { KanbanTaskMove, Task } from '~/features/tasks/types/task.types'
+import { useTaskProcessActions } from '~/features/tasks/composables/shared/useTaskProcessActions'
 import { findPendingCloseApproval } from '~/features/tasks/utils/form/task-form.util'
 import { isToUpdateLinearMove } from '~/features/to-update/utils/to-update-kanban-move.util'
 
 /**
- * DnD lineal en Kanban de pending-approval → modal de Autorizar.
+ * DnD lineal en Kanban de pending-approval: autoriza directo, sin modal.
  */
-export function useToUpdateKanbanMove() {
+export function useToUpdateKanbanMove(options: { onNeedsEvidence?: (taskId: number) => void } = {}) {
   const toast = useToast()
   const { t } = useI18n()
   const { user } = useAuth()
+  const { authorizeTask } = useTaskProcessActions(options)
 
-  const pendingApprovalId = ref<number | null>(null)
-  const pendingTaskId = ref<number | null>(null)
-  const authorizeModalOpen = ref(false)
+  /** Tareas con la autorización en curso: soltar otra vez la misma tarjeta no la repite. */
+  const authorizingIds = new Set<number>()
+
+  async function authorize(taskId: number, approvalId: number) {
+    if (authorizingIds.has(taskId)) {
+      return
+    }
+    authorizingIds.add(taskId)
+    try {
+      await authorizeTask(taskId, approvalId)
+    }
+    finally {
+      authorizingIds.delete(taskId)
+    }
+  }
 
   function requestMove(payload: KanbanTaskMove & { task: Task }) {
     if (!isToUpdateLinearMove(payload.fromColumnId, payload.toColumnId)) {
@@ -38,23 +52,9 @@ export function useToUpdateKanbanMove() {
       return false
     }
 
-    pendingApprovalId.value = approval.id
-    pendingTaskId.value = payload.task.id
-    authorizeModalOpen.value = true
+    void authorize(payload.task.id, approval.id)
     return true
   }
 
-  function onAuthorizeSuccess() {
-    pendingApprovalId.value = null
-    pendingTaskId.value = null
-    authorizeModalOpen.value = false
-  }
-
-  return {
-    pendingApprovalId,
-    pendingTaskId,
-    authorizeModalOpen,
-    requestMove,
-    onAuthorizeSuccess,
-  }
+  return { requestMove }
 }
