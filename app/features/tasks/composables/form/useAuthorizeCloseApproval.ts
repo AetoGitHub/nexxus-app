@@ -18,12 +18,11 @@ export function useAuthorizeCloseApproval() {
         method: 'PATCH',
         body: { closed: true },
       }),
-    // No se espera la revalidación aquí: el modal (`TaskAuthorizeCloseModal`)
-    // cierra el slideover de detalle justo después de este `onSuccess`, y si
-    // el `mutateAsync` del caller se queda colgado hasta que `['tasks']`
+    // No se espera la revalidación aquí: quien autoriza desde el slideover de
+    // detalle lo cierra justo después de este `onSuccess`, y si el
+    // `mutateAsync` del caller se queda colgado hasta que `['tasks']`
     // refetchea, la data ya llega actualizada (approval cerrado) antes de que
-    // el caller alcance a cerrar — el `v-if` que monta ese modal se vuelve
-    // falso a mitad de su propio `onConfirm` y el cierre nunca se dispara.
+    // el caller alcance a cerrar.
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       toast.add({

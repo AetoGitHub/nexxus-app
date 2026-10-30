@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import TaskAuthorizeCloseModal from '~/features/tasks/components/form/TaskAuthorizeCloseModal.vue'
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import TaskKanbanCompleteFilter from '~/features/tasks/components/kanban/TaskKanbanCompleteFilter.vue'
 import { useToUpdateKanbanMove } from '~/features/to-update/composables/useToUpdateKanbanMove'
@@ -21,13 +20,8 @@ const emit = defineEmits<{
 }>()
 
 const { columns, acceptedFilter } = useToUpdateKanban(() => props.filters)
-const {
-  pendingApprovalId,
-  pendingTaskId,
-  authorizeModalOpen,
-  requestMove,
-  onAuthorizeSuccess,
-} = useToUpdateKanbanMove()
+// Una tarea que exige evidencia no se autoriza al soltarla: se abre su detalle para subirla al chat.
+const { requestMove } = useToUpdateKanbanMove({ onNeedsEvidence: taskId => onSelect(taskId) })
 
 function onSelect(taskId: number) {
   const column = columns.value.find(item => item.tasks.some(task => task.id === taskId))
@@ -39,10 +33,6 @@ function onSelect(taskId: number) {
 }
 
 function onMove(payload: KanbanTaskMove) {
-  if (authorizeModalOpen.value) {
-    return
-  }
-
   const task = columns.value
     .flatMap(column => column.tasks)
     .find(item => item.id === payload.taskId)
@@ -74,12 +64,4 @@ function onMove(payload: KanbanTaskMove) {
       />
     </template>
   </TaskKanbanBoard>
-
-  <TaskAuthorizeCloseModal
-    v-if="pendingApprovalId != null && pendingTaskId != null"
-    v-model:open="authorizeModalOpen"
-    :task-id="pendingTaskId"
-    :approval-id="pendingApprovalId"
-    @success="onAuthorizeSuccess"
-  />
 </template>
