@@ -1185,14 +1185,24 @@ function onAuthorize() {
   void advanceTask(() => authorizeTask(id, approval.id))
 }
 
+/** Hay archivos nuevos por subir, o se quitó alguno de los que ya tenía la tarea. */
+function attachmentsChanged(): boolean {
+  if (pendingAttachments.value.length) {
+    return true
+  }
+  const stored = taskDetailQuery.data.value?.files ?? []
+  return stored.length !== existingAttachments.value.length
+    || stored.some(url => !existingAttachments.value.includes(url))
+}
+
 /**
  * Sube los documentos pendientes a Firebase y adjunta la lista completa
- * (existentes + nuevos) a la tarea. No lanza: si algo falla, avisa por toast
+ * (existentes + nuevos) a la tarea; también persiste los que se quitaron. No lanza: si algo falla, avisa por toast
  * y deja los archivos en `pendingAttachments` (el submit del resto de la
  * tarea ya se completó y no debe bloquearse por esto).
  */
 async function attachPendingFiles(taskId: number, extraTaskIds: number[] = []) {
-  if (!pendingAttachments.value.length) {
+  if (!attachmentsChanged()) {
     return
   }
 
@@ -1373,6 +1383,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
       const storedAssignedTo = (taskDetailQuery.data.value?.assigned_to ?? []).map(assignee => assignee.id)
       const payload = buildPromoteBacklogTaskPayload(state, taskId.value, storedAssignedTo)
       await promoteBacklogTask(payload)
+      await attachPendingFiles(taskId.value)
       close()
       return
     }
@@ -1380,6 +1391,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
     if (isEditing.value && taskId.value != null && isBacklogMode.value) {
       const payload = buildUpdateBacklogTaskPayload(state)
       await updateBacklogTask({ taskId: taskId.value, payload })
+      await attachPendingFiles(taskId.value)
       close()
       return
     }
@@ -1395,7 +1407,7 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
         },
         taskDetailQuery.data.value?.requires_close_file,
       )
-      if (isSameAsStoredTask(payload) && !pendingAttachments.value.length) {
+      if (isSameAsStoredTask(payload) && !attachmentsChanged()) {
         close()
         return
       }
@@ -2065,9 +2077,7 @@ const slideoverUi = computed(() => {
             />
           </div>
 
-          <!-- En backlog solo al crear (los archivos viajan en el body); el detalle/edición de un backlog no los administra. -->
           <TaskAttachmentsField
-            v-if="!isBacklogMode || !isDetailView"
             v-model:pending-files="pendingAttachments"
             v-model:existing-files="existingAttachments"
             :disabled="isReadOnly"
