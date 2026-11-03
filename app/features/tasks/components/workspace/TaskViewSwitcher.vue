@@ -44,7 +44,7 @@ watch(
       color="neutral"
       variant="ghost"
       size="sm"
-      class="flex-1 sm:flex-none px-2.5 py-1 h-auto text-xs rounded justify-center"
+      class="flex-1 sm:flex-none px-2.5 py-1 pointer-coarse:py-2.5 h-auto text-xs rounded justify-center"
       :class="model === viewOption.value
         ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
         : 'text-muted-foreground'"

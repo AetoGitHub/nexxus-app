@@ -75,13 +75,13 @@ useSeoMeta({
 </script>
 
 <template>
-  <UContainer class="flex flex-col h-screen relative p-0 overflow-hidden">
-    <div class="w-full p-4 flex flex-col h-full">
+  <UContainer class="flex flex-col min-h-dvh lg:h-dvh relative p-0 overflow-y-auto lg:overflow-hidden">
+    <div class="w-full p-4 flex flex-col flex-1">
       <header class="flex items-center justify-end">
         <UColorModeButton />
       </header>
 
-      <div class="max-w-lg mx-auto w-full h-full flex flex-col justify-center gap-6">
+      <div class="max-w-lg mx-auto w-full my-auto flex flex-col gap-6">
         <header class="grid gap-2">
           <NexxusLogo class="w-40" />
           <h1 class="text-left font-medium text-lg">

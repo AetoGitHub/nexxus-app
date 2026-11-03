@@ -68,7 +68,7 @@ useSeoMeta({
 
 <template>
   <UContainer
-    class="flex flex-col lg:flex-row h-screen relative p-0 overflow-hidden"
+    class="flex flex-col lg:flex-row min-h-dvh lg:h-dvh relative p-0 overflow-y-auto lg:overflow-hidden"
   >
     <div class="flex-1/2 w-full p-4 flex flex-col">
       <header class="flex items-center justify-end">
@@ -76,7 +76,7 @@ useSeoMeta({
       </header>
 
       <UAuthForm
-        class="max-w-lg mx-auto w-full h-full flex flex-col justify-center"
+        class="max-w-lg mx-auto w-full my-auto flex flex-col"
         :schema="schema"
         :fields="fields"
         :loading="isPending"

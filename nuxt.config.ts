@@ -49,6 +49,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       titleTemplate: "Nexxus - %s",
+      // interactive-widget: en Chrome Android el teclado achica el layout (los pies de los formularios quedan sobre el
+      // teclado en vez de detrás). iOS Safari lo ignora y sigue como siempre.
+      viewport: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
       link: [
         { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
         { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },

@@ -76,3 +76,37 @@
   outline: 1px solid var(--mention-me);
   outline-offset: 0;
 }
+
+/*
+ * Móvil. iOS Safari hace zoom al enfocar un campo con letra menor a 16 px y no lo deshace: en pantallas táctiles todos
+ * los campos de texto van a 16 px.
+ */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Área de toque ampliada (mín. 44 px) sin cambiar el tamaño visible; solo en táctil. Para controles pequeños. */
+@media (pointer: coarse) {
+  .touch-target {
+    position: relative;
+  }
+
+  .touch-target::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Con el teclado en pantalla abierto (ver useKeyboardOpen) se esconde lo fijo al fondo de la pantalla. */
+html[data-keyboard-open] [data-hide-on-keyboard] {
+  display: none !important;
+}

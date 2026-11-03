@@ -16,6 +16,7 @@ function closeMore() {
 
 <template>
   <nav
+    data-hide-on-keyboard
     class="md:hidden fixed bottom-0 inset-x-0 z-50 flex items-stretch justify-around border-t border-sidebar-border bg-sidebar px-1 pb-[env(safe-area-inset-bottom)] h-[calc(60px+env(safe-area-inset-bottom))]"
     :aria-label="t('sidebar.bottomNav')"
   >
@@ -43,7 +44,7 @@ function closeMore() {
           {{ item.badge }}
         </span>
       </span>
-      <span class="text-[10px] leading-none font-medium truncate max-w-full px-0.5">
+      <span class="text-[11px] leading-none font-medium truncate max-w-full px-0.5">
         {{ t(item.labelKey) }}
       </span>
       <span

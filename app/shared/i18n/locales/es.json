@@ -482,6 +482,7 @@
         "optional": "opcional",
         "dropHintPrefix": "Arrastra archivos aquí o",
         "browse": "busca en tu equipo",
+        "tapToAttach": "Toca para adjuntar archivos",
         "hint": "PDF, imágenes, Word, Excel — cualquier tipo, hasta 25 MB c/u",
         "remove": "Quitar archivo",
         "tooLargeTitle": "Archivo demasiado grande",
@@ -489,6 +490,7 @@
         "uploadErrorTitle": "No se pudieron adjuntar los archivos",
         "missingContext": "Falta información de organización o compañía para subir archivos"
       },
+      "moreActions": "Más acciones",
       "subtasks": {
         "label": "Subtareas",
         "optional": "opcional",

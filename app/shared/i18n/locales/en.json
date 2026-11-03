@@ -482,6 +482,7 @@
         "optional": "optional",
         "dropHintPrefix": "Drag files here or",
         "browse": "browse your computer",
+        "tapToAttach": "Tap to attach files",
         "hint": "PDF, images, Word, Excel — any file type, up to 25 MB each",
         "remove": "Remove file",
         "tooLargeTitle": "File too large",
@@ -489,6 +490,7 @@
         "uploadErrorTitle": "Could not attach the files",
         "missingContext": "Missing organization or company information to upload files"
       },
+      "moreActions": "More actions",
       "subtasks": {
         "label": "Subtasks",
         "optional": "optional",

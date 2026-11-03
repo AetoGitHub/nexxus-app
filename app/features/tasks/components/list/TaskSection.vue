@@ -182,7 +182,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
             variant="ghost"
             block
             size="sm"
-            class="justify-start text-muted-foreground hover:bg-muted/50"
+            class="justify-start pointer-coarse:py-3 text-muted-foreground hover:bg-muted/50"
             @click="emit('create')"
           />
         </div>

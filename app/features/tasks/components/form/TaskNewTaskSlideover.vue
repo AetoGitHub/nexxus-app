@@ -1687,11 +1687,32 @@ const slideoverUi = computed(() => {
                 :aria-label="t('tasks.messenger.showMessages')"
                 @click="showMobileMessages"
               />
+              <!-- Móvil: archivar queda en un menú (el icono rojo junto al del chat se tocaba sin querer). -->
+              <UDropdownMenu
+                v-if="showArchiveProcess"
+                :items="[{
+                  label: isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit'),
+                  icon: 'i-lucide-trash-2',
+                  color: 'error',
+                  onSelect: openArchiveProcessModal,
+                }]"
+              >
+                <UButton
+                  class="sm:hidden"
+                  icon="i-lucide-ellipsis-vertical"
+                  color="neutral"
+                  variant="ghost"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.form.moreActions')"
+                />
+              </UDropdownMenu>
               <UTooltip
                 v-if="showArchiveProcess"
                 :text="isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit')"
               >
                 <UButton
+                  class="hidden sm:inline-flex"
                   icon="i-lucide-trash-2"
                   color="error"
                   variant="soft"
@@ -1907,7 +1928,11 @@ const slideoverUi = computed(() => {
             :users-loading="usersQuery.isPending.value || isSearchingUsers"
           />
 
-          <div class="space-y-2">
+          <!-- En el detalle de solo lectura el tipo ya va en la etiqueta del encabezado: en móvil las tarjetas sobran. -->
+          <div
+            class="space-y-2"
+            :class="isDetailView && !isEditing ? 'hidden sm:block' : ''"
+          >
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.taskType') }}
             </p>
@@ -1919,7 +1944,7 @@ const slideoverUi = computed(() => {
                 v-for="option in visibleTaskTypeOptions"
                 :key="option.value"
                 type="button"
-                class="rounded-lg border p-3 text-left transition-colors"
+                class="rounded-lg border p-2.5 sm:p-3 text-left transition-colors"
                 :class="[
                   state.type === option.value
                     ? 'border-aeto-teal bg-aeto-teal-light'
@@ -1933,13 +1958,13 @@ const slideoverUi = computed(() => {
               >
                 <UIcon
                   :name="option.icon"
-                  class="h-4 w-4 mb-2"
+                  class="h-4 w-4 mb-1 sm:mb-2"
                   :class="state.type === option.value ? 'text-aeto-teal-dark' : 'text-muted-foreground'"
                 />
                 <p class="text-sm font-medium text-foreground">
                   {{ t(`tasks.types.${option.value}`) }}
                 </p>
-                <p class="text-xs text-muted-foreground mt-0.5 leading-snug">
+                <p class="hidden sm:block text-xs text-muted-foreground mt-0.5 leading-snug">
                   {{ t(option.descriptionKey) }}
                 </p>
               </button>

@@ -11,7 +11,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-background text-foreground">
+  <div class="min-h-dvh flex flex-col bg-background text-foreground">
     <AppHubHeader />
 
     <main class="flex-1 flex flex-col items-center justify-center px-6">

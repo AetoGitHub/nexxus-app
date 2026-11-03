@@ -21,6 +21,7 @@ const existingFiles = defineModel<string[]>('existingFiles', { default: () => []
 
 const { t } = useI18n()
 const toast = useToast()
+const isTouch = useMediaQuery('(pointer: coarse)')
 
 const fileInputEl = ref<HTMLInputElement | null>(null)
 const isDraggingOver = ref(false)
@@ -260,8 +261,13 @@ onUnmounted(() => {
         class="mx-auto h-6 w-6 text-muted-foreground"
       />
       <p class="mt-2 text-sm text-foreground">
-        {{ t('tasks.form.attachments.dropHintPrefix') }}
-        <span class="font-medium text-primary">{{ t('tasks.form.attachments.browse') }}</span>
+        <template v-if="isTouch">
+          <span class="font-medium text-primary">{{ t('tasks.form.attachments.tapToAttach') }}</span>
+        </template>
+        <template v-else>
+          {{ t('tasks.form.attachments.dropHintPrefix') }}
+          <span class="font-medium text-primary">{{ t('tasks.form.attachments.browse') }}</span>
+        </template>
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
         {{ t('tasks.form.attachments.hint') }}
