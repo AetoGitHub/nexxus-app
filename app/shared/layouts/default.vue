@@ -2,16 +2,19 @@
 import { useNotificationsSocket } from '~/features/notifications/composables/useNotificationsSocket'
 import { usePushSync } from '~/features/push/composables/usePushSync'
 import { useTaskChannelSocket } from '~/features/tasks/composables/workspace/useTaskChannelSocket'
+import { useKeyboardOpen } from '~/shared/composables/useKeyboardOpen'
 
 // Canales globales de la sesión autenticada.
 useTaskChannelSocket()
 useNotificationsSocket()
+// Con el teclado en pantalla abierto se esconden la barra inferior y los botones flotantes.
+useKeyboardOpen()
 // Push del sistema: sincroniza la suscripción, abre avisos que vienen de un push y actualiza el badge.
 usePushSync()
 </script>
 
 <template>
-  <div class="h-screen flex overflow-hidden bg-background text-foreground">
+  <div class="h-dvh flex overflow-hidden bg-background text-foreground">
     <AppSidebar />
 
     <div class="flex-1 flex flex-col min-w-0 min-h-0">

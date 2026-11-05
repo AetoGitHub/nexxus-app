@@ -87,7 +87,7 @@ const ariaLabel = computed(() =>
     <component
       :is="interactive ? 'button' : 'span'"
       :type="interactive ? 'button' : undefined"
-      class="task-status-circle group/circle relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+      class="task-status-circle touch-target group/circle relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
       :class="step ? 'task-status-circle--action cursor-pointer' : blocked ? 'cursor-not-allowed' : ''"
       :disabled="step ? loading : undefined"
       :aria-disabled="blocked && !step ? true : undefined"

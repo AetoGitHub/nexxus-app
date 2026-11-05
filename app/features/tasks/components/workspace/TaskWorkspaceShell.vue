@@ -171,7 +171,7 @@ function goToStatusList() {
             color="neutral"
             variant="outline"
             size="sm"
-            class="h-8 shrink-0"
+            class="h-8 pointer-coarse:h-10 shrink-0"
             icon="i-lucide-sliders-horizontal"
             :label="t('tasks.filters')"
             @click="openMobileFilters"
@@ -219,7 +219,7 @@ function goToStatusList() {
           :variant="showArchivedOnly ? 'subtle' : 'outline'"
           size="sm"
           square
-          class="h-8 w-8 shrink-0"
+          class="h-8 w-8 pointer-coarse:h-10 pointer-coarse:w-10 shrink-0"
           :aria-label="showArchivedOnly ? t('tasks.hideArchived') : t('tasks.showArchived')"
           @click="toggleArchivedOnly"
         />
@@ -230,7 +230,7 @@ function goToStatusList() {
           variant="outline"
           size="sm"
           square
-          class="h-8 w-8 shrink-0"
+          class="h-8 w-8 pointer-coarse:h-10 pointer-coarse:w-10 shrink-0"
           :aria-label="t('tasks.refresh')"
           :loading="isRefreshing"
           :disabled="isRefreshing"
@@ -238,7 +238,7 @@ function goToStatusList() {
         />
       </div>
 
-      <p class="text-xs text-muted-foreground px-0.5 truncate landscape-compact-summary">
+      <p class="sr-only landscape-compact-summary">
         {{ statusSummary }}
       </p>
     </div>
@@ -321,7 +321,7 @@ function goToStatusList() {
 
     <div
       class="mt-3 flex-1 min-h-0 min-w-0"
-      :class="view === 'kanban' ? 'overflow-hidden' : 'overflow-y-auto'"
+      :class="view === 'kanban' ? 'overflow-hidden' : 'overflow-y-auto pb-32 md:pb-0'"
     >
       <slot
         :view="view"
@@ -378,6 +378,7 @@ function goToStatusList() {
     <div
       v-if="!isDesktopLayout"
       v-show="!newTaskOpen"
+      data-hide-on-keyboard
       class="fixed z-40"
       :class="voiceBusy
         ? 'inset-x-4 bottom-[calc(60px+env(safe-area-inset-bottom)+1rem)]'
@@ -394,6 +395,7 @@ function goToStatusList() {
     <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto o mientras el micrófono graba. -->
     <UButton
       v-show="!newTaskOpen && !voiceBusy"
+      data-hide-on-keyboard
       color="primary"
       size="xl"
       square
