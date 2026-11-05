@@ -13,13 +13,10 @@ withDefaults(
     stacked?: boolean
     /** Oculta el input de búsqueda (cuando ya está en la barra superior). */
     hideSearch?: boolean
-    /** Alinea switches y selector de vista al inicio. */
-    alignControlsStart?: boolean
   }>(),
   {
     stacked: false,
     hideSearch: false,
-    alignControlsStart: false,
   },
 )
 
@@ -284,9 +281,7 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
       class="flex min-w-0"
       :class="stacked
         ? 'w-full flex-col items-stretch gap-3'
-        : alignControlsStart
-          ? 'shrink-0 items-center gap-4'
-          : 'ml-auto shrink-0 items-center gap-4'"
+        : 'ml-auto shrink-0 items-center gap-4'"
     >
       <div
         class="flex flex-wrap gap-4"

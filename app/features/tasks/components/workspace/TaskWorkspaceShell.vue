@@ -8,7 +8,7 @@ import TaskVoiceQuickButton from '~/features/tasks/components/workspace/TaskVoic
 import TaskViewSwitcher from '~/features/tasks/components/workspace/TaskViewSwitcher.vue'
 import { useRefreshTaskWorkspace } from '~/features/tasks/composables/workspace/useRefreshTaskWorkspace'
 import { useTaskWorkspaceState } from '~/features/tasks/composables/workspace/useTaskWorkspaceState'
-import type { TaskGroupBy, TaskView } from '~/features/tasks/types/task.types'
+import type { TaskCalendarPhase, TaskGroupBy, TaskView } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
   defineProps<{
@@ -299,23 +299,11 @@ function goToStatusList() {
           <TaskListFilters
             v-model="listFilters"
             v-model:search="search"
-            :align-controls-start="view === 'calendar'"
             class="mb-0! h-full"
           >
             <TaskViewSwitcher v-model="view" :exclude="excludeViews" />
           </TaskListFilters>
         </div>
-        <Transition name="calendar-phase">
-          <div
-            v-if="view === 'calendar'"
-            class="calendar-phase-panel h-auto self-stretch"
-          >
-            <TaskCalendarPhaseFilter
-              v-model="calendarPhase"
-              class="h-full"
-            />
-          </div>
-        </Transition>
       </div>
     </div>
 
@@ -330,6 +318,7 @@ function goToStatusList() {
         :calendar-phase="calendarPhase"
         :calendar-month="calendarMonth"
         :set-calendar-month="setCalendarMonth"
+        :set-calendar-phase="(value: TaskCalendarPhase) => { calendarPhase = value }"
         :selected-task-id="selectedTaskId"
         :open-task="openTask"
         :open-new-task="openNewTask"
@@ -428,27 +417,6 @@ function goToStatusList() {
 </template>
 
 <style scoped>
-.calendar-phase-enter-active,
-.calendar-phase-leave-active {
-  transition:
-    opacity 0.22s ease,
-    transform 0.22s ease,
-    max-width 0.22s ease;
-  overflow: hidden;
-  max-width: 18rem;
-}
-
-.calendar-phase-enter-from,
-.calendar-phase-leave-to {
-  opacity: 0;
-  transform: translateX(0.75rem);
-  max-width: 0;
-}
-
-.calendar-phase-panel {
-  display: flex;
-}
-
 /**
  * El panel de filtros "desktop" (agrupación + búsqueda + tipo + proyecto +
  * switches, todo siempre visible) solo cabe con alto de sobra. Un celular
