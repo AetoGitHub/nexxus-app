@@ -144,6 +144,12 @@
     "filterOverdue": "Vencidas",
     "filterCompleted": "Completadas",
     "filterMultipleClose": "Cierre múltiple",
+    "filterScope": {
+      "label": "Mostrar",
+      "all": "Todas",
+      "company": "Empresa",
+      "private": "Privadas"
+    },
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
@@ -764,12 +770,15 @@
         "completed": "Completadas",
         "multiple_close": "Cierre múltiple",
         "not_started": "Sin iniciar",
+        "private": "Tareas privadas",
         "start_date": "Fecha de creación",
         "wip_date": "Inicio de trabajo",
         "final_date": "Finalización"
       },
       "yes": "Sí",
       "no": "No",
+      "privateOnly": "Solo privadas",
+      "companyOnly": "Solo de la empresa",
       "from": "desde",
       "to": "hasta",
       "rangeError": "La fecha inicial no puede ser posterior a la final.",

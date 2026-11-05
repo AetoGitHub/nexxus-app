@@ -35,6 +35,11 @@ export function toTaskListQuery(
   if (filters.multiple_close !== undefined) {
     query.multiple_close = filters.multiple_close
   }
+  // Privadas: `true` = solo mis proyectos privados, `false` = solo la empresa, sin valor = todas. Viaja también en los
+  // `counts/` (misma query) para que los contadores cuadren con lo que se ve.
+  if (filters.private !== undefined) {
+    query.private = filters.private
+  }
   // Solo `true` filtra: con `false` el param se omite.
   if (filters.not_started) {
     query.not_started = true

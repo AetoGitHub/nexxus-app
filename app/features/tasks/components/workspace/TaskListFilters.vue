@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TaskPrivacyFilter from '~/features/tasks/components/workspace/TaskPrivacyFilter.vue'
 import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
@@ -7,16 +8,19 @@ import { usePrivateProjects } from '~/features/projects/composables/usePrivatePr
 const filters = defineModel<TaskListFilters>({ required: true })
 const search = defineModel<string>('search', { required: true })
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     /** Layout vertical (sheet mobile). */
     stacked?: boolean
     /** Oculta el input de búsqueda (cuando ya está en la barra superior). */
     hideSearch?: boolean
+    /** Sin el selector «Todas / Empresa / Privadas» (p. ej. pendientes de aprobación: una tarea privada nunca tiene revisores). */
+    hidePrivacy?: boolean
   }>(),
   {
     stacked: false,
     hideSearch: false,
+    hidePrivacy: false,
   },
 )
 
@@ -57,6 +61,21 @@ const TYPE_OPTIONS: { value: VisibleTaskType, dotClass: string }[] = [
 ]
 
 const { projects: privateProjects } = usePrivateProjects()
+
+/**
+ * «Todas / Empresa / Privadas» solo tiene sentido si el usuario tiene proyectos privados. Si ya hay un valor aplicado (de la
+ * URL o de un filtro guardado) se deja visible para poder quitarlo.
+ */
+const showPrivacyFilter = computed(() =>
+  !props.hidePrivacy && (privateProjects.value.length > 0 || filters.value.private !== undefined),
+)
+
+function setPrivacy(value: boolean | undefined) {
+  filters.value = {
+    ...filters.value,
+    private: value,
+  }
+}
 
 /**
  * Proyectos vistos alguna vez (primera página, búsquedas y mis privados): así los seleccionados conservan su nombre al
@@ -250,6 +269,19 @@ function setBooleanFilter(key: BooleanFilterKey, value: boolean) {
         :loading="projects.isPending.value"
         size="sm"
         :class="stacked ? 'w-full' : 'w-48'"
+      />
+    </UFormField>
+
+    <!-- Solo en la hoja de filtros (móvil): en escritorio el control va arriba, junto a «Filtros avanzados» (ver el shell). -->
+    <UFormField
+      v-if="stacked && showPrivacyFilter"
+      :label="t('tasks.filterScope.label')"
+      class="w-full"
+    >
+      <TaskPrivacyFilter
+        class="w-full"
+        :model-value="filters.private"
+        @update:model-value="setPrivacy"
       />
     </UFormField>
 

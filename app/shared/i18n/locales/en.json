@@ -144,6 +144,12 @@
     "filterOverdue": "Overdue",
     "filterCompleted": "Completed",
     "filterMultipleClose": "Multiple close",
+    "filterScope": {
+      "label": "Show",
+      "all": "All",
+      "company": "Company",
+      "private": "Private"
+    },
     "newTask": "New task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",
@@ -764,12 +770,15 @@
         "completed": "Completed",
         "multiple_close": "Multiple close",
         "not_started": "Not started",
+        "private": "Private tasks",
         "start_date": "Creation date",
         "wip_date": "Work start",
         "final_date": "Completion"
       },
       "yes": "Yes",
       "no": "No",
+      "privateOnly": "Private only",
+      "companyOnly": "Company only",
       "from": "from",
       "to": "to",
       "rangeError": "The start date cannot be after the end date.",

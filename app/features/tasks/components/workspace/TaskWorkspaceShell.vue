@@ -3,6 +3,8 @@ import TaskAdvancedFilters from '~/features/tasks/components/workspace/TaskAdvan
 import TaskCalendarPhaseFilter from '~/features/tasks/components/workspace/TaskCalendarPhaseFilter.vue'
 import TaskGroupByFilter from '~/features/tasks/components/workspace/TaskGroupByFilter.vue'
 import TaskListFilters from '~/features/tasks/components/workspace/TaskListFilters.vue'
+import TaskPrivacyFilter from '~/features/tasks/components/workspace/TaskPrivacyFilter.vue'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import TaskNewTaskSlideover from '~/features/tasks/components/form/TaskNewTaskSlideover.vue'
 import TaskVoiceQuickButton from '~/features/tasks/components/workspace/TaskVoiceQuickButton.vue'
 import TaskViewSwitcher from '~/features/tasks/components/workspace/TaskViewSwitcher.vue'
@@ -54,6 +56,17 @@ const {
 
 const { refresh, isRefreshing } = useRefreshTaskWorkspace()
 
+const { projects: privateProjects } = usePrivateProjects()
+
+/** «Todas / Empresa / Privadas»: solo con proyectos privados (o con un valor ya aplicado, para poder quitarlo) y no en pendientes de aprobación. */
+const showPrivacyFilter = computed(() =>
+  !props.authorizeMode && (privateProjects.value.length > 0 || listFilters.value.private !== undefined),
+)
+
+function setPrivacy(value: boolean | undefined) {
+  listFilters.value = { ...listFilters.value, private: value }
+}
+
 const showRefresh = computed(() => view.value === 'list' || view.value === 'kanban')
 
 /** Toggle "vista independiente de archivadas": reemplaza el contenido activo (lista/kanban). */
@@ -97,6 +110,7 @@ const activeFilterCount = computed(() => {
   if (f.completed === true) count += 1
   if (f.multiple_close === true) count += 1
   if (f.not_started === true) count += 1
+  if (f.private !== undefined) count += 1
   if (f.created_by?.length) count += 1
   if (f.start_date_from || f.start_date_to) count += 1
   if (f.wip_date_from || f.wip_date_to) count += 1
@@ -251,6 +265,11 @@ function goToStatusList() {
         :exclude="excludeGroupBy"
       >
         <div class="flex items-center gap-2">
+          <TaskPrivacyFilter
+            v-if="showPrivacyFilter"
+            :model-value="listFilters.private"
+            @update:model-value="setPrivacy"
+          />
           <TaskAdvancedFilters
             v-if="!authorizeMode"
             v-model="listFilters"
@@ -298,6 +317,7 @@ function goToStatusList() {
         <div class="min-w-0 flex-1">
           <TaskListFilters
             v-model="listFilters"
+            :hide-privacy="authorizeMode"
             v-model:search="search"
             class="mb-0! h-full"
           >
@@ -341,6 +361,7 @@ function goToStatusList() {
       <template #body>
         <TaskListFilters
           v-model="listFilters"
+          :hide-privacy="authorizeMode"
           v-model:search="search"
           stacked
           hide-search
