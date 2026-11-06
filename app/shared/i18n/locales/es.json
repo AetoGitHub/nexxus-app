@@ -232,6 +232,12 @@
       "placeholder": "Filtrar",
       "searchPlaceholder": "Buscar..."
     },
+    "calendarMobile": {
+      "label": "Vista del calendario",
+      "agenda": "Agenda",
+      "month": "Mes",
+      "empty": "Sin tareas este mes"
+    },
     "kanban": {
       "columns": {
         "backlog": "Backlog",

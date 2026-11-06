@@ -2,6 +2,8 @@
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
+import type { DateClickArg } from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
 import type { SelectMenuItem } from '@nuxt/ui'
 import type {
@@ -65,6 +67,17 @@ const { t } = useI18n()
 const { user } = useAuth()
 
 const phase = computed(() => props.phase ?? 'start')
+
+/**
+ * Móvil: la cuadrícula del mes (7 columnas de ~50 px) no deja leer nada. Por defecto se muestra la «Agenda» (lista de
+ * días con sus tareas); el «Mes» queda como vista compacta de barritas de color y al tocar un día salta a su agenda.
+ */
+const isMobile = useMediaQuery('(max-width: 767px)')
+const mobileMode = ref<'agenda' | 'month'>('agenda')
+const viewType = computed(() => (isMobile.value && mobileMode.value === 'agenda' ? 'listMonth' : 'dayGridMonth'))
+const isAgenda = computed(() => viewType.value === 'listMonth')
+/** Día (YYYY-MM-DD) al que debe desplazarse la agenda cuando termine de pintarse. */
+let pendingAgendaDay: string | null = null
 /** Modo "por proyecto": tareas coloreadas por proyecto. */
 const projectMode = computed(() => props.groupBy === 'project')
 /** Modo "por usuario": tareas coloreadas por usuario asignado. */
@@ -231,7 +244,8 @@ const isEventsExiting = ref(false)
 let phaseTransitionToken = 0
 
 function dayHeaderContent(arg: DayHeaderContentArg) {
-  return calendarWeekdayLetter(arg.date)
+  // En la agenda el encabezado es el día completo («lunes 2 de noviembre»); la letra es solo para la cuadrícula del mes.
+  return arg.view.type === 'listMonth' ? arg.text.charAt(0).toUpperCase() + arg.text.slice(1) : calendarWeekdayLetter(arg.date)
 }
 
 function wait(ms: number) {
@@ -386,6 +400,22 @@ function mountWeekToggle(arg: DayCellMountArg) {
   syncWeekToggleButtons()
 }
 
+/** Agenda: desplaza hasta el encabezado del día (o el siguiente que tenga tareas). */
+function scrollAgendaTo(dayKey: string) {
+  const headings = Array.from(calendarRoot.value?.querySelectorAll<HTMLElement>('.fc-list-day[data-date]') ?? [])
+  const target = headings.find(heading => (heading.dataset.date ?? '') >= dayKey) ?? headings.at(-1)
+  target?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+}
+
+/** Mes compacto (móvil): tocar un día abre la agenda en ese día. */
+function handleDateClick(arg: DateClickArg) {
+  if (!isMobile.value || mobileMode.value !== 'month') {
+    return
+  }
+  pendingAgendaDay = calendarDateKey(arg.date)
+  mobileMode.value = 'agenda'
+}
+
 function handleEventClick(arg: EventClickArg) {
   const taskId = Number(arg.event.extendedProps.taskId ?? arg.event.id)
   if (!Number.isFinite(taskId) || taskId <= 0) {
@@ -395,8 +425,8 @@ function handleEventClick(arg: EventClickArg) {
 }
 
 const calendarOptions = reactive<CalendarOptions>({
-  plugins: [dayGridPlugin, interactionPlugin],
-  initialView: 'dayGridMonth',
+  plugins: [dayGridPlugin, listPlugin, interactionPlugin],
+  initialView: viewType.value,
   initialDate: monthStart(visibleMonth.value),
   timeZone: 'local',
   locale: esLocale,
@@ -411,6 +441,11 @@ const calendarOptions = reactive<CalendarOptions>({
   moreLinkText: 'más...',
   moreLinkClick: handleMoreLinkClick,
   eventClick: handleEventClick,
+  dateClick: handleDateClick,
+  // Agenda (móvil): un encabezado por día («lunes 2 de noviembre») y sin la columna de hora (las tareas son de día completo).
+  listDayFormat: { weekday: 'long', day: 'numeric', month: 'long' },
+  listDaySideFormat: false,
+  noEventsContent: t('tasks.calendarMobile.empty'),
   // Tarea donde mencionan al usuario: contorno de acento (el badge «Te mencionaron» va en el contenido).
   eventClassNames: arg =>
     ((arg.event.extendedProps.mentions as TaskMention[] | undefined) ?? []).some(mention => mention.id === user.value?.id)
@@ -526,6 +561,23 @@ watch([phase, legendMode], () => {
   applyDayMaxEventRows()
 })
 
+// Cambio de vista (Agenda ↔ Mes, o al cruzar el breakpoint): conserva la fecha visible.
+watch(viewType, async (type) => {
+  calendarRef.value?.getApi().changeView(type)
+  if (type !== 'listMonth') {
+    return
+  }
+  await nextTick()
+  const todayKey = calendarDateKey(new Date())
+  scrollAgendaTo(pendingAgendaDay ?? todayKey)
+  pendingAgendaDay = null
+})
+
+function statusLabel(status: unknown): string {
+  const meta = taskStatusMeta(String(status ?? ''))
+  return meta ? t(meta.labelKey) : ''
+}
+
 // Fuente única de eventos: calendario global o agrupado (proyecto/grupo).
 watch(
   sourceEvents,
@@ -546,6 +598,8 @@ watch(
         'is-week-expanded': expandedWeeks.size > 0 && phase !== 'process',
         'is-events-exiting': isEventsExiting,
         'is-process-phase': phase === 'process',
+        'is-mobile-month': isMobile && !isAgenda,
+        'is-agenda': isAgenda,
       }"
     >
       <div
@@ -564,6 +618,35 @@ watch(
       >
         No se pudieron cargar las tareas del calendario.
       </p>
+
+      <!-- Móvil: Agenda (lista por día) o Mes compacto. -->
+      <div
+        v-if="isMobile"
+        class="flex px-3 pt-3"
+      >
+        <div
+          class="inline-flex w-full p-0.5 rounded-md border border-border bg-background"
+          role="group"
+          :aria-label="t('tasks.calendarMobile.label')"
+        >
+          <UButton
+            v-for="option in (['agenda', 'month'] as const)"
+            :key="option"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            class="flex-1 px-2.5 h-9 text-xs rounded justify-center"
+            :class="mobileMode === option
+              ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
+              : 'text-muted-foreground'"
+            :icon="option === 'agenda' ? 'i-lucide-list' : 'i-lucide-calendar-days'"
+            :aria-pressed="mobileMode === option"
+            @click="mobileMode = option"
+          >
+            {{ t(option === 'agenda' ? 'tasks.calendarMobile.agenda' : 'tasks.calendarMobile.month') }}
+          </UButton>
+        </div>
+      </div>
 
       <!-- Fase (Inicio / Proceso / Cierre): vive aquí (centro de la cabecera del calendario, junto al título) y no en la barra
            de filtros, para que el selector de vistas no se mueva al entrar a Calendario. En móvil sigue en la hoja de filtros. -->
@@ -641,7 +724,26 @@ watch(
         @dates-set="syncFromDatesSet"
       >
         <template #eventContent="arg">
+          <div
+            v-if="arg.view.type === 'listMonth'"
+            class="task-agenda-row"
+          >
+            <span class="task-agenda-title">{{ arg.event.title }}</span>
+            <span class="task-agenda-meta">
+              <UIcon
+                v-if="arg.event.extendedProps.isPersonal === true"
+                name="i-lucide-lock"
+                class="size-3"
+              />
+              <template v-if="arg.event.extendedProps.projectName">
+                {{ arg.event.extendedProps.projectName }}
+              </template>
+              <template v-if="arg.event.extendedProps.projectName && statusLabel(arg.event.extendedProps.status)"> · </template>
+              {{ statusLabel(arg.event.extendedProps.status) }}
+            </span>
+          </div>
           <TaskCalendarEvent
+            v-else
             :title="arg.event.title"
             :project-name="String(arg.event.extendedProps.projectName ?? '')"
             :status="String(arg.event.extendedProps.status ?? '')"
@@ -1011,5 +1113,117 @@ watch(
 
 .task-calendar.is-week-expanded:not(.is-process-phase) :deep(tr:not([data-week-expanded]) .fc-daygrid-day-bottom) {
   display: none;
+}
+
+/* ── Agenda (móvil): lista de días con sus tareas ── */
+.task-calendar.is-agenda :deep(.fc .fc-list) {
+  border: 0;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-day-cushion) {
+  padding: 0.5rem 1rem;
+  background: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-day-text) {
+  display: inline-block;
+  color: var(--foreground);
+}
+
+
+.task-calendar.is-agenda :deep(.fc .fc-list-day.fc-day-today .fc-list-day-text) {
+  color: var(--aeto-teal-dark);
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-event td) {
+  padding: 0.75rem 1rem;
+  border-color: var(--calendar-grid-line);
+  background: transparent;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-event-time) {
+  display: none;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-event-graphic) {
+  width: 1.25rem;
+  padding-right: 0;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-event-title) {
+  color: var(--foreground);
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-event-dot) {
+  border-width: 5px;
+}
+
+.task-calendar.is-agenda :deep(.fc .fc-list-empty) {
+  background: transparent;
+  color: var(--muted-foreground);
+  padding: 2rem 1rem;
+}
+
+.task-agenda-row {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.task-agenda-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.task-agenda-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* ── Mes compacto (móvil): barritas de color, sin texto ── */
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-day),
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-day-frame) {
+  min-height: 3rem;
+}
+
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-day-frame) {
+  padding: 0.25rem;
+}
+
+/* FullCalendar reserva 2em para los eventos del día; en el mes compacto sobra. */
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-day-events) {
+  min-height: 0;
+  margin-top: 0.125rem;
+}
+
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-day-bottom) {
+  display: none;
+}
+
+/* Las barritas no capturan el toque: tocar cualquier parte de la celda abre la agenda de ese día. */
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-event) {
+  pointer-events: none;
+  height: 6px;
+  min-height: 6px;
+  margin: 1px 3px;
+  padding: 0;
+  border-radius: 3px;
+}
+
+.task-calendar.is-mobile-month :deep(.fc .fc-event-body),
+.task-calendar.is-mobile-month :deep(.fc .fc-week-toggle) {
+  display: none;
+}
+
+.task-calendar.is-mobile-month :deep(.fc .fc-daygrid-more-link) {
+  font-size: 0.625rem;
 }
 </style>
