@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskSection from '~/features/tasks/components/list/TaskSection.vue'
 import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklogMineToggle.vue'
+import TaskRepeatScopeFilter from '~/features/tasks/components/shared/TaskRepeatScopeFilter.vue'
 import type { KanbanCreateColumn, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
@@ -21,7 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { counts, backlogCounts, backlog, urgent, today, upcoming, loadMore } = useTasks(() => props.filters)
+const { counts, upcomingCounts, upcomingScope, backlogCounts, backlog, urgent, today, upcoming, loadMore } = useTasks(() => props.filters)
 const { sortByTokens } = useTaskTokenState()
 
 function onCreate(sectionId: TaskSectionKey) {
@@ -89,7 +90,7 @@ function onCreate(sectionId: TaskSectionKey) {
       <TaskSection
         :title="t('tasks.sections.upcoming')"
         dot-color="#6366f1"
-        :count="counts.data.value?.tasks"
+        :count="upcomingCounts.data.value?.tasks ?? counts.data.value?.tasks"
         :tasks="sortByTokens(extractResults(upcoming.data.value))"
         :loading="upcoming.isPending.value"
         :error="upcoming.isError.value"
@@ -101,7 +102,14 @@ function onCreate(sectionId: TaskSectionKey) {
         @select="emit('select', $event)"
         @create="onCreate('upcoming')"
         @load-more="loadMore('upcoming')"
-      />
+      >
+        <template #toolbar>
+          <TaskRepeatScopeFilter
+            v-model:mode="upcomingScope.mode.value"
+            v-model:range="upcomingScope.range.value"
+          />
+        </template>
+      </TaskSection>
     </div>
   </div>
 </template>

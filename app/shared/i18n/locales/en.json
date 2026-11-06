@@ -150,6 +150,13 @@
       "company": "Company",
       "private": "Private"
     },
+    "repeatScope": {
+      "label": "Repeating tasks",
+      "latest": "One per repeating series",
+      "all": "All repeating tasks",
+      "week": "This week",
+      "range": "Date range"
+    },
     "newTask": "New task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",

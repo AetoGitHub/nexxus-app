@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TaskKanbanBoard from '~/features/tasks/components/kanban/TaskKanbanBoard.vue'
 import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklogMineToggle.vue'
+import TaskRepeatScopeFilter from '~/features/tasks/components/shared/TaskRepeatScopeFilter.vue'
 import TaskKanbanCompleteFilter from '~/features/tasks/components/kanban/TaskKanbanCompleteFilter.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
 import TaskReturnProcessModal from '~/features/tasks/components/form/TaskReturnProcessModal.vue'
@@ -24,7 +25,7 @@ const emit = defineEmits<{
   promoteBacklog: [taskId: number]
 }>()
 
-const { columns, loadMore, completeFilter } = useKanbanTasks(() => props.filters)
+const { columns, loadMore, completeFilter, pendingScope } = useKanbanTasks(() => props.filters)
 // Una tarea que exige evidencia no se puede cerrar al soltarla: se abre su detalle para subirla al chat.
 const {
   pendingTaskId,
@@ -74,6 +75,11 @@ function onMove(payload: KanbanTaskMove) {
           v-model:range="completeFilter.range.value"
         />
         <TaskBacklogMineToggle v-else-if="column.id === 'backlog'" />
+        <TaskRepeatScopeFilter
+          v-else-if="column.id === 'pending'"
+          v-model:mode="pendingScope.mode.value"
+          v-model:range="pendingScope.range.value"
+        />
       </template>
     </TaskKanbanBoard>
   </div>

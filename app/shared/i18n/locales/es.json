@@ -150,6 +150,13 @@
       "company": "Empresa",
       "private": "Privadas"
     },
+    "repeatScope": {
+      "label": "Tareas repetitivas",
+      "latest": "Una por serie repetitiva",
+      "all": "Todas las repetitivas",
+      "week": "Esta semana",
+      "range": "Rango de fechas"
+    },
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
