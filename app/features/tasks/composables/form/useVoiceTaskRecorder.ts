@@ -46,6 +46,8 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
 
   const status = ref<VoiceRecorderStatus>('idle')
   const elapsedSeconds = ref(0)
+  /** Grabación en pausa: el micrófono sigue abierto pero no se graba ni corre el cronómetro. */
+  const isPaused = ref(false)
 
   const barCount = options.barCount ?? DEFAULT_BAR_COUNT
   /** Historial reciente del volumen del micrófono (0-1), la muestra más nueva al final: alimenta el visualizador. */
@@ -65,6 +67,9 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
   let recorder: MediaRecorder | null = null
   let chunks: Blob[] = []
   let startedAt = 0
+  /** Cuándo se pausó y cuánto tiempo en total estuvo en pausa: no cuenta como tiempo grabado. */
+  let pausedAt = 0
+  let pausedTotalMs = 0
   let timer: ReturnType<typeof setInterval> | undefined
 
   // Medidor de volumen (Web Audio): vive solo mientras se graba y se limpia al detener, cancelar o desmontar.
@@ -74,6 +79,11 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
   let analyser: AnalyserNode | null = null
   let frameId = 0
   let lastSampleAt = 0
+
+  /** Tiempo realmente grabado (ms): sin las pausas. */
+  function recordedMs(): number {
+    return (isPaused.value ? pausedAt : Date.now()) - startedAt - pausedTotalMs
+  }
 
   function resetLevels() {
     levels.value = Array.from({ length: barCount }, () => 0)
@@ -151,6 +161,9 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
     stream = null
     recorder = null
     chunks = []
+    isPaused.value = false
+    pausedAt = 0
+    pausedTotalMs = 0
   }
 
   function notifyError(description: string) {
@@ -188,13 +201,19 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
 
     recorder.start()
     startedAt = Date.now()
+    pausedAt = 0
+    pausedTotalMs = 0
+    isPaused.value = false
     elapsedSeconds.value = 0
     status.value = 'recording'
     resetLevels()
     startMeter(stream)
 
     timer = setInterval(() => {
-      elapsedSeconds.value = Math.floor((Date.now() - startedAt) / 1000)
+      if (isPaused.value) {
+        return
+      }
+      elapsedSeconds.value = Math.floor(recordedMs() / 1000)
       if (elapsedSeconds.value >= MAX_RECORDING_SECONDS) {
         options.onLimit?.()
       }
@@ -203,14 +222,42 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
     return true
   }
 
+  /** Pausa la grabación en curso: congela cronómetro y visualizador; el audio ya grabado se conserva. */
+  function pause() {
+    if (status.value !== 'recording' || isPaused.value || recorder?.state !== 'recording') {
+      return
+    }
+    recorder.pause()
+    pausedAt = Date.now()
+    isPaused.value = true
+    cancelAnimationFrame(frameId)
+    frameId = 0
+    levels.value = Array.from({ length: barCount }, () => 0)
+  }
+
+  /** Reanuda una grabación en pausa: el tiempo en pausa no cuenta. */
+  function resume() {
+    if (status.value !== 'recording' || !isPaused.value || recorder?.state !== 'paused') {
+      return
+    }
+    recorder.resume()
+    pausedTotalMs += Date.now() - pausedAt
+    isPaused.value = false
+    if (analyser) {
+      lastSampleAt = 0
+      frameId = requestAnimationFrame(sampleLevel)
+    }
+  }
+
   /** Detiene la grabación y devuelve el audio, o `null` si no hay nada que mandar. */
   function stopRecording(): Promise<Blob | null> {
     const active = recorder
     if (!active || active.state === 'inactive') {
       return Promise.resolve(null)
     }
+    // Detener una grabación en pausa también entrega lo grabado.
 
-    const tooShort = Date.now() - startedAt < MIN_RECORDING_MS
+    const tooShort = recordedMs() < MIN_RECORDING_MS
 
     return new Promise((resolve) => {
       active.addEventListener('stop', () => {
@@ -285,5 +332,5 @@ export function useVoiceTaskRecorder(options: { onLimit?: () => void, barCount?:
 
   onBeforeUnmount(cancel)
 
-  return { status, elapsedSeconds, levels, hasVoice, isSupported, start, finish, cancel }
+  return { status, elapsedSeconds, isPaused, levels, hasVoice, isSupported, start, pause, resume, finish, cancel }
 }

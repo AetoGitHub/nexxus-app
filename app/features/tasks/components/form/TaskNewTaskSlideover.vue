@@ -2271,10 +2271,10 @@ const slideoverUi = computed(() => {
             />
           </UFormField>
 
+          <!-- Una tarea urgente ya tiene su prioridad: el esfuerzo no aplica y se oculta (también al abrir una existente). -->
           <div
-            v-if="!isBacklogMode"
+            v-if="!isBacklogMode && !state.urgent"
             class="space-y-2"
-            :class="!isReadOnly && state.urgent ? 'opacity-50 pointer-events-none' : ''"
           >
             <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {{ t('tasks.form.effort') }}
@@ -2285,7 +2285,7 @@ const slideoverUi = computed(() => {
                 v-for="option in effortOptions"
                 :key="option.value"
                 type="button"
-                :disabled="state.urgent || isReadOnly"
+                :disabled="isReadOnly"
                 class="rounded-lg border p-3 text-left transition-colors disabled:cursor-not-allowed"
                 :class="state.effort === option.value
                   ? 'border-aeto-teal bg-aeto-teal-light'

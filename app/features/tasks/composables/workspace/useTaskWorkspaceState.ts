@@ -211,20 +211,12 @@ export function useTaskWorkspaceState(options: {
     }
   })
 
-  // En táctil, «Atrás» debe cerrar el panel y no sacar de la pantalla: al abrirlo se agrega una entrada al historial
-  // (`?panel=1`); al cerrarlo a mano se retira, y al volver atrás con el gesto se cierra el panel.
-  const isTouch = import.meta.client ? window.matchMedia('(pointer: coarse)').matches : false
+  // En táctil, «Atrás» cierra el panel en vez de sacar de la pantalla (ver useBackToClose).
+  useBackToClose(newTaskOpen)
 
   watch(newTaskOpen, (isOpen) => {
     if (isOpen) {
-      if (isTouch && route.query.panel == null) {
-        void router.push({ query: { ...route.query, panel: '1' } })
-      }
       return
-    }
-
-    if (isTouch && route.query.panel != null) {
-      router.back()
     }
 
     newTaskDefaults.value = null
@@ -240,15 +232,6 @@ export function useTaskWorkspaceState(options: {
     delete nextQuery.task
     void router.replace({ query: nextQuery })
   })
-
-  watch(
-    () => route.query.panel,
-    (panel) => {
-      if (panel == null && newTaskOpen.value) {
-        newTaskOpen.value = false
-      }
-    },
-  )
 
   watch(
     () => pickQueryString(route.query, 'task'),

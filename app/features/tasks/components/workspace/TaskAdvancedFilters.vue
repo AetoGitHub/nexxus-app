@@ -76,6 +76,8 @@ const { isAdminActive, isGroupActive, isProjectActive } = useTaskAdminView()
 const showUserFilter = computed(() => isAdminActive.value || isGroupActive.value || isProjectActive.value)
 
 const open = ref(false)
+// «Atrás» en el celular cierra el modal en vez de salir de la pantalla.
+useBackToClose(open)
 const step = ref<Step>('saved')
 
 const { profiles: orgProfiles, profilesQuery: orgProfilesQuery } = useProfiles(
