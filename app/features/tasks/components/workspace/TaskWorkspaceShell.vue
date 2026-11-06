@@ -85,6 +85,8 @@ watch(showRefresh, (visible) => {
 
 /** Sheet de filtros solo en mobile (independiente del panel desktop). */
 const mobileFiltersOpen = ref(false)
+// «Atrás» en el celular cierra la hoja en vez de salir de la pantalla.
+useBackToClose(mobileFiltersOpen)
 
 /**
  * Misma condición que el CSS del final (barra de escritorio con ancho Y alto suficientes). Las dos barras viven en el

@@ -4,8 +4,8 @@ import type { VoiceTaskCatalogItem, VoiceTaskResponse } from '~/features/tasks/t
 
 /**
  * Micrófono para dictar una tarea: un clic empieza a grabar y muestra una píldora con el visualizador de audio en vivo,
- * el cronómetro y un botón para detener; al detener se manda el audio a la IA, que devuelve la tarea entendida. No la
- * crea: avisa con `result` para que el formulario se rellene y la persona la confirme.
+ * el cronómetro, un botón para pausar/reanudar y otro para terminar; al terminar se manda el audio a la IA, que devuelve
+ * la tarea entendida. No la crea: avisa con `result` para que el formulario se rellene y la persona la confirme.
  */
 const props = withDefaults(
   defineProps<{
@@ -44,7 +44,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const { status, elapsedSeconds, levels, hasVoice, isSupported, start, finish, cancel } = useVoiceTaskRecorder({
+const { status, elapsedSeconds, isPaused, levels, hasVoice, isSupported, start, pause, resume, finish, cancel } = useVoiceTaskRecorder({
   onLimit: () => void stopAndSend(),
 })
 
@@ -103,6 +103,15 @@ async function stopAndSend() {
   }
 }
 
+function togglePause() {
+  if (isPaused.value) {
+    resume()
+  }
+  else {
+    pause()
+  }
+}
+
 async function onClick() {
   if (isRecording.value) {
     await stopAndSend()
@@ -154,7 +163,8 @@ const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.fo
       :class="fab ? 'h-10 rounded-full bg-error/10 pl-3 pr-1' : 'h-full w-full'"
     >
       <span
-        class="size-2 shrink-0 rounded-full bg-error motion-safe:animate-pulse"
+        class="size-2 shrink-0 rounded-full"
+        :class="isPaused ? 'bg-muted' : 'bg-error motion-safe:animate-pulse'"
         aria-hidden="true"
       />
 
@@ -163,7 +173,7 @@ const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.fo
         class="sr-only"
         aria-live="polite"
       >
-        {{ showHint ? t('tasks.form.voice.recordingAnnounce') : '' }}
+        {{ isPaused ? t('tasks.form.voice.pausedAnnounce') : (showHint ? t('tasks.form.voice.recordingAnnounce') : '') }}
       </span>
 
       <div class="relative h-full min-w-0 flex-1 overflow-hidden">
@@ -172,7 +182,15 @@ const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.fo
           mode="out-in"
         >
           <p
-            v-if="showHint"
+            v-if="isPaused"
+            key="paused"
+            class="absolute inset-0 flex items-center truncate text-xs font-medium text-muted"
+            aria-hidden="true"
+          >
+            {{ t('tasks.form.voice.paused') }}
+          </p>
+          <p
+            v-else-if="showHint"
             key="hint"
             class="absolute inset-0 flex items-center truncate text-xs font-medium text-error"
             aria-hidden="true"
@@ -201,6 +219,21 @@ const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.fo
         role="timer"
         :aria-label="t('tasks.form.voice.elapsed')"
       >{{ elapsedLabel }}</span>
+
+      <UButton
+        type="button"
+        color="neutral"
+        variant="soft"
+        size="xs"
+        square
+        class="shrink-0 rounded-full"
+        :class="fab ? 'size-8' : 'size-6'"
+        :ui="{ base: 'justify-center gap-0', leadingIcon: fab ? 'size-4' : 'size-3.5' }"
+        :icon="isPaused ? 'i-lucide-play' : 'i-lucide-pause'"
+        :title="isPaused ? t('tasks.form.voice.resume') : t('tasks.form.voice.pause')"
+        :aria-label="isPaused ? t('tasks.form.voice.resume') : t('tasks.form.voice.pause')"
+        @click="togglePause"
+      />
 
       <UButton
         ref="stopButton"

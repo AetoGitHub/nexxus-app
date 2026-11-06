@@ -150,6 +150,13 @@
       "company": "Empresa",
       "private": "Privadas"
     },
+    "repeatScope": {
+      "label": "Tareas repetitivas",
+      "latest": "Una por serie repetitiva",
+      "all": "Todas las repetitivas",
+      "week": "Esta semana",
+      "range": "Rango de fechas"
+    },
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
@@ -231,6 +238,12 @@
       "all": "Todos",
       "placeholder": "Filtrar",
       "searchPlaceholder": "Buscar..."
+    },
+    "calendarMobile": {
+      "label": "Vista del calendario",
+      "agenda": "Agenda",
+      "month": "Mes",
+      "empty": "Sin tareas este mes"
     },
     "kanban": {
       "columns": {
@@ -533,6 +546,10 @@
         "start": "Dictar la tarea por voz",
         "stop": "Terminar y enviar el dictado",
         "stopLabel": "Enviar",
+        "pause": "Pausar el dictado",
+        "resume": "Reanudar el dictado",
+        "paused": "En pausa",
+        "pausedAnnounce": "Dictado en pausa. Reanúdalo o envíalo cuando quieras.",
         "processing": "Procesando…",
         "errorTitle": "No se pudo dictar la tarea",
         "permissionDenied": "Permite el uso del micrófono en tu navegador para dictar la tarea.",

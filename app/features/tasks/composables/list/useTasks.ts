@@ -2,6 +2,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { ArchivedCounts, TaskCounts, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { useBacklogMine } from '~/features/tasks/composables/shared/useBacklogMine'
+import { useRepeatScopeFilter } from '~/features/tasks/composables/shared/useRepeatScopeFilter'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
@@ -17,12 +18,16 @@ export function useTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   const backlog = api.listQuery(['backlog'], '/backlog/', { extraQuery: backlogMineQuery })
   const urgent = api.listQuery(['urgent'], '/urgent/')
   const today = api.listQuery(['today'], '/due_today/')
-  const upcoming = api.listQuery(['upcoming'], '/upcoming/')
+  // Repetitivas de «Próximas»: una por serie por defecto. `repeats` aplica a todas las secciones, por eso el contador de
+  // Próximas sale de su propia consulta y no del `counts/` compartido (que también cuenta Hoy y Urgentes).
+  const upcomingScope = useRepeatScopeFilter('list-upcoming')
+  const upcomingCounts = api.countsQuery<TaskCounts>(['upcoming'], '/counts/', { extraQuery: upcomingScope.query })
+  const upcoming = api.listQuery(['upcoming'], '/upcoming/', { extraQuery: upcomingScope.query })
 
   function loadMore(sectionId: TaskSectionKey) {
     const queries = { backlog, urgent, today, upcoming } as const
     fetchTaskListNextPage(queries[sectionId])
   }
 
-  return { counts, backlogCounts, backlog, urgent, today, upcoming, loadMore }
+  return { counts, upcomingCounts, upcomingScope, backlogCounts, backlog, urgent, today, upcoming, loadMore }
 }

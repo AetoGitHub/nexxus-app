@@ -3,14 +3,17 @@ const { t } = useI18n()
 const { tasksItems, bottomNavItems, isActive, navigate } = useAppNav()
 
 const moreOpen = ref(false)
+// «Atrás» en el celular cierra la hoja en vez de salir de la pantalla.
+const { closeForNavigation } = useBackToClose(moreOpen)
 
 /** Resalta "Más" cuando la ruta activa vive solo dentro de la hoja (admin, grupo, proyecto, ajustes...). */
 const isMoreActive = computed(() =>
   tasksItems.value.some(item => item.bottomNav === false && isActive(item)),
 )
 
+/** Los enlaces de la hoja navegan a otra pantalla: se cierra sin `back()` para no cancelar esa navegación. */
 function closeMore() {
-  moreOpen.value = false
+  closeForNavigation()
 }
 </script>
 

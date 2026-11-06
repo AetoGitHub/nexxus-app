@@ -5,6 +5,7 @@ import { useKanbanCompleteDateFilter } from '~/features/tasks/composables/kanban
 import { extractResults } from '~/shared/utils/paginated.util'
 import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { useBacklogMine } from '~/features/tasks/composables/shared/useBacklogMine'
+import { useRepeatScopeFilter } from '~/features/tasks/composables/shared/useRepeatScopeFilter'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 /**
@@ -28,7 +29,11 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
   const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
   const backlog = api.listQuery(['backlog'], '/backlog/', { extraQuery: backlogMineQuery })
 
-  const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/')
+  // Repetitivas de «Pendiente»: una por serie por defecto. `limit_date_*` y `repeats` aplican a todos los estados, por eso
+  // el contador de esta columna sale de su propia consulta y no del `counts/` compartido.
+  const pendingScope = useRepeatScopeFilter('kanban-pending')
+  const pendingCounts = api.countsQuery<KanbanCounts>(['kanban-pending'], '/kanban/counts/', { extraQuery: pendingScope.query })
+  const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/', { extraQuery: pendingScope.query })
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')
   const inReview = api.listQuery([...scope, 'in_review'], '/kanban/in_review/')
   const complete = api.listQuery([...scope, 'complete'], '/kanban/complete/', { extraQuery: completeFilter.query })
@@ -63,7 +68,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         id: 'pending',
         labelKey: 'tasks.kanban.columns.pending',
         color: '#6b7280',
-        count: totals?.pending,
+        count: pendingCounts.data.value?.pending ?? totals?.pending,
         tasks: sortByTokens(extractResults(pending.data.value)),
         loading: pending.isPending.value,
         error: pending.isError.value,
@@ -134,5 +139,5 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     }
   }
 
-  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, columns, loadMore, completeFilter }
+  return { counts, backlogCounts, backlog, pending, wip, inReview, rejected, complete, columns, loadMore, completeFilter, pendingScope }
 }
