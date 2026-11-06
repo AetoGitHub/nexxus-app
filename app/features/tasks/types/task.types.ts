@@ -259,6 +259,8 @@ export interface TaskListFilters {
   final_date_to?: string
   /** Pendientes a las que nunca se les dio «Iniciar». */
   not_started?: boolean
+  /** `true`: solo las tareas de mis proyectos privados; `false`: solo las de la empresa; sin valor: todas. */
+  private?: boolean
 }
 
 /** Filtro de tareas guardado por el usuario (GET /api/auth/profiles/filters/). `params` usa las llaves del query de las listas, todo en texto. */

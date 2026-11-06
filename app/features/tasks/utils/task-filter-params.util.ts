@@ -13,10 +13,13 @@ export const TASK_FILTER_DATE_KEYS = [
 
 type DateKey = (typeof TASK_FILTER_DATE_KEYS)[number]
 type ListKey = 'project' | 'users' | 'created_by'
-type BooleanKey = 'overdue' | 'completed' | 'multiple_close' | 'not_started'
+type BooleanKey = 'overdue' | 'completed' | 'multiple_close' | 'not_started' | 'private'
 
 const LIST_KEYS: ListKey[] = ['project', 'users', 'created_by']
-const BOOLEAN_KEYS: BooleanKey[] = ['overdue', 'completed', 'multiple_close', 'not_started']
+const BOOLEAN_KEYS: BooleanKey[] = ['overdue', 'completed', 'multiple_close', 'not_started', 'private']
+
+/** Booleanos donde `false` también filtra (no es «sin filtro»): cierre múltiple y privadas (`private=false` = solo empresa). */
+const TRI_STATE_KEYS: BooleanKey[] = ['multiple_close', 'private']
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 /** Llaves de `TaskListFilters` que viajan en la URL y en los filtros guardados (mismos nombres que el query de las listas). */
@@ -61,7 +64,7 @@ export function normalizeTaskFilters(filters: TaskListFilters = {}): TaskListFil
   }
   for (const key of BOOLEAN_KEYS) {
     const value = filters[key]
-    if (value === true || (key === 'multiple_close' && value === false)) {
+    if (value === true || (TRI_STATE_KEYS.includes(key) && value === false)) {
       next[key] = value
     }
   }

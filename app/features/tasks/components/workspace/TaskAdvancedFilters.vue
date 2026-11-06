@@ -23,12 +23,13 @@ type FilterFieldId
     | 'completed'
     | 'multiple_close'
     | 'not_started'
+    | 'private'
     | 'start_date'
     | 'wip_date'
     | 'final_date'
 
 type ListKey = 'type' | 'project' | 'users' | 'created_by'
-type BooleanKey = 'overdue' | 'completed' | 'multiple_close' | 'not_started'
+type BooleanKey = 'overdue' | 'completed' | 'multiple_close' | 'not_started' | 'private'
 type RangeId = 'start_date' | 'wip_date' | 'final_date'
 type Step = 'saved' | 'builder' | 'name'
 
@@ -49,6 +50,7 @@ const FIELDS: FieldDefinition[] = [
   { id: 'completed', icon: 'i-lucide-circle-check', kind: 'boolean' },
   { id: 'multiple_close', icon: 'i-lucide-users-round', kind: 'boolean' },
   { id: 'not_started', icon: 'i-lucide-circle-dashed', kind: 'boolean' },
+  { id: 'private', icon: 'i-lucide-lock', kind: 'boolean' },
   { id: 'start_date', icon: 'i-lucide-calendar-plus', kind: 'range' },
   { id: 'wip_date', icon: 'i-lucide-play', kind: 'range' },
   { id: 'final_date', icon: 'i-lucide-calendar-check', kind: 'range' },
@@ -88,8 +90,14 @@ const {
   deleteMutation,
 } = useSavedTaskFilters()
 
+/** «Tareas privadas» solo se ofrece con proyectos privados (o si el filtro ya viene aplicado, para poder quitarlo). */
+const showPrivateField = computed(() => privateProjects.value.length > 0 || filters.value.private !== undefined)
+
 const availableFields = computed(() =>
-  FIELDS.filter(field => field.id !== 'users' || showUserFilter.value),
+  FIELDS.filter(field =>
+    (field.id !== 'users' || showUserFilter.value)
+    && (field.id !== 'private' || showPrivateField.value),
+  ),
 )
 
 // ───────────────────────── Constructor ─────────────────────────
@@ -258,6 +266,11 @@ const multipleCloseItems = computed(() => [
   { label: t('tasks.advancedFilters.no'), value: false },
 ])
 
+const privateItems = computed(() => [
+  { label: t('tasks.advancedFilters.privateOnly'), value: true },
+  { label: t('tasks.advancedFilters.companyOnly'), value: false },
+])
+
 function applyToList(next: TaskListFilters) {
   const normalized = normalizeTaskFilters(next)
   filters.value = normalized
@@ -369,6 +382,9 @@ function describeFilters(params: Record<string, string>): string[] {
   }
   if (parsed.not_started) {
     parts.push(label('not_started'))
+  }
+  if (parsed.private !== undefined) {
+    parts.push(`${label('private')}: ${parsed.private ? t('tasks.advancedFilters.privateOnly') : t('tasks.advancedFilters.companyOnly')}`)
   }
   for (const id of ['start_date', 'wip_date', 'final_date'] as RangeId[]) {
     const keys = rangeKeys(id)
@@ -612,6 +628,15 @@ const modalDescription = computed(() => {
                 size="sm"
                 class="w-full sm:w-32"
                 @update:model-value="draft = { ...draft, multiple_close: $event === true }"
+              />
+
+              <USelect
+                v-else-if="fieldId === 'private'"
+                :model-value="draft.private"
+                :items="privateItems"
+                size="sm"
+                class="w-full sm:w-44"
+                @update:model-value="draft = { ...draft, private: $event === true }"
               />
 
               <span

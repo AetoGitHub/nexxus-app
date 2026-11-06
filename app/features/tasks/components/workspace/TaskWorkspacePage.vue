@@ -72,6 +72,7 @@ function onSectionCreate(
       openNewTask,
       openTaskFromBacklog,
       setCalendarMonth,
+      setCalendarPhase,
       showArchivedOnly,
     }">
       <TaskArchivedListView
@@ -172,6 +173,7 @@ function onSectionCreate(
         :selected-task-id="selectedTaskId"
         @select="openTask"
         @update:period="setCalendarMonth"
+        @update:phase="setCalendarPhase"
       />
 
       <div

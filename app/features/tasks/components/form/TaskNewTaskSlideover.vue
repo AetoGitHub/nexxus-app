@@ -763,10 +763,10 @@ const projectItems = computed(() => {
   if (!privateItems.length) {
     return items
   }
-  // Dos grupos: los de la compañía y «Mis proyectos privados».
+  // Dos grupos: primero «Mis proyectos privados» (suelen ser pocos y los más usados) y luego los de la compañía.
   return [
-    [...(items.length ? [{ type: 'label' as const, label: t('privateProjects.form.companyGroup') }] : []), ...items],
     [{ type: 'label' as const, label: t('privateProjects.form.privateGroup') }, ...privateItems],
+    [...(items.length ? [{ type: 'label' as const, label: t('privateProjects.form.companyGroup') }] : []), ...items],
   ]
 })
 

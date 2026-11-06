@@ -28,6 +28,7 @@ import type {
 } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import TaskCalendarEvent from '~/features/tasks/components/calendar/TaskCalendarEvent.vue'
+import TaskCalendarPhaseFilter from '~/features/tasks/components/workspace/TaskCalendarPhaseFilter.vue'
 import {
   CALENDAR_WEEK_STARTS_ON,
   calendarCivilDate,
@@ -57,6 +58,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [taskId: number]
   'update:period': [period: CalendarMonth]
+  'update:phase': [phase: TaskCalendarPhase]
 }>()
 
 const { t } = useI18n()
@@ -563,6 +565,19 @@ watch(
         No se pudieron cargar las tareas del calendario.
       </p>
 
+      <!-- Fase (Inicio / Proceso / Cierre): vive aquí (centro de la cabecera del calendario, junto al título) y no en la barra
+           de filtros, para que el selector de vistas no se mueva al entrar a Calendario. En móvil sigue en la hoja de filtros. -->
+      <div
+        v-if="!(legendMode && legendItems.length > 0)"
+        class="hidden md:flex absolute left-1/2 top-[0.9rem] z-[5] -translate-x-1/2"
+      >
+        <TaskCalendarPhaseFilter
+          compact
+          :model-value="phase"
+          @update:model-value="emit('update:phase', $event)"
+        />
+      </div>
+
       <Transition name="calendar-legend">
         <div
           v-if="legendMode && legendItems.length > 0"
@@ -609,6 +624,14 @@ watch(
               {{ t('common.noData') }}
             </template>
           </USelectMenu>
+
+          <div class="ml-auto hidden md:block pl-3">
+            <TaskCalendarPhaseFilter
+              compact
+              :model-value="phase"
+              @update:model-value="emit('update:phase', $event)"
+            />
+          </div>
         </div>
       </Transition>
 
