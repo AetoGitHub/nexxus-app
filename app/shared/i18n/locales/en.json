@@ -153,9 +153,7 @@
     "repeatScope": {
       "label": "Repeating tasks",
       "latest": "One per repeating series",
-      "all": "All repeating tasks",
-      "week": "This week",
-      "range": "Date range"
+      "all": "All"
     },
     "newTask": "New task",
     "refresh": "Refresh",

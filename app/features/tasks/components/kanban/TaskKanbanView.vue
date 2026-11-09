@@ -78,7 +78,6 @@ function onMove(payload: KanbanTaskMove) {
         <TaskRepeatScopeFilter
           v-else-if="column.id === 'pending'"
           v-model:mode="pendingScope.mode.value"
-          v-model:range="pendingScope.range.value"
         />
       </template>
     </TaskKanbanBoard>
