@@ -104,10 +104,7 @@ function onCreate(sectionId: TaskSectionKey) {
         @load-more="loadMore('upcoming')"
       >
         <template #toolbar>
-          <TaskRepeatScopeFilter
-            v-model:mode="upcomingScope.mode.value"
-            v-model:range="upcomingScope.range.value"
-          />
+          <TaskRepeatScopeFilter v-model:mode="upcomingScope.mode.value" />
         </template>
       </TaskSection>
     </div>

@@ -153,9 +153,7 @@
     "repeatScope": {
       "label": "Tareas repetitivas",
       "latest": "Una por serie repetitiva",
-      "all": "Todas las repetitivas",
-      "week": "Esta semana",
-      "range": "Rango de fechas"
+      "all": "Todas"
     },
     "newTask": "Nueva tarea",
     "refresh": "Actualizar",
