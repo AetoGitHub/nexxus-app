@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['auth', 'project'] })
+definePageMeta({ middleware: ['auth', 'permission', 'project'], permission: ['task', 'view_all'] })
 
 const { userProjects } = useAuth()
 

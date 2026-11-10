@@ -17,6 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { can } = usePermissions()
 
 const color = computed(() => resolveThemeColor(props.project?.color))
 
@@ -156,6 +157,7 @@ function onEdit() {
           @click="open = false"
         />
         <UButton
+          v-if="can('settings', 'projects')"
           color="primary"
           icon="i-lucide-pencil"
           :label="t('taskSettings.projectDetail.edit')"

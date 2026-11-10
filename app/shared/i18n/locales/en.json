@@ -1,4 +1,116 @@
 {
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Set what each user can see and do. The backend enforces it too.",
+    "noModules": "Your user has no access to any module. Ask an administrator to grant you permissions.",
+    "denied": {
+      "title": "Access restricted",
+      "description": "You don't have permission for {module}."
+    },
+    "modules": {
+      "task": "Tasks",
+      "report": "Reports",
+      "dashboard": "Dashboard",
+      "settings": "Settings"
+    },
+    "fields": {
+      "task": {
+        "can_view": "View tasks",
+        "can_create": "Create tasks",
+        "can_update": "Edit tasks and subtasks",
+        "can_delete": "Delete tasks",
+        "can_view_all": "Full view (everyone's tasks)",
+        "can_view_approvals": "Pending approvals"
+      },
+      "report": {
+        "can_view": "View reports",
+        "can_generate": "Generate reports",
+        "can_update": "Edit reports"
+      },
+      "dashboard": {
+        "can_view": "View dashboard",
+        "can_create": "Create dashboards",
+        "can_update": "Edit dashboards",
+        "can_delete": "Delete dashboards"
+      },
+      "settings": {
+        "can_projects": "Manage projects",
+        "can_groups": "Manage groups",
+        "can_general": "General settings (company, users)"
+      }
+    },
+    "matrix": {
+      "allow": "Module access",
+      "moduleOff": "No access to the module",
+      "enabledCount": "{count} of {total} permissions",
+      "comingSoon": "Coming soon"
+    },
+    "tabs": {
+      "users": "Users",
+      "presets": "Templates"
+    },
+    "dialog": {
+      "action": "Permissions",
+      "title": "User permissions"
+    },
+    "users": {
+      "select": "User",
+      "selectPlaceholder": "Choose a user",
+      "search": "Search user…",
+      "empty": "Choose a user to view and edit their permissions.",
+      "loadError": "Couldn't load the user's permissions.",
+      "applyPreset": "Apply template",
+      "presetPlaceholder": "Choose a template",
+      "noPresets": "No templates",
+      "apply": "Apply",
+      "applyConfirmTitle": "Apply template?",
+      "applyConfirmDescription": "{user}'s permissions will be replaced by \"{preset}\". You can fine-tune them afterwards.",
+      "basedOn": "Based on: {name}",
+      "custom": "Custom permissions",
+      "you": "You",
+      "superuserTitle": "Superuser: has every permission",
+      "superuserDescription": "A superuser's permissions can't be limited.",
+      "unsaved": "Unsaved changes",
+      "saved": "No changes",
+      "switchConfirmTitle": "Discard changes?",
+      "switchConfirmDescription": "You have unsaved changes to this user's permissions."
+    },
+    "presets": {
+      "subtitle": "Templates let you give the same set of permissions to several users.",
+      "new": "New template",
+      "create": "Create template",
+      "createTitle": "New template",
+      "createDescription": "Give it a name and choose its permissions.",
+      "editTitle": "Edit template",
+      "editDescription": "Change the template's name or permissions.",
+      "editWarning": "Editing the template doesn't change users who already have it applied: apply it again.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Operator",
+      "empty": "No templates yet. Create the first one to assign permissions faster.",
+      "loadError": "Couldn't load the templates.",
+      "off": "No access",
+      "full": "Full",
+      "partial": "{count} of {total}",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteDescription": "Users who have it applied keep their permissions."
+    },
+    "actions": {
+      "save": "Save",
+      "discard": "Discard",
+      "discardAndContinue": "Discard and continue",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toasts": {
+      "error": "Couldn't complete the action",
+      "profileSaved": "Permissions updated",
+      "presetApplied": "Template applied",
+      "presetCreated": "Template created",
+      "presetUpdated": "Template updated",
+      "presetDeleted": "Template deleted"
+    }
+  },
   "mentions": {
     "listLabel": "Users to mention",
     "loading": "Loading…",
@@ -962,7 +1074,8 @@
     "nav": {
       "organization": "Organization",
       "company": "Company",
-      "user": "Users"
+      "user": "Users",
+      "permissions": "Permissions"
     },
     "organization": {
       "title": "Organization",

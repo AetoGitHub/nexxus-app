@@ -14,8 +14,11 @@
 export function useTaskAdminView() {
   const route = useRoute()
   const { isSuperuser, managedGroups, isGroupManager, userProjects } = useAuth()
+  const { can } = usePermissions()
+  // «Vista total» (admin=true / admin_project): sin `task.can_view_all` no se manda (el backend también lo ignora).
+  const canViewAll = computed(() => can('task', 'view_all'))
 
-  const isAdminActive = computed(() => isSuperuser.value && route.path.startsWith('/tasks/admin'))
+  const isAdminActive = computed(() => canViewAll.value && route.path.startsWith('/tasks/admin'))
 
   const activeGroupId = computed(() => {
     if (!route.path.startsWith('/tasks/group/')) {
@@ -27,7 +30,7 @@ export function useTaskAdminView() {
   const isGroupActive = computed(() => activeGroupId.value != null)
 
   const activeProjectId = computed(() => {
-    if (!route.path.startsWith('/tasks/project/')) {
+    if (!canViewAll.value || !route.path.startsWith('/tasks/project/')) {
       return null
     }
     const id = Number(route.params.projectId)
@@ -35,7 +38,7 @@ export function useTaskAdminView() {
   })
   const isProjectActive = computed(() => activeProjectId.value != null)
 
-  const hasProjects = computed(() => userProjects.value.length > 0)
+  const hasProjects = computed(() => canViewAll.value && userProjects.value.length > 0)
 
   const adminQuery = computed<{ admin?: true, group?: number, admin_project?: number }>(() => {
     if (isGroupActive.value && activeGroupId.value != null) {

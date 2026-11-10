@@ -19,6 +19,9 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Editar grupos y mover personas: `settings.can_groups`.
+const { can } = usePermissions()
+const canManage = computed(() => can('settings', 'groups'))
 
 const open = ref(false)
 const color = computed(() => resolveThemeColor(props.group.color))
@@ -133,6 +136,7 @@ function onToggle() {
       </button>
 
       <UDropdownMenu
+        v-if="canManage"
         :items="menuItems"
         :content="{ align: 'end', sideOffset: 4 }"
       >

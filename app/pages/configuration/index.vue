@@ -11,13 +11,14 @@ import UserContextUpdateDialog from '~/features/user-context/components/UserCont
 import UserChangePasswordDialog from '~/features/users/components/UserChangePasswordDialog.vue'
 import UserCreateDialog from '~/features/users/components/UserCreateDialog.vue'
 import UserListTable from '~/features/users/components/UserListTable.vue'
+import PermissionsAdminPanel from '~/features/permissions/components/PermissionsAdminPanel.vue'
 import ConfigurationNavSidebar from '~/features/configuration/components/shared/ConfigurationNavSidebar.vue'
 import ConfigurationSelectOrganizationPrompt from '~/features/configuration/components/shared/ConfigurationSelectOrganizationPrompt.vue'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
 import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
 import type { ConfigurationNavItem, ConfigurationSectionId } from '~/features/configuration/types/configuration.types'
 
-definePageMeta({ middleware: 'auth', layout: false })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['settings', 'general'], layout: false })
 
 const { t } = useI18n()
 const route = useRoute()
@@ -90,7 +91,13 @@ const bulkCreateTo = computed(() => {
   return { path: '/configuration/user/bulk-create', query }
 })
 
+const { isSuperuser } = useAuth()
+
 function parseSection(value: unknown): ConfigurationSectionId {
+  // Permisos es solo para superusers: por URL tampoco se abre sin serlo.
+  if (value === 'permissions') {
+    return isSuperuser.value ? value : 'organization'
+  }
   return value === 'company' || value === 'user' ? value : 'organization'
 }
 
@@ -105,14 +112,19 @@ function onSelectSection(id: ConfigurationSectionId) {
   void router.replace({ query: { ...route.query, section: id } })
 }
 
-const navItems: ConfigurationNavItem[] = [
+const navItems = computed<ConfigurationNavItem[]>(() => [
   { id: 'organization', labelKey: 'configuration.nav.organization', icon: 'i-lucide-building-2' },
   { id: 'company', labelKey: 'configuration.nav.company', icon: 'i-lucide-briefcase' },
   { id: 'user', labelKey: 'configuration.nav.user', icon: 'i-lucide-user' },
-]
+  ...(isSuperuser.value
+    ? [{ id: 'permissions' as const, labelKey: 'configuration.nav.permissions', icon: 'i-lucide-shield-check' }]
+    : []),
+])
 
 useSeoMeta({
-  title: () => t(`configuration.${activeSection.value}.list.title`),
+  title: () => activeSection.value === 'permissions'
+    ? t('permissions.title')
+    : t(`configuration.${activeSection.value}.list.title`),
 })
 </script>
 
@@ -216,6 +228,8 @@ useSeoMeta({
             <CompanyUpdateDialog />
           </main>
         </template>
+
+        <PermissionsAdminPanel v-else-if="activeSection === 'permissions'" />
 
         <template v-else>
           <UDashboardToolbar

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: ['auth', 'group'] })
+definePageMeta({ middleware: ['auth', 'permission', 'group'], permission: ['task', 'view'] })
 
 const { managedGroups } = useAuth()
 

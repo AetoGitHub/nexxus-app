@@ -47,6 +47,10 @@ const props = withDefaults(
   },
 )
 
+// «Crear tarea» de la sección: además del prop, pide permiso `task.can_create`.
+const { can } = usePermissions()
+const canShowCreate = computed(() => props.showCreate && can('task', 'create'))
+
 const emit = defineEmits<{
   select: [taskId: number]
   approve: [taskId: number]
@@ -172,7 +176,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
         </div>
 
         <div
-          v-if="showCreate"
+          v-if="canShowCreate"
           class="mt-1.5 rounded-lg border border-border bg-card"
         >
           <UButton

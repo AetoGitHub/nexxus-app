@@ -10,7 +10,12 @@ export function useToUpdateCounts(
   acceptedQuery: MaybeRefOrGetter<Record<string, string> | undefined> = undefined,
 ) {
   const api = createCompanyTasksApi(filters)
-  const counts = api.countsQuery<ToUpdateCounts>(['close'], '/close/counts/', { extraQuery: acceptedQuery })
+  // Sin permiso de «Pendientes de aprobación» no se pide (su badge del menú tampoco se muestra).
+  const { can } = usePermissions()
+  const counts = api.countsQuery<ToUpdateCounts>(['close'], '/close/counts/', {
+    extraQuery: acceptedQuery,
+    enabled: () => can('task', 'view_approvals'),
+  })
 
   const actionableCount = computed(() => {
     const value = counts.data.value

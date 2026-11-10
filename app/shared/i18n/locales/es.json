@@ -1,4 +1,116 @@
 {
+  "permissions": {
+    "title": "Permisos",
+    "subtitle": "Define qué puede ver y hacer cada usuario. El backend también lo valida.",
+    "noModules": "Tu usuario no tiene acceso a ningún módulo. Pide a un administrador que te asigne permisos.",
+    "denied": {
+      "title": "Acceso restringido",
+      "description": "No tienes permiso para {module}."
+    },
+    "modules": {
+      "task": "Tareas",
+      "report": "Reportes",
+      "dashboard": "Dashboard",
+      "settings": "Configuración"
+    },
+    "fields": {
+      "task": {
+        "can_view": "Ver tareas",
+        "can_create": "Crear tareas",
+        "can_update": "Editar tareas y subtareas",
+        "can_delete": "Eliminar tareas",
+        "can_view_all": "Vista total (tareas de todos)",
+        "can_view_approvals": "Pendientes de aprobación"
+      },
+      "report": {
+        "can_view": "Ver reportes",
+        "can_generate": "Generar reportes",
+        "can_update": "Editar reportes"
+      },
+      "dashboard": {
+        "can_view": "Ver dashboard",
+        "can_create": "Crear dashboards",
+        "can_update": "Editar dashboards",
+        "can_delete": "Eliminar dashboards"
+      },
+      "settings": {
+        "can_projects": "Configurar proyectos",
+        "can_groups": "Configurar grupos",
+        "can_general": "Configuración general (empresa, usuarios)"
+      }
+    },
+    "matrix": {
+      "allow": "Acceso al módulo",
+      "moduleOff": "Sin acceso al módulo",
+      "enabledCount": "{count} de {total} permisos",
+      "comingSoon": "Próximamente"
+    },
+    "tabs": {
+      "users": "Usuarios",
+      "presets": "Plantillas"
+    },
+    "dialog": {
+      "action": "Permisos",
+      "title": "Permisos del usuario"
+    },
+    "users": {
+      "select": "Usuario",
+      "selectPlaceholder": "Elige un usuario",
+      "search": "Buscar usuario…",
+      "empty": "Elige un usuario para ver y editar sus permisos.",
+      "loadError": "No se pudieron cargar los permisos del usuario.",
+      "applyPreset": "Aplicar plantilla",
+      "presetPlaceholder": "Elige una plantilla",
+      "noPresets": "No hay plantillas",
+      "apply": "Aplicar",
+      "applyConfirmTitle": "¿Aplicar plantilla?",
+      "applyConfirmDescription": "Los permisos de {user} se reemplazarán por los de «{preset}». Después podrás ajustarlos a mano.",
+      "basedOn": "Basado en: {name}",
+      "custom": "Permisos personalizados",
+      "you": "Tú",
+      "superuserTitle": "Superusuario: tiene todos los permisos",
+      "superuserDescription": "Los permisos de un superusuario no se pueden limitar.",
+      "unsaved": "Cambios sin guardar",
+      "saved": "Sin cambios",
+      "switchConfirmTitle": "¿Descartar cambios?",
+      "switchConfirmDescription": "Tienes cambios sin guardar en los permisos de este usuario."
+    },
+    "presets": {
+      "subtitle": "Las plantillas sirven para asignar el mismo conjunto de permisos a varios usuarios.",
+      "new": "Nueva plantilla",
+      "create": "Crear plantilla",
+      "createTitle": "Nueva plantilla",
+      "createDescription": "Ponle un nombre y elige sus permisos.",
+      "editTitle": "Editar plantilla",
+      "editDescription": "Cambia el nombre o los permisos de la plantilla.",
+      "editWarning": "Editar la plantilla no cambia a los usuarios que ya la tienen aplicada: hay que volver a aplicarla.",
+      "name": "Nombre",
+      "namePlaceholder": "Ej. Operador",
+      "empty": "Aún no hay plantillas. Crea la primera para asignar permisos más rápido.",
+      "loadError": "No se pudieron cargar las plantillas.",
+      "off": "Sin acceso",
+      "full": "Completo",
+      "partial": "{count} de {total}",
+      "deleteTitle": "¿Eliminar «{name}»?",
+      "deleteDescription": "Los usuarios que la tienen aplicada conservan sus permisos."
+    },
+    "actions": {
+      "save": "Guardar",
+      "discard": "Descartar",
+      "discardAndContinue": "Descartar y continuar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "toasts": {
+      "error": "No se pudo completar la acción",
+      "profileSaved": "Permisos actualizados",
+      "presetApplied": "Plantilla aplicada",
+      "presetCreated": "Plantilla creada",
+      "presetUpdated": "Plantilla actualizada",
+      "presetDeleted": "Plantilla eliminada"
+    }
+  },
   "mentions": {
     "listLabel": "Usuarios para mencionar",
     "loading": "Cargando…",
@@ -962,7 +1074,8 @@
     "nav": {
       "organization": "Organización",
       "company": "Compañía",
-      "user": "Usuarios"
+      "user": "Usuarios",
+      "permissions": "Permisos"
     },
     "organization": {
       "title": "Organización",

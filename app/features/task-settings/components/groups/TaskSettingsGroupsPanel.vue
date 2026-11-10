@@ -15,6 +15,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Crear grupos: `settings.can_groups`.
+const { can } = usePermissions()
 
 /**
  * Buscador por nombre de grupo. Solo filtra la lista que se muestra: `groups` completo sigue yendo a
@@ -39,6 +41,7 @@ const isSearching = computed(() => search.value.trim().length > 0)
         </p>
       </div>
       <UButton
+        v-if="can('settings', 'groups')"
         icon="i-lucide-plus"
         :label="t('taskSettings.groups.newGroup')"
         class="bg-aeto-teal hover:opacity-90 text-white self-start sm:shrink-0"

@@ -19,6 +19,10 @@ const props = withDefaults(
   },
 )
 
+// «Crear tarea» de la columna: además del prop, pide permiso `task.can_create`.
+const { can } = usePermissions()
+const canShowCreate = computed(() => props.showCreate && can('task', 'create'))
+
 const emit = defineEmits<{
   select: [taskId: number]
   create: [column: KanbanCreateColumn]
@@ -212,7 +216,7 @@ function onDrop(event: DragEvent) {
       </div>
 
       <div
-        v-if="showCreate && !column.loading && !column.error"
+        v-if="canShowCreate && !column.loading && !column.error"
         class="shrink-0 border-t border-black/5 p-1.5 dark:border-white/5"
       >
         <UButton

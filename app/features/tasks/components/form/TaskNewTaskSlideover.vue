@@ -132,6 +132,8 @@ const props = withDefaults(
 
 const { t } = useI18n()
 const { user, managedGroups, organization, selectedCompanyId, isSuperuser } = useAuth()
+// Editar (`task.can_update`) y archivar/restaurar (`task.can_delete`); el backend también lo valida.
+const { can } = usePermissions()
 const toast = useToast()
 const queryClient = useQueryClient()
 
@@ -518,7 +520,7 @@ const showDetailFooter = computed(() =>
  */
 const canArchiveThisTask = computed(() => {
   const detail = taskDetailQuery.data.value
-  if (!detail) {
+  if (!detail || !can('task', 'delete')) {
     return false
   }
   if (isBacklogTask.value) {
@@ -565,7 +567,8 @@ const showUnarchiveProcess = computed(() =>
   isDetailView.value
   && !isEditing.value
   && isArchived.value
-  && canModifyThisTask.value,
+  && canModifyThisTask.value
+  && can('task', 'delete'),
 )
 
 /** Completada o archivada: sin lápiz; solo se edita tras reabrir/desarchivar. */
@@ -576,7 +579,8 @@ const isTaskLocked = computed(() =>
 
 const canEditTask = computed(() =>
   !isTaskLocked.value
-  && canModifyThisTask.value,
+  && canModifyThisTask.value
+  && can('task', 'update'),
 )
 
 const state = reactive<NewTaskFormState>({

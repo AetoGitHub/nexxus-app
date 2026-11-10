@@ -62,7 +62,8 @@ const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuic
 const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
 
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
-const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
+const { can } = usePermissions()
+const canDelete = computed(() => props.deletable && can('task', 'delete') && canModifyTask(props.task, user.value?.id))
 
 function onSelect() {
   emit('select', props.task.id)

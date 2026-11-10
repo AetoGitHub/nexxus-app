@@ -19,6 +19,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Crear proyectos de la empresa: `settings.can_projects`.
+const { can } = usePermissions()
 
 const archivedOpen = ref(false)
 
@@ -47,6 +49,7 @@ const tabs: { id: TaskSettingsProjectTab, labelKey: string }[] = [
         </p>
       </div>
       <UButton
+        v-if="can('settings', 'projects')"
         icon="i-lucide-plus"
         :label="t('taskSettings.projects.newProject')"
         class="bg-aeto-teal hover:opacity-90 text-white self-start sm:shrink-0"

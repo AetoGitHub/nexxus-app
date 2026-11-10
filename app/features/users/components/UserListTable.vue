@@ -3,6 +3,7 @@ import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { ComponentPublicInstance } from 'vue'
 import type { UserProfile } from '~/features/users/types/user.types'
 import { LIST_TABLE_UI_CLASS } from '~/shared/constants/list-table'
+import UserPermissionsDialog from '~/features/permissions/components/UserPermissionsDialog.vue'
 
 const props = defineProps<{
   /** Filtra por organización (select del toolbar). */
@@ -37,6 +38,21 @@ function displayCell(value: unknown): string {
   return value
 }
 
+// Permisos del usuario (solo superusers): botón de la fila y opción del menú ⋮.
+const { isSuperuser } = useAuth()
+const permissionsOpen = ref(false)
+const permissionsUser = ref<UserProfile | null>(null)
+
+function userDisplayName(user: UserProfile): string {
+  const full = [user.first_name, user.last_name].filter(value => typeof value === 'string' && value.trim()).join(' ')
+  return full || user.username
+}
+
+function openPermissions(user: UserProfile) {
+  permissionsUser.value = user
+  permissionsOpen.value = true
+}
+
 function rowMenuItems(user: UserProfile): DropdownMenuItem[][] {
   const groups: DropdownMenuItem[][] = [
     [
@@ -50,6 +66,13 @@ function rowMenuItems(user: UserProfile): DropdownMenuItem[][] {
         icon: 'i-lucide-key-round',
         onSelect: () => openPasswordDialog(user.id),
       },
+      ...(isSuperuser.value
+        ? [{
+            label: t('permissions.dialog.action'),
+            icon: 'i-lucide-shield-check',
+            onSelect: () => openPermissions(user),
+          }]
+        : []),
     ],
   ]
 
@@ -121,8 +144,8 @@ const columns = computed<TableColumn<UserProfile>[]>(() => [
     header: t('configuration.user.list.columns.context'),
     meta: {
       class: {
-        th: 'w-24',
-        td: 'w-24',
+        th: 'w-32',
+        td: 'w-32',
       },
     },
   },
@@ -252,9 +275,31 @@ useInfiniteScroll(
                 })"
               />
             </UTooltip>
+
+            <UTooltip
+              v-if="isSuperuser"
+              :text="t('permissions.dialog.action')"
+            >
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="sm"
+                icon="i-lucide-shield-check"
+                :aria-label="t('permissions.dialog.action')"
+                @click="openPermissions(row.original)"
+              />
+            </UTooltip>
           </div>
         </template>
       </UTable>
     </AppListTableShell>
+
+    <UserPermissionsDialog
+      v-if="isSuperuser"
+      v-model:open="permissionsOpen"
+      :profile-id="permissionsUser?.id ?? null"
+      :name="permissionsUser ? userDisplayName(permissionsUser) : ''"
+      :username="permissionsUser?.username"
+    />
   </section>
 </template>

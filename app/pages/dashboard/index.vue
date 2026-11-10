@@ -29,7 +29,7 @@ import { defaultCustomRange, isValidDateRange } from '~/features/dashboard/utils
 import { buildDashboardKpis } from '~/features/dashboard/utils/dashboard-kpi.util'
 
 // Protected route: redirects to /login when not authenticated.
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['dashboard', 'view'] })
 
 const { t } = useI18n()
 

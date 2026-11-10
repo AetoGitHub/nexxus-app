@@ -1,4 +1,4 @@
-export type ConfigurationSectionId = 'organization' | 'company' | 'user'
+export type ConfigurationSectionId = 'organization' | 'company' | 'user' | 'permissions'
 
 export interface ConfigurationNavItem {
   id: ConfigurationSectionId

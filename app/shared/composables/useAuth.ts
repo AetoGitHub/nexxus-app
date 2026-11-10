@@ -62,6 +62,8 @@ export function useAuth() {
       organization: data.organization,
       profile_configurations: data.profile_configurations,
     }
+    // Antes de entrar: así el menú y los botones ya salen con los permisos de esta cuenta.
+    await usePermissions().refreshPermissions()
   }
 
   /** Marca (o desmarca) en la sesión que el usuario debe cambiar su contraseña antes de usar la app. */

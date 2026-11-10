@@ -49,11 +49,30 @@ const route = useRoute()
 
 const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'nexxtep', 'videoCalls', 'notifications', 'general']
 
+// Proyectos y Grupos solo con su permiso (`settings.can_projects` / `settings.can_groups`); el resto son preferencias
+// personales y siempre se ven.
+const { can } = usePermissions()
+
+function isSectionAllowed(section: TaskSettingsSectionId): boolean {
+  if (section === 'projects') {
+    return can('settings', 'projects')
+  }
+  if (section === 'groups') {
+    return can('settings', 'groups')
+  }
+  return true
+}
+
+/** Primera sección permitida (si no hay permiso de proyectos ni grupos, abre en Nexxtep). */
+function firstAllowedSection(): TaskSettingsSectionId {
+  return VALID_SECTIONS.find(isSectionAllowed) ?? 'notifications'
+}
+
 function initialSection(): TaskSettingsSectionId {
-  const section = route.query.section
-  return VALID_SECTIONS.includes(section as TaskSettingsSectionId)
-    ? (section as TaskSettingsSectionId)
-    : 'projects'
+  const section = route.query.section as TaskSettingsSectionId
+  return VALID_SECTIONS.includes(section) && isSectionAllowed(section)
+    ? section
+    : firstAllowedSection()
 }
 
 /** Permite deep-link (p. ej. desde "Ver todas" en el preview de notificaciones) vía ?section=. */
@@ -72,7 +91,7 @@ const assignedGroupUsers = ref<CatalogueGroupMember[]>([])
 const isEditingProject = computed(() => editingProjectId.value != null)
 const isEditingGroup = computed(() => editingGroupId.value != null)
 
-const navItems: TaskSettingsNavItem[] = [
+const ALL_NAV_ITEMS: TaskSettingsNavItem[] = [
   { id: 'projects', labelKey: 'taskSettings.nav.projects', icon: 'i-lucide-folder-kanban' },
   { id: 'groups', labelKey: 'taskSettings.nav.groups', icon: 'i-lucide-users' },
   { id: 'nexxtep', labelKey: 'taskSettings.nav.nexxtep', icon: 'i-lucide-workflow' },
@@ -80,6 +99,15 @@ const navItems: TaskSettingsNavItem[] = [
   { id: 'notifications', labelKey: 'taskSettings.nav.notifications', icon: 'i-lucide-bell' },
   { id: 'general', labelKey: 'taskSettings.nav.general', icon: 'i-lucide-settings' },
 ]
+
+const navItems = computed(() => ALL_NAV_ITEMS.filter(item => isSectionAllowed(item.id)))
+
+// Si le quitan el permiso con la pantalla abierta (llegan permisos nuevos), sale de la sección.
+watch(navItems, () => {
+  if (!isSectionAllowed(activeSection.value)) {
+    activeSection.value = firstAllowedSection()
+  }
+})
 
 const { projects, projectsQuery, createProject, companyId } = useEnterpriseProjects(
   () => projectsTab.value === 'mine',

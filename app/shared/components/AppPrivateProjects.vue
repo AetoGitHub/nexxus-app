@@ -57,11 +57,17 @@ function askPublish(project: PrivateProject) {
   publishOpen.value = true
 }
 
+// Publicar un proyecto privado lo vuelve de la empresa: pide `settings.can_projects`. Abrirlo/crearlo siempre se puede.
+const { can } = usePermissions()
+
 function menuItems(project: PrivateProject): DropdownMenuItem[][] {
-  return [[
+  const items: DropdownMenuItem[] = [
     { label: t('privateProjects.open'), icon: 'i-lucide-list-checks', onSelect: () => openProject(project) },
-    { label: t('privateProjects.makePublic'), icon: 'i-lucide-globe', onSelect: () => askPublish(project) },
-  ]]
+  ]
+  if (can('settings', 'projects')) {
+    items.push({ label: t('privateProjects.makePublic'), icon: 'i-lucide-globe', onSelect: () => askPublish(project) })
+  }
+  return [items]
 }
 
 /** Menú del sidebar colapsado: todos los proyectos (cada uno con su submenú) y el alta. */

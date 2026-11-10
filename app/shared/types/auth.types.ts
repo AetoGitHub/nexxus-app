@@ -77,6 +77,66 @@ export interface AuthSession {
   user: AuthUser
   organization: AuthOrganization
   profile_configurations: ProfileConfiguration
+  /** Permisos del usuario (GET /api/auth/permissions/me/). Ausente en sesiones anteriores o mientras no se piden. */
+  permissions?: UserPermissions
+}
+
+/** Módulos con permisos por perfil. */
+export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings'
+
+export interface TaskPermissionBlock {
+  allow: boolean
+  can_view: boolean
+  can_create: boolean
+  can_update: boolean
+  can_delete: boolean
+  can_view_all: boolean
+  can_view_approvals: boolean
+}
+
+export interface ReportPermissionBlock {
+  allow: boolean
+  can_view: boolean
+  can_generate: boolean
+  can_update: boolean
+}
+
+export interface DashboardPermissionBlock {
+  allow: boolean
+  can_view: boolean
+  can_create: boolean
+  can_update: boolean
+  can_delete: boolean
+}
+
+export interface SettingsPermissionBlock {
+  allow: boolean
+  can_projects: boolean
+  can_groups: boolean
+  can_general: boolean
+}
+
+/** Los 4 bloques: lo que se edita de un perfil o de una plantilla. */
+export interface PermissionBlocks {
+  task: TaskPermissionBlock
+  report: ReportPermissionBlock
+  dashboard: DashboardPermissionBlock
+  settings: SettingsPermissionBlock
+}
+
+/** Acciones de cada módulo (el campo es `can_<acción>`). */
+export interface PermissionActions {
+  task: 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals'
+  report: 'view' | 'generate' | 'update'
+  dashboard: 'view' | 'create' | 'update' | 'delete'
+  settings: 'projects' | 'groups' | 'general'
+}
+
+/** Respuesta de me/, profile/:id/, update/ y apply_preset/. */
+export interface UserPermissions extends PermissionBlocks {
+  profile: number
+  is_superuser: boolean
+  preset: { id: number, name: string } | null
 }
 
 export interface AuthLoginRequest {

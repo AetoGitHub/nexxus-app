@@ -2,7 +2,7 @@
 import type { BreadcrumbItem } from '@nuxt/ui'
 import UserBulkCreateForm from '~/features/users/components/UserBulkCreateForm.vue'
 
-definePageMeta({ middleware: 'auth', layout: false })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['settings', 'general'], layout: false })
 
 const { t } = useI18n()
 

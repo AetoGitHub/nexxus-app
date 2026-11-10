@@ -4,6 +4,9 @@
 definePageMeta({ middleware: 'auth', layout: false })
 
 const { t } = useI18n()
+const { can } = usePermissions()
+const showTasks = computed(() => can('task', 'view'))
+const showConfiguration = computed(() => can('settings', 'general'))
 
 useSeoMeta({
   title: () => t('hub.title'),
@@ -26,18 +29,31 @@ useSeoMeta({
 
       <div class="grid gap-4 sm:grid-cols-2 w-full max-w-2xl">
         <AppModuleCard
+          v-if="showTasks"
           to="/tasks"
           icon="i-lucide-square-check-big"
           :title="t('hub.tasksTitle')"
           :description="t('hub.tasksDescription')"
         />
         <AppModuleCard
+          v-if="showConfiguration"
           to="/configuration"
           icon="i-lucide-settings"
           :title="t('hub.configurationTitle')"
           :description="t('hub.configurationDescription')"
         />
       </div>
+
+      <p
+        v-if="!showTasks && !showConfiguration"
+        class="mt-2 flex items-center gap-2 text-sm text-muted-foreground"
+      >
+        <UIcon
+          name="i-lucide-lock"
+          class="h-4 w-4"
+        />
+        {{ t('permissions.noModules') }}
+      </p>
     </main>
   </div>
 </template>
