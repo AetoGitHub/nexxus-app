@@ -21,7 +21,9 @@ export function useTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   // Repetitivas de «Próximas»: una por serie por defecto. `repeats` aplica a todas las secciones, por eso el contador de
   // Próximas sale de su propia consulta y no del `counts/` compartido (que también cuenta Hoy y Urgentes).
   const upcomingScope = useRepeatScopeFilter('list-upcoming')
-  const upcomingCounts = api.countsQuery<TaskCounts>(['upcoming'], '/counts/', { extraQuery: upcomingScope.query })
+  // Llave propia ('list-upcoming'), no ['upcoming', 'counts']: el realtime inserta tareas en todo lo que empiece con
+  // ['tasks', company, 'upcoming'] y trataría este contador como lista (rompía al crear una tarea).
+  const upcomingCounts = api.countsQuery<TaskCounts>(['list-upcoming'], '/counts/', { extraQuery: upcomingScope.query })
   const upcoming = api.listQuery(['upcoming'], '/upcoming/', { extraQuery: upcomingScope.query })
 
   function loadMore(sectionId: TaskSectionKey) {
