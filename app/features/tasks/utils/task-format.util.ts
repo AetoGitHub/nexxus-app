@@ -102,6 +102,7 @@ const STATUS_META: Record<string, TaskStatusMeta> = {
   in_review: { labelKey: 'tasks.kanban.columns.inReview', color: 'warning' },
   rejected: { labelKey: 'tasks.kanban.columns.rejected', color: 'error' },
   complete: { labelKey: 'tasks.kanban.columns.complete', color: 'success' },
+  reopened: { labelKey: 'tasks.kanban.columns.reopened', color: 'warning' },
 }
 
 /** Meta de status alineada a columnas Kanban All. */

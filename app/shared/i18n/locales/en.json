@@ -251,7 +251,8 @@
         "inReview": "In review",
         "rejected": "Rejected",
         "complete": "Complete",
-        "archived": "Archived"
+        "archived": "Archived",
+        "reopened": "Reopened"
       },
       "createTask": "Create task",
       "dropHere": "Drop here",
@@ -435,6 +436,38 @@
     },
     "status": {
       "unknown": "Unknown status"
+    },
+    "history": {
+      "button": "History",
+      "modalTitle": "Task history",
+      "modalDescription": "Everything done to the task, in chronological order.",
+      "initialPhase": "Creation",
+      "system": "System",
+      "empty": "This task has no activity yet.",
+      "loadError": "Couldn't load the history.",
+      "notFound": "The task doesn't exist or you don't have access.",
+      "deletedMessage": "Message deleted",
+      "originalLimitDate": "Original due date",
+      "emptyValue": "—",
+      "editComment": "Edit comment",
+      "save": "Save",
+      "cancel": "Cancel",
+      "commentPlaceholder": "Write the comment…",
+      "editMessage": "Edit message",
+      "messagePlaceholder": "Write the message…",
+      "recordSaved": "Record updated",
+      "recordSaveError": "Couldn't save the change",
+      "retry": "Retry",
+      "comment": "Comment",
+      "noComment": "No comment",
+      "participants": "Participants",
+      "eventsCount": "No events | 1 event | {count} events",
+      "summary": {
+        "events": "Events",
+        "phases": "Phase changes",
+        "messages": "Messages",
+        "changes": "Edits"
+      }
     },
     "types": {
       "manual": "Manual",

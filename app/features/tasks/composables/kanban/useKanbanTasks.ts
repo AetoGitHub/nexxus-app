@@ -7,6 +7,7 @@ import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTo
 import { useBacklogMine } from '~/features/tasks/composables/shared/useBacklogMine'
 import { useRepeatScopeFilter } from '~/features/tasks/composables/shared/useRepeatScopeFilter'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
+import { currentWeekRange } from '~/features/tasks/utils/kanban/kanban-complete-filter.util'
 
 /**
  * Server state del Kanban (groupBy = all) vía TanStack Query.
@@ -31,9 +32,17 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   // Repetitivas de «Pendiente»: una por serie por defecto. `limit_date_*` y `repeats` aplican a todos los estados, por eso
   // el contador de esta columna sale de su propia consulta y no del `counts/` compartido.
+  // Estado base: «Pendiente» solo muestra lo que vence en la semana actual (domingo a sábado). Con «Todas» se quita el rango.
   const pendingScope = useRepeatScopeFilter('kanban-pending')
-  const pendingCounts = api.countsQuery<KanbanCounts>(['kanban-pending'], '/kanban/counts/', { extraQuery: pendingScope.query })
-  const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/', { extraQuery: pendingScope.query })
+  const pendingQuery = computed<Record<string, string>>(() => {
+    if (pendingScope.mode.value === 'all') {
+      return pendingScope.query.value
+    }
+    const week = currentWeekRange()
+    return { ...pendingScope.query.value, limit_date_from: week.date_from, limit_date_to: week.date_to }
+  })
+  const pendingCounts = api.countsQuery<KanbanCounts>(['kanban-pending'], '/kanban/counts/', { extraQuery: pendingQuery })
+  const pending = api.listQuery([...scope, 'pending'], '/kanban/pending/', { extraQuery: pendingQuery })
   const wip = api.listQuery([...scope, 'wip'], '/kanban/wip/')
   const inReview = api.listQuery([...scope, 'in_review'], '/kanban/in_review/')
   const complete = api.listQuery([...scope, 'complete'], '/kanban/complete/', { extraQuery: completeFilter.query })
