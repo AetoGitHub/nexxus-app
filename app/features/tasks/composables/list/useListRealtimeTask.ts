@@ -73,6 +73,11 @@ export function useListRealtimeTask() {
       )
     }
 
+    // «Próximas» tiene su propio contador (filtrado por repetitivas): se vuelve a pedir en vez de sumarle a ciegas.
+    if (insertedCounts.has('tasks')) {
+      void queryClient.invalidateQueries({ queryKey: ['tasks', companyId.value, 'list-upcoming'] })
+    }
+
     if (insertedCounts.size) {
       queryClient.setQueriesData<TaskCounts>(
         {
@@ -118,6 +123,10 @@ export function useListRealtimeTask() {
           return next
         },
       )
+    }
+
+    if (decrementedCounts.has('tasks')) {
+      void queryClient.invalidateQueries({ queryKey: ['tasks', companyId.value, 'list-upcoming'] })
     }
 
     if (decrementedCounts.size) {
