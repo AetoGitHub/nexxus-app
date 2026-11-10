@@ -45,6 +45,7 @@ import TaskArchiveRepeatModal from '~/features/tasks/components/form/TaskArchive
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
 import TaskMessenger from '~/features/tasks/components/form/TaskMessenger.vue'
 import TaskReopenProcessModal from '~/features/tasks/components/form/TaskReopenProcessModal.vue'
+import TaskHistoryModal from '~/features/tasks/components/form/TaskHistoryModal.vue'
 import TaskReturnProcessModal from '~/features/tasks/components/form/TaskReturnProcessModal.vue'
 import TaskReviewDecisionModal from '~/features/tasks/components/form/TaskReviewDecisionModal.vue'
 import { useTaskProcessActions } from '~/features/tasks/composables/shared/useTaskProcessActions'
@@ -143,6 +144,7 @@ const returnProcessTarget = ref<ReturnTaskProcessTarget>('backlog')
 const archiveProcessModalOpen = ref(false)
 const archiveRepeatModalOpen = ref(false)
 const unarchiveProcessModalOpen = ref(false)
+const historyModalOpen = ref(false)
 /** Con taskId el slideover es detalle (view-only salvo modo edición). */
 const isDetailView = computed(() => taskId.value != null)
 const isEditing = ref(false)
@@ -539,6 +541,24 @@ const showArchiveProcess = computed(() =>
 
 /** Las tareas repetitivas se eliminan con su propio flujo: pueden archivar también las futuras de la serie. */
 const isRepeatTask = computed(() => taskDetailQuery.data.value?.type === 'repeat')
+
+/** Móvil: acciones del menú «…» (historial siempre; archivar si aplica). */
+const mobileMoreActions = computed(() => {
+  const items: { label: string, icon: string, color?: 'error', onSelect: () => void }[] = [{
+    label: t('tasks.history.button'),
+    icon: 'i-lucide-history',
+    onSelect: openHistoryModal,
+  }]
+  if (showArchiveProcess.value) {
+    items.push({
+      label: isRepeatTask.value ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit'),
+      icon: 'i-lucide-trash-2',
+      color: 'error',
+      onSelect: openArchiveProcessModal,
+    })
+  }
+  return items
+})
 
 /** Detalle: desarchivar (solo si ya está archivada). */
 const showUnarchiveProcess = computed(() =>
@@ -1140,6 +1160,10 @@ function openReturnProcessModal(target: ReturnTaskProcessTarget) {
   returnProcessModalOpen.value = true
 }
 
+function openHistoryModal() {
+  historyModalOpen.value = true
+}
+
 function openArchiveProcessModal() {
   if (isRepeatTask.value) {
     archiveRepeatModalOpen.value = true
@@ -1687,15 +1711,10 @@ const slideoverUi = computed(() => {
                 :aria-label="t('tasks.messenger.showMessages')"
                 @click="showMobileMessages"
               />
-              <!-- Móvil: archivar queda en un menú (el icono rojo junto al del chat se tocaba sin querer). -->
+              <!-- Móvil: historial y archivar quedan en un menú (el icono rojo junto al del chat se tocaba sin querer). -->
               <UDropdownMenu
-                v-if="showArchiveProcess"
-                :items="[{
-                  label: isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit'),
-                  icon: 'i-lucide-trash-2',
-                  color: 'error',
-                  onSelect: openArchiveProcessModal,
-                }]"
+                v-if="taskId != null"
+                :items="mobileMoreActions"
               >
                 <UButton
                   class="sm:hidden"
@@ -1707,6 +1726,21 @@ const slideoverUi = computed(() => {
                   :aria-label="t('tasks.form.moreActions')"
                 />
               </UDropdownMenu>
+              <UTooltip
+                v-if="taskId != null"
+                :text="t('tasks.history.button')"
+              >
+                <UButton
+                  class="hidden sm:inline-flex"
+                  icon="i-lucide-history"
+                  color="neutral"
+                  variant="ghost"
+                  size="md"
+                  square
+                  :aria-label="t('tasks.history.button')"
+                  @click="openHistoryModal"
+                />
+              </UTooltip>
               <UTooltip
                 v-if="showArchiveProcess"
                 :text="isRepeatTask ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit')"
@@ -2542,6 +2576,11 @@ const slideoverUi = computed(() => {
     @success="onReviewDecision"
   />
 
+  <TaskHistoryModal
+    v-if="taskId != null"
+    v-model:open="historyModalOpen"
+    :task-id="taskId"
+  />
   <TaskReopenProcessModal
     v-if="taskId != null"
     v-model:open="reopenProcessModalOpen"

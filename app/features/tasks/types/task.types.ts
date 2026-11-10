@@ -714,3 +714,50 @@ export interface UpdateTaskMessagePayload {
   /** URLs finales del mensaje (existentes que se conservan + nuevas subidas a Firebase). */
   files?: string[]
 }
+
+/** Cambio de un campo dentro de `task_updated` / `subtask_updated` del historial. */
+export interface TaskHistoryChange {
+  field: string
+  old: unknown
+  new: unknown
+}
+
+/** Tipos conocidos del historial; el backend puede mandar otros (se pintan de forma genérica). */
+export type TaskHistoryEventType =
+  | 'message'
+  | 'message_edited'
+  | 'message_deleted'
+  | 'process'
+  | 'task_updated'
+  | 'close_approval_assigned'
+  | 'close_approval_resolved'
+  | 'archive'
+  | 'token'
+  | 'mention'
+  | 'file'
+  | 'subtask_created'
+  | 'subtask_deleted'
+  | 'subtask_completed'
+  | 'subtask_uncompleted'
+  | 'subtask_updated'
+  | (string & {})
+
+/** Evento del historial de GET /api/tasks/more/info/:id/. `actor` null = acción del sistema. */
+export interface TaskHistoryEvent {
+  date: string
+  type: TaskHistoryEventType
+  actor: number | null
+  actor_username?: string | null
+  actor_first_name?: string | null
+  actor_last_name?: string | null
+  /** Texto ya traducido según Accept-Language. */
+  action: string
+  detail: Record<string, unknown> | null
+}
+
+/** Historial cronológico (de lo más viejo a lo más nuevo) de una tarea. */
+export interface TaskHistory {
+  id: number
+  short_description: string
+  timeline: TaskHistoryEvent[]
+}

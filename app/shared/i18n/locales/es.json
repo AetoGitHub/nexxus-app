@@ -251,7 +251,8 @@
         "inReview": "En revisión",
         "rejected": "Rechazada",
         "complete": "Completado",
-        "archived": "Archivadas"
+        "archived": "Archivadas",
+        "reopened": "Reabierta"
       },
       "createTask": "Crear tarea",
       "dropHere": "Suelta aquí",
@@ -435,6 +436,38 @@
     },
     "status": {
       "unknown": "Estado desconocido"
+    },
+    "history": {
+      "button": "Historial",
+      "modalTitle": "Historial de la tarea",
+      "modalDescription": "Todo lo que se le hizo a la tarea, en orden cronológico.",
+      "initialPhase": "Creación",
+      "system": "Sistema",
+      "empty": "Esta tarea todavía no tiene actividad.",
+      "loadError": "No se pudo cargar el historial.",
+      "notFound": "La tarea no existe o no tienes acceso.",
+      "deletedMessage": "Mensaje eliminado",
+      "originalLimitDate": "Fecha límite original",
+      "emptyValue": "—",
+      "editComment": "Editar comentario",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "commentPlaceholder": "Escribe el comentario…",
+      "editMessage": "Editar mensaje",
+      "messagePlaceholder": "Escribe el mensaje…",
+      "recordSaved": "Registro actualizado",
+      "recordSaveError": "No se pudo guardar el cambio",
+      "retry": "Reintentar",
+      "comment": "Comentario",
+      "noComment": "Sin comentario",
+      "participants": "Participantes",
+      "eventsCount": "Sin eventos | 1 evento | {count} eventos",
+      "summary": {
+        "events": "Eventos",
+        "phases": "Cambios de fase",
+        "messages": "Mensajes",
+        "changes": "Ediciones"
+      }
     },
     "types": {
       "manual": "Manual",
