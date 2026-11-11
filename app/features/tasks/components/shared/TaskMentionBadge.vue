@@ -79,7 +79,6 @@ const ariaLabel = computed(() =>
               :name="person.name"
               :size="24"
               :font-size="10"
-              fallback-color="#28ceab"
             />
             <span class="min-w-0 flex-1 truncate text-xs text-foreground">{{ person.name }}</span>
             <span

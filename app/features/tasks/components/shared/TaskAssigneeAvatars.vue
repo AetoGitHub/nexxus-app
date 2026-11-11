@@ -29,7 +29,6 @@ withDefaults(
       :initials="taskAssigneeInitial(assignee.username)"
       :size="size"
       :font-size="Math.max(9, Math.round(size * 0.42))"
-      :fallback-color="taskAssigneeColor(assignee)"
     />
     <span
       v-if="assignees.length > max"

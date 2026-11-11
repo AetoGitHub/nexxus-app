@@ -108,7 +108,6 @@ const lists = computed(() => [
         :initials="initials"
         :size="72"
         :font-size="26"
-        fallback-color="#f59e0b"
       />
       <div class="min-w-0 max-w-full">
         <div class="text-base font-semibold text-foreground break-words">

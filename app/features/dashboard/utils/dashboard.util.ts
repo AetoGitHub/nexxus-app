@@ -109,12 +109,6 @@ export function formatSigned(value: number, unit = '', decimals = 1): string {
   return `${sign}${Math.abs(rounded)}${unit}`
 }
 
-/** Colores de avatar: a cada persona le toca siempre el mismo según su id. */
-const AVATAR_COLORS = ['#28ceab', '#6366f1', '#f59e0b', '#ec4899', '#0ea5e9', '#8b5cf6', '#f97316', '#14b8a6']
-
-export function avatarColor(id: number): string {
-  return AVATAR_COLORS[Math.abs(id) % AVATAR_COLORS.length]!
-}
 
 /**
  * Polilíneas que escalan la serie al alto/ancho dado (con un pequeño margen vertical).

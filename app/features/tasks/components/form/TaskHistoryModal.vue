@@ -3,7 +3,7 @@ import type { TaskHistoryEvent } from '~/features/tasks/types/task.types'
 import { useTaskHistory } from '~/features/tasks/composables/form/useTaskHistory'
 import { useUpdateHistoryEvent } from '~/features/tasks/composables/form/useUpdateHistoryEvent'
 import type { EditableHistoryType } from '~/features/tasks/composables/form/useUpdateHistoryEvent'
-import { ASSIGNEE_AVATAR_COLORS, taskStatusMeta } from '~/features/tasks/utils/task-format.util'
+import { taskStatusMeta } from '~/features/tasks/utils/task-format.util'
 import {
   groupTimelineByPhase,
   HISTORY_TONE_CLASSES,
@@ -150,9 +150,6 @@ function actorLabel(event: TaskHistoryEvent): string {
   return historyActorName(event) ?? t('tasks.history.system')
 }
 
-function actorColor(actor: number): string {
-  return ASSIGNEE_AVATAR_COLORS[Math.abs(actor) % ASSIGNEE_AVATAR_COLORS.length]!
-}
 
 function phaseTone(event: TaskHistoryEvent | null): HistoryTone {
   return event ? taskStatusMeta(historyDetailString(event, 'status')).color : 'neutral'
@@ -330,7 +327,6 @@ function fileName(url: string): string {
               :user-id="person.actor"
               :initials="getInitials(actorLabel(person))"
               :name="actorLabel(person)"
-              :fallback-color="actorColor(person.actor!)"
               :size="24"
               :font-size="10"
             />
@@ -514,7 +510,6 @@ function fileName(url: string): string {
                         :user-id="event.actor"
                         :initials="getInitials(actorLabel(event))"
                         :name="actorLabel(event)"
-                        :fallback-color="actorColor(event.actor)"
                         :size="18"
                         :font-size="8"
                         class="shrink-0"

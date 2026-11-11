@@ -17,7 +17,6 @@ import {
   TONE_BG,
   TONE_SOFT,
   TONE_TEXT,
-  avatarColor,
   formatHours,
   formatPercent,
   rangeOf,
@@ -237,7 +236,6 @@ async function exportExcel() {
                     :name="row.name"
                     :size="28"
                     :font-size="11"
-                    :fallback-color="avatarColor(row.id)"
                   />
                   <span class="font-semibold text-foreground">{{ row.name }}</span>
                 </div>

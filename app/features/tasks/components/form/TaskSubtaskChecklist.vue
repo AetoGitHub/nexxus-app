@@ -319,7 +319,6 @@ async function removeSubtask(subtaskId: number) {
               :initials="personInitials(row.assigned_to_name)"
               :size="24"
               :font-size="10"
-              fallback-color="#28ceab"
             />
             <span
               v-else

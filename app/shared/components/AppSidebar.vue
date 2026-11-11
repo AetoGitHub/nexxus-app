@@ -131,7 +131,6 @@ function backToHub() {
               :initials="initials"
               :size="32"
               :font-size="12.8"
-              fallback-color="#f59e0b"
             />
             <span
               v-if="collapsed"

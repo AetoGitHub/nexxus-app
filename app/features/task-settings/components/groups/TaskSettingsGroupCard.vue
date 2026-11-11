@@ -2,7 +2,6 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { CatalogueGroup } from '~/features/task-settings/types/group.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
-import { resolveAvatarColor } from '~/features/task-settings/utils/groups/group-avatar.util'
 import { useGroupDetail } from '~/features/task-settings/composables/groups/useGroupDetail'
 import { useProfiles } from '~/features/auth/composables/useProfiles'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
@@ -204,7 +203,6 @@ function onToggle() {
               :initials="getInitials(managerName)"
               :size="28"
               :font-size="11"
-              :fallback-color="resolveAvatarColor(group.manager)"
               :name="managerName"
             />
             <div class="min-w-0 flex-1">
@@ -251,7 +249,6 @@ function onToggle() {
                 :name="memberName(member)"
                 :size="28"
                 :font-size="11"
-                :fallback-color="resolveAvatarColor(member.id)"
               />
               <div class="min-w-0 flex-1">
                 <p class="text-[13px] font-medium text-foreground truncate">

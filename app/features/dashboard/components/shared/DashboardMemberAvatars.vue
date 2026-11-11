@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useTooltipTouchTap } from '~/features/dashboard/composables/useTooltipTouchTap'
-import { avatarColor } from '~/features/dashboard/utils/dashboard.util'
 import { getInitials } from '~/shared/utils/initials'
 
 /**
@@ -49,7 +48,6 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
       :initials="getInitials(member.name)"
       :size="24"
       :font-size="9"
-      :fallback-color="avatarColor(member.id)"
       :name="member.name"
     />
 
@@ -84,7 +82,6 @@ const { open, onPointerDown, endTouchTap, onUpdateOpen, onClick } = useTooltipTo
               :initials="getInitials(member.name)"
               :size="20"
               :font-size="8"
-              :fallback-color="avatarColor(member.id)"
               :name="member.name"
             />
             <span class="text-xs text-foreground">{{ member.name }}</span>

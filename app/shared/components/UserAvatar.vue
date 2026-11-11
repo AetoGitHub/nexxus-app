@@ -2,10 +2,12 @@
 import { useProfileAppearance, useProfileFullName, useProfileInitials } from '~/features/auth/composables/useProfileAppearance'
 import { readableTextColor } from '~/features/auth/utils/profile-appearance.util'
 import type { ProfileAppearance } from '~/features/auth/utils/profile-appearance.util'
+import { userAvatarColor } from '~/shared/utils/user-avatar-color.util'
 
 /**
- * Círculo de un usuario: su imagen de perfil si tiene; si no, su color de fondo con las iniciales; y si no tiene ninguno,
- * `fallbackColor` con las iniciales (lo de siempre). Si la imagen no carga, cae al color o al fallback.
+ * Círculo de un usuario, un solo modelo en toda la app: su imagen de perfil si tiene; si no, su color de perfil con las
+ * iniciales; y si no tiene ninguno, su color fijo (`userAvatarColor(userId)`, el mismo en todas las pantallas). Si la
+ * imagen no carga, cae al color. `fallbackColor` solo aplica a círculos sin `userId` (p. ej. la vista previa de un alta).
  * Al pasar el cursor muestra el nombre completo (nombre y apellido) del usuario; un `title` o `aria-label` pasado por el padre
  * sobreescribe al del círculo, por eso los usos de este componente no deben pasarlos.
  * Las clases (anillo, borde, márgenes) se pasan directo al círculo.
@@ -24,7 +26,7 @@ const props = withDefaults(
     size?: number
     /** Tamaño de las iniciales en px; por defecto, proporcional al diámetro. */
     fontSize?: number
-    /** Color de fondo cuando el usuario no tiene imagen ni color propio. */
+    /** Color de fondo de un círculo SIN `userId` (con `userId` siempre se usa el color fijo del usuario). */
     fallbackColor?: string
   }>(),
   {
@@ -51,7 +53,10 @@ watch(() => resolved.value?.image, () => {
 })
 
 const image = computed(() => (imageFailed.value ? null : resolved.value?.image ?? null))
-const backgroundColor = computed(() => resolved.value?.color ?? props.fallbackColor)
+const backgroundColor = computed(() =>
+  resolved.value?.color
+  ?? (props.userId != null ? userAvatarColor(props.userId) : props.fallbackColor),
+)
 const textColor = computed(() => (resolved.value?.color ? readableTextColor(resolved.value.color) : '#ffffff'))
 const resolvedFontSize = computed(() => props.fontSize ?? Math.max(9, Math.round(props.size * 0.4)))
 </script>
