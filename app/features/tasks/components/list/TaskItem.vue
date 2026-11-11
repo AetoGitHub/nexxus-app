@@ -58,11 +58,16 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
-const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null)
-const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
-
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const { can } = usePermissions()
+// Sin `task.can_update` el círculo solo muestra el estatus: no avanza la tarea ni confirma el cierre.
+const canMove = computed(() => can('task', 'update'))
+const advanceStep = computed(() =>
+  canMove.value && props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null,
+)
+const advanceBlocked = computed(() =>
+  canMove.value && props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id),
+)
 const canDelete = computed(() => props.deletable && can('task', 'delete') && canModifyTask(props.task, user.value?.id))
 
 function onSelect() {
@@ -90,7 +95,7 @@ function onApproveClick() {
     />
 
     <button
-      v-if="checkAction === 'approve'"
+      v-if="checkAction === 'approve' && canMove"
       type="button"
       class="h-5 w-5 rounded-full border-2 shrink-0 transition-colors flex items-center justify-center border-muted-foreground/40 hover:border-aeto-teal"
       :disabled="approveLoading"

@@ -32,6 +32,8 @@ const { t } = useI18n()
 // Botones de crear (header, voz y FAB): solo con permiso `task.can_create`.
 const { can } = usePermissions()
 const canCreateTask = computed(() => can('task', 'create'))
+// Micrófono rápido (crear por voz): además de crear, `task.can_voice`.
+const canVoiceTask = computed(() => canCreateTask.value && can('task', 'voice'))
 
 const {
   view,
@@ -313,7 +315,7 @@ function goToStatusList() {
             @click="openNewTask()"
           />
           <TaskVoiceQuickButton
-            v-if="isDesktopLayout && canCreateTask"
+            v-if="isDesktopLayout && canVoiceTask"
             @result="task => openNewTask(null, task)"
           />
         </div>
@@ -392,7 +394,7 @@ function goToStatusList() {
     <!-- Micrófono mobile (y celular acostado): botón flotante arriba del «+». Al grabar se ensancha en una tarjeta en el
          lugar del «+» (que se oculta) y, con el slideover abierto, se oculta junto con él. -->
     <div
-      v-if="!isDesktopLayout && canCreateTask"
+      v-if="!isDesktopLayout && canVoiceTask"
       v-show="!newTaskOpen"
       data-hide-on-keyboard
       class="fixed z-40"

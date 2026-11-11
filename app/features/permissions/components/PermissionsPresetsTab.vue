@@ -54,7 +54,7 @@ async function confirmDelete() {
 
 /** Resumen por módulo para la tarjeta: apagado, completo o «n de m». */
 function moduleSummary(preset: PermissionPreset, module: PermissionModule) {
-  const block = preset[module] as unknown as Record<string, boolean>
+  const block = (preset[module] ?? {}) as unknown as Record<string, boolean>
   const def = PERMISSION_MODULES.find(item => item.id === module)!
   const enabled = def.fields.filter(field => block[field.key]).length
   if (!block.allow) {

@@ -3,20 +3,36 @@ import PermissionsProfileEditor from '~/features/permissions/components/Permissi
 import { usePermissionProfiles } from '~/features/permissions/composables/usePermissionsAdmin'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 
-/** Permisos por usuario: se elige un perfil y se edita con el mismo editor del diálogo de la tabla de usuarios. */
-const { t } = useI18n()
-const { organization } = useAuth()
+/**
+ * Permisos por usuario: la lista sale de la organización elegida en el selector de afuera (el mismo de Organización,
+ * Compañía y Usuarios); sin organización se muestra el aviso para elegirla. Se edita con el mismo editor del diálogo de
+ * la tabla de usuarios.
+ */
+const props = defineProps<{
+  organizationId: number | null
+}>()
 
-const profilesQuery = usePermissionProfiles(() => organization.value?.id)
+const { t } = useI18n()
+
+const profilesQuery = usePermissionProfiles(() => props.organizationId)
 const profileItems = computed(() =>
-  (profilesQuery.data.value ?? []).map(profile => ({
-    value: profile.id,
-    label: profileFullName(profile),
-    description: profile.username,
-  })),
+  (profilesQuery.data.value ?? []).map((profile) => {
+    const label = profileFullName(profile)
+    return {
+      value: profile.id,
+      label,
+      // El username solo como apoyo cuando el nombre es distinto (si no, se repetiría).
+      description: profile.username !== label ? profile.username : undefined,
+    }
+  }),
 )
 
 const selectedProfileId = ref<number | null>(null)
+
+// Otra organización: el usuario elegido ya no está en la lista.
+watch(() => props.organizationId, () => {
+  selectedProfileId.value = null
+})
 const selectedName = computed(() => profileItems.value.find(item => item.value === selectedProfileId.value)?.label ?? '')
 const dirty = ref(false)
 
@@ -43,7 +59,20 @@ function confirmSwitch() {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <!-- Sin organización: aviso para elegirla en el selector de arriba. -->
+  <UAlert
+    v-if="organizationId == null"
+    color="warning"
+    variant="subtle"
+    icon="i-lucide-building-2"
+    :title="t('permissions.users.noOrganizationTitle')"
+    :description="t('permissions.users.noOrganizationDescription')"
+  />
+
+  <div
+    v-else
+    class="space-y-4"
+  >
     <UFormField
       :label="t('permissions.users.select')"
       class="rounded-xl border border-border bg-card p-4"
@@ -52,8 +81,10 @@ function confirmSwitch() {
         v-model="profileModel"
         :items="profileItems"
         value-key="value"
-        :loading="profilesQuery.isPending.value"
-        :placeholder="t('permissions.users.selectPlaceholder')"
+        :loading="profilesQuery.isFetching.value"
+        :placeholder="profilesQuery.isSuccess.value && !profileItems.length
+          ? t('permissions.users.noUsers')
+          : t('permissions.users.selectPlaceholder')"
         :search-input="{ placeholder: t('permissions.users.search') }"
         icon="i-lucide-user-search"
         class="w-full sm:w-96"

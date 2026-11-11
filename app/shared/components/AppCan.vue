@@ -4,11 +4,12 @@ import type { PermissionActions, PermissionModule } from '~/shared/types/auth.ty
 /**
  * Muestra su contenido solo si el usuario tiene el permiso:
  *   <AppCan module="task" action="create"> … </AppCan>
+ *   <AppCan module="master"> … </AppCan>   (solo que el módulo esté encendido)
  * Con `#denied` se puede mostrar algo alterno.
  */
 const props = defineProps<{
   module: M
-  action: PermissionActions[M]
+  action?: PermissionActions[M]
 }>()
 
 const { can } = usePermissions()

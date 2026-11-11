@@ -29,15 +29,13 @@ async function fetchAllPages<T>(
   return items
 }
 
-/** Perfiles de la organización (todas las páginas) para elegir a quién editarle los permisos. */
+/** Perfiles de la organización elegida (todas las páginas); sin organización no se pide nada. */
 export function usePermissionProfiles(organizationId: MaybeRefOrGetter<number | null | undefined>) {
   const { $api } = useNuxtApp()
   return useQuery({
     queryKey: computed(() => ['permissions', 'profiles', toValue(organizationId) ?? null]),
-    queryFn: () => {
-      const organization = toValue(organizationId)
-      return fetchAllPages<AuthProfile>($api, '/api/auth/profiles/', organization != null ? { organization } : undefined)
-    },
+    queryFn: () => fetchAllPages<AuthProfile>($api, '/api/auth/profiles/', { organization: toValue(organizationId) }),
+    enabled: computed(() => toValue(organizationId) != null),
   })
 }
 

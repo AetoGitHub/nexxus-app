@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PermissionBlocks, PermissionModule } from '~/shared/types/auth.types'
+import type { PermissionModuleDef } from '~/features/permissions/types/permissions.types'
 import { PERMISSION_MODULES } from '~/features/permissions/utils/permission-fields.util'
 
 /**
@@ -23,6 +24,27 @@ function setField(module: PermissionModule, key: string, value: boolean) {
     ...blocks.value,
     [module]: { ...block(module), [key]: value },
   }
+}
+
+function allSelected(module: PermissionModuleDef): boolean {
+  const current = block(module.id)
+  return current.allow === true && module.fields.every(field => current[field.key] === true)
+}
+
+/**
+ * «Seleccionar todo» enciende el módulo y todas sus acciones (con el módulo apagado las casillas no se pueden marcar);
+ * «Quitar todo» desmarca las acciones y deja el switch como esté.
+ */
+function toggleAll(module: PermissionModuleDef) {
+  const value = !allSelected(module)
+  const next: Record<string, boolean> = { ...block(module.id) }
+  for (const field of module.fields) {
+    next[field.key] = value
+  }
+  if (value) {
+    next.allow = true
+  }
+  blocks.value = { ...blocks.value, [module.id]: next }
 }
 
 function enabledCount(module: PermissionModule): number {
@@ -59,12 +81,24 @@ function enabledCount(module: PermissionModule): number {
               : t('permissions.matrix.moduleOff') }}
           </p>
         </div>
-        <USwitch
-          :model-value="block(module.id).allow"
+        <UButton
+          :label="allSelected(module) ? t('permissions.matrix.clearAll') : t('permissions.matrix.selectAll')"
+          :icon="allSelected(module) ? 'i-lucide-square-minus' : 'i-lucide-check-check'"
+          :color="allSelected(module) ? 'neutral' : 'primary'"
+          :variant="allSelected(module) ? 'outline' : 'soft'"
+          size="sm"
+          class="shrink-0"
           :disabled="disabled"
-          :aria-label="t('permissions.matrix.allow')"
-          @update:model-value="setField(module.id, 'allow', $event)"
+          @click="toggleAll(module)"
         />
+        <UTooltip :text="t(module.allowLabelKey ?? 'permissions.matrix.allow')">
+          <USwitch
+            :model-value="block(module.id).allow"
+            :disabled="disabled"
+            :aria-label="t(module.allowLabelKey ?? 'permissions.matrix.allow')"
+            @update:model-value="setField(module.id, 'allow', $event)"
+          />
+        </UTooltip>
       </header>
 
       <ul class="space-y-1 px-2 py-2">

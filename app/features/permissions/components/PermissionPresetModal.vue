@@ -3,7 +3,7 @@ import type { PermissionBlocks } from '~/shared/types/auth.types'
 import type { PermissionPreset } from '~/features/permissions/types/permissions.types'
 import PermissionsMatrix from '~/features/permissions/components/PermissionsMatrix.vue'
 import { useSavePermissionPreset } from '~/features/permissions/composables/usePermissionsAdmin'
-import { allowAllBlocks, diffBlocks, pickBlocks } from '~/features/permissions/utils/permission-fields.util'
+import { denyAllBlocks, diffBlocks, pickBlocks } from '~/features/permissions/utils/permission-fields.util'
 
 /** Crear o editar una plantilla: nombre + matriz. Al editar solo se mandan los cambios. */
 const open = defineModel<boolean>('open', { default: false })
@@ -17,14 +17,14 @@ const { t } = useI18n()
 const saveMutation = useSavePermissionPreset()
 
 const name = ref('')
-const draft = ref<PermissionBlocks>(allowAllBlocks())
+const draft = ref<PermissionBlocks>(denyAllBlocks())
 
 watch(open, (isOpen) => {
   if (!isOpen) {
     return
   }
   name.value = props.preset?.name ?? ''
-  draft.value = props.preset ? pickBlocks(props.preset) : allowAllBlocks()
+  draft.value = props.preset ? pickBlocks(props.preset) : denyAllBlocks()
 })
 
 const isEditing = computed(() => props.preset != null)

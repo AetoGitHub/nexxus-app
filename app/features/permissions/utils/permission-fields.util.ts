@@ -13,6 +13,8 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
       { key: 'can_delete', labelKey: 'permissions.fields.task.can_delete' },
       { key: 'can_view_all', labelKey: 'permissions.fields.task.can_view_all' },
       { key: 'can_view_approvals', labelKey: 'permissions.fields.task.can_view_approvals' },
+      { key: 'can_voice', labelKey: 'permissions.fields.task.can_voice' },
+      { key: 'can_view_history', labelKey: 'permissions.fields.task.can_view_history' },
     ],
   },
   {
@@ -40,36 +42,52 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
     fields: [
       { key: 'can_projects', labelKey: 'permissions.fields.settings.can_projects' },
       { key: 'can_groups', labelKey: 'permissions.fields.settings.can_groups' },
-      { key: 'can_general', labelKey: 'permissions.fields.settings.can_general' },
+    ],
+  },
+  {
+    id: 'master',
+    icon: 'i-lucide-building-2',
+    allowLabelKey: 'permissions.fields.master.allow',
+    fields: [
+      { key: 'can_organizations', labelKey: 'permissions.fields.master.can_organizations' },
+      { key: 'can_companies', labelKey: 'permissions.fields.master.can_companies' },
+      { key: 'can_users', labelKey: 'permissions.fields.master.can_users' },
     ],
   },
 ]
 
 const MODULE_IDS: PermissionModule[] = PERMISSION_MODULES.map(module => module.id)
 
-/** Todo permitido (lo mismo que hace el backend con lo que no se manda al crear una plantilla). */
-export function allowAllBlocks(): PermissionBlocks {
+/** Todo negado: así arranca una plantilla nueva (el backend deja en false lo que no se manda). */
+export function denyAllBlocks(): PermissionBlocks {
   const blocks = {} as Record<PermissionModule, Record<string, boolean>>
   for (const module of PERMISSION_MODULES) {
-    blocks[module.id] = { allow: true }
+    blocks[module.id] = { allow: false }
     for (const field of module.fields) {
-      blocks[module.id][field.key] = true
+      blocks[module.id][field.key] = false
     }
   }
   return blocks as unknown as PermissionBlocks
 }
 
-/** Copia solo los 4 bloques (sin id/name/profile…), para usarla como borrador editable. */
+/** Copia solo los 5 bloques (sin id/name/profile…), para usarla como borrador editable. */
 export function pickBlocks(source: PermissionBlocks): PermissionBlocks {
   const blocks = {} as Record<PermissionModule, Record<string, boolean>>
+  const empty = denyAllBlocks()
   for (const id of MODULE_IDS) {
-    blocks[id] = { ...(source[id] as unknown as Record<string, boolean>) }
+    // Un bloque que el backend aún no manda (p. ej. un módulo nuevo) arranca negado en vez de romper la matriz.
+    blocks[id] = {
+      ...(empty[id] as unknown as Record<string, boolean>),
+      ...((source[id] ?? {}) as unknown as Record<string, boolean>),
+    }
   }
   return blocks as unknown as PermissionBlocks
 }
 
 /** Solo los bloques y campos que cambiaron; `null` si no hay cambios. */
-export function diffBlocks(original: PermissionBlocks, draft: PermissionBlocks): PermissionBlocksPatch | null {
+export function diffBlocks(source: PermissionBlocks, draft: PermissionBlocks): PermissionBlocksPatch | null {
+  // Normalizado igual que el borrador: un bloque ausente cuenta como «todo negado», no como cambio.
+  const original = pickBlocks(source)
   const patch: Record<string, Record<string, boolean>> = {}
   for (const id of MODULE_IDS) {
     const before = original[id] as unknown as Record<string, boolean>

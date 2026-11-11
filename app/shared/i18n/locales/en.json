@@ -3,6 +3,12 @@
     "title": "Permissions",
     "subtitle": "Set what each user can see and do. The backend enforces it too.",
     "noModules": "Your user has no access to any module. Ask an administrator to grant you permissions.",
+    "masterEmpty": "You have access to Master settings, but to none of its sections. Ask an administrator for access.",
+    "empty": {
+      "title": "You don't have any permissions yet",
+      "description": "Ask an administrator for access. As soon as they assign you permissions or a template, your modules will show up here.",
+      "recheck": "Check again"
+    },
     "denied": {
       "title": "Access restricted",
       "description": "You don't have permission for {module}."
@@ -11,7 +17,8 @@
       "task": "Tasks",
       "report": "Reports",
       "dashboard": "Dashboard",
-      "settings": "Settings"
+      "settings": "Settings",
+      "master": "Master settings"
     },
     "fields": {
       "task": {
@@ -20,7 +27,9 @@
         "can_update": "Edit tasks and subtasks",
         "can_delete": "Delete tasks",
         "can_view_all": "Full view (everyone's tasks)",
-        "can_view_approvals": "Pending approvals"
+        "can_view_approvals": "Pending approvals",
+        "can_voice": "Create tasks by voice",
+        "can_view_history": "View task history"
       },
       "report": {
         "can_view": "View reports",
@@ -35,15 +44,22 @@
       },
       "settings": {
         "can_projects": "Manage projects",
-        "can_groups": "Manage groups",
-        "can_general": "General settings (company, users)"
+        "can_groups": "Manage groups"
+      },
+      "master": {
+        "allow": "Access to Master settings",
+        "can_organizations": "Organizations",
+        "can_companies": "Companies",
+        "can_users": "Users and memberships"
       }
     },
     "matrix": {
       "allow": "Module access",
       "moduleOff": "No access to the module",
       "enabledCount": "{count} of {total} permissions",
-      "comingSoon": "Coming soon"
+      "comingSoon": "Coming soon",
+      "selectAll": "Select all",
+      "clearAll": "Clear all"
     },
     "tabs": {
       "users": "Users",
@@ -56,6 +72,9 @@
     "users": {
       "select": "User",
       "selectPlaceholder": "Choose a user",
+      "noUsers": "No users in this organization",
+      "noOrganizationTitle": "Select an organization",
+      "noOrganizationDescription": "Choose an organization in the selector above to see its users and edit their permissions.",
       "search": "Search user…",
       "empty": "Choose a user to view and edit their permissions.",
       "loadError": "Couldn't load the user's permissions.",

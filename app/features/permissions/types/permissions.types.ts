@@ -29,5 +29,7 @@ export interface PermissionFieldDef {
 export interface PermissionModuleDef {
   id: PermissionModule
   icon: string
+  /** Etiqueta propia del switch `allow` (por defecto «Acceso al módulo»). */
+  allowLabelKey?: string
   fields: PermissionFieldDef[]
 }

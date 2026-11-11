@@ -82,7 +82,7 @@ export interface AuthSession {
 }
 
 /** Módulos con permisos por perfil. */
-export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings'
+export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings' | 'master'
 
 export interface TaskPermissionBlock {
   allow: boolean
@@ -92,6 +92,10 @@ export interface TaskPermissionBlock {
   can_delete: boolean
   can_view_all: boolean
   can_view_approvals: boolean
+  /** Micrófono / dictado al crear una tarea o un backlog. */
+  can_voice: boolean
+  /** Historial de la tarea (more/info, report y la edición de sus eventos). */
+  can_view_history: boolean
 }
 
 export interface ReportPermissionBlock {
@@ -113,23 +117,32 @@ export interface SettingsPermissionBlock {
   allow: boolean
   can_projects: boolean
   can_groups: boolean
-  can_general: boolean
 }
 
-/** Los 4 bloques: lo que se edita de un perfil o de una plantilla. */
+/** Configuración master (Organización · Compañía · Usuarios). */
+export interface MasterPermissionBlock {
+  allow: boolean
+  can_organizations: boolean
+  can_companies: boolean
+  can_users: boolean
+}
+
+/** Los 5 bloques: lo que se edita de un perfil o de una plantilla. */
 export interface PermissionBlocks {
   task: TaskPermissionBlock
   report: ReportPermissionBlock
   dashboard: DashboardPermissionBlock
   settings: SettingsPermissionBlock
+  master: MasterPermissionBlock
 }
 
 /** Acciones de cada módulo (el campo es `can_<acción>`). */
 export interface PermissionActions {
-  task: 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals'
+  task: 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'
-  settings: 'projects' | 'groups' | 'general'
+  settings: 'projects' | 'groups'
+  master: 'organizations' | 'companies' | 'users'
 }
 
 /** Respuesta de me/, profile/:id/, update/ y apply_preset/. */

@@ -337,6 +337,8 @@ const statusMeta = computed(() => {
 /** Backlog aún no promovida: el botón "Enviar a pendiente" se ofrece en vista y en edición. */
 const showPromoteBacklogButton = computed(() =>
   isDetailView.value
+  // Sacarla de backlog la mueve de fase: `task.can_update`.
+  && can('task', 'update')
   && isBacklogTask.value
   && !isPromotingBacklog.value
   && !isArchived.value,
@@ -349,6 +351,7 @@ const showPromoteBacklogButton = computed(() =>
  */
 const showAuthorizeActions = computed(() =>
   props.authorizeMode
+  && can('task', 'update')
   && isDetailView.value
   && !isEditing.value
   && !isAcceptedToUpdateSection.value
@@ -401,6 +404,8 @@ const isMultipleCloseReviewer = computed(() => userCloseApproval.value != null)
  */
 const showProcessActions = computed(() =>
   isDetailView.value
+  // Mover la tarea de fase (iniciar, cerrar, reabrir, regresar) es editarla: `task.can_update`.
+  && can('task', 'update')
   && !isEditing.value
   && !props.authorizeMode
   && !isArchived.value
@@ -433,6 +438,8 @@ const showCompleteAction = computed(() =>
  */
 const canReviewTask = computed(() =>
   isDetailView.value
+  // Confirmar / rechazar el cierre también pide `task.can_update`.
+  && can('task', 'update')
   && !isEditing.value
   && !props.authorizeMode
   && !isArchived.value
@@ -544,13 +551,19 @@ const showArchiveProcess = computed(() =>
 /** Las tareas repetitivas se eliminan con su propio flujo: pueden archivar también las futuras de la serie. */
 const isRepeatTask = computed(() => taskDetailQuery.data.value?.type === 'repeat')
 
-/** Móvil: acciones del menú «…» (historial siempre; archivar si aplica). */
+/** Historial de la tarea: solo con `task.can_view_history` (sin él, sus endpoints responden 403). */
+const canViewHistory = computed(() => can('task', 'view_history'))
+
+/** Móvil: acciones del menú «…» (historial y archivar, cada uno con su permiso). */
 const mobileMoreActions = computed(() => {
-  const items: { label: string, icon: string, color?: 'error', onSelect: () => void }[] = [{
-    label: t('tasks.history.button'),
-    icon: 'i-lucide-history',
-    onSelect: openHistoryModal,
-  }]
+  const items: { label: string, icon: string, color?: 'error', onSelect: () => void }[] = []
+  if (canViewHistory.value) {
+    items.push({
+      label: t('tasks.history.button'),
+      icon: 'i-lucide-history',
+      onSelect: openHistoryModal,
+    })
+  }
   if (showArchiveProcess.value) {
     items.push({
       label: isRepeatTask.value ? t('tasks.repeatArchive.submit') : t('tasks.processArchive.submit'),
@@ -1717,7 +1730,7 @@ const slideoverUi = computed(() => {
               />
               <!-- Móvil: historial y archivar quedan en un menú (el icono rojo junto al del chat se tocaba sin querer). -->
               <UDropdownMenu
-                v-if="taskId != null"
+                v-if="taskId != null && mobileMoreActions.length"
                 :items="mobileMoreActions"
               >
                 <UButton
@@ -1731,7 +1744,7 @@ const slideoverUi = computed(() => {
                 />
               </UDropdownMenu>
               <UTooltip
-                v-if="taskId != null"
+                v-if="taskId != null && canViewHistory"
                 :text="t('tasks.history.button')"
               >
                 <UButton
@@ -1886,7 +1899,7 @@ const slideoverUi = computed(() => {
             :required="!isReadOnly"
           >
             <template
-              v-if="!isDetailView"
+              v-if="!isDetailView && can('task', 'voice')"
               #hint
             >
               <TaskVoiceButton
@@ -2581,7 +2594,7 @@ const slideoverUi = computed(() => {
   />
 
   <TaskHistoryModal
-    v-if="taskId != null"
+    v-if="taskId != null && canViewHistory"
     v-model:open="historyModalOpen"
     :task-id="taskId"
   />

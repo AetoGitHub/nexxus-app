@@ -1,6 +1,7 @@
 import type { PermissionActions, PermissionModule } from '~/shared/types/auth.types'
 
-type PermissionPair = { [M in PermissionModule]: [M, PermissionActions[M]] }[PermissionModule]
+/** `['master']` (solo el módulo) o `['task', 'view']` (módulo + acción). */
+type PermissionPair = { [M in PermissionModule]: [M] | [M, PermissionActions[M]] }[PermissionModule]
 
 declare module '#app' {
   interface PageMeta {
@@ -16,7 +17,7 @@ function isPairList(value: PermissionPair | PermissionPair[]): value is Permissi
 /**
  * Bloquea las páginas sin permiso:
  *   definePageMeta({ middleware: ['auth', 'permission'], permission: ['task', 'view'] })
- * Sin permiso se avisa y se manda al hub (`/`), que nunca está bloqueado.
+ * Sin permiso se avisa y se manda al inicio (`/`), que nunca está bloqueado.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   const required = to.meta.permission
@@ -36,8 +37,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (import.meta.client) {
-    const nuxtApp = useNuxtApp()
-    const t = nuxtApp.$i18n.t
+    const t = useNuxtApp().$i18n.t
     const [module] = pairs[0]!
     useToast().add({
       title: t('permissions.denied.title'),

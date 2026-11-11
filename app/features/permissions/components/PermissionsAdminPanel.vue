@@ -3,6 +3,11 @@ import PermissionsUsersTab from '~/features/permissions/components/PermissionsUs
 import PermissionsPresetsTab from '~/features/permissions/components/PermissionsPresetsTab.vue'
 
 /** Configuración → Permisos (solo superusers): pestañas Usuarios y Plantillas. */
+defineProps<{
+  /** Organización del selector de la barra (filtra la lista de usuarios). */
+  organizationId: number | null
+}>()
+
 const { t } = useI18n()
 
 const tab = ref<'users' | 'presets'>('users')
@@ -38,7 +43,10 @@ const tabs = computed(() => [
       class="mb-4 w-full sm:w-auto"
     />
 
-    <PermissionsUsersTab v-if="tab === 'users'" />
+    <PermissionsUsersTab
+      v-if="tab === 'users'"
+      :organization-id="organizationId"
+    />
     <PermissionsPresetsTab v-else />
   </div>
 </template>

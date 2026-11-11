@@ -3,6 +3,12 @@
     "title": "Permisos",
     "subtitle": "Define qué puede ver y hacer cada usuario. El backend también lo valida.",
     "noModules": "Tu usuario no tiene acceso a ningún módulo. Pide a un administrador que te asigne permisos.",
+    "masterEmpty": "Tienes acceso a Configuración master, pero a ninguna de sus secciones. Pide acceso a un administrador.",
+    "empty": {
+      "title": "Aún no tienes permisos asignados",
+      "description": "Pide acceso a un administrador. En cuanto te asigne permisos o una plantilla, verás aquí tus módulos.",
+      "recheck": "Volver a revisar"
+    },
     "denied": {
       "title": "Acceso restringido",
       "description": "No tienes permiso para {module}."
@@ -11,7 +17,8 @@
       "task": "Tareas",
       "report": "Reportes",
       "dashboard": "Dashboard",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "master": "Configuración master"
     },
     "fields": {
       "task": {
@@ -20,7 +27,9 @@
         "can_update": "Editar tareas y subtareas",
         "can_delete": "Eliminar tareas",
         "can_view_all": "Vista total (tareas de todos)",
-        "can_view_approvals": "Pendientes de aprobación"
+        "can_view_approvals": "Pendientes de aprobación",
+        "can_voice": "Crear tareas por voz",
+        "can_view_history": "Ver historial de la tarea"
       },
       "report": {
         "can_view": "Ver reportes",
@@ -35,15 +44,22 @@
       },
       "settings": {
         "can_projects": "Configurar proyectos",
-        "can_groups": "Configurar grupos",
-        "can_general": "Configuración general (empresa, usuarios)"
+        "can_groups": "Configurar grupos"
+      },
+      "master": {
+        "allow": "Acceso a Configuración master",
+        "can_organizations": "Organizaciones",
+        "can_companies": "Compañías",
+        "can_users": "Usuarios y membresías"
       }
     },
     "matrix": {
       "allow": "Acceso al módulo",
       "moduleOff": "Sin acceso al módulo",
       "enabledCount": "{count} de {total} permisos",
-      "comingSoon": "Próximamente"
+      "comingSoon": "Próximamente",
+      "selectAll": "Seleccionar todo",
+      "clearAll": "Quitar todo"
     },
     "tabs": {
       "users": "Usuarios",
@@ -56,6 +72,9 @@
     "users": {
       "select": "Usuario",
       "selectPlaceholder": "Elige un usuario",
+      "noUsers": "No hay usuarios en esta organización",
+      "noOrganizationTitle": "Selecciona una organización",
+      "noOrganizationDescription": "Elige una organización en el selector de arriba para ver sus usuarios y editar sus permisos.",
       "search": "Buscar usuario…",
       "empty": "Elige un usuario para ver y editar sus permisos.",
       "loadError": "No se pudieron cargar los permisos del usuario.",

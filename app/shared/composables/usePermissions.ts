@@ -8,8 +8,7 @@ let inFlight: Promise<UserPermissions | null> | null = null
  * sincronizan entre pestañas y se borran al cerrar sesión. Quien bloquea de verdad es el backend (403): esto solo
  * decide qué mostrar.
  *
- * Mientras no haya permisos guardados (sesión previa a este cambio) `can()` devuelve true: se ve lo de siempre y el
- * primer `refreshPermissions()` lo corrige.
+ * Todo arranca negado: sin permisos cargados (o sin `allow`) no se muestra nada, salvo al superuser, que lo ve todo.
  */
 export function usePermissions() {
   const session = useAuthSession()
@@ -18,30 +17,33 @@ export function usePermissions() {
   const isLoaded = computed(() => permissions.value != null)
   const isSuperuser = computed(() => permissions.value?.is_superuser === true || session.value?.user?.is_superuser === true)
 
-  function can<M extends PermissionModule>(module: M, action: PermissionActions[M]): boolean {
+  /**
+   * `can('task', 'create')` → módulo encendido y esa acción permitida.
+   * `can('master')` → solo que el módulo esté encendido (`allow`).
+   */
+  function can<M extends PermissionModule>(module: M, action?: PermissionActions[M]): boolean {
     if (isSuperuser.value) {
       return true
     }
-    const perms = permissions.value
-    if (!perms) {
-      return true
+    const block = permissions.value?.[module] as unknown as Record<string, boolean> | undefined
+    if (block?.allow !== true) {
+      return false
     }
-    const block = perms[module] as unknown as Record<string, boolean> | undefined
-    return block?.allow === true && block[`can_${action}`] === true
+    return action ? block[`can_${action}`] === true : true
   }
 
-  /** El módulo está encendido y tiene al menos una acción permitida (para mostrar su entrada del menú). */
-  function canModule(module: PermissionModule): boolean {
+  /** Tiene al menos un módulo encendido (si no, se muestra «Aún no tienes permisos asignados»). */
+  const hasAnyPermission = computed(() => {
     if (isSuperuser.value) {
       return true
     }
     const perms = permissions.value
     if (!perms) {
-      return true
+      return false
     }
-    const block = perms[module] as unknown as Record<string, boolean> | undefined
-    return block?.allow === true && Object.entries(block).some(([key, value]) => key.startsWith('can_') && value === true)
-  }
+    return (['task', 'report', 'dashboard', 'settings', 'master'] as PermissionModule[])
+      .some(module => (perms[module] as unknown as Record<string, boolean> | undefined)?.allow === true)
+  })
 
   async function refreshPermissions(): Promise<UserPermissions | null> {
     if (!session.value?.token) {
@@ -67,5 +69,5 @@ export function usePermissions() {
     return inFlight
   }
 
-  return { permissions, isLoaded, isSuperuser, can, canModule, refreshPermissions }
+  return { permissions, isLoaded, isSuperuser, can, hasAnyPermission, refreshPermissions }
 }
