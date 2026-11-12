@@ -81,7 +81,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       // Un 403 de permisos: los del front pudieron quedar viejos (los cambió un admin). Se vuelven a pedir para que la UI
       // oculte lo que ya no puede hacer; el toast con el `detail` lo pone quien hizo la llamada (parseFetchError).
       if (response.status === 403 && !String(request).includes('/api/auth/permissions/me/')) {
-        void usePermissions().refreshPermissions()
+        void usePermissions().refreshPermissions(undefined, { force: true })
         return
       }
       if (response.status !== 401) {

@@ -77,9 +77,18 @@ export interface AuthSession {
   user: AuthUser
   organization: AuthOrganization
   profile_configurations: ProfileConfiguration
-  /** Permisos del usuario (GET /api/auth/permissions/me/). Ausente en sesiones anteriores o mientras no se piden. */
-  permissions?: UserPermissions
+  /**
+   * Permisos del usuario por pantalla (GET /api/auth/permissions/me/?screen=…): cada pantalla guarda lo suyo y se pide al
+   * entrar a ella. Ausente mientras no se piden.
+   */
+  permissions?: Partial<Record<PermissionScreen, MePermissions>>
 }
+
+/**
+ * Pantallas con permisos propios: el hub («Selecciona un módulo», `me/` sin `screen`), Nexxus Tasks (`screen=task`:
+ * task, dashboard, report, settings) y Configuración master (`screen=config_admin`: solo master).
+ */
+export type PermissionScreen = 'hub' | 'task' | 'config_admin'
 
 /** Módulos con permisos por perfil. */
 export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings' | 'master'
@@ -160,6 +169,9 @@ export interface UserPermissions extends PermissionBlocks {
   company: { id: number, name: string } | null
   preset: { id: number, name: string } | null
 }
+
+/** Respuesta de me/?screen=…: los datos de siempre y solo los bloques de esa pantalla (lo que no vino = sin permiso). */
+export type MePermissions = Omit<UserPermissions, PermissionModule> & Partial<PermissionBlocks>
 
 export interface AuthLoginRequest {
   username: string

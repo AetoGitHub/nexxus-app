@@ -25,7 +25,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
 
-  const { isLoaded, can, refreshPermissions } = usePermissions()
+  // Los permisos de la pantalla ya los pidió `permissions-screen` (global, corre antes); esto es solo respaldo.
+  const { isLoaded, can, activeScreen, refreshPermissions } = usePermissions()
   if (!isLoaded.value) {
     await refreshPermissions()
   }
@@ -34,6 +35,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const allowed = pairs.some(([module, action]) => can(module, action as never))
   if (allowed) {
     return
+  }
+
+  // En Nexxus Tasks, sin la página pedida pero con otra del módulo (p. ej. sin tareas pero con reportes): se lleva a la
+  // primera que sí puede ver en vez de sacarlo al hub. Sin aviso: entró desde la tarjeta del hub.
+  if (activeScreen.value === 'task') {
+    const fallback = [
+      { path: '/tasks', allowed: can('task', 'view') },
+      { path: '/reporte-ceo', allowed: can('report', 'view') },
+      { path: '/dashboard', allowed: can('dashboard', 'view') },
+    ].find(entry => entry.allowed && entry.path !== to.path)
+    if (fallback && to.path === '/tasks') {
+      return navigateTo(fallback.path)
+    }
   }
 
   if (import.meta.client) {

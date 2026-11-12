@@ -1,21 +1,19 @@
 /**
- * Permisos del usuario en su compañía seleccionada:
- * - al abrir la app con sesión se vuelven a pedir (pudieron cambiar); mientras tanto se usan los guardados, así no
- *   parpadean botones ni menús;
- * - al cambiar de compañía se vacían (quedan negados) y se piden los de la nueva: pueden ser otros.
+ * Los permisos se piden por pantalla al entrar a ella (middleware `permissions-screen`). Aquí solo se cubre el cambio de
+ * compañía: se vacían todas las pantallas (quedan negados, para no mostrar ni un instante los de la empresa anterior) y
+ * se vuelve a pedir la pantalla en la que está el usuario.
  */
 export default defineNuxtPlugin(() => {
   const { selectedCompanyId } = useAuth()
   const { refreshPermissions, clearPermissions } = usePermissions()
 
-  void refreshPermissions()
-
   watch(selectedCompanyId, (companyId, previous) => {
-    if (companyId === previous) {
+    // Solo un cambio REAL de empresa: en el login (null → id) los pide el middleware al llegar al hub, y en el logout
+    // (id → null) no hay nada que pedir. Si no, se duplicaba la petición del hub.
+    if (companyId == null || previous == null || companyId === previous) {
       return
     }
     clearPermissions()
-    // Sin sesión (logout) no pide nada; en el login comparte la petición que ya lanzó `login()`.
-    void refreshPermissions()
+    void refreshPermissions(undefined, { force: true })
   })
 })

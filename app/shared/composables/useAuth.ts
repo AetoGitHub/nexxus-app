@@ -11,7 +11,7 @@ export type { AuthUser, AuthOrganization, AuthCompany, AuthSession, AuthManagedG
  */
 function clearSessionCaches() {
   useNuxtApp().$queryClient.clear()
-  for (const key of ['task-tokens', 'task-token-cooldowns', 'backlog-mine', 'repeat-scope-mode-kanban-pending', 'repeat-scope-mode-list-upcoming','notifications-processed-ids', 'dashboard-task-detail-id', 'dashboard-task-detail-open']) {
+  for (const key of ['task-tokens', 'task-token-cooldowns', 'backlog-mine', 'repeat-scope-mode-kanban-pending', 'repeat-scope-mode-list-upcoming','notifications-processed-ids', 'dashboard-task-detail-id', 'dashboard-task-detail-open', 'permissions-screen', 'permissions-entered']) {
     clearNuxtState(key)
   }
   clearStoredCatalog()
@@ -62,8 +62,7 @@ export function useAuth() {
       organization: data.organization,
       profile_configurations: data.profile_configurations,
     }
-    // Antes de entrar: así el menú y los botones ya salen con los permisos de esta cuenta.
-    await usePermissions().refreshPermissions()
+    // Los permisos ya no se piden aquí: se piden por pantalla al entrar a ella (middleware `permissions-screen`).
   }
 
   /** Marca (o desmarca) en la sesión que el usuario debe cambiar su contraseña antes de usar la app. */

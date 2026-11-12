@@ -102,7 +102,7 @@ function useAdminMutationHelpers() {
   async function storeProfile(data: UserPermissions, companyId: number) {
     queryClient.setQueryData(profileKey(data.profile, companyId), data)
     if (data.profile === user.value?.id && companyId === selectedCompanyId.value) {
-      await refreshPermissions()
+      await refreshPermissions(undefined, { force: true })
     }
   }
 

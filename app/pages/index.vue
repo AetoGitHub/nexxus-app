@@ -13,18 +13,9 @@ const companyName = computed(() => permissions.value?.company?.name ?? user.valu
  * La tarjeta de Tareas abre el primer módulo del shell al que tenga acceso (tareas, reporte o dashboard): alguien con
  * solo Reportes también entra por aquí.
  */
-const tasksEntry = computed(() => {
-  if (can('task', 'view')) {
-    return '/tasks'
-  }
-  if (can('report', 'view')) {
-    return '/reporte-ceo'
-  }
-  if (can('dashboard', 'view')) {
-    return '/dashboard'
-  }
-  return null
-})
+// El hub solo trae `task` y `master` (me/ sin screen): la tarjeta de Nexxus Tasks sale con el módulo encendido. Al entrar,
+// `me/?screen=task` decide qué se ve (si no puede ver tareas, el middleware lo lleva a reporte o dashboard).
+const tasksEntry = computed(() => (can('task') ? '/tasks' : null))
 // Configuración master: el módulo encendido (o superuser, que además ve Permisos).
 const showConfiguration = computed(() => isSuperuser.value || can('master'))
 const hasNothing = computed(() => !tasksEntry.value && !showConfiguration.value)
@@ -33,7 +24,7 @@ const isRefreshing = ref(false)
 async function recheck() {
   isRefreshing.value = true
   try {
-    await refreshPermissions()
+    await refreshPermissions(undefined, { force: true })
   }
   finally {
     isRefreshing.value = false
