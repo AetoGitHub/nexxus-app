@@ -49,7 +49,7 @@ const route = useRoute()
 
 const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'nexxtep', 'videoCalls', 'notifications', 'general']
 
-// Proyectos y Grupos solo con su permiso (`settings.can_projects` / `settings.can_groups`); el resto son preferencias
+// Proyectos y Grupos solo con su permiso (`settings.can_projects` / `settings.can_view_groups`); el resto son preferencias
 // personales y siempre se ven.
 const { can } = usePermissions()
 
@@ -58,7 +58,7 @@ function isSectionAllowed(section: TaskSettingsSectionId): boolean {
     return can('settings', 'projects')
   }
   if (section === 'groups') {
-    return can('settings', 'groups')
+    return can('settings', 'view_groups')
   }
   return true
 }

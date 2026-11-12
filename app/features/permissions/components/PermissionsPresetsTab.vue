@@ -143,9 +143,20 @@ const TONE_CLASSES = {
               class="h-4.5 w-4.5"
             />
           </div>
-          <p class="min-w-0 flex-1 truncate pt-1.5 font-semibold">
-            {{ preset.name }}
-          </p>
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-semibold">
+              {{ preset.name }}
+            </p>
+            <!-- General (cualquier compañía) o solo la suya. -->
+            <UBadge
+              :label="preset.company == null ? t('permissions.presets.generalBadge') : (preset.company_name ?? `#${preset.company}`)"
+              :icon="preset.company == null ? 'i-lucide-globe' : 'i-lucide-briefcase'"
+              :color="preset.company == null ? 'neutral' : 'info'"
+              variant="subtle"
+              size="sm"
+              class="mt-1 max-w-full"
+            />
+          </div>
           <div class="flex shrink-0 items-center">
             <UTooltip :text="t('permissions.actions.edit')">
               <UButton

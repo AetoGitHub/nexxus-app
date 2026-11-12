@@ -18,9 +18,9 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-// Editar grupos y mover personas: `settings.can_groups`.
+// Editar grupos y mover personas: `settings.can_update_groups`.
 const { can } = usePermissions()
-const canManage = computed(() => can('settings', 'groups'))
+const canManage = computed(() => can('settings', 'update_groups'))
 
 const open = ref(false)
 const color = computed(() => resolveThemeColor(props.group.color))

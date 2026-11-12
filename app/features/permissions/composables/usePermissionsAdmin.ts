@@ -8,8 +8,13 @@ import type { CursorPage, PermissionBlocksPatch, PermissionPreset } from '~/feat
 const BASE = '/api/auth/permissions'
 const PRESETS_KEY = ['permissions', 'presets'] as const
 
-function profileKey(id: number | null | undefined) {
-  return ['permissions', 'profile', id] as const
+function profileKey(id: number | null | undefined, companyId: number | null | undefined) {
+  return ['permissions', 'profile', id, companyId] as const
+}
+
+/** Ruta de los permisos de un perfil en una compañía (+ sufijo `update/` o `apply_preset/`). */
+function profilePath(profileId: number, companyId: number, suffix = '') {
+  return `${BASE}/profile/${profileId}/company/${companyId}/${suffix}`
 }
 
 /** Sigue `next` hasta el final (los listados vienen paginados). */
@@ -39,21 +44,38 @@ export function usePermissionProfiles(organizationId: MaybeRefOrGetter<number | 
   })
 }
 
-/** Permisos de un perfil (misma forma que `me/`). */
-export function useProfilePermissions(profileId: MaybeRefOrGetter<number | null | undefined>) {
+/**
+ * Permisos de un perfil en una compañía (misma forma que `me/`). Si no tenía permisos en esa compañía, el backend los
+ * crea todos en false. Solo se pide con usuario y compañía.
+ */
+export function useProfilePermissions(
+  profileId: MaybeRefOrGetter<number | null | undefined>,
+  companyId: MaybeRefOrGetter<number | null | undefined>,
+) {
   const { $api } = useNuxtApp()
   return useQuery({
-    queryKey: computed(() => profileKey(toValue(profileId))),
-    queryFn: () => $api<UserPermissions>(`${BASE}/profile/${toValue(profileId)}/`),
-    enabled: computed(() => toValue(profileId) != null),
+    queryKey: computed(() => profileKey(toValue(profileId), toValue(companyId))),
+    queryFn: () => $api<UserPermissions>(profilePath(toValue(profileId)!, toValue(companyId)!)),
+    enabled: computed(() => toValue(profileId) != null && toValue(companyId) != null),
   })
 }
 
-export function usePermissionPresets() {
+/**
+ * Plantillas. Con `companyId` trae solo las generales y las de esa compañía (las que se pueden aplicar ahí); sin él,
+ * todas (pestaña Plantillas).
+ */
+export function usePermissionPresets(companyId?: MaybeRefOrGetter<number | null | undefined>) {
   const { $api } = useNuxtApp()
+  const company = computed(() => (companyId === undefined ? undefined : toValue(companyId) ?? null))
   return useQuery({
-    queryKey: PRESETS_KEY,
-    queryFn: () => fetchAllPages<PermissionPreset>($api, `${BASE}/presets/`),
+    queryKey: computed(() => [...PRESETS_KEY, company.value ?? 'all']),
+    queryFn: () => fetchAllPages<PermissionPreset>(
+      $api,
+      `${BASE}/presets/`,
+      company.value != null ? { company: company.value } : undefined,
+    ),
+    // Para aplicar (con compañía) no se pide mientras no haya una elegida.
+    enabled: computed(() => companyId === undefined || company.value != null),
   })
 }
 
@@ -62,7 +84,7 @@ function useAdminMutationHelpers() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const { t } = useI18n()
-  const { user } = useAuth()
+  const { user, selectedCompanyId } = useAuth()
   const { refreshPermissions } = usePermissions()
 
   function success(titleKey: string) {
@@ -73,10 +95,13 @@ function useAdminMutationHelpers() {
     toast.add({ title: t('permissions.toasts.error'), description: parseFetchError(error), color: 'error' })
   }
 
-  /** Guarda en caché los permisos devueltos y, si son los del usuario logueado, refresca la UI. */
-  async function storeProfile(data: UserPermissions) {
-    queryClient.setQueryData(profileKey(data.profile), data)
-    if (data.profile === user.value?.id) {
+  /**
+   * Guarda en caché los permisos devueltos y, si son los del usuario logueado en su compañía seleccionada, refresca la
+   * UI (en otra compañía no le cambian nada ahora mismo).
+   */
+  async function storeProfile(data: UserPermissions, companyId: number) {
+    queryClient.setQueryData(profileKey(data.profile, companyId), data)
+    if (data.profile === user.value?.id && companyId === selectedCompanyId.value) {
       await refreshPermissions()
     }
   }
@@ -88,10 +113,13 @@ export function useUpdateProfilePermissions() {
   const { $api } = useNuxtApp()
   const { success, failure, storeProfile } = useAdminMutationHelpers()
   return useMutation({
-    mutationFn: (payload: { profileId: number, patch: PermissionBlocksPatch }) =>
-      $api<UserPermissions>(`${BASE}/profile/${payload.profileId}/update/`, { method: 'PATCH', body: payload.patch }),
-    onSuccess: async (data) => {
-      await storeProfile(data)
+    mutationFn: (payload: { profileId: number, companyId: number, patch: PermissionBlocksPatch }) =>
+      $api<UserPermissions>(profilePath(payload.profileId, payload.companyId, 'update/'), {
+        method: 'PATCH',
+        body: payload.patch,
+      }),
+    onSuccess: async (data, variables) => {
+      await storeProfile(data, variables.companyId)
       success('permissions.toasts.profileSaved')
     },
     onError: failure,
@@ -102,13 +130,13 @@ export function useApplyPermissionPreset() {
   const { $api } = useNuxtApp()
   const { success, failure, storeProfile } = useAdminMutationHelpers()
   return useMutation({
-    mutationFn: (payload: { profileId: number, presetId: number }) =>
-      $api<UserPermissions>(`${BASE}/profile/${payload.profileId}/apply_preset/`, {
+    mutationFn: (payload: { profileId: number, companyId: number, presetId: number }) =>
+      $api<UserPermissions>(profilePath(payload.profileId, payload.companyId, 'apply_preset/'), {
         method: 'POST',
         body: { preset: payload.presetId },
       }),
-    onSuccess: async (data) => {
-      await storeProfile(data)
+    onSuccess: async (data, variables) => {
+      await storeProfile(data, variables.companyId)
       success('permissions.toasts.presetApplied')
     },
     onError: failure,
@@ -119,7 +147,7 @@ export function useSavePermissionPreset() {
   const { $api } = useNuxtApp()
   const { queryClient, success, failure } = useAdminMutationHelpers()
   return useMutation({
-    mutationFn: (payload: { id?: number, body: Partial<PermissionBlocks> & { name?: string } }) =>
+    mutationFn: (payload: { id?: number, body: Partial<PermissionBlocks> & { name?: string, company?: number | null } }) =>
       payload.id != null
         ? $api<PermissionPreset>(`${BASE}/presets/${payload.id}/update/`, { method: 'PATCH', body: payload.body })
         : $api<PermissionPreset>(`${BASE}/presets/create/`, { method: 'POST', body: payload.body }),

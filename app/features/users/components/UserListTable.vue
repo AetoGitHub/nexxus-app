@@ -300,6 +300,7 @@ useInfiniteScroll(
       :profile-id="permissionsUser?.id ?? null"
       :name="permissionsUser ? userDisplayName(permissionsUser) : ''"
       :username="permissionsUser?.username"
+      :company-id="permissionsUser?.selected_company ?? null"
     />
   </section>
 </template>

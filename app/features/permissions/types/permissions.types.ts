@@ -1,9 +1,14 @@
 import type { PermissionBlocks, PermissionModule } from '~/shared/types/auth.types'
 
-/** Plantilla de permisos (GET /api/auth/permissions/presets/). */
+/**
+ * Plantilla de permisos (GET /api/auth/permissions/presets/). `company` null = general (se aplica en cualquier
+ * compañía); con id, solo se aplica en esa compañía.
+ */
 export interface PermissionPreset extends PermissionBlocks {
   id: number
   name: string
+  company: number | null
+  company_name: string | null
 }
 
 /** Lista paginada por cursor (sin `count`). */

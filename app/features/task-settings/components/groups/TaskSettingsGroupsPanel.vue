@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-// Crear grupos: `settings.can_groups`.
+// Crear grupos: `settings.can_create_groups`.
 const { can } = usePermissions()
 
 /**
@@ -41,7 +41,7 @@ const isSearching = computed(() => search.value.trim().length > 0)
         </p>
       </div>
       <UButton
-        v-if="can('settings', 'groups')"
+        v-if="can('settings', 'create_groups')"
         icon="i-lucide-plus"
         :label="t('taskSettings.groups.newGroup')"
         class="bg-aeto-teal hover:opacity-90 text-white self-start sm:shrink-0"

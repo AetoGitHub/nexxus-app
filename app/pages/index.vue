@@ -4,7 +4,10 @@
 definePageMeta({ middleware: 'auth', layout: false })
 
 const { t } = useI18n()
-const { can, isSuperuser, refreshPermissions } = usePermissions()
+const { can, isSuperuser, permissions, refreshPermissions } = usePermissions()
+const { user } = useAuth()
+/** Empresa a la que aplican los permisos (la seleccionada del usuario). */
+const companyName = computed(() => permissions.value?.company?.name ?? user.value?.selected_company?.name ?? null)
 
 /**
  * La tarjeta de Tareas abre el primer módulo del shell al que tenga acceso (tareas, reporte o dashboard): alguien con
@@ -65,6 +68,14 @@ useSeoMeta({
           <p class="mt-1 text-sm text-muted-foreground">
             {{ t('permissions.empty.description') }}
           </p>
+          <UBadge
+            v-if="companyName"
+            :label="t('permissions.empty.company', { company: companyName })"
+            icon="i-lucide-briefcase"
+            color="neutral"
+            variant="subtle"
+            class="mt-3"
+          />
         </div>
         <UButton
           :label="t('permissions.empty.recheck')"

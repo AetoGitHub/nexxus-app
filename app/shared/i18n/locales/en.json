@@ -5,8 +5,9 @@
     "noModules": "Your user has no access to any module. Ask an administrator to grant you permissions.",
     "masterEmpty": "You have access to Master settings, but to none of its sections. Ask an administrator for access.",
     "empty": {
-      "title": "You don't have any permissions yet",
+      "title": "You don't have permissions in this company yet",
       "description": "Ask an administrator for access. As soon as they assign you permissions or a template, your modules will show up here.",
+      "company": "Company: {company}",
       "recheck": "Check again"
     },
     "denied": {
@@ -44,7 +45,9 @@
       },
       "settings": {
         "can_projects": "Manage projects",
-        "can_groups": "Manage groups"
+        "can_view_groups": "View groups",
+        "can_create_groups": "Create groups",
+        "can_update_groups": "Edit groups"
       },
       "master": {
         "allow": "Access to Master settings",
@@ -72,6 +75,12 @@
     "users": {
       "select": "User",
       "selectPlaceholder": "Choose a user",
+      "company": "Company",
+      "companyPlaceholder": "Choose a company",
+      "headerFor": "{user}'s permissions in {company}",
+      "membershipsError": "Couldn't load the user's companies.",
+      "noMembershipsTitle": "This user doesn't belong to any company",
+      "noMembershipsDescription": "Permissions are per company. Add a company membership to be able to grant permissions.",
       "noUsers": "No users in this organization",
       "noOrganizationTitle": "Select an organization",
       "noOrganizationDescription": "Choose an organization in the selector above to see its users and edit their permissions.",
@@ -83,7 +92,7 @@
       "noPresets": "No templates",
       "apply": "Apply",
       "applyConfirmTitle": "Apply template?",
-      "applyConfirmDescription": "{user}'s permissions will be replaced by \"{preset}\". You can fine-tune them afterwards.",
+      "applyConfirmDescription": "{user}'s permissions in {company} will be replaced by \"{preset}\". You can fine-tune them afterwards.",
       "basedOn": "Based on: {name}",
       "custom": "Custom permissions",
       "you": "You",
@@ -105,6 +114,10 @@
       "editWarning": "Editing the template doesn't change users who already have it applied: apply it again.",
       "name": "Name",
       "namePlaceholder": "e.g. Operator",
+      "company": "Company",
+      "companyHelp": "A general template can be applied in any company; a company template, only in that one.",
+      "general": "General (all companies)",
+      "generalBadge": "General",
       "empty": "No templates yet. Create the first one to assign permissions faster.",
       "loadError": "Couldn't load the templates.",
       "off": "No access",

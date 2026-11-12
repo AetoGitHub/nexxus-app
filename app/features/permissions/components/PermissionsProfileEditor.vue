@@ -8,16 +8,20 @@ import {
   useUpdateProfilePermissions,
 } from '~/features/permissions/composables/usePermissionsAdmin'
 import { diffBlocks, pickBlocks } from '~/features/permissions/utils/permission-fields.util'
+import { useProfileCompanyMemberships } from '~/features/company-memberships/composables/useProfileCompanyMemberships'
 import { getInitials } from '~/shared/utils/initials'
 
 /**
- * Permisos de UN perfil: encabezado (nombre, «Basado en»), aplicar plantilla, la matriz como borrador y la barra de
- * guardado (solo manda lo que cambió). Se usa en Configuración → Permisos y en el diálogo de la tabla de usuarios.
+ * Permisos de UN perfil en UNA compañía (los permisos son por compañía): selector de compañía con sus membresías,
+ * encabezado «Permisos de X en Y», aplicar plantilla, la matriz como borrador y la barra de guardado (solo manda lo que
+ * cambió). Se usa en Configuración → Permisos y en el diálogo de la tabla de usuarios.
  */
 const props = defineProps<{
   profileId: number
   name: string
-  /** Sin encabezado propio (el diálogo ya muestra el nombre). */
+  /** Compañía seleccionada del usuario: se preselecciona si está entre sus membresías. */
+  preferredCompanyId?: number | null
+  /** Sin avatar propio (el diálogo ya lo muestra). */
   hideHeader?: boolean
 }>()
 
@@ -27,7 +31,51 @@ const dirty = defineModel<boolean>('dirty', { default: false })
 const { t } = useI18n()
 const { user } = useAuth()
 
-const permissionsQuery = useProfilePermissions(() => props.profileId)
+// Compañías del usuario: solo se pueden elegir sus membresías.
+const membershipsQuery = useProfileCompanyMemberships(() => props.profileId)
+const companyItems = computed(() =>
+  membershipsQuery.memberships.value.map((membership) => {
+    const raw = membership as typeof membership & { company__name?: string }
+    return { value: membership.company, label: raw.company_name ?? raw.company__name ?? `#${membership.company}` }
+  }),
+)
+const companyId = ref<number | null>(null)
+const companyName = computed(() => companyItems.value.find(item => item.value === companyId.value)?.label ?? '')
+
+// Preselección: su compañía seleccionada (si es una de sus membresías) o la primera.
+watch(companyItems, (items) => {
+  if (companyId.value != null && items.some(item => item.value === companyId.value)) {
+    return
+  }
+  const preferred = items.find(item => item.value === props.preferredCompanyId)
+  companyId.value = (preferred ?? items[0])?.value ?? null
+}, { immediate: true })
+
+// Cambiar de compañía con cambios sin guardar los descartaría: se pide confirmación.
+const pendingCompanyId = ref<number | null>(null)
+const confirmCompanyOpen = ref(false)
+const companyModel = computed({
+  get: () => companyId.value ?? undefined,
+  set: (value: number | undefined) => {
+    const id = value ?? null
+    if (id === companyId.value) {
+      return
+    }
+    if (hasChanges.value) {
+      pendingCompanyId.value = id
+      confirmCompanyOpen.value = true
+      return
+    }
+    companyId.value = id
+  },
+})
+
+function confirmCompanySwitch() {
+  companyId.value = pendingCompanyId.value
+  confirmCompanyOpen.value = false
+}
+
+const permissionsQuery = useProfilePermissions(() => props.profileId, companyId)
 const permissions = computed(() => permissionsQuery.data.value ?? null)
 const isSuperuserProfile = computed(() => permissions.value?.is_superuser === true)
 const isMe = computed(() => props.profileId === user.value?.id)
@@ -49,18 +97,19 @@ const applyMutation = useApplyPermissionPreset()
 const isBusy = computed(() => updateMutation.isPending.value || applyMutation.isPending.value)
 
 function save() {
-  if (!patch.value) {
+  if (!patch.value || companyId.value == null) {
     return
   }
-  updateMutation.mutate({ profileId: props.profileId, patch: patch.value })
+  updateMutation.mutate({ profileId: props.profileId, companyId: companyId.value, patch: patch.value })
 }
 
 function discard() {
   draft.value = permissions.value ? pickBlocks(permissions.value) : null
 }
 
-// Aplicar plantilla (con confirmación: reemplaza lo que tenga el usuario).
-const presetsQuery = usePermissionPresets()
+// Aplicar plantilla (con confirmación: reemplaza lo que tenga el usuario en esa compañía). Solo las generales y las de
+// la compañía elegida.
+const presetsQuery = usePermissionPresets(companyId)
 const presetItems = computed(() => (presetsQuery.data.value ?? []).map(preset => ({ value: preset.id, label: preset.name })))
 const presetToApply = ref<number | undefined>(undefined)
 const confirmApplyOpen = ref(false)
@@ -73,11 +122,11 @@ function askApply() {
 }
 
 async function confirmApply() {
-  if (presetToApply.value == null) {
+  if (presetToApply.value == null || companyId.value == null) {
     return
   }
   try {
-    await applyMutation.mutateAsync({ profileId: props.profileId, presetId: presetToApply.value })
+    await applyMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetId: presetToApply.value })
     confirmApplyOpen.value = false
     presetToApply.value = undefined
   }
@@ -85,13 +134,53 @@ async function confirmApply() {
     // El toast de error lo muestra la mutación.
   }
 }
+
+// La plantilla elegida pudo no aplicar en la nueva compañía.
+watch(companyId, () => {
+  presetToApply.value = undefined
+})
 </script>
 
 <template>
   <div class="space-y-4">
+    <!-- Compañía: los permisos son por compañía; solo las membresías del usuario. -->
+    <UFormField
+      v-if="membershipsQuery.isPending.value || companyItems.length"
+      :label="t('permissions.users.company')"
+    >
+      <USelectMenu
+        v-model="companyModel"
+        :items="companyItems"
+        value-key="value"
+        :loading="membershipsQuery.isPending.value"
+        :placeholder="t('permissions.users.companyPlaceholder')"
+        :disabled="isBusy"
+        icon="i-lucide-briefcase"
+        class="w-full sm:w-96"
+      />
+    </UFormField>
+
+    <UAlert
+      v-if="membershipsQuery.isError.value"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-circle-alert"
+      :title="t('permissions.users.membershipsError')"
+      :description="membershipsQuery.errorMessage.value"
+    />
+
+    <UAlert
+      v-else-if="!membershipsQuery.isPending.value && !companyItems.length"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-briefcase"
+      :title="t('permissions.users.noMembershipsTitle')"
+      :description="t('permissions.users.noMembershipsDescription')"
+    />
+
     <!-- Cargando -->
     <div
-      v-if="permissionsQuery.isPending.value"
+      v-else-if="companyId == null || permissionsQuery.isPending.value"
       class="grid gap-3 lg:grid-cols-2"
     >
       <USkeleton
@@ -126,7 +215,7 @@ async function confirmApply() {
           />
           <div class="min-w-0">
             <p class="flex items-center gap-2 font-semibold">
-              <span class="truncate">{{ name }}</span>
+              <span class="truncate">{{ t('permissions.users.headerFor', { user: name, company: companyName }) }}</span>
               <UBadge
                 v-if="isMe"
                 :label="t('permissions.users.you')"
@@ -152,6 +241,9 @@ async function confirmApply() {
           v-else
           class="min-w-0 flex-1 text-sm text-muted-foreground"
         >
+          <span class="mb-0.5 block font-semibold text-foreground">
+            {{ t('permissions.users.headerFor', { user: name, company: companyName }) }}
+          </span>
           <template v-if="permissions.preset">
             <UIcon
               name="i-lucide-layout-template"
@@ -233,11 +325,33 @@ async function confirmApply() {
       </div>
     </template>
 
+    <!-- Confirmar cambiar de compañía con cambios sin guardar -->
+    <UModal
+      v-model:open="confirmCompanyOpen"
+      :title="t('permissions.users.switchConfirmTitle')"
+      :description="t('permissions.users.switchConfirmDescription')"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #footer="{ close }">
+        <UButton
+          :label="t('permissions.actions.cancel')"
+          color="neutral"
+          variant="outline"
+          @click="close()"
+        />
+        <UButton
+          :label="t('permissions.actions.discardAndContinue')"
+          color="warning"
+          @click="confirmCompanySwitch"
+        />
+      </template>
+    </UModal>
+
     <!-- Confirmar aplicar plantilla -->
     <UModal
       v-model:open="confirmApplyOpen"
       :title="t('permissions.users.applyConfirmTitle')"
-      :description="t('permissions.users.applyConfirmDescription', { preset: presetToApplyName, user: name })"
+      :description="t('permissions.users.applyConfirmDescription', { preset: presetToApplyName, user: name, company: companyName })"
       :ui="{ footer: 'justify-end' }"
     >
       <template #footer="{ close }">

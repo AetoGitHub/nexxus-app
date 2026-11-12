@@ -5,8 +5,9 @@
     "noModules": "Tu usuario no tiene acceso a ningún módulo. Pide a un administrador que te asigne permisos.",
     "masterEmpty": "Tienes acceso a Configuración master, pero a ninguna de sus secciones. Pide acceso a un administrador.",
     "empty": {
-      "title": "Aún no tienes permisos asignados",
+      "title": "Aún no tienes permisos en esta empresa",
       "description": "Pide acceso a un administrador. En cuanto te asigne permisos o una plantilla, verás aquí tus módulos.",
+      "company": "Empresa: {company}",
       "recheck": "Volver a revisar"
     },
     "denied": {
@@ -44,7 +45,9 @@
       },
       "settings": {
         "can_projects": "Configurar proyectos",
-        "can_groups": "Configurar grupos"
+        "can_view_groups": "Ver grupos",
+        "can_create_groups": "Crear grupos",
+        "can_update_groups": "Editar grupos"
       },
       "master": {
         "allow": "Acceso a Configuración master",
@@ -72,6 +75,12 @@
     "users": {
       "select": "Usuario",
       "selectPlaceholder": "Elige un usuario",
+      "company": "Compañía",
+      "companyPlaceholder": "Elige una compañía",
+      "headerFor": "Permisos de {user} en {company}",
+      "membershipsError": "No se pudieron cargar las compañías del usuario.",
+      "noMembershipsTitle": "Este usuario no pertenece a ninguna compañía",
+      "noMembershipsDescription": "Los permisos son por compañía. Agrégale una membresía a una compañía para poder asignarle permisos.",
       "noUsers": "No hay usuarios en esta organización",
       "noOrganizationTitle": "Selecciona una organización",
       "noOrganizationDescription": "Elige una organización en el selector de arriba para ver sus usuarios y editar sus permisos.",
@@ -83,7 +92,7 @@
       "noPresets": "No hay plantillas",
       "apply": "Aplicar",
       "applyConfirmTitle": "¿Aplicar plantilla?",
-      "applyConfirmDescription": "Los permisos de {user} se reemplazarán por los de «{preset}». Después podrás ajustarlos a mano.",
+      "applyConfirmDescription": "Los permisos de {user} en {company} se reemplazarán por los de «{preset}». Después podrás ajustarlos a mano.",
       "basedOn": "Basado en: {name}",
       "custom": "Permisos personalizados",
       "you": "Tú",
@@ -105,6 +114,10 @@
       "editWarning": "Editar la plantilla no cambia a los usuarios que ya la tienen aplicada: hay que volver a aplicarla.",
       "name": "Nombre",
       "namePlaceholder": "Ej. Operador",
+      "company": "Compañía",
+      "companyHelp": "Una plantilla general se puede aplicar en cualquier compañía; una de compañía, solo en esa.",
+      "general": "General (todas las compañías)",
+      "generalBadge": "General",
       "empty": "Aún no hay plantillas. Crea la primera para asignar permisos más rápido.",
       "loadError": "No se pudieron cargar las plantillas.",
       "off": "Sin acceso",

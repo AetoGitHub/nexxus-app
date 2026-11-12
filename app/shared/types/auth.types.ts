@@ -116,7 +116,12 @@ export interface DashboardPermissionBlock {
 export interface SettingsPermissionBlock {
   allow: boolean
   can_projects: boolean
-  can_groups: boolean
+  /** Pestaña Grupos (lista y detalle). */
+  can_view_groups: boolean
+  /** Botón «Nuevo grupo». */
+  can_create_groups: boolean
+  /** Editar grupo y mover personas de grupo. */
+  can_update_groups: boolean
 }
 
 /** Configuración master (Organización · Compañía · Usuarios). */
@@ -141,14 +146,18 @@ export interface PermissionActions {
   task: 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'
-  settings: 'projects' | 'groups'
+  settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups'
   master: 'organizations' | 'companies' | 'users'
 }
 
-/** Respuesta de me/, profile/:id/, update/ y apply_preset/. */
+/**
+ * Respuesta de me/ y de profile/:id/company/:company_id/ (+ update/ y apply_preset/). Los permisos son por compañía:
+ * `company` es aquella a la que aplican (en me/, la compañía seleccionada del usuario).
+ */
 export interface UserPermissions extends PermissionBlocks {
   profile: number
   is_superuser: boolean
+  company: { id: number, name: string } | null
   preset: { id: number, name: string } | null
 }
 

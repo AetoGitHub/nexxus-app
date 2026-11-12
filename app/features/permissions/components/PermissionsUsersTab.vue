@@ -34,6 +34,10 @@ watch(() => props.organizationId, () => {
   selectedProfileId.value = null
 })
 const selectedName = computed(() => profileItems.value.find(item => item.value === selectedProfileId.value)?.label ?? '')
+/** Su compañía seleccionada: el editor la preselecciona entre sus membresías. */
+const selectedProfileCompanyId = computed(() =>
+  profilesQuery.data.value?.find(profile => profile.id === selectedProfileId.value)?.selected_company ?? null,
+)
 const dirty = ref(false)
 
 // Cambiar de usuario con cambios sin guardar los descartaría: se pide confirmación.
@@ -112,6 +116,7 @@ function confirmSwitch() {
       v-model:dirty="dirty"
       :profile-id="selectedProfileId"
       :name="selectedName"
+      :preferred-company-id="selectedProfileCompanyId"
     />
 
     <UModal

@@ -41,7 +41,9 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
     icon: 'i-lucide-settings',
     fields: [
       { key: 'can_projects', labelKey: 'permissions.fields.settings.can_projects' },
-      { key: 'can_groups', labelKey: 'permissions.fields.settings.can_groups' },
+      { key: 'can_view_groups', labelKey: 'permissions.fields.settings.can_view_groups' },
+      { key: 'can_create_groups', labelKey: 'permissions.fields.settings.can_create_groups' },
+      { key: 'can_update_groups', labelKey: 'permissions.fields.settings.can_update_groups' },
     ],
   },
   {

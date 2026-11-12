@@ -9,6 +9,8 @@ defineProps<{
   profileId: number | null
   name: string
   username?: string
+  /** Su compañía seleccionada (se preselecciona en el editor). */
+  companyId?: number | null
 }>()
 
 const { t } = useI18n()
@@ -86,6 +88,7 @@ function confirmClose() {
         v-model:dirty="dirty"
         :profile-id="profileId"
         :name="name"
+        :preferred-company-id="companyId"
         hide-header
       />
     </template>
