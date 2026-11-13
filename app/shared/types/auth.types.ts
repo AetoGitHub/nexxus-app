@@ -70,7 +70,12 @@ export interface AuthLoginResponse {
   user: AuthUser
   organization: AuthOrganization
   profile_configurations: ProfileConfiguration
+  /** Acceso a cada plataforma del selector de módulos (en su compañía seleccionada). */
+  access?: ScreenAccess
 }
+
+/** A qué plataformas del hub puede entrar: decide las tarjetas sin pedir `me/`. Crece con cada plataforma nueva. */
+export type ScreenAccess = Partial<Record<PermissionScreen, boolean>>
 
 export interface AuthSession {
   token: string
@@ -82,13 +87,15 @@ export interface AuthSession {
    * entrar a ella. Ausente mientras no se piden.
    */
   permissions?: Partial<Record<PermissionScreen, MePermissions>>
+  /** Acceso a cada plataforma (viene en el login; se actualiza al entrar a ella). Decide las tarjetas del hub. */
+  access?: ScreenAccess
 }
 
 /**
- * Pantallas con permisos propios: el hub («Selecciona un módulo», `me/` sin `screen`), Nexxus Tasks (`screen=task`:
- * task, dashboard, report, settings) y Configuración master (`screen=config_admin`: solo master).
+ * Plataformas con permisos propios: Nexxus Tasks (`me/?screen=task`: task, dashboard, report, settings) y
+ * Configuración master (`me/?screen=config_admin`: master). El hub no pide permisos: usa `access` del login.
  */
-export type PermissionScreen = 'hub' | 'task' | 'config_admin'
+export type PermissionScreen = 'task' | 'config_admin'
 
 /** Módulos con permisos por perfil. */
 export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings' | 'master'

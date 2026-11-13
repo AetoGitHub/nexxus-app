@@ -61,8 +61,10 @@ export function useAuth() {
       user: data.user,
       organization: data.organization,
       profile_configurations: data.profile_configurations,
+      // A qué plataformas puede entrar: el hub lo usa para sus tarjetas, sin pedir `me/`.
+      access: data.access ?? {},
     }
-    // Los permisos ya no se piden aquí: se piden por pantalla al entrar a ella (middleware `permissions-screen`).
+    // Los permisos detallados no se piden aquí: se piden por plataforma al entrar a ella (middleware `permissions-screen`).
   }
 
   /** Marca (o desmarca) en la sesión que el usuario debe cambiar su contraseña antes de usar la app. */

@@ -4,27 +4,29 @@
 definePageMeta({ middleware: 'auth', layout: false })
 
 const { t } = useI18n()
-const { can, isSuperuser, permissions, refreshPermissions } = usePermissions()
+const { hasAccess, refreshPermissions } = usePermissions()
 const { user } = useAuth()
 /** Empresa a la que aplican los permisos (la seleccionada del usuario). */
-const companyName = computed(() => permissions.value?.company?.name ?? user.value?.selected_company?.name ?? null)
+const companyName = computed(() => user.value?.selected_company?.name ?? null)
 
 /**
- * La tarjeta de Tareas abre el primer módulo del shell al que tenga acceso (tareas, reporte o dashboard): alguien con
- * solo Reportes también entra por aquí.
+ * El hub no pide permisos: cada tarjeta sale de `access` del login (y se actualiza al entrar a la plataforma). Al
+ * entrar, `me/?screen=…` trae el detalle (en Nexxus Tasks, si no puede ver tareas, el middleware lo lleva a reporte o
+ * dashboard).
  */
-// El hub solo trae `task` y `master` (me/ sin screen): la tarjeta de Nexxus Tasks sale con el módulo encendido. Al entrar,
-// `me/?screen=task` decide qué se ve (si no puede ver tareas, el middleware lo lleva a reporte o dashboard).
-const tasksEntry = computed(() => (can('task') ? '/tasks' : null))
-// Configuración master: el módulo encendido (o superuser, que además ve Permisos).
-const showConfiguration = computed(() => isSuperuser.value || can('master'))
-const hasNothing = computed(() => !tasksEntry.value && !showConfiguration.value)
+const showTasks = computed(() => hasAccess('task'))
+const showConfiguration = computed(() => hasAccess('config_admin'))
+const hasNothing = computed(() => !showTasks.value && !showConfiguration.value)
 
+/** «Volver a revisar»: solo sin acceso a nada; consulta cada plataforma y así se actualiza `access`. */
 const isRefreshing = ref(false)
 async function recheck() {
   isRefreshing.value = true
   try {
-    await refreshPermissions(undefined, { force: true })
+    await Promise.all([
+      refreshPermissions('task', { force: true }),
+      refreshPermissions('config_admin', { force: true }),
+    ])
   }
   finally {
     isRefreshing.value = false
@@ -90,8 +92,8 @@ useSeoMeta({
 
         <div class="grid gap-4 sm:grid-cols-2 w-full max-w-2xl">
           <AppModuleCard
-            v-if="tasksEntry"
-            :to="tasksEntry"
+            v-if="showTasks"
+            to="/tasks"
             icon="i-lucide-square-check-big"
             :title="t('hub.tasksTitle')"
             :description="t('hub.tasksDescription')"

@@ -7,18 +7,24 @@ import type {
 
 const MODULES: PermissionModule[] = ['task', 'report', 'dashboard', 'settings', 'master']
 
-/** Petición de /me/ en curso por pantalla (compartida para no repetirla si varios piden refrescar a la vez). */
+/** Módulo que da el acceso a cada plataforma (como `SCREEN_ACCESS` del backend). */
+const SCREEN_MODULE: Record<PermissionScreen, PermissionModule> = {
+  task: 'task',
+  config_admin: 'master',
+}
+
+/** Petición de /me/ en curso por plataforma (compartida para no repetirla si varios piden refrescar a la vez). */
 const inFlight = new Map<PermissionScreen, Promise<MePermissions | null>>()
-/** Cuándo terminó la última petición de cada pantalla: dos avisos seguidos (middleware + watcher) hacen una sola. */
+/** Cuándo terminó la última petición de cada plataforma: dos avisos seguidos hacen una sola. */
 const lastFetchedAt = new Map<PermissionScreen, number>()
-/** Ventana en la que una pantalla recién pedida no se vuelve a pedir (salvo `force`). */
+/** Ventana en la que una plataforma recién pedida no se vuelve a pedir (salvo `force`). */
 const FRESH_MS = 2000
 
-/** Pantalla de una ruta: el hub, Nexxus Tasks (tareas, dashboard, reporte) o Configuración master; `null` = sin cambio. */
+/**
+ * Plataforma de una ruta: Nexxus Tasks (tareas, dashboard, reporte) o Configuración master. `null` = fuera de ellas (el
+ * hub, login, cambio de contraseña): ahí no se piden permisos.
+ */
 export function screenForPath(path: string): PermissionScreen | null {
-  if (path === '/') {
-    return 'hub'
-  }
   if (path.startsWith('/configuration')) {
     return 'config_admin'
   }
@@ -29,24 +35,26 @@ export function screenForPath(path: string): PermissionScreen | null {
 }
 
 /**
- * Permisos del usuario en su COMPAÑÍA SELECCIONADA, por PANTALLA (GET /api/auth/permissions/me/?screen=…):
- * - hub («Selecciona un módulo»): `me/` sin screen → decide qué tarjetas mostrar;
- * - Nexxus Tasks: `screen=task` → task, dashboard, report, settings;
- * - Configuración master: `screen=config_admin` → master.
- * Cada respuesta se guarda en la sesión bajo su pantalla y `can()` lee la de la pantalla activa (la fija el middleware
- * `permissions-screen`). Un módulo que no vino cuenta como «sin permiso». Quien bloquea de verdad es el backend (403).
+ * Permisos del usuario en su COMPAÑÍA SELECCIONADA, por PLATAFORMA:
+ * - el hub NO pide permisos: muestra cada tarjeta según `access` del login (`hasAccess`);
+ * - al entrar a Nexxus Tasks se pide `me/?screen=task` (task, dashboard, report, settings);
+ * - al entrar a Configuración master, `me/?screen=config_admin` (master).
+ * Cada respuesta se guarda en la sesión bajo su plataforma y `can()` lee la de la plataforma activa (la fija el
+ * middleware `permissions-screen`). Un módulo que no vino cuenta como «sin permiso». Quien bloquea de verdad es el
+ * backend (403). Para sumar una plataforma basta con su `screen` y su entrada en `access`.
  *
  * Todo arranca negado (salvo el superuser, que lo ve todo). Si `me/` responde 404 (sin compañía seleccionada) se
  * guarda «sin permisos».
  */
 export function usePermissions() {
   const session = useAuthSession()
-  const activeScreen = useState<PermissionScreen>('permissions-screen', () => 'hub')
+  /** Plataforma en la que está el usuario; `null` en el hub y fuera de las plataformas. */
+  const activeScreen = useState<PermissionScreen | null>('permissions-screen', () => null)
 
-  /** Permisos guardados de una pantalla (una sesión con el formato anterior, sin pantallas, cuenta como no cargada). */
-  function stored(screen: PermissionScreen): MePermissions | null {
+  /** Permisos guardados de una plataforma (una sesión con el formato anterior cuenta como no cargada). */
+  function stored(screen: PermissionScreen | null): MePermissions | null {
     const all = session.value?.permissions as Record<string, unknown> | undefined
-    if (!all || 'profile' in all) {
+    if (!screen || !all || 'profile' in all) {
       return null
     }
     return (all[screen] as MePermissions | undefined) ?? null
@@ -57,7 +65,7 @@ export function usePermissions() {
   const isSuperuser = computed(() => permissions.value?.is_superuser === true || session.value?.user?.is_superuser === true)
 
   /**
-   * `can('task', 'create')` → módulo encendido y esa acción permitida.
+   * `can('task', 'create')` → módulo encendido y esa acción permitida (en la plataforma activa).
    * `can('master')` → solo que el módulo esté encendido (`allow`).
    */
   function can<M extends PermissionModule>(module: M, action?: PermissionActions[M]): boolean {
@@ -71,7 +79,12 @@ export function usePermissions() {
     return action ? block[`can_${action}`] === true : true
   }
 
-  /** Tiene al menos un módulo encendido en la pantalla activa. */
+  /** ¿Puede entrar a la plataforma? (`access` del login, actualizado cada vez que se piden sus permisos). */
+  function hasAccess(screen: PermissionScreen): boolean {
+    return isSuperuser.value || session.value?.access?.[screen] === true
+  }
+
+  /** Tiene al menos un módulo encendido en la plataforma activa. */
   const hasAnyPermission = computed(() => {
     if (isSuperuser.value) {
       return true
@@ -93,7 +106,7 @@ export function usePermissions() {
     }
   }
 
-  /** Vacía los permisos de todas las pantallas (al cambiar de empresa, mientras llegan los de la nueva). */
+  /** Vacía los permisos de todas las plataformas (al cambiar de empresa, mientras llegan los de la nueva). */
   function clearPermissions() {
     lastFetchedAt.clear()
     if (session.value?.permissions) {
@@ -103,15 +116,15 @@ export function usePermissions() {
   }
 
   /**
-   * Pide los permisos de una pantalla (por defecto, la activa) y los guarda bajo ella. Una sola petición a la vez por
-   * pantalla, y si se acaba de pedir (< 2 s) usa lo guardado; `force` la pide de todos modos (cambio de empresa, 403,
-   * «Volver a revisar», tras editar mis permisos).
+   * Pide los permisos de una plataforma (por defecto, la activa) y los guarda bajo ella; de paso actualiza su `access`
+   * (si le quitaron el módulo, la tarjeta del hub se oculta). Una sola petición a la vez por plataforma, y si se acaba
+   * de pedir (< 2 s) usa lo guardado; `force` la pide de todos modos (cambio de empresa, 403, tras editar mis permisos).
    */
   async function refreshPermissions(
-    screen: PermissionScreen = activeScreen.value,
+    screen: PermissionScreen | null = activeScreen.value,
     options: { force?: boolean } = {},
   ): Promise<MePermissions | null> {
-    if (!session.value?.token) {
+    if (!screen || !session.value?.token) {
       return null
     }
     const pending = inFlight.get(screen)
@@ -127,18 +140,21 @@ export function usePermissions() {
 
     function store(data: MePermissions) {
       // Solo si sigue siendo la misma sesión: una respuesta tardía no debe escribir en otra cuenta.
-      if (session.value?.token !== token) {
+      if (session.value?.token !== token || !screen) {
         return
       }
       const current = session.value.permissions as Record<string, unknown> | undefined
       // El formato anterior (un solo objeto) se descarta.
       const byScreen = current && !('profile' in current) ? current : {}
-      session.value = { ...session.value, permissions: { ...byScreen, [screen]: data } }
+      const module = data[SCREEN_MODULE[screen]] as { allow?: boolean } | undefined
+      session.value = {
+        ...session.value,
+        permissions: { ...byScreen, [screen]: data },
+        access: { ...session.value.access, [screen]: data.is_superuser || module?.allow === true },
+      }
     }
 
-    const request = $api<MePermissions>('/api/auth/permissions/me/', {
-      query: screen === 'hub' ? undefined : { screen },
-    })
+    const request = $api<MePermissions>('/api/auth/permissions/me/', { query: { screen } })
       .then((data) => {
         store(data)
         return data
@@ -165,6 +181,7 @@ export function usePermissions() {
     isLoaded,
     isSuperuser,
     can,
+    hasAccess,
     hasAnyPermission,
     hasStored: (screen: PermissionScreen) => stored(screen) != null,
     refreshPermissions,
