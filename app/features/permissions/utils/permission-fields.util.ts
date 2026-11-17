@@ -15,6 +15,7 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
       { key: 'can_view_approvals', labelKey: 'permissions.fields.task.can_view_approvals' },
       { key: 'can_voice', labelKey: 'permissions.fields.task.can_voice' },
       { key: 'can_view_history', labelKey: 'permissions.fields.task.can_view_history' },
+      { key: 'can_mcp', labelKey: 'permissions.fields.task.can_mcp' },
     ],
   },
   {

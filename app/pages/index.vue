@@ -1,10 +1,29 @@
 <script setup lang="ts">
 // Protected route: redirects to /login when not authenticated.
 // Landing/Hub tras el login: selector de módulos.
-definePageMeta({ middleware: 'auth', layout: false })
+definePageMeta({
+  layout: false,
+  middleware: [
+    'auth',
+    // Con acceso a UNA sola plataforma no hay nada que elegir: se entra directo a ella. Si viene de esa misma plataforma
+    // (lo sacaron por no tener ninguna pantalla visible ahí) se queda en el hub, para no rebotar en bucle.
+    (_to, from) => {
+      const { hasAccess } = usePermissions()
+      const tasks = hasAccess('task')
+      const config = hasAccess('config_admin')
+      const fromScreen = screenForPath(from.path)
+      if (tasks && !config && fromScreen !== 'task') {
+        return navigateTo('/tasks', { replace: true })
+      }
+      if (config && !tasks && fromScreen !== 'config_admin') {
+        return navigateTo('/configuration', { replace: true })
+      }
+    },
+  ],
+})
 
 const { t } = useI18n()
-const { hasAccess, refreshPermissions } = usePermissions()
+const { hasAccess, refreshAllPermissions } = usePermissions()
 const { user } = useAuth()
 /** Empresa a la que aplican los permisos (la seleccionada del usuario). */
 const companyName = computed(() => user.value?.selected_company?.name ?? null)
@@ -18,20 +37,30 @@ const showTasks = computed(() => hasAccess('task'))
 const showConfiguration = computed(() => hasAccess('config_admin'))
 const hasNothing = computed(() => !showTasks.value && !showConfiguration.value)
 
-/** «Volver a revisar»: solo sin acceso a nada; consulta cada plataforma y así se actualiza `access`. */
+/** «Volver a revisar»: solo sin acceso a nada; `me/` sin screen actualiza `access` en una sola petición. */
 const isRefreshing = ref(false)
 async function recheck() {
   isRefreshing.value = true
   try {
-    await Promise.all([
-      refreshPermissions('task', { force: true }),
-      refreshPermissions('config_admin', { force: true }),
-    ])
+    await refreshAllPermissions()
   }
   finally {
     isRefreshing.value = false
   }
 }
+
+// Si al revisar (o al cambiar de empresa) pasa a tener acceso a una sola plataforma, se entra directo a ella.
+watch([showTasks, showConfiguration], ([tasks, config], [wasTasks, wasConfig]) => {
+  if (tasks === wasTasks && config === wasConfig) {
+    return
+  }
+  if (tasks && !config) {
+    void navigateTo('/tasks', { replace: true })
+  }
+  else if (config && !tasks) {
+    void navigateTo('/configuration', { replace: true })
+  }
+})
 
 useSeoMeta({
   title: () => t('hub.title'),

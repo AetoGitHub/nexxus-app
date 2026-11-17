@@ -102,6 +102,8 @@ export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings' | 'm
 
 export interface TaskPermissionBlock {
   allow: boolean
+  /** Conectar o usar Claude (MCP). */
+  can_mcp: boolean
   can_view: boolean
   can_create: boolean
   can_update: boolean
@@ -159,7 +161,7 @@ export interface PermissionBlocks {
 
 /** Acciones de cada módulo (el campo es `can_<acción>`). */
 export interface PermissionActions {
-  task: 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals' | 'voice' | 'view_history'
+  task: 'mcp' | 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'
   settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups'

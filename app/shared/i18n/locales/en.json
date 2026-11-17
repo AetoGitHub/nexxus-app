@@ -30,7 +30,8 @@
         "can_view_all": "Full view (everyone's tasks)",
         "can_view_approvals": "Pending approvals",
         "can_voice": "Create tasks by voice",
-        "can_view_history": "View task history"
+        "can_view_history": "View task history",
+        "can_mcp": "Use the MCP (Claude)"
       },
       "report": {
         "can_view": "View reports",

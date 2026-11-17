@@ -30,7 +30,8 @@
         "can_view_all": "Vista total (tareas de todos)",
         "can_view_approvals": "Pendientes de aprobación",
         "can_voice": "Crear tareas por voz",
-        "can_view_history": "Ver historial de la tarea"
+        "can_view_history": "Ver historial de la tarea",
+        "can_mcp": "Usar el MCP (Claude)"
       },
       "report": {
         "can_view": "Ver reportes",

@@ -19,6 +19,8 @@ const inFlight = new Map<PermissionScreen, Promise<MePermissions | null>>()
 const lastFetchedAt = new Map<PermissionScreen, number>()
 /** Ventana en la que una plataforma recién pedida no se vuelve a pedir (salvo `force`). */
 const FRESH_MS = 2000
+/** Petición de `me/` sin screen (todos los módulos) en curso. */
+let inFlightAll: Promise<MePermissions | null> | null = null
 
 /**
  * Plataforma de una ruta: Nexxus Tasks (tareas, dashboard, reporte) o Configuración master. `null` = fuera de ellas (el
@@ -120,6 +122,61 @@ export function usePermissions() {
    * (si le quitaron el módulo, la tarjeta del hub se oculta). Una sola petición a la vez por plataforma, y si se acaba
    * de pedir (< 2 s) usa lo guardado; `force` la pide de todos modos (cambio de empresa, 403, tras editar mis permisos).
    */
+  /**
+   * Todos los módulos de una vez (`GET /me/` sin screen): al cambiar de empresa el login no se repite, así que con esto
+   * se actualiza el acceso a cada plataforma (`task.allow` / `master.allow`) y se guardan los permisos de ambas. Una
+   * sola petición.
+   */
+  async function refreshAllPermissions(): Promise<MePermissions | null> {
+    if (!session.value?.token) {
+      return null
+    }
+    const pending = inFlightAll
+    if (pending) {
+      return pending
+    }
+    const token = session.value.token
+    const { $api } = useNuxtApp()
+
+    function storeAll(data: MePermissions) {
+      if (session.value?.token !== token) {
+        return
+      }
+      const screens = Object.keys(SCREEN_MODULE) as PermissionScreen[]
+      session.value = {
+        ...session.value,
+        // `me/` sin screen trae todos los módulos: sirve como permisos de cada plataforma.
+        permissions: Object.fromEntries(screens.map(screen => [screen, data])),
+        access: Object.fromEntries(screens.map(screen => [
+          screen,
+          data.is_superuser || (data[SCREEN_MODULE[screen]] as { allow?: boolean } | undefined)?.allow === true,
+        ])),
+      }
+      const now = Date.now()
+      for (const screen of screens) {
+        lastFetchedAt.set(screen, now)
+      }
+    }
+
+    inFlightAll = $api<MePermissions>('/api/auth/permissions/me/')
+      .then((data) => {
+        storeAll(data)
+        return data
+      })
+      .catch((error: { status?: number, statusCode?: number }) => {
+        if ((error?.statusCode ?? error?.status) === 404) {
+          const none = noPermissions()
+          storeAll(none)
+          return none
+        }
+        return null
+      })
+      .finally(() => {
+        inFlightAll = null
+      })
+    return inFlightAll
+  }
+
   async function refreshPermissions(
     screen: PermissionScreen | null = activeScreen.value,
     options: { force?: boolean } = {},
@@ -185,6 +242,7 @@ export function usePermissions() {
     hasAnyPermission,
     hasStored: (screen: PermissionScreen) => stored(screen) != null,
     refreshPermissions,
+    refreshAllPermissions,
     clearPermissions,
   }
 }
