@@ -143,17 +143,54 @@ export function useApplyPermissionPreset() {
   })
 }
 
+/**
+ * Crear o editar una plantilla. Editar ACTUALIZA a todos los usuarios que la tienen aplicada (en cualquier compañía):
+ * el PATCH responde `users_updated`. Después se recargan los perfiles abiertos en «Usuarios» y, si el usuario logueado
+ * tiene esa plantilla en su compañía seleccionada, sus propios permisos (menús y botones).
+ */
 export function useSavePermissionPreset() {
   const { $api } = useNuxtApp()
-  const { queryClient, success, failure } = useAdminMutationHelpers()
+  const { queryClient, failure } = useAdminMutationHelpers()
+  const toast = useToast()
+  const { t } = useI18n()
+  const session = useAuthSession()
+  const { refreshPermissions, refreshAllPermissions, activeScreen } = usePermissions()
+
+  /** ¿El usuario logueado tiene esta plantilla aplicada (en lo que hay guardado de su compañía seleccionada)? */
+  function iHavePreset(presetId: number): boolean {
+    const stored = Object.values(session.value?.permissions ?? {}) as Array<{ preset?: { id: number } | null }>
+    return stored.some(perms => perms?.preset?.id === presetId)
+  }
+
   return useMutation({
     mutationFn: (payload: { id?: number, body: Partial<PermissionBlocks> & { name?: string, company?: number | null } }) =>
       payload.id != null
-        ? $api<PermissionPreset>(`${BASE}/presets/${payload.id}/update/`, { method: 'PATCH', body: payload.body })
+        ? $api<PermissionPreset & { users_updated?: number }>(`${BASE}/presets/${payload.id}/update/`, {
+            method: 'PATCH',
+            body: payload.body,
+          })
         : $api<PermissionPreset>(`${BASE}/presets/create/`, { method: 'POST', body: payload.body }),
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (data, variables) => {
       await queryClient.invalidateQueries({ queryKey: PRESETS_KEY })
-      success(variables.id != null ? 'permissions.toasts.presetUpdated' : 'permissions.toasts.presetCreated')
+
+      if (variables.id == null) {
+        toast.add({ title: t('permissions.toasts.presetCreated'), color: 'success' })
+        return
+      }
+
+      const usersUpdated = (data as { users_updated?: number }).users_updated ?? 0
+      toast.add({
+        title: t('permissions.toasts.presetUpdated'),
+        description: t('permissions.toasts.presetUsersUpdated', { count: usersUpdated }, usersUpdated),
+        color: 'success',
+      })
+      // Los usuarios abiertos en «Usuarios» con esta plantilla traen ahora otros permisos.
+      await queryClient.invalidateQueries({ queryKey: ['permissions', 'profile'] })
+      if (iHavePreset(variables.id)) {
+        await (activeScreen.value
+          ? refreshPermissions(activeScreen.value, { force: true })
+          : refreshAllPermissions())
+      }
     },
     onError: failure,
   })

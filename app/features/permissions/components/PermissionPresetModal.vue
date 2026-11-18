@@ -60,6 +60,28 @@ const canSave = computed(() =>
   && (!isEditing.value || nameChanged.value || companyChanged.value || blocksPatch.value != null),
 )
 
+/**
+ * Editar una plantilla actualiza a TODOS los usuarios que la tienen (y reemplaza sus ajustes manuales): se confirma
+ * antes. Crear no afecta a nadie hasta que se aplique, así que se guarda directo.
+ */
+const confirmOpen = ref(false)
+
+function requestSave() {
+  if (!canSave.value) {
+    return
+  }
+  if (isEditing.value) {
+    confirmOpen.value = true
+    return
+  }
+  void save()
+}
+
+async function confirmSave() {
+  await save()
+  confirmOpen.value = false
+}
+
 async function save() {
   if (!canSave.value) {
     return
@@ -104,7 +126,7 @@ async function save() {
               :disabled="saveMutation.isPending.value"
               autofocus
               class="w-full"
-              @keydown.enter.prevent="save"
+              @keydown.enter.prevent="requestSave"
             />
           </UFormField>
 
@@ -152,7 +174,32 @@ async function save() {
         icon="i-lucide-check"
         :loading="saveMutation.isPending.value"
         :disabled="!canSave || saveMutation.isPending.value"
-        @click="save"
+        @click="requestSave"
+      />
+    </template>
+  </UModal>
+
+  <!-- Confirmar: editar la plantilla reemplaza los permisos de todos sus usuarios. -->
+  <UModal
+    v-model:open="confirmOpen"
+    :title="t('permissions.presets.confirmUpdateTitle')"
+    :description="t('permissions.presets.confirmUpdateDescription', { name: trimmedName })"
+    :ui="{ footer: 'justify-end' }"
+  >
+    <template #footer="{ close }">
+      <UButton
+        :label="t('permissions.actions.cancel')"
+        color="neutral"
+        variant="outline"
+        :disabled="saveMutation.isPending.value"
+        @click="close()"
+      />
+      <UButton
+        :label="t('permissions.presets.confirmUpdate')"
+        color="warning"
+        icon="i-lucide-users"
+        :loading="saveMutation.isPending.value"
+        @click="confirmSave"
       />
     </template>
   </UModal>

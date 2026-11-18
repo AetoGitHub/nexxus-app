@@ -293,6 +293,15 @@ watch(companyId, () => {
         :disabled="isSuperuserProfile || isBusy"
       />
 
+      <!-- Ajuste manual sobre una plantilla: se perderá cuando alguien edite esa plantilla. -->
+      <UAlert
+        v-if="hasChanges && permissions.preset && !isSuperuserProfile"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        :description="t('permissions.users.manualOverPreset', { name: permissions.preset.name })"
+      />
+
       <!-- Barra de guardado -->
       <div
         v-if="!isSuperuserProfile"
