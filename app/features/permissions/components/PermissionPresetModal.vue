@@ -61,42 +61,45 @@ const canSave = computed(() =>
 )
 
 /**
- * Editar una plantilla actualiza a TODOS los usuarios que la tienen (y reemplaza sus ajustes manuales): se confirma
- * antes. Crear no afecta a nadie hasta que se aplique, así que se guarda directo.
+ * Al editar, si cambió alguna bandera se pregunta si aplicar el cambio también a los usuarios que tienen la plantilla
+ * (`propagate`): solo se les agregan o quitan las banderas modificadas, sus demás permisos se conservan. Si solo cambió
+ * el nombre o la compañía no se pregunta (propagate=false). Crear no afecta a nadie hasta que se aplique.
  */
-const confirmOpen = ref(false)
+const propagateOpen = ref(false)
 
 function requestSave() {
   if (!canSave.value) {
     return
   }
-  if (isEditing.value) {
-    confirmOpen.value = true
+  if (isEditing.value && blocksPatch.value != null) {
+    propagateOpen.value = true
     return
   }
-  void save()
+  void save(false)
 }
 
-async function confirmSave() {
-  await save()
-  confirmOpen.value = false
+async function saveWith(propagate: boolean) {
+  await save(propagate)
+  propagateOpen.value = false
 }
 
-async function save() {
+async function save(propagate: boolean) {
   if (!canSave.value) {
     return
   }
+  // Al editar se manda solo el diff de banderas (una bandera con el mismo valor la ignoraría el backend).
   const body = props.preset
     ? {
         ...(nameChanged.value ? { name: trimmedName.value } : {}),
         ...(companyChanged.value ? { company: companyPayload.value } : {}),
         ...(blocksPatch.value ?? {}),
+        propagate,
       }
     : { name: trimmedName.value, company: companyPayload.value, ...draft.value }
   try {
     await saveMutation.mutateAsync({
       id: props.preset?.id,
-      body: body as Partial<PermissionBlocks> & { name?: string, company?: number | null },
+      body: body as Partial<PermissionBlocks> & { name?: string, company?: number | null, propagate?: boolean },
     })
     open.value = false
   }
@@ -179,27 +182,36 @@ async function save() {
     </template>
   </UModal>
 
-  <!-- Confirmar: editar la plantilla reemplaza los permisos de todos sus usuarios. -->
+  <!-- Cambiaron banderas: ¿solo la plantilla, o también a sus usuarios (solo lo modificado)? -->
   <UModal
-    v-model:open="confirmOpen"
-    :title="t('permissions.presets.confirmUpdateTitle')"
-    :description="t('permissions.presets.confirmUpdateDescription', { name: trimmedName })"
-    :ui="{ footer: 'justify-end' }"
+    v-model:open="propagateOpen"
+    :title="t('permissions.presets.propagateTitle')"
+    :description="t('permissions.presets.propagateDescription')"
+    :ui="{ footer: 'justify-end flex-wrap' }"
   >
     <template #footer="{ close }">
       <UButton
         :label="t('permissions.actions.cancel')"
         color="neutral"
-        variant="outline"
+        variant="ghost"
         :disabled="saveMutation.isPending.value"
         @click="close()"
       />
       <UButton
-        :label="t('permissions.presets.confirmUpdate')"
-        color="warning"
+        :label="t('permissions.presets.onlyTemplate')"
+        color="neutral"
+        variant="outline"
+        icon="i-lucide-layout-template"
+        :disabled="saveMutation.isPending.value"
+        @click="saveWith(false)"
+      />
+      <UButton
+        :label="t('permissions.presets.templateAndUsers')"
+        color="primary"
         icon="i-lucide-users"
         :loading="saveMutation.isPending.value"
-        @click="confirmSave"
+        :disabled="saveMutation.isPending.value"
+        @click="saveWith(true)"
       />
     </template>
   </UModal>

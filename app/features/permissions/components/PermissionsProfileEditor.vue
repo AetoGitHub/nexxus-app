@@ -139,6 +139,36 @@ async function confirmApply() {
 watch(companyId, () => {
   presetToApply.value = undefined
 })
+
+/** Ajustes manuales (banderas distintas a su plantilla) y cuántos son, para «Personalizado (N)». */
+const custom = computed(() => permissions.value?.custom ?? {})
+const customCount = computed(() =>
+  Object.values(custom.value).reduce((total, flags) => total + Object.keys(flags ?? {}).length, 0),
+)
+
+/**
+ * «Restablecer a la plantilla»: vuelve a aplicar su plantilla actual (copia todas sus banderas y `custom` queda vacío).
+ * Se pierden los ajustes manuales: se confirma antes.
+ */
+const confirmResetOpen = ref(false)
+
+function openResetConfirm() {
+  confirmResetOpen.value = true
+}
+
+async function confirmReset() {
+  const presetId = permissions.value?.preset?.id
+  if (presetId == null || companyId.value == null) {
+    return
+  }
+  try {
+    await applyMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetId })
+    confirmResetOpen.value = false
+  }
+  catch {
+    // El toast de error lo muestra la mutación.
+  }
+}
 </script>
 
 <template>
@@ -224,35 +254,13 @@ watch(companyId, () => {
                 size="sm"
               />
             </p>
-            <p class="text-xs text-muted-foreground">
-              <template v-if="permissions.preset">
-                <UIcon
-                  name="i-lucide-layout-template"
-                  class="mr-1 inline h-3.5 w-3.5 align-[-2px]"
-                />{{ t('permissions.users.basedOn', { name: permissions.preset.name }) }}
-              </template>
-              <template v-else>
-                {{ t('permissions.users.custom') }}
-              </template>
-            </p>
           </div>
         </div>
         <p
           v-else
-          class="min-w-0 flex-1 text-sm text-muted-foreground"
+          class="min-w-0 flex-1 text-sm font-semibold"
         >
-          <span class="mb-0.5 block font-semibold text-foreground">
-            {{ t('permissions.users.headerFor', { user: name, company: companyName }) }}
-          </span>
-          <template v-if="permissions.preset">
-            <UIcon
-              name="i-lucide-layout-template"
-              class="mr-1 inline h-3.5 w-3.5 align-[-2px]"
-            />{{ t('permissions.users.basedOn', { name: permissions.preset.name }) }}
-          </template>
-          <template v-else>
-            {{ t('permissions.users.custom') }}
-          </template>
+          {{ t('permissions.users.headerFor', { user: name, company: companyName }) }}
         </p>
 
         <div
@@ -279,6 +287,50 @@ watch(companyId, () => {
         </div>
       </div>
 
+      <!-- Plantilla asignada, ajustes manuales (custom) y «Restablecer a la plantilla». -->
+      <div
+        v-if="!isSuperuserProfile"
+        class="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5"
+      >
+        <UIcon
+          name="i-lucide-layout-template"
+          class="h-4 w-4 shrink-0 text-muted-foreground"
+        />
+        <span class="text-sm">
+          <template v-if="permissions.preset">
+            {{ t('permissions.users.templateLabel') }}
+            <span class="font-semibold">{{ permissions.preset.name }}</span>
+          </template>
+          <span
+            v-else
+            class="text-muted-foreground"
+          >{{ t('permissions.users.noTemplate') }}</span>
+        </span>
+        <UTooltip
+          v-if="customCount > 0"
+          :text="t('permissions.users.customHint', { name: permissions.preset?.name ?? '' })"
+        >
+          <UBadge
+            :label="t('permissions.users.customized', { count: customCount })"
+            icon="i-lucide-circle-dot"
+            color="warning"
+            variant="subtle"
+            size="sm"
+          />
+        </UTooltip>
+        <UButton
+          v-if="permissions.preset && customCount > 0"
+          :label="t('permissions.users.resetToTemplate')"
+          icon="i-lucide-rotate-ccw"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          class="ml-auto"
+          :disabled="isBusy"
+          @click="openResetConfirm"
+        />
+      </div>
+
       <UAlert
         v-if="isSuperuserProfile"
         color="warning"
@@ -290,6 +342,8 @@ watch(companyId, () => {
 
       <PermissionsMatrix
         v-model="draft"
+        :custom="custom"
+        :preset-name="permissions.preset?.name ?? null"
         :disabled="isSuperuserProfile || isBusy"
       />
 
@@ -352,6 +406,31 @@ watch(companyId, () => {
           :label="t('permissions.actions.discardAndContinue')"
           color="warning"
           @click="confirmCompanySwitch"
+        />
+      </template>
+    </UModal>
+
+    <!-- Confirmar restablecer a la plantilla: se pierden los ajustes manuales. -->
+    <UModal
+      v-model:open="confirmResetOpen"
+      :title="t('permissions.users.resetConfirmTitle', { name: permissions?.preset?.name ?? '' })"
+      :description="t('permissions.users.resetConfirmDescription')"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #footer="{ close }">
+        <UButton
+          :label="t('permissions.actions.cancel')"
+          color="neutral"
+          variant="outline"
+          :disabled="applyMutation.isPending.value"
+          @click="close()"
+        />
+        <UButton
+          :label="t('permissions.users.resetToTemplate')"
+          color="warning"
+          icon="i-lucide-rotate-ccw"
+          :loading="applyMutation.isPending.value"
+          @click="confirmReset"
         />
       </template>
     </UModal>

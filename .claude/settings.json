@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/eam-web/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\eam-web\\app\\features\\panel-admin\\types",
+      "C:\\eam-web\\app\\features\\panel-admin\\composables"
+    ]
+  }
+}

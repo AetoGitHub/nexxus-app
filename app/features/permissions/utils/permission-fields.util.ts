@@ -12,6 +12,8 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
       { key: 'can_update', labelKey: 'permissions.fields.task.can_update' },
       { key: 'can_delete', labelKey: 'permissions.fields.task.can_delete' },
       { key: 'can_view_all', labelKey: 'permissions.fields.task.can_view_all' },
+      { key: 'can_view_by_project', labelKey: 'permissions.fields.task.can_view_by_project' },
+      { key: 'can_view_by_group', labelKey: 'permissions.fields.task.can_view_by_group' },
       { key: 'can_view_approvals', labelKey: 'permissions.fields.task.can_view_approvals' },
       { key: 'can_voice', labelKey: 'permissions.fields.task.can_voice' },
       { key: 'can_view_history', labelKey: 'permissions.fields.task.can_view_history' },

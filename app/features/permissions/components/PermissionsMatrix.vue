@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PermissionBlocks, PermissionModule } from '~/shared/types/auth.types'
+import type { PermissionBlocks, PermissionCustom, PermissionModule } from '~/shared/types/auth.types'
 import type { PermissionModuleDef } from '~/features/permissions/types/permissions.types'
 import { PERMISSION_MODULES } from '~/features/permissions/utils/permission-fields.util'
 
@@ -9,11 +9,22 @@ import { PERMISSION_MODULES } from '~/features/permissions/utils/permission-fiel
  */
 const blocks = defineModel<PermissionBlocks>({ required: true })
 
-defineProps<{
+const props = defineProps<{
   disabled?: boolean
+  /** Ajustes manuales del usuario (banderas distintas a su plantilla): se marcan con «Ajustado». */
+  custom?: PermissionCustom
+  /** Plantilla del usuario, para el tooltip «Distinto a la plantilla X». */
+  presetName?: string | null
 }>()
 
 const { t } = useI18n()
+
+/** ¿Esta bandera del usuario es distinta a su plantilla? */
+function isCustom(module: PermissionModule, key: string): boolean {
+  return props.custom?.[module]?.[key] !== undefined
+}
+
+const customTooltip = computed(() => t('permissions.users.customTooltip', { name: props.presetName ?? '' }))
 
 function block(module: PermissionModule): Record<string, boolean> {
   return blocks.value[module] as unknown as Record<string, boolean>
@@ -91,6 +102,12 @@ function enabledCount(module: PermissionModule): number {
           :disabled="disabled"
           @click="toggleAll(module)"
         />
+        <UTooltip
+          v-if="isCustom(module.id, 'allow')"
+          :text="customTooltip"
+        >
+          <span class="h-2 w-2 shrink-0 rounded-full bg-warning" />
+        </UTooltip>
         <UTooltip :text="t(module.allowLabelKey ?? 'permissions.matrix.allow')">
           <USwitch
             :model-value="block(module.id).allow"
@@ -118,6 +135,19 @@ function enabledCount(module: PermissionModule): number {
             <span class="min-w-0 flex-1 text-sm">
               {{ t(field.labelKey) }}
             </span>
+            <!-- Ajuste manual: distinto a la plantilla del usuario. -->
+            <UTooltip
+              v-if="isCustom(module.id, field.key)"
+              :text="customTooltip"
+            >
+              <UBadge
+                :label="t('permissions.users.adjusted')"
+                icon="i-lucide-circle-dot"
+                color="warning"
+                variant="subtle"
+                size="sm"
+              />
+            </UTooltip>
             <UBadge
               v-if="field.comingSoon"
               :label="t('permissions.matrix.comingSoon')"

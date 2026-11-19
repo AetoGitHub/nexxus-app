@@ -144,9 +144,10 @@ export function useApplyPermissionPreset() {
 }
 
 /**
- * Crear o editar una plantilla. Editar ACTUALIZA a todos los usuarios que la tienen aplicada (en cualquier compañía):
- * el PATCH responde `users_updated`. Después se recargan los perfiles abiertos en «Usuarios» y, si el usuario logueado
- * tiene esa plantilla en su compañía seleccionada, sus propios permisos (menús y botones).
+ * Crear o editar una plantilla. Al editar, `propagate: true` aplica a los usuarios que la tienen SOLO las banderas que
+ * cambiaron (sus demás permisos y ajustes manuales se conservan) y el PATCH responde `users_updated`; sin `propagate`
+ * solo cambia la plantilla. Si se propagó, se recargan los perfiles abiertos en «Usuarios» y, si el usuario logueado
+ * tiene esa plantilla, sus propios permisos (menús y botones).
  */
 export function useSavePermissionPreset() {
   const { $api } = useNuxtApp()
@@ -163,7 +164,10 @@ export function useSavePermissionPreset() {
   }
 
   return useMutation({
-    mutationFn: (payload: { id?: number, body: Partial<PermissionBlocks> & { name?: string, company?: number | null } }) =>
+    mutationFn: (payload: {
+      id?: number
+      body: Partial<PermissionBlocks> & { name?: string, company?: number | null, propagate?: boolean }
+    }) =>
       payload.id != null
         ? $api<PermissionPreset & { users_updated?: number }>(`${BASE}/presets/${payload.id}/update/`, {
             method: 'PATCH',
@@ -179,11 +183,18 @@ export function useSavePermissionPreset() {
       }
 
       const usersUpdated = (data as { users_updated?: number }).users_updated ?? 0
+      // «Plantilla guardada» o «Plantilla guardada · se actualizaron N usuarios».
       toast.add({
-        title: t('permissions.toasts.presetUpdated'),
-        description: t('permissions.toasts.presetUsersUpdated', { count: usersUpdated }, usersUpdated),
+        title: usersUpdated > 0
+          ? t('permissions.toasts.presetSavedUsers', { count: usersUpdated }, usersUpdated)
+          : t('permissions.toasts.presetSaved'),
         color: 'success',
       })
+      if (!variables.body.propagate) {
+        // Solo cambió la plantilla: los usuarios que la tienen no se tocaron, aunque su `custom` puede cambiar.
+        await queryClient.invalidateQueries({ queryKey: ['permissions', 'profile'] })
+        return
+      }
       // Los usuarios abiertos en «Usuarios» con esta plantilla traen ahora otros permisos.
       await queryClient.invalidateQueries({ queryKey: ['permissions', 'profile'] })
       if (iHavePreset(variables.id)) {

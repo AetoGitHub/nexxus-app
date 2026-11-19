@@ -109,6 +109,10 @@ export interface TaskPermissionBlock {
   can_update: boolean
   can_delete: boolean
   can_view_all: boolean
+  /** Vista de tareas por proyecto («Ver por: Proyecto»). */
+  can_view_by_project: boolean
+  /** Vista de tareas por grupo («Ver por: Grupo»). */
+  can_view_by_group: boolean
   can_view_approvals: boolean
   /** Micrófono / dictado al crear una tarea o un backlog. */
   can_voice: boolean
@@ -161,7 +165,8 @@ export interface PermissionBlocks {
 
 /** Acciones de cada módulo (el campo es `can_<acción>`). */
 export interface PermissionActions {
-  task: 'mcp' | 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_approvals' | 'voice' | 'view_history'
+  task: 'mcp' | 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_by_project' | 'view_by_group'
+    | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'
   settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups'
@@ -177,7 +182,15 @@ export interface UserPermissions extends PermissionBlocks {
   is_superuser: boolean
   company: { id: number, name: string } | null
   preset: { id: number, name: string } | null
+  /**
+   * Ajustes manuales: banderas en las que el usuario es distinto de su plantilla, con el valor que tiene el usuario.
+   * `{}` si es igual a su plantilla o si no tiene plantilla.
+   */
+  custom?: PermissionCustom
 }
+
+/** `{ task: { can_delete: true } }`: banderas distintas a la plantilla, por módulo. */
+export type PermissionCustom = Partial<Record<PermissionModule, Record<string, boolean>>>
 
 /** Respuesta de me/?screen=…: los datos de siempre y solo los bloques de esa pantalla (lo que no vino = sin permiso). */
 export type MePermissions = Omit<UserPermissions, PermissionModule> & Partial<PermissionBlocks>

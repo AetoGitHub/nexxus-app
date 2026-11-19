@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TaskGroupBy } from '~/features/tasks/types/task.types'
+import { useTaskGroupByAccess } from '~/features/tasks/composables/shared/useTaskGroupByAccess'
 
 const groupBy = defineModel<TaskGroupBy>({ required: true })
 
@@ -30,8 +31,11 @@ const options: { value: TaskGroupBy, icon: string, labelKey: string }[] = [
   { value: 'user', icon: 'i-lucide-user', labelKey: 'tasks.groupBy.user' },
 ]
 
+// «Proyecto» y «Grupo» solo con su permiso (task.can_view_by_project / can_view_by_group).
+const { deniedGroupBys } = useTaskGroupByAccess()
+
 const visibleOptions = computed(() =>
-  options.filter(option => !props.exclude.includes(option.value)),
+  options.filter(option => !props.exclude.includes(option.value) && !deniedGroupBys.value.includes(option.value)),
 )
 
 const selectItems = computed(() =>

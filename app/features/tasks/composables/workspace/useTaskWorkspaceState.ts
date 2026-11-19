@@ -12,6 +12,7 @@ import type { NewTaskFormDefaults } from '~/features/tasks/utils/form/new-task-d
 import type { ToUpdateSectionId } from '~/features/to-update/types/to-update.types'
 import { useProfileConfigurationStore } from '~/features/auth/composables/useProfileConfigurationStore'
 import { useSavedTaskFilters } from '~/features/tasks/composables/filters/useSavedTaskFilters'
+import { useTaskGroupByAccess } from '~/features/tasks/composables/shared/useTaskGroupByAccess'
 import {
   hasTaskFilters,
   normalizeTaskFilters,
@@ -281,7 +282,15 @@ export function useTaskWorkspaceState(options: {
     )
   }
 
-  watch([view, groupBy], ([value, selectedGroupBy]) => {
+  // «Ver por: Proyecto / Grupo» sin su permiso (por URL, enlace guardado o porque se lo quitaron con la sesión
+  // abierta): se cae a la vista por defecto y así sus endpoints no se llaman.
+  const { deniedGroupBys } = useTaskGroupByAccess()
+
+  watch([view, groupBy, deniedGroupBys], ([value, selectedGroupBy, denied]) => {
+    if (denied.includes(selectedGroupBy)) {
+      groupBy.value = 'all'
+      return
+    }
     if (value === 'calendar' && selectedGroupBy === 'due') {
       groupBy.value = 'all'
     }
