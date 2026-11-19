@@ -65,22 +65,28 @@ const canSave = computed(() =>
  * (`propagate`): solo se les agregan o quitan las banderas modificadas, sus demás permisos se conservan. Si solo cambió
  * el nombre o la compañía no se pregunta (propagate=false). Crear no afecta a nadie hasta que se aplique.
  */
-const propagateOpen = ref(false)
+/** Switch del formulario: aplicar las banderas modificadas también a los usuarios con esta plantilla (`propagate`). */
+const propagate = ref(false)
+/** Solo tiene sentido al editar y si cambió alguna bandera (cambiar nombre o compañía no toca a los usuarios). */
+const showPropagate = computed(() => isEditing.value && blocksPatch.value != null)
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    propagate.value = false
+  }
+})
+
+watch(showPropagate, (visible) => {
+  if (!visible) {
+    propagate.value = false
+  }
+})
 
 function requestSave() {
   if (!canSave.value) {
     return
   }
-  if (isEditing.value && blocksPatch.value != null) {
-    propagateOpen.value = true
-    return
-  }
-  void save(false)
-}
-
-async function saveWith(propagate: boolean) {
-  await save(propagate)
-  propagateOpen.value = false
+  void save(showPropagate.value && propagate.value)
 }
 
 async function save(propagate: boolean) {
@@ -149,8 +155,21 @@ async function save(propagate: boolean) {
           </UFormField>
         </div>
 
+        <!-- Al editar, con banderas modificadas: aplicarlas también a los usuarios con esta plantilla (propagate). -->
+        <div
+          v-if="showPropagate"
+          class="rounded-xl border px-4 py-3 transition-colors"
+          :class="propagate ? 'border-primary/40 bg-primary/5' : 'border-border bg-muted/30'"
+        >
+          <USwitch
+            v-model="propagate"
+            :disabled="saveMutation.isPending.value"
+            :label="t('permissions.presets.propagateLabel')"
+            :description="t('permissions.presets.propagateDescription')"
+          />
+        </div>
         <UAlert
-          v-if="isEditing"
+          v-else-if="isEditing"
           color="info"
           variant="subtle"
           icon="i-lucide-info"
@@ -182,37 +201,4 @@ async function save(propagate: boolean) {
     </template>
   </UModal>
 
-  <!-- Cambiaron banderas: ¿solo la plantilla, o también a sus usuarios (solo lo modificado)? -->
-  <UModal
-    v-model:open="propagateOpen"
-    :title="t('permissions.presets.propagateTitle')"
-    :description="t('permissions.presets.propagateDescription')"
-    :ui="{ footer: 'justify-end flex-wrap' }"
-  >
-    <template #footer="{ close }">
-      <UButton
-        :label="t('permissions.actions.cancel')"
-        color="neutral"
-        variant="ghost"
-        :disabled="saveMutation.isPending.value"
-        @click="close()"
-      />
-      <UButton
-        :label="t('permissions.presets.onlyTemplate')"
-        color="neutral"
-        variant="outline"
-        icon="i-lucide-layout-template"
-        :disabled="saveMutation.isPending.value"
-        @click="saveWith(false)"
-      />
-      <UButton
-        :label="t('permissions.presets.templateAndUsers')"
-        color="primary"
-        icon="i-lucide-users"
-        :loading="saveMutation.isPending.value"
-        :disabled="saveMutation.isPending.value"
-        @click="saveWith(true)"
-      />
-    </template>
-  </UModal>
 </template>

@@ -14,6 +14,8 @@ export interface AppNavItem {
   bottomNav?: boolean
   /** Si tiene hijos, el ítem se renderiza como desplegable (ej. Tareas, Tareas por grupo). */
   children?: AppNavChild[]
+  /** Lugar del bloque «Tareas por proyecto» (privados + empresa): AppNavList dibuja ahí AppPrivateProjects. */
+  projectsBlock?: boolean
 }
 
 /**
@@ -22,7 +24,7 @@ export interface AppNavItem {
 export function useAppNav() {
   const route = useRoute()
   const { actionableCount } = useToUpdateCounts()
-  const { isGroupManager, managedGroups, userProjects } = useAuth()
+  const { isGroupManager, managedGroups } = useAuth()
   const { can } = usePermissions()
 
   const tasksItems = computed<AppNavItem[]>(() => {
@@ -51,7 +53,8 @@ export function useAppNav() {
       })
     }
 
-    if (canViewTasks && isGroupManager.value) {
+    // «Tareas por grupo»: permiso `task.can_view_by_group` (y los grupos que dirige, que son los que lista).
+    if (canViewTasks && can('task', 'view_by_group') && isGroupManager.value) {
       items.push({
         labelKey: 'sidebar.groupTasks',
         icon: 'i-lucide-users',
@@ -64,17 +67,14 @@ export function useAppNav() {
       })
     }
 
-    // Ver por proyecto manda `admin_project`: es parte de la «Vista total».
-    if (canViewAll && userProjects.value.length > 0) {
+    // «Tareas por proyecto»: en este lugar AppNavList dibuja el bloque AppPrivateProjects (privados primero y luego los de
+    // la empresa, estos solo con `task.can_view_by_project`).
+    if (canViewTasks) {
       items.push({
         labelKey: 'sidebar.projectTasks',
         icon: 'i-lucide-folder-kanban',
-        // Sin bottom nav: es un desplegable, no un link directo (aún no hay UI para esto en mobile).
         bottomNav: false,
-        children: userProjects.value.map(project => ({
-          label: project.name,
-          to: `/tasks/project/${project.id}`,
-        })),
+        projectsBlock: true,
       })
     }
 

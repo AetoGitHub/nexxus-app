@@ -156,6 +156,29 @@ function openResetConfirm() {
   confirmResetOpen.value = true
 }
 
+/**
+ * «Quitar plantilla»: desliga la plantilla (`preset: null`). El usuario CONSERVA sus permisos actuales, queda «Sin
+ * plantilla» y deja de recibir los cambios que se hagan a esa plantilla.
+ */
+const confirmUnlinkOpen = ref(false)
+
+function openUnlinkConfirm() {
+  confirmUnlinkOpen.value = true
+}
+
+async function confirmUnlink() {
+  if (companyId.value == null) {
+    return
+  }
+  try {
+    await applyMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetId: null })
+    confirmUnlinkOpen.value = false
+  }
+  catch {
+    // El toast de error lo muestra la mutación.
+  }
+}
+
 async function confirmReset() {
   const presetId = permissions.value?.preset?.id
   if (presetId == null || companyId.value == null) {
@@ -318,17 +341,30 @@ async function confirmReset() {
             size="sm"
           />
         </UTooltip>
-        <UButton
-          v-if="permissions.preset && customCount > 0"
-          :label="t('permissions.users.resetToTemplate')"
-          icon="i-lucide-rotate-ccw"
-          color="neutral"
-          variant="ghost"
-          size="xs"
-          class="ml-auto"
-          :disabled="isBusy"
-          @click="openResetConfirm"
-        />
+        <div
+          v-if="permissions.preset"
+          class="ml-auto flex flex-wrap items-center gap-1"
+        >
+          <UButton
+            v-if="customCount > 0"
+            :label="t('permissions.users.resetToTemplate')"
+            icon="i-lucide-rotate-ccw"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            :disabled="isBusy"
+            @click="openResetConfirm"
+          />
+          <UButton
+            :label="t('permissions.users.unlinkTemplate')"
+            icon="i-lucide-unlink"
+            color="error"
+            variant="ghost"
+            size="xs"
+            :disabled="isBusy"
+            @click="openUnlinkConfirm"
+          />
+        </div>
       </div>
 
       <UAlert
@@ -406,6 +442,31 @@ async function confirmReset() {
           :label="t('permissions.actions.discardAndContinue')"
           color="warning"
           @click="confirmCompanySwitch"
+        />
+      </template>
+    </UModal>
+
+    <!-- Confirmar quitar la plantilla: conserva sus permisos, deja de seguir la plantilla. -->
+    <UModal
+      v-model:open="confirmUnlinkOpen"
+      :title="t('permissions.users.unlinkConfirmTitle', { name: permissions?.preset?.name ?? '' })"
+      :description="t('permissions.users.unlinkConfirmDescription')"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #footer="{ close }">
+        <UButton
+          :label="t('permissions.actions.cancel')"
+          color="neutral"
+          variant="outline"
+          :disabled="applyMutation.isPending.value"
+          @click="close()"
+        />
+        <UButton
+          :label="t('permissions.users.unlinkTemplate')"
+          color="error"
+          icon="i-lucide-unlink"
+          :loading="applyMutation.isPending.value"
+          @click="confirmUnlink"
         />
       </template>
     </UModal>

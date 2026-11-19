@@ -1,11 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/eam-web/**)"
+      "Read(//c/eam-web/**)",
+      "Bash(git stash *)"
     ],
     "additionalDirectories": [
       "C:\\eam-web\\app\\features\\panel-admin\\types",
-      "C:\\eam-web\\app\\features\\panel-admin\\composables"
+      "C:\\eam-web\\app\\features\\panel-admin\\composables",
+      "C:\\nexxus\\authentication\\permission"
     ]
   }
 }

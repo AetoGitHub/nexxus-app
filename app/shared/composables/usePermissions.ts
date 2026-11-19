@@ -179,7 +179,8 @@ export function usePermissions() {
 
   async function refreshPermissions(
     screen: PermissionScreen | null = activeScreen.value,
-    options: { force?: boolean } = {},
+    /** `maxAgeMs`: no se vuelve a pedir si lo guardado es más reciente que esto (por defecto 2 s). */
+    options: { force?: boolean, maxAgeMs?: number } = {},
   ): Promise<MePermissions | null> {
     if (!screen || !session.value?.token) {
       return null
@@ -189,7 +190,8 @@ export function usePermissions() {
       return pending
     }
     const fetchedAt = lastFetchedAt.get(screen)
-    if (!options.force && fetchedAt != null && Date.now() - fetchedAt < FRESH_MS && stored(screen)) {
+    const maxAge = options.maxAgeMs ?? FRESH_MS
+    if (!options.force && fetchedAt != null && Date.now() - fetchedAt < maxAge && stored(screen)) {
       return stored(screen)
     }
     const token = session.value.token

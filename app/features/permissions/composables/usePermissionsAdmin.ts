@@ -130,14 +130,15 @@ export function useApplyPermissionPreset() {
   const { $api } = useNuxtApp()
   const { success, failure, storeProfile } = useAdminMutationHelpers()
   return useMutation({
-    mutationFn: (payload: { profileId: number, companyId: number, presetId: number }) =>
+    // `presetId: null` desliga la plantilla: el usuario conserva sus permisos y deja de recibir cambios del preset.
+    mutationFn: (payload: { profileId: number, companyId: number, presetId: number | null }) =>
       $api<UserPermissions>(profilePath(payload.profileId, payload.companyId, 'apply_preset/'), {
         method: 'POST',
         body: { preset: payload.presetId },
       }),
     onSuccess: async (data, variables) => {
       await storeProfile(data, variables.companyId)
-      success('permissions.toasts.presetApplied')
+      success(variables.presetId == null ? 'permissions.toasts.presetRemoved' : 'permissions.toasts.presetApplied')
     },
     onError: failure,
   })
