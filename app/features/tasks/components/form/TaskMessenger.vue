@@ -21,17 +21,6 @@ import { pastedFiles } from '~/shared/utils/clipboard-files.util'
 import { formatDateTime } from '~/shared/utils/date'
 import { getInitials } from '~/shared/utils/initials'
 
-const AVATAR_COLORS = [
-  '#f59e0b',
-  '#28ceab',
-  '#0ea5e9',
-  '#f97316',
-  '#8b5cf6',
-  '#ef4444',
-  '#22c55e',
-  '#ec4899',
-] as const
-
 const props = withDefaults(
   defineProps<{
     taskId: number
@@ -311,11 +300,6 @@ function messageMenuItems(message: TaskMessage): DropdownMenuItem[][] {
       },
     ],
   ]
-}
-
-function resolveAvatarColor(userId: number) {
-  const index = Math.abs(userId) % AVATAR_COLORS.length
-  return AVATAR_COLORS[index]!
 }
 
 /** Primer mensaje de un bloque consecutivo del mismo remitente (no propio). */
@@ -791,7 +775,6 @@ onUnmounted(() => {
               :initials="getInitials(message.profile_username)"
               :size="28"
               :font-size="11"
-              :fallback-color="resolveAvatarColor(message.profile)"
               :name="message.profile_username"
             />
             <span

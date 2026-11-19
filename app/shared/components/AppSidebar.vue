@@ -111,7 +111,6 @@ function backToHub() {
 
     <nav class="flex-1 overflow-y-auto px-3">
       <AppNavList :collapsed="collapsed" />
-      <AppPrivateProjects :collapsed="collapsed" />
     </nav>
 
     <div class="p-2 border-t border-sidebar-border">
@@ -131,7 +130,6 @@ function backToHub() {
               :initials="initials"
               :size="32"
               :font-size="12.8"
-              fallback-color="#f59e0b"
             />
             <span
               v-if="collapsed"

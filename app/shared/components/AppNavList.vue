@@ -56,6 +56,14 @@ function onChildClick(child: AppNavChild) {
       v-for="item in tasksItems"
       :key="item.labelKey"
     >
+      <!-- «Tareas por proyecto»: bloque propio (privados primero y luego los de la empresa), en su lugar del menú. -->
+      <AppPrivateProjects
+        v-if="item.projectsBlock"
+        embedded
+        :collapsed="collapsed"
+        @navigate="emit('navigate')"
+      />
+      <template v-else>
       <UTooltip
         :text="collapsed ? t(item.labelKey) : undefined"
         :content="{ side: 'right', sideOffset: 8 }"
@@ -125,6 +133,7 @@ function onChildClick(child: AppNavChild) {
           <span class="flex-1 text-left truncate">{{ child.label }}</span>
         </button>
       </div>
+      </template>
     </template>
   </div>
 </template>

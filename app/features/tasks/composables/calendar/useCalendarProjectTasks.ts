@@ -4,6 +4,8 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
+import { useTaskGroupByAccess } from '~/features/tasks/composables/shared/useTaskGroupByAccess'
+import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import type {
   ProjectDropdown,
   Task,
@@ -58,14 +60,23 @@ export function useCalendarProjectTasks(
   }))
   const isEnabled = computed(() => toValue(enabled) && companyId.value != null)
 
+  // Sin «Vista por proyecto» solo se muestran sus proyectos privados (el backend también limita /project/… a esos).
+  const { projectScope } = useTaskGroupByAccess()
+  const isPrivateScope = computed(() => projectScope.value === 'private')
+  const { projects: privateProjects, projectsQuery: privateProjectsQuery } = usePrivateProjects({
+    enabled: computed(() => isEnabled.value && isPrivateScope.value),
+  })
+
   const projects = useQuery({
     queryKey: computed(() => ['dropdowns', 'projects', companyId.value]),
     queryFn: () => $api<PaginatedResponse<ProjectDropdown>>(`${projectsBase.value}/`),
-    enabled: isEnabled,
+    enabled: computed(() => isEnabled.value && !isPrivateScope.value),
   })
 
   const projectList = computed(() => {
-    const list = extractResults(projects.data.value)
+    const list: Array<{ id: number, name: string }> = isPrivateScope.value
+      ? privateProjects.value.map(project => ({ id: project.id, name: project.name }))
+      : extractResults(projects.data.value)
     const selected = toValue(filters).project
     if (!selected?.length) {
       return list
@@ -78,7 +89,7 @@ export function useCalendarProjectTasks(
   const taskQueries = useQueries({
     queries: computed(() =>
       projectIds.value.map(id => ({
-        queryKey: ['tasks', companyId.value, 'project', id, query.value],
+        queryKey: ['tasks', companyId.value, 'project', id, projectScope.value, query.value],
         queryFn: () => $api<PaginatedResponse<Task>>(`${tasksBase.value}/${id}/`, { query: query.value }),
         enabled: isEnabled.value && projectIds.value.length > 0,
       })),
@@ -92,19 +103,22 @@ export function useCalendarProjectTasks(
         id: project.id,
         name: project.name,
         color: PROJECT_COLORS[index % PROJECT_COLORS.length]!,
-        tasks: withoutPersonalTasks(extractResults(result?.data)),
+        // En la vista de sus privados las tareas personales son justo las que se muestran.
+        tasks: isPrivateScope.value ? extractResults(result?.data) : withoutPersonalTasks(extractResults(result?.data)),
         loading: result?.isPending ?? false,
         error: result?.isError ?? false,
       }
     }),
   )
 
+  const projectsSource = computed(() => (isPrivateScope.value ? privateProjectsQuery : projects))
+
   const isPending = computed(() =>
-    projects.isPending.value || projectData.value.some(p => p.loading),
+    projectsSource.value.isPending.value || projectData.value.some(p => p.loading),
   )
 
   const isError = computed(() =>
-    projects.isError.value || projectData.value.some(p => p.error),
+    projectsSource.value.isError.value || projectData.value.some(p => p.error),
   )
 
   return { projects: projectData, isPending, isError }

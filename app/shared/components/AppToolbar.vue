@@ -166,7 +166,6 @@ const profileOpen = ref(false)
               :initials="initials"
               :size="32"
               :font-size="12.8"
-              fallback-color="#f59e0b"
             />
           </button>
 

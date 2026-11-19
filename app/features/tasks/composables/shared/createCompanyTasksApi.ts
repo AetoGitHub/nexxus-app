@@ -38,13 +38,19 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
   function countsQuery<T>(
     scope: string[],
     path: string,
-    options: { extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined> } = {},
+    options: {
+      extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined>
+      enabled?: MaybeRefOrGetter<boolean>
+    } = {},
   ) {
     const extraQuery = computed(() => toValue(options.extraQuery))
     return useQuery({
       queryKey: computed(() => ['tasks', companyId.value, ...scope, 'counts', query.value, extraQuery.value]),
       queryFn: () => $api<T>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
-      enabled: hasCompany,
+      enabled: computed(() =>
+        hasCompany.value
+        && (options.enabled === undefined ? true : toValue(options.enabled)),
+      ),
     })
   }
 

@@ -13,6 +13,9 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// Editar proyectos de la empresa: `settings.can_projects`.
+const { can } = usePermissions()
+const canManage = computed(() => can('settings', 'projects'))
 
 const color = computed(() => resolveThemeColor(props.project.color))
 const memberCount = computed(() => props.project.members.length)
@@ -90,6 +93,7 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
       </button>
 
       <UDropdownMenu
+        v-if="canManage"
         :items="menuItems"
         :content="{ align: 'end', sideOffset: 4 }"
       >

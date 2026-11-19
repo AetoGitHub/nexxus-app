@@ -29,6 +29,11 @@ const props = withDefaults(
 )
 
 const { t } = useI18n()
+// Botones de crear (header, voz y FAB): solo con permiso `task.can_create`.
+const { can } = usePermissions()
+const canCreateTask = computed(() => can('task', 'create'))
+// Micrófono rápido (crear por voz): además de crear, `task.can_voice`.
+const canVoiceTask = computed(() => canCreateTask.value && can('task', 'voice'))
 
 const {
   view,
@@ -301,6 +306,7 @@ function goToStatusList() {
             @click="refresh"
           />
           <UButton
+            v-if="canCreateTask"
             icon="i-lucide-plus"
             color="primary"
             size="sm"
@@ -309,7 +315,7 @@ function goToStatusList() {
             @click="openNewTask()"
           />
           <TaskVoiceQuickButton
-            v-if="isDesktopLayout"
+            v-if="isDesktopLayout && canVoiceTask"
             @result="task => openNewTask(null, task)"
           />
         </div>
@@ -388,7 +394,7 @@ function goToStatusList() {
     <!-- Micrófono mobile (y celular acostado): botón flotante arriba del «+». Al grabar se ensancha en una tarjeta en el
          lugar del «+» (que se oculta) y, con el slideover abierto, se oculta junto con él. -->
     <div
-      v-if="!isDesktopLayout"
+      v-if="!isDesktopLayout && canVoiceTask"
       v-show="!newTaskOpen"
       data-hide-on-keyboard
       class="fixed z-40"
@@ -406,6 +412,7 @@ function goToStatusList() {
 
     <!-- FAB mobile: encima del bottom nav; se oculta con el slideover abierto o mientras el micrófono graba. -->
     <UButton
+      v-if="canCreateTask"
       v-show="!newTaskOpen && !voiceBusy"
       data-hide-on-keyboard
       color="primary"

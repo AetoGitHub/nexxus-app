@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { EnterpriseProject, ProjectMember } from '~/features/projects/types/project.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
-import { resolveAvatarColor } from '~/features/task-settings/utils/groups/group-avatar.util'
 import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 import { getInitials } from '~/shared/utils/initials'
 
@@ -17,6 +16,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { can } = usePermissions()
 
 const color = computed(() => resolveThemeColor(props.project?.color))
 
@@ -91,7 +91,6 @@ function onEdit() {
               :name="responsibleName"
               :size="28"
               :font-size="11"
-              :fallback-color="resolveAvatarColor(project.responsible)"
             />
             <p class="text-[13px] font-medium text-foreground truncate min-w-0 flex-1">
               {{ responsibleName }}
@@ -136,7 +135,6 @@ function onEdit() {
                 :name="member.name"
                 :size="28"
                 :font-size="11"
-                :fallback-color="resolveAvatarColor(member.id)"
               />
               <p class="text-[13px] font-medium text-foreground truncate min-w-0 flex-1">
                 {{ member.name }}
@@ -156,6 +154,7 @@ function onEdit() {
           @click="open = false"
         />
         <UButton
+          v-if="can('settings', 'projects')"
           color="primary"
           icon="i-lucide-pencil"
           :label="t('taskSettings.projectDetail.edit')"

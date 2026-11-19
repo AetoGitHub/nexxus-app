@@ -46,12 +46,16 @@ const { mentionsMe } = useTaskMentions(() => props.task.mentions)
 
 // Solo hay círculo cuando el tablero lo provee (no en Pendientes de aprobación).
 const quickAdvance = inject(QUICK_ADVANCE_KEY, null)
-const advanceStep = computed(() => quickAdvance?.stepOf(props.task) ?? null)
+// Mover la tarea (arrastrarla o con el círculo) es editarla: sin `task.can_update` el círculo solo muestra el estatus.
+const { can } = usePermissions()
+const canMove = computed(() => can('task', 'update'))
+const advanceStep = computed(() => (canMove.value ? quickAdvance?.stepOf(props.task) ?? null : null))
+const advanceBlocked = computed(() => canMove.value && (quickAdvance?.isBlocked(props.task) ?? false))
 
 const didDrag = ref(false)
 
 /** Mover la tarea de columna cambia su estado: solo quien participa en ella puede hacerlo. */
-const isDraggable = computed(() => props.draggable && canModifyTask(props.task, user.value?.id))
+const isDraggable = computed(() => props.draggable && canMove.value && canModifyTask(props.task, user.value?.id))
 
 function onSelect() {
   if (didDrag.value) {
@@ -105,7 +109,7 @@ function onDragEnd() {
           class="mt-px"
           :status="task.status"
           :step="advanceStep"
-          :blocked="quickAdvance.isBlocked(task)"
+          :blocked="advanceBlocked"
           :loading="quickAdvance.isAdvancing(task.id)"
           @advance="quickAdvance.advance(task)"
         />

@@ -19,6 +19,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// «Recalcular» edita el reporte (`report.can_update`); «Generar» crea uno nuevo (`report.can_generate`).
+const { can } = usePermissions()
 </script>
 
 <template>
@@ -53,7 +55,7 @@ const { t } = useI18n()
 
     <div class="ml-auto flex flex-wrap items-center gap-2">
       <UButton
-        v-if="meta"
+        v-if="meta && can('report', 'update')"
         :label="t('ceoReport.toolbar.recalculate')"
         icon="i-lucide-refresh-cw"
         color="neutral"
@@ -63,6 +65,7 @@ const { t } = useI18n()
         @click="emit('recalculate')"
       />
       <UButton
+        v-if="can('report', 'generate')"
         :label="t('ceoReport.toolbar.generate')"
         icon="i-lucide-plus"
         color="neutral"

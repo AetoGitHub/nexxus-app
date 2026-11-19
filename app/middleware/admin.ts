@@ -1,13 +1,12 @@
 /**
- * Route guard for superuser-only pages.
+ * Guarda de la "Vista total" (/tasks/admin): superuser o permiso `task.can_view_all`.
  *
- * Opt in per-page with:
  *   definePageMeta({ middleware: ['auth', 'admin'] })
  */
 export default defineNuxtRouteMiddleware(() => {
-  const { isSuperuser } = useAuth()
+  const { can } = usePermissions()
 
-  if (!isSuperuser.value) {
+  if (!can('task', 'view_all')) {
     return navigateTo('/tasks')
   }
 })

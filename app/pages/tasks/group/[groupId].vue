@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TaskWorkspacePage from '~/features/tasks/components/workspace/TaskWorkspacePage.vue'
 
-definePageMeta({ middleware: ['auth', 'group'] })
+definePageMeta({ middleware: ['auth', 'permission', 'group'], permission: ['task', 'view_by_group'] })
 
 const route = useRoute()
 const { t } = useI18n()
