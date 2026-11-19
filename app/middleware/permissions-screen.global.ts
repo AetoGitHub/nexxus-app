@@ -1,13 +1,16 @@
+/** Dentro de una plataforma, al cambiar de página no se vuelven a pedir si lo guardado tiene menos de esto. */
+const IN_SCREEN_MAX_AGE_MS = 5000
+
 /**
  * Plataformas y sus permisos:
  * - En el hub (y fuera de las plataformas) no se pide nada: sus tarjetas salen de `access` del login.
- * - Al ENTRAR a una plataforma se valida el acceso y se piden sus permisos: `me/?screen=task` en tareas/dashboard/
- *   reporte y `me/?screen=config_admin` en Configuración master. Moverse dentro de la misma no vuelve a pedir nada.
- * - Si ya hay permisos guardados y acceso, se refrescan en segundo plano (sin bloquear ni parpadear); si no, se espera la
- *   respuesta para decidir con datos reales. Sin acceso: aviso y de vuelta al hub.
+ * - Al ENTRAR a una plataforma se valida el acceso y se ESPERAN sus permisos frescos: `me/?screen=task` en tareas/
+ *   dashboard/reporte y `me/?screen=config_admin` en Configuración master. Sin acceso: aviso y de vuelta al hub.
+ * - Al moverse DENTRO de la plataforma (otra página del menú) se vuelven a pedir en segundo plano (como mucho cada 5 s):
+ *   si un admin cambió algo (p. ej. «Vista por proyecto»), el menú y los botones se actualizan sin cerrar sesión.
  * Corre antes que los middleware de cada página.
  */
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
   const { isLoggedIn } = useAuth()
   if (!isLoggedIn.value) {
     return
@@ -24,16 +27,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return
   }
   if (entered.value === screen) {
+    // Otra página de la misma plataforma (no solo un cambio de filtros en la URL): refresco en segundo plano.
+    if (to.path !== from.path) {
+      void refreshPermissions(screen, { maxAgeMs: IN_SCREEN_MAX_AGE_MS })
+    }
     return
   }
   entered.value = screen
 
-  if (hasStored(screen) && hasAccess(screen)) {
-    void refreshPermissions(screen)
-    return
-  }
-  // Sin permisos guardados, o el login dijo que no tiene acceso: se confirma con el backend antes de dejarlo pasar.
-  await refreshPermissions(screen)
+  // Al entrar se esperan los permisos frescos (una sola petición): así no se ve ni un instante lo que ya no tiene.
+  await refreshPermissions(screen, { force: hasStored(screen) })
 
   if (!hasAccess(screen)) {
     entered.value = 'hub'

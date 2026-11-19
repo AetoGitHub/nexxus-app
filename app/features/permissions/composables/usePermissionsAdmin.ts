@@ -85,7 +85,7 @@ function useAdminMutationHelpers() {
   const toast = useToast()
   const { t } = useI18n()
   const { user, selectedCompanyId } = useAuth()
-  const { refreshPermissions } = usePermissions()
+  const { refreshAllPermissions } = usePermissions()
 
   function success(titleKey: string) {
     toast.add({ title: t(titleKey), color: 'success' })
@@ -102,7 +102,9 @@ function useAdminMutationHelpers() {
   async function storeProfile(data: UserPermissions, companyId: number) {
     queryClient.setQueryData(profileKey(data.profile, companyId), data)
     if (data.profile === user.value?.id && companyId === selectedCompanyId.value) {
-      await refreshPermissions(undefined, { force: true })
+      // Todas las plataformas (me/ sin screen): se edita desde Configuración master, pero lo que cambió suele ser de
+      // Tareas; refrescar solo la pantalla activa dejaba viejos los permisos de Tareas hasta volver a iniciar sesión.
+      await refreshAllPermissions()
     }
   }
 
