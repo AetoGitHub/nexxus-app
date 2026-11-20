@@ -1,73 +1,65 @@
 <script setup lang="ts">
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import { useUpdateTaskLimitDate } from '~/features/tasks/composables/form/useUpdateTaskLimitDate'
-import { dateInputToLimitISO } from '~/features/tasks/utils/form/task-form.util'
+import { dateInputToLimitDay } from '~/features/tasks/utils/form/task-form.util'
 
 /**
- * Atajo desde la tarjeta / fila: cambiar solo la fecha límite sin abrir la tarea. Solo hoy o fechas futuras; guarda con
- * PATCH /api/tasks/:id/update/ ({ limit_date }) y la mutación avisa del resultado (toast) y refresca las listas.
+ * Atajo desde la tarjeta / fila: cambiar solo la fecha límite sin abrir la tarea. Solo hoy o fechas futuras (en CDMX);
+ * guarda con PATCH /api/tasks/:id/update/ ({ limit_date: "YYYY-MM-DD" }) y la mutación avisa del resultado y refresca
+ * las listas. Si el backend responde 400, el mensaje se queda en el modal y no se cierra.
  */
 const open = defineModel<boolean>('open', { default: false })
 
 const props = defineProps<{
   taskId: number
   taskName: string
-  /** limit_date actual (ISO) o null. */
-  currentLimitDate: string | null
+  /** Día límite actual (YYYY-MM-DD en CDMX, `limit_day`) o null. */
+  currentLimitDay: string | null
 }>()
 
 const { t } = useI18n()
 const { mutateAsync: updateLimitDate, isPending } = useUpdateTaskLimitDate()
 
-/** YYYY-MM-DD de una fecha en hora local. */
-function toDateInput(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-/** Fecha actual de la tarea en YYYY-MM-DD (el límite es fin de día UTC: se toma su día en UTC). */
-const currentDateInput = computed(() => {
-  if (!props.currentLimitDate) {
-    return ''
-  }
-  const date = new Date(props.currentLimitDate)
-  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10)
-})
-
-/** Mínimo: hoy (los días pasados no se pueden elegir). */
-const minDate = computed(() => toDateInput(new Date()))
+/** Mínimo: hoy en CDMX (hoy sí se puede elegir; los días anteriores no). */
+const minDate = computed(() => businessToday())
 const selectedDate = ref('')
+const errorMessage = ref('')
 
 watch(open, (isOpen) => {
   if (!isOpen) {
     return
   }
-  // Propone su fecha actual si es de hoy en adelante; vencida o sin fecha → hoy.
-  selectedDate.value = currentDateInput.value && currentDateInput.value >= minDate.value
-    ? currentDateInput.value
-    : minDate.value
+  errorMessage.value = ''
+  // Propone su día actual si es de hoy en adelante; vencida o sin fecha → hoy.
+  const current = props.currentLimitDay
+  selectedDate.value = current && current >= minDate.value ? current : minDate.value
 }, { immediate: true })
+
+watch(selectedDate, () => {
+  errorMessage.value = ''
+})
 
 const canConfirm = computed(() =>
   !!selectedDate.value
   && selectedDate.value >= minDate.value
-  && selectedDate.value !== currentDateInput.value,
+  && selectedDate.value !== props.currentLimitDay,
 )
 
 async function onConfirm() {
   if (!canConfirm.value) {
     return
   }
+  errorMessage.value = ''
   try {
     await updateLimitDate({
       taskId: props.taskId,
-      payload: { limit_date: dateInputToLimitISO(selectedDate.value) },
+      payload: { limit_date: dateInputToLimitDay(selectedDate.value) },
     })
     open.value = false
   }
-  catch {
-    // El toast de error lo muestra la mutación.
+  catch (error) {
+    // 400 (fecha pasada, o anterior a la fecha de inicio): el mensaje del backend se queda aquí y el modal sigue abierto.
+    errorMessage.value = parseFetchError(error)
   }
 }
 </script>
@@ -82,7 +74,8 @@ async function onConfirm() {
     <template #body>
       <UFormField
         :label="t('tasks.quickDue.label')"
-        :help="t('tasks.quickDue.help')"
+        :help="errorMessage ? undefined : t('tasks.quickDue.help')"
+        :error="errorMessage || undefined"
         name="limitDate"
         required
       >

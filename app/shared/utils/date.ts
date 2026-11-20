@@ -29,6 +29,41 @@ export function businessDayKey(value?: string | null): string | null {
   return date ? BUSINESS_DAY_FORMAT.format(date) : null
 }
 
+/**
+ * Día límite (YYYY-MM-DD, CDMX) de una tarea: `limit_day` del backend; si no viene (respuesta vieja),
+ * se calcula desde `limit_date` en CDMX. Nunca cortar `limit_date` (UTC) para mostrar el día.
+ */
+export function limitDayOf(task: { limit_day?: string | null, limit_date?: string | null }): string | null {
+  return task.limit_day ?? businessDayKey(task.limit_date)
+}
+
+/** Hoy (YYYY-MM-DD) en la zona de negocio (CDMX). */
+export function businessToday(now: Date = new Date()): string {
+  return BUSINESS_DAY_FORMAT.format(now)
+}
+
+/** Suma días a un YYYY-MM-DD sin pasar por UTC ni por la zona del navegador. */
+export function addDaysToDayKey(dayKey: string, days: number): string {
+  const [year, month, day] = dayKey.split('-').map(Number)
+  const date = new Date(Date.UTC(year!, month! - 1, day! + days))
+  return date.toISOString().slice(0, 10)
+}
+
+/** Días entre dos YYYY-MM-DD (`dayKey - fromKey`): negativo = pasado, 0 = mismo día. */
+export function diffDayKeys(dayKey: string, fromKey: string): number {
+  const toUtc = (key: string) => {
+    const [year, month, day] = key.split('-').map(Number)
+    return Date.UTC(year!, month! - 1, day!)
+  }
+  return Math.round((toUtc(dayKey) - toUtc(fromKey)) / 86_400_000)
+}
+
+/** Fecha corta (20 nov) de un YYYY-MM-DD, construida en local para que no cambie de día. */
+export function formatShortDayKey(dayKey: string, locale = 'es'): string {
+  const [year, month, day] = dayKey.split('-').map(Number)
+  return new Intl.DateTimeFormat(locale, { day: '2-digit', month: 'short' }).format(new Date(year!, month! - 1, day!))
+}
+
 export function parseDate(value?: string | null): Date | null {
   if (!value) {
     return null

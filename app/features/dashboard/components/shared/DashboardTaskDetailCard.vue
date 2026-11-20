@@ -64,7 +64,15 @@ function formatDate(value: string | null | undefined, withTime: boolean): string
 }
 
 const startLabel = computed(() => formatDate(props.task.start_date, true))
-const dueLabel = computed(() => formatDate(props.task.limit_date, false))
+/** Día límite en CDMX (`limit_day`): `limit_date` está en UTC y puede caer al día siguiente. */
+const dueLabel = computed(() => {
+  const day = limitDayOf(props.task)
+  if (!day) {
+    return t('dashboard.individual.taskList.noDate')
+  }
+  const [year, month, date] = day.split('-').map(Number)
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(new Date(year!, month! - 1, date!))
+})
 </script>
 
 <template>
