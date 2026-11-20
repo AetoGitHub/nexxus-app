@@ -3,9 +3,13 @@ import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssignee
 import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircle.vue'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
+import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
 import type { Task } from '~/features/tasks/types/task.types'
 import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
+import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -58,11 +62,23 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+const { isReviewed } = useTaskReviewState()
+const reviewed = computed(() => isReviewed(props.task))
+/** En backlog la marca solo se muestra (ahí no se reordena). */
+const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true)
 const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null)
 const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
 
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
+
+/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
+const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
+const dueModalOpen = ref(false)
+
+function openDueModal() {
+  dueModalOpen.value = true
+}
 
 function onSelect() {
   emit('select', props.task.id)
@@ -78,7 +94,7 @@ function onApproveClick() {
     role="button"
     tabindex="0"
     class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
-    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '']"
+    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '', reviewed ? 'opacity-75' : '']"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -165,9 +181,24 @@ function onApproveClick() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <!-- Hora de la marca: chip compacto hasta 1279 px; desde 1280 px vive en el tooltip del botón. En backlog solo el chip. -->
+        <span
+          class="contents"
+          :class="reviewReadonly ? '' : 'xl:hidden'"
+        >
+          <TaskReviewChip
+            :task-id="task.id"
+            :reviewed-at="task.reviewed_at"
+          />
+        </span>
         <TaskTokenButton
           :task-id="task.id"
           :count="task.tokens_count"
+        />
+        <TaskReviewButton
+          v-if="!reviewReadonly"
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
         />
         <!-- Oculto de momento: genera confusión
         <UBadge
@@ -188,12 +219,43 @@ function onApproveClick() {
       :assignees="assignees"
     />
 
+    <!-- Atajo: cambiar la fecha límite sin abrir la tarea (solo quien puede editarla). -->
+    <UTooltip
+      v-if="dueLabel && canEditDue"
+      :text="t('tasks.quickDue.title')"
+    >
+      <button
+        type="button"
+        class="col-start-3 row-start-1 inline-flex min-w-16 shrink-0 items-center justify-end gap-1 rounded-md px-1.5 py-0.5 text-xs font-mono tabular-nums transition-colors hover:bg-muted"
+        :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+        :aria-label="t('tasks.quickDue.title')"
+        @click.stop="openDueModal"
+        @keydown.enter.stop
+        @keydown.space.stop
+      >
+        <UIcon
+          name="i-lucide-calendar"
+          class="h-3 w-3"
+        />
+        {{ dueLabel }}
+      </button>
+    </UTooltip>
     <span
+      v-else
       class="col-start-3 row-start-1 w-16 text-right text-xs font-mono tabular-nums shrink-0"
       :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
     >
       {{ dueLabel }}
     </span>
+
+    <!-- Solo montado mientras se usa: no carga un modal por cada fila. -->
+    <TaskQuickDueDateModal
+      v-if="dueModalOpen"
+      v-model:open="dueModalOpen"
+      :task-id="task.id"
+      :task-name="task.short_description"
+      :current-limit-date="task.limit_date"
+    />
 
     <UTooltip
       v-if="canDelete"

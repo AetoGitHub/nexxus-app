@@ -121,6 +121,8 @@ export interface CalendarEventMeta {
   mentions: TaskMention[]
   /** Tarea de un proyecto privado: se marca con candado. */
   isPersonal: boolean
+  /** Marca personal "Revisada" (solo se muestra; el calendario no reordena). */
+  reviewedAt: string | null
 }
 
 function calendarEventMeta(task: Task): CalendarEventMeta {
@@ -131,6 +133,7 @@ function calendarEventMeta(task: Task): CalendarEventMeta {
     type: task.type,
     mentions: task.mentions ?? [],
     isPersonal: task.is_personal === true,
+    reviewedAt: task.reviewed_at ?? null,
   }
 }
 

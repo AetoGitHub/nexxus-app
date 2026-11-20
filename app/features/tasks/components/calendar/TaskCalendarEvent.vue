@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import type { TaskMention } from '~/features/tasks/types/task.types'
 
 const props = withDefaults(
@@ -15,8 +16,13 @@ const props = withDefaults(
     textColor?: string
     /** En barras multi-día, los chips van solo en el tramo inicial. */
     showBadges?: boolean
+    taskId?: number
+    /** Marca personal "Revisada": aquí solo se muestra. */
+    reviewedAt?: string | null
   }>(),
   {
+    taskId: undefined,
+    reviewedAt: null,
     projectName: '',
     mentions: () => [],
     isPersonal: false,
@@ -58,6 +64,11 @@ const BADGE_SCRIM_STYLE = {
       <TaskMentionBadge
         :mentions="mentions"
         size="xs"
+      />
+      <TaskReviewChip
+        v-if="taskId != null"
+        :task-id="taskId"
+        :reviewed-at="reviewedAt"
       />
       <UBadge
         v-if="resolvedProjectName"

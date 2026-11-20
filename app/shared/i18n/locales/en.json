@@ -127,6 +127,12 @@
     }
   },
   "tasks": {
+    "quickDue": {
+      "title": "Change due date",
+      "label": "New due date",
+      "help": "Only today or future dates.",
+      "save": "Save date"
+    },
     "moduleTitle": "Tasks Module",
     "placeholder": "The tasks content will be laid out here. For now the sidebar and toolbar are ready as a reference.",
     "filters": "Filters",
@@ -492,6 +498,9 @@
       "assignedToPlaceholder": "Select one or more users...",
       "assignedToSearchPlaceholder": "Search user...",
       "assignSelfOnCreate": "Add myself",
+      "autoReviewer": {
+        "changed": "Changed to multiple close"
+      },
       "createdByLabel": "Created by",
       "createdByUnknown": "User",
       "dueDate": "Due date",
@@ -757,6 +766,17 @@
         "closeApprovedBy": "Close approved by {username}.",
         "taskReopened": "Task reopened by {username}."
       }
+    },
+    "review": {
+      "label": "Reviewed",
+      "mark": "Mark as reviewed (moves it to the end of your lists for 24 h)",
+      "unmark": "Remove reviewed",
+      "unmarkHint": "Click to remove it",
+      "movedToEnd": "Moved to the end",
+      "undo": "Undo",
+      "tooltip": "Reviewed at {time} — returns to its place at {time} tomorrow",
+      "errorMark": "Couldn't mark as reviewed",
+      "errorUnmark": "Couldn't remove the reviewed mark"
     },
     "tokens": {
       "give": "Give touch",
@@ -1913,6 +1933,8 @@
       "updateErrorTitle": "Could not update group"
     },
     "projectModal": {
+      "backlog": "Allows backlog tasks",
+      "backlogHelp": "If you turn it off, tasks can't be created in or returned to this project's backlog. Tasks already in backlog stay there.",
       "title": "New project",
       "editTitle": "Edit project",
       "name": "Project name",
@@ -1947,6 +1969,8 @@
       "activeTasks": "{count} active tasks",
       "membersCount": "{count} members",
       "soloYou": "Only you",
+      "backlogOn": "Backlog",
+      "backlogOff": "No backlog",
       "options": "Options",
       "edit": "Edit project",
       "empty": "No projects yet",
@@ -2073,6 +2097,9 @@
       }
     },
     "projectDetail": {
+      "backlog": "Backlog",
+      "backlogYes": "Allowed",
+      "backlogNo": "Not allowed",
       "title": "Project details",
       "name": "Project name",
       "responsible": "Owner",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMarkNotificationRead } from '~/features/notifications/composables/useMarkNotificationRead'
+import { useMarkAllNotificationsRead } from '~/features/notifications/composables/useMarkAllNotificationsRead'
 import { useNotifications } from '~/features/notifications/composables/useNotifications'
 import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
 import type { AppNotification } from '~/features/notifications/types/notification.types'
@@ -12,6 +13,12 @@ const route = useRoute()
 const { isLoggedIn } = useAuth()
 const { unreadCount, unreadCountLabel } = useNotificationState()
 const markRead = useMarkNotificationRead()
+// Atajo «Marcar todas como leídas» (el mismo de Configuración → Notificaciones): invalida lista y contadores.
+const markAllRead = useMarkAllNotificationsRead()
+
+function onMarkAllRead() {
+  markAllRead.mutate()
+}
 
 const isOpen = ref(false)
 const markingId = ref<number | null>(null)
@@ -113,11 +120,28 @@ async function onOpen(notification: AppNotification) {
           <PushDeviceSwitch />
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <UTooltip
+            v-if="unreadCount > 0"
+            :text="t('taskSettings.notificationsPanel.markAllRead')"
+          >
+            <UButton
+              icon="i-lucide-check-check"
+              color="primary"
+              variant="soft"
+              size="xs"
+              square
+              class="ring-1 ring-primary/30"
+              :aria-label="t('taskSettings.notificationsPanel.markAllRead')"
+              :loading="markAllRead.isPending.value"
+              :disabled="markAllRead.isPending.value"
+              @click="onMarkAllRead"
+            />
+          </UTooltip>
           <UButton
             color="neutral"
-            variant="link"
+            variant="outline"
             size="xs"
-            class="px-0"
+            trailing-icon="i-lucide-arrow-up-right"
             :label="t('notifications.preview.viewAll')"
             @click="goToAllNotifications"
           />

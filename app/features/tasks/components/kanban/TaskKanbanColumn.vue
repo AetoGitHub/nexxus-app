@@ -243,7 +243,7 @@ function onDrop(event: DragEvent) {
 }
 
 .kanban-task-move {
-  transition: transform 250ms ease;
+  transition: transform 200ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,3 +1,5 @@
+import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
+
 /**
  * Estado de tokens por tarea, compartido por todas las vistas (lista, kanban, detalle).
  * - `confirmed`: el mayor `tokens_count` que confirmó el servidor (respuesta del POST o
@@ -13,6 +15,7 @@ export interface TaskTokenState {
 }
 
 export function useTaskTokenState() {
+  const { isReviewed } = useTaskReviewState()
   const states = useState<Record<number, TaskTokenState>>('task-tokens', () => ({}))
 
   function patch(taskId: number, change: (current: TaskTokenState) => TaskTokenState) {
@@ -36,10 +39,16 @@ export function useTaskTokenState() {
    * tokens conserva el orden que ya traía la lista (el de la fecha que manda el backend).
    * Solo para listas que el backend ordena primero por tokens (no backlog, archivadas ni calendario).
    */
-  function sortByTokens<T extends { id: number, tokens_count?: number }>(tasks: T[]): T[] {
+  function sortByTokens<T extends { id: number, tokens_count?: number, reviewed_at?: string | null }>(tasks: T[]): T[] {
+    // Las tareas que marqué como "Revisada" van al final (el backend ordena igual), y dentro de cada grupo por tokens.
     return tasks
-      .map((task, index) => ({ task, index, count: displayCount(task.id, task.tokens_count) }))
-      .sort((a, b) => b.count - a.count || a.index - b.index)
+      .map((task, index) => ({
+        task,
+        index,
+        reviewed: isReviewed(task) ? 1 : 0,
+        count: displayCount(task.id, task.tokens_count),
+      }))
+      .sort((a, b) => a.reviewed - b.reviewed || b.count - a.count || a.index - b.index)
       .map(entry => entry.task)
   }
 

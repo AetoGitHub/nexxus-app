@@ -349,6 +349,17 @@ export interface Task {
   is_personal?: boolean
   /** Una entrada por persona mencionada en la tarea (descripción o chat), sin repetir; [] si no hay. */
   mentions?: TaskMention[]
+  /**
+   * Marca personal "Revisada" del usuario actual (ISO UTC): la tarea va al final de SUS listas hasta
+   * `reviewed_at + 24 h`. null si no está revisada o ya venció. Otros usuarios no la ven.
+   */
+  reviewed_at?: string | null
+}
+
+/** Respuesta de POST/DELETE /api/tasks/:id/review/. */
+export interface TaskReviewResponse {
+  task: number
+  reviewed_at: string | null
 }
 
 /** Respuesta de POST /api/tasks/tokens/create/: `tokens_count` es el total DESPUÉS de dar el token. */
@@ -459,6 +470,8 @@ export interface OverdueCounts {
 export interface ProjectDropdown {
   id: number
   name: string
+  /** Admite tareas en backlog (sin el campo = true). */
+  backlog?: boolean
 }
 
 export interface GroupDropdown {

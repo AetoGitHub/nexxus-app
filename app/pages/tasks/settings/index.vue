@@ -168,6 +168,8 @@ async function onSubmitProject() {
     color: projectForm.value.color,
     members: projectForm.value.members,
     responsible: projectForm.value.responsible,
+    // Admite tareas en backlog (apagado: no se pueden crear ni regresar tareas a su backlog).
+    backlog: projectForm.value.backlog,
   }
 
   try {

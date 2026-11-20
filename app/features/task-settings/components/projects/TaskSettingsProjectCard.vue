@@ -86,6 +86,17 @@ const menuItems = computed<DropdownMenuItem[][]>(() => [
             />
             {{ membersLabel }}
           </span>
+          <!-- Admite tareas en backlog (sin el campo = sí). -->
+          <span
+            class="inline-flex items-center gap-1.5"
+            :class="project.backlog === false ? 'text-muted-foreground/60' : ''"
+          >
+            <UIcon
+              name="i-lucide-inbox"
+              class="h-3 w-3 shrink-0"
+            />
+            {{ project.backlog === false ? t('taskSettings.projects.backlogOff') : t('taskSettings.projects.backlogOn') }}
+          </span>
         </div>
       </button>
 

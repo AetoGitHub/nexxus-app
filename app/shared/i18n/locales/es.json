@@ -127,6 +127,12 @@
     }
   },
   "tasks": {
+    "quickDue": {
+      "title": "Cambiar fecha límite",
+      "label": "Nueva fecha límite",
+      "help": "Solo hoy o fechas futuras.",
+      "save": "Guardar fecha"
+    },
     "moduleTitle": "Módulo de Tareas",
     "placeholder": "El contenido de tareas se maquetará aquí. Por ahora el sidebar y el toolbar están listos como referencia.",
     "filters": "Filtros",
@@ -492,6 +498,9 @@
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
       "assignedToSearchPlaceholder": "Buscar usuario...",
       "assignSelfOnCreate": "Agregarme a mí",
+      "autoReviewer": {
+        "changed": "Se modificó a cierre múltiple"
+      },
       "createdByLabel": "Creado por",
       "createdByUnknown": "Usuario",
       "dueDate": "Fecha Límite",
@@ -757,6 +766,17 @@
         "closeApprovedBy": "Cierre aprobado por {username}.",
         "taskReopened": "Tarea reabierta por {username}."
       }
+    },
+    "review": {
+      "label": "Revisada",
+      "mark": "Marcar como revisada (la manda al final de tus listas por 24 h)",
+      "unmark": "Quitar revisada",
+      "unmarkHint": "Clic para quitarla",
+      "movedToEnd": "Movida al final",
+      "undo": "Deshacer",
+      "tooltip": "Revisada a las {time} — vuelve a su lugar a las {time} de mañana",
+      "errorMark": "No se pudo marcar como revisada",
+      "errorUnmark": "No se pudo quitar la marca de revisada"
     },
     "tokens": {
       "give": "Dar toque",
@@ -1913,6 +1933,8 @@
       "updateErrorTitle": "No se pudo actualizar el grupo"
     },
     "projectModal": {
+      "backlog": "Permite tareas en backlog",
+      "backlogHelp": "Si lo apagas, no se podrán crear ni regresar tareas al backlog de este proyecto. Las que ya están en backlog se quedan.",
       "title": "Nuevo proyecto",
       "editTitle": "Editar proyecto",
       "name": "Nombre del proyecto",
@@ -1947,6 +1969,8 @@
       "activeTasks": "{count} tareas activas",
       "membersCount": "{count} miembros",
       "soloYou": "Solo tú",
+      "backlogOn": "Backlog",
+      "backlogOff": "Sin backlog",
       "options": "Opciones",
       "edit": "Editar proyecto",
       "empty": "No hay proyectos todavía",
@@ -2073,6 +2097,9 @@
       }
     },
     "projectDetail": {
+      "backlog": "Backlog",
+      "backlogYes": "Permitido",
+      "backlogNo": "No permitido",
       "title": "Detalle del proyecto",
       "name": "Nombre del proyecto",
       "responsible": "Responsable",

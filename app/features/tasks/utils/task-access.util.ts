@@ -26,3 +26,17 @@ export function isTaskParticipant(task: TaskAccessSource, userId: number | null 
 export function canModifyTask(task: TaskAccessSource, userId: number | null | undefined): boolean {
   return task.backlog === true || isTaskParticipant(task, userId)
 }
+
+/**
+ * Puede cambiar la fecha límite con el atajo de la tarjeta / fila (sin abrir la tarea): la misma regla que el lápiz de
+ * editar (participa en la tarea) y la tarea sigue viva (no completada, archivada ni en backlog, que no tiene fechas).
+ */
+export function canQuickEditDueDate(
+  task: TaskAccessSource & { status?: string | null, archived?: boolean | null },
+  userId: number | null | undefined,
+): boolean {
+  if (task.backlog === true || task.archived === true || task.status === 'complete') {
+    return false
+  }
+  return canModifyTask(task, userId)
+}

@@ -15,6 +15,8 @@ const { createProject } = usePrivateProjects({ enabled: false })
 
 const name = ref('')
 const color = ref<string>(THEME_COLORS[1]!.name)
+/** Admite tareas en backlog (inicia en true, como el default del backend). */
+const backlog = ref(true)
 
 const canSubmit = computed(() => name.value.trim().length > 0 && !createProject.isPending.value)
 
@@ -22,6 +24,7 @@ watch(open, (isOpen) => {
   if (isOpen) {
     name.value = ''
     color.value = THEME_COLORS[1]!.name
+    backlog.value = true
   }
 })
 
@@ -30,7 +33,11 @@ async function onSubmit() {
     return
   }
   try {
-    const project = await createProject.mutateAsync({ name: name.value.trim(), color: color.value })
+    const project = await createProject.mutateAsync({
+      name: name.value.trim(),
+      color: color.value,
+      backlog: backlog.value,
+    })
     open.value = false
     emit('created', project.id)
   }
@@ -77,6 +84,15 @@ async function onSubmit() {
             />
           </div>
         </UFormField>
+
+        <!-- Admite tareas en backlog (apagado: no se pueden crear ni regresar tareas a su backlog). -->
+        <div class="rounded-lg border border-border px-3 py-2.5">
+          <USwitch
+            v-model="backlog"
+            :label="t('taskSettings.projectModal.backlog')"
+            :description="t('taskSettings.projectModal.backlogHelp')"
+          />
+        </div>
       </form>
     </template>
 

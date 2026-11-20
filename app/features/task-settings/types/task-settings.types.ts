@@ -19,6 +19,8 @@ export interface ProjectFormState {
   color: string
   members: number[]
   responsible: number | null
+  /** Admite tareas en backlog (inicia en true). */
+  backlog: boolean
 }
 
 export function createEmptyProjectForm(): ProjectFormState {
@@ -27,6 +29,7 @@ export function createEmptyProjectForm(): ProjectFormState {
     color: 'red',
     members: [],
     responsible: null,
+    backlog: true,
   }
 }
 
@@ -36,11 +39,13 @@ export function createProjectFormFromEnterprise(project: {
   color: string
   members: { id: number }[]
   responsible?: number | null
+  backlog?: boolean
 }): ProjectFormState {
   return {
     name: project.name,
     color: project.color,
     members: project.members.map(member => member.id),
     responsible: project.responsible ?? null,
+    backlog: project.backlog ?? true,
   }
 }
