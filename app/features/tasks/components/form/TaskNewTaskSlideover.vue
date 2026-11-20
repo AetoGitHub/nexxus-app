@@ -738,7 +738,7 @@ const detailAssignedToFallbackItems = computed(() =>
 const userItems = computed(() =>
   withSelectedItems(
     fetchedUserItems.value,
-    [...state.assignedTo, ...backlogAssignedTo.value],
+    [...state.assignedTo, ...backlogAssignedTo.value, ...state.taskReviewer],
     [...allUserItems.value, ...currentUserFallbackItems.value, ...detailAssignedToFallbackItems.value],
   ),
 )
@@ -824,6 +824,51 @@ watch(isPersonalProject, (personal) => {
     row.assignedTo = currentUserId
   }
 })
+
+/**
+ * Acceso rápido al crear: al quitarme de «Asignado a» (con el switch «Agregarme a mí» o desde el selector), la tarea
+ * pasa a cierre múltiple conmigo como revisor y se avisa 15 s. Solo desde Manual (o si ya era cierre múltiple); el tipo
+ * se puede cambiar libremente después.
+ */
+const autoReviewer = ref<'idle' | 'applied' | 'dismissed'>('idle')
+let autoReviewerTimer: ReturnType<typeof setTimeout> | undefined
+
+function dismissAutoReviewerNotice() {
+  clearTimeout(autoReviewerTimer)
+  autoReviewer.value = 'dismissed'
+}
+
+const AUTO_REVIEWER_NOTICE_MS = 15_000
+
+watch(
+  () => (user.value?.id != null && state.assignedTo.includes(user.value.id)),
+  (isAssigned, wasAssigned) => {
+    const currentUserId = user.value?.id
+    if (
+      !wasAssigned
+      || isAssigned
+      || currentUserId == null
+      || !open.value
+      || isDetailView.value
+      || isBacklogMode.value
+      || isPersonalProject.value
+      || (state.type !== 'manual' && state.type !== 'multiple_close')
+    ) {
+      return
+    }
+    state.type = 'multiple_close'
+    if (!state.taskReviewer.includes(currentUserId)) {
+      state.taskReviewer = [...state.taskReviewer, currentUserId]
+    }
+    autoReviewer.value = 'applied'
+    clearTimeout(autoReviewerTimer)
+    autoReviewerTimer = setTimeout(dismissAutoReviewerNotice, AUTO_REVIEWER_NOTICE_MS)
+  },
+)
+
+const showAutoReviewerNotice = computed(() => autoReviewer.value === 'applied' && state.type === 'multiple_close')
+
+onBeforeUnmount(() => clearTimeout(autoReviewerTimer))
 
 /** Selector de responsables del backlog: en un proyecto privado solo el dueño. */
 const backlogAssigneeItems = computed(() =>
@@ -1001,6 +1046,8 @@ function resetForm() {
   state.applyToAll = false
   isBacklog.value = false
   backlogAssignedTo.value = []
+  clearTimeout(autoReviewerTimer)
+  autoReviewer.value = 'idle'
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -1539,8 +1586,10 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
-    if (assignSelfOnCreate.value && !state.assignedTo.length && user.value?.id != null) {
-      state.assignedTo = [user.value.id]
+    // Al abrir «Crear» siempre arranco asignado: el switch «Agregarme a mí» se reinicia encendido.
+    assignSelfOnCreate.value = true
+    if (user.value?.id != null && !state.assignedTo.includes(user.value.id)) {
+      state.assignedTo = [...state.assignedTo, user.value.id]
     }
     if (!state.dueDate) {
       state.dueDate = minDueDate.value
@@ -2255,6 +2304,16 @@ const slideoverUi = computed(() => {
                 :label="t('tasks.form.assignSelfOnCreate')"
                 class="mt-2"
                 @update:model-value="onToggleAssignSelf"
+              />
+              <UAlert
+                v-if="showAutoReviewerNotice"
+                color="info"
+                variant="subtle"
+                icon="i-lucide-users"
+                :title="t('tasks.form.autoReviewer.changed')"
+                close
+                class="mt-2"
+                @update:open="dismissAutoReviewerNotice"
               />
             </UFormField>
 

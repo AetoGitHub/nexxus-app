@@ -498,6 +498,9 @@
       "assignedToPlaceholder": "Selecciona uno o más usuarios...",
       "assignedToSearchPlaceholder": "Buscar usuario...",
       "assignSelfOnCreate": "Agregarme a mí",
+      "autoReviewer": {
+        "changed": "Se modificó a cierre múltiple"
+      },
       "createdByLabel": "Creado por",
       "createdByUnknown": "Usuario",
       "dueDate": "Fecha Límite",
