@@ -6,6 +6,7 @@ import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
 import type { Task } from '~/features/tasks/types/task.types'
 import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
+import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -63,6 +64,14 @@ const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuick
 
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const canDelete = computed(() => props.deletable && canModifyTask(props.task, user.value?.id))
+
+/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
+const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
+const dueModalOpen = ref(false)
+
+function openDueModal() {
+  dueModalOpen.value = true
+}
 
 function onSelect() {
   emit('select', props.task.id)
@@ -188,12 +197,43 @@ function onApproveClick() {
       :assignees="assignees"
     />
 
+    <!-- Atajo: cambiar la fecha límite sin abrir la tarea (solo quien puede editarla). -->
+    <UTooltip
+      v-if="dueLabel && canEditDue"
+      :text="t('tasks.quickDue.title')"
+    >
+      <button
+        type="button"
+        class="col-start-3 row-start-1 inline-flex min-w-16 shrink-0 items-center justify-end gap-1 rounded-md px-1.5 py-0.5 text-xs font-mono tabular-nums transition-colors hover:bg-muted"
+        :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+        :aria-label="t('tasks.quickDue.title')"
+        @click.stop="openDueModal"
+        @keydown.enter.stop
+        @keydown.space.stop
+      >
+        <UIcon
+          name="i-lucide-calendar"
+          class="h-3 w-3"
+        />
+        {{ dueLabel }}
+      </button>
+    </UTooltip>
     <span
+      v-else
       class="col-start-3 row-start-1 w-16 text-right text-xs font-mono tabular-nums shrink-0"
       :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
     >
       {{ dueLabel }}
     </span>
+
+    <!-- Solo montado mientras se usa: no carga un modal por cada fila. -->
+    <TaskQuickDueDateModal
+      v-if="dueModalOpen"
+      v-model:open="dueModalOpen"
+      :task-id="task.id"
+      :task-name="task.short_description"
+      :current-limit-date="task.limit_date"
+    />
 
     <UTooltip
       v-if="canDelete"

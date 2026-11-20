@@ -127,6 +127,12 @@
     }
   },
   "tasks": {
+    "quickDue": {
+      "title": "Cambiar fecha límite",
+      "label": "Nueva fecha límite",
+      "help": "Solo hoy o fechas futuras.",
+      "save": "Guardar fecha"
+    },
     "moduleTitle": "Módulo de Tareas",
     "placeholder": "El contenido de tareas se maquetará aquí. Por ahora el sidebar y el toolbar están listos como referencia.",
     "filters": "Filtros",

@@ -6,6 +6,7 @@ import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadg
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
 import type { Task } from '~/features/tasks/types/task.types'
+import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -52,6 +53,14 @@ const didDrag = ref(false)
 
 /** Mover la tarea de columna cambia su estado: solo quien participa en ella puede hacerlo. */
 const isDraggable = computed(() => props.draggable && canModifyTask(props.task, user.value?.id))
+
+/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
+const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
+const dueModalOpen = ref(false)
+
+function openDueModal() {
+  dueModalOpen.value = true
+}
 
 function onSelect() {
   if (didDrag.value) {
@@ -176,8 +185,31 @@ function onDragEnd() {
             :task-id="task.id"
             :count="task.tokens_count"
           />
+          <!-- Atajo: cambiar la fecha límite sin abrir la tarea (solo quien puede editarla). -->
+          <UTooltip
+            v-if="dueLabel && canEditDue"
+            :text="t('tasks.quickDue.title')"
+          >
+            <button
+              type="button"
+              draggable="false"
+              class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-mono tabular-nums transition-colors hover:bg-muted"
+              :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+              :aria-label="t('tasks.quickDue.title')"
+              @click.stop="openDueModal"
+              @keydown.enter.stop
+              @keydown.space.stop
+              @mousedown.stop
+            >
+              <UIcon
+                name="i-lucide-calendar"
+                class="h-3 w-3"
+              />
+              {{ dueLabel }}
+            </button>
+          </UTooltip>
           <span
-            v-if="dueLabel"
+            v-else-if="dueLabel"
             class="text-[11px] font-mono tabular-nums"
             :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
           >
@@ -186,5 +218,14 @@ function onDragEnd() {
         </div>
       </div>
     </div>
+
+    <!-- Solo montado mientras se usa: no carga un modal por cada tarjeta. -->
+    <TaskQuickDueDateModal
+      v-if="dueModalOpen"
+      v-model:open="dueModalOpen"
+      :task-id="task.id"
+      :task-name="task.short_description"
+      :current-limit-date="task.limit_date"
+    />
   </div>
 </template>
