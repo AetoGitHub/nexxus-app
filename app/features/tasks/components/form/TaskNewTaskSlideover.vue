@@ -172,14 +172,8 @@ const isBacklog = ref(false)
  */
 const backlogAssignedTo = ref<number[]>([])
 
-/** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
-const minDueDate = computed(() => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-})
+/** Hoy en CDMX (YYYY-MM-DD) para deshabilitar días pasados: la tarea vence en ese día, no en el del navegador. */
+const minDueDate = computed(() => businessToday())
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
 const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()

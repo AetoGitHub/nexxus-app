@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TaskDatePicker from '~/features/tasks/components/shared/TaskDatePicker.vue'
 import { useUpdateTaskLimitDate } from '~/features/tasks/composables/form/useUpdateTaskLimitDate'
-import { dueDateInputToLimitISO } from '~/features/tasks/utils/kanban/kanban-due-move.util'
+import { dueDateInputToLimitDay } from '~/features/tasks/utils/kanban/kanban-due-move.util'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -61,7 +61,7 @@ async function onConfirm() {
     await updateLimitDate({
       taskId: props.taskId,
       payload: {
-        limit_date: dueDateInputToLimitISO(selectedDate.value),
+        limit_date: dueDateInputToLimitDay(selectedDate.value),
       },
     })
     open.value = false

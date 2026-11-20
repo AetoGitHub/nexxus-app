@@ -337,7 +337,10 @@ export interface Task {
   /** true cuando status=backlog. */
   backlog?: boolean
   start_date: string | null
+  /** Instante exacto (UTC). No usar para mostrar el día: usar `limit_day`. */
   limit_date: string | null
+  /** Día límite en CDMX (YYYY-MM-DD) o null sin fecha. Es el que se muestra y precarga. */
+  limit_day?: string | null
   /** Fecha real de cierre (status=complete). No la manda el backend en listas aún. */
   finish_at?: string | null
   created_at: string

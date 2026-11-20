@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useUpdateTaskLimitDate } from '~/features/tasks/composables/form/useUpdateTaskLimitDate'
-import { dueDateInputToLimitISO } from '~/features/tasks/utils/kanban/kanban-due-move.util'
+import { dueDateInputToLimitDay } from '~/features/tasks/utils/kanban/kanban-due-move.util'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -34,7 +34,7 @@ async function onConfirm() {
     await updateLimitDate({
       taskId: props.taskId,
       payload: {
-        limit_date: dueDateInputToLimitISO(props.limitDateInput),
+        limit_date: dueDateInputToLimitDay(props.limitDateInput),
       },
     })
     open.value = false

@@ -184,7 +184,7 @@ export function taskToProcessCalendarEvent(task: Task, color?: string): EventInp
     return null
   }
 
-  const limit = toDateOnly(task.limit_date)
+  const limit = limitDayOf(task)
   const endExclusive = limit && limit >= start
     ? nextDay(limit)
     : undefined
@@ -205,7 +205,7 @@ export function taskToProcessCalendarEvent(task: Task, color?: string): EventInp
  * (fecha de cierre), sin importar el rango completo.
  */
 export function taskToCloseCalendarEvent(task: Task, color?: string): EventInput | null {
-  const closeDate = toDateOnly(task.limit_date)
+  const closeDate = limitDayOf(task)
   if (!closeDate) {
     return null
   }

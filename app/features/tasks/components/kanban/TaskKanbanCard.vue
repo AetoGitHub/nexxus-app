@@ -254,7 +254,7 @@ function onDragEnd() {
       v-model:open="dueModalOpen"
       :task-id="task.id"
       :task-name="task.short_description"
-      :current-limit-date="task.limit_date"
+      :current-limit-day="limitDayOf(task)"
     />
   </div>
 </template>
