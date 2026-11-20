@@ -1919,6 +1919,8 @@
       "updateErrorTitle": "No se pudo actualizar el grupo"
     },
     "projectModal": {
+      "backlog": "Permite tareas en backlog",
+      "backlogHelp": "Si lo apagas, no se podrán crear ni regresar tareas al backlog de este proyecto. Las que ya están en backlog se quedan.",
       "title": "Nuevo proyecto",
       "editTitle": "Editar proyecto",
       "name": "Nombre del proyecto",
@@ -1953,6 +1955,8 @@
       "activeTasks": "{count} tareas activas",
       "membersCount": "{count} miembros",
       "soloYou": "Solo tú",
+      "backlogOn": "Backlog",
+      "backlogOff": "Sin backlog",
       "options": "Opciones",
       "edit": "Editar proyecto",
       "empty": "No hay proyectos todavía",
@@ -2079,6 +2083,9 @@
       }
     },
     "projectDetail": {
+      "backlog": "Backlog",
+      "backlogYes": "Permitido",
+      "backlogNo": "No permitido",
       "title": "Detalle del proyecto",
       "name": "Nombre del proyecto",
       "responsible": "Responsable",

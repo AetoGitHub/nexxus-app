@@ -1919,6 +1919,8 @@
       "updateErrorTitle": "Could not update group"
     },
     "projectModal": {
+      "backlog": "Allows backlog tasks",
+      "backlogHelp": "If you turn it off, tasks can't be created in or returned to this project's backlog. Tasks already in backlog stay there.",
       "title": "New project",
       "editTitle": "Edit project",
       "name": "Project name",
@@ -1953,6 +1955,8 @@
       "activeTasks": "{count} active tasks",
       "membersCount": "{count} members",
       "soloYou": "Only you",
+      "backlogOn": "Backlog",
+      "backlogOff": "No backlog",
       "options": "Options",
       "edit": "Edit project",
       "empty": "No projects yet",
@@ -2079,6 +2083,9 @@
       }
     },
     "projectDetail": {
+      "backlog": "Backlog",
+      "backlogYes": "Allowed",
+      "backlogNo": "Not allowed",
       "title": "Project details",
       "name": "Project name",
       "responsible": "Owner",

@@ -26,6 +26,8 @@ export interface EnterpriseProject {
   responsible_first_name?: string
   responsible_last_name?: string
   task_count: number
+  /** Admite tareas en backlog (default true; sin el campo = true). */
+  backlog?: boolean
 }
 
 export interface CreateEnterpriseProjectPayload {
@@ -34,6 +36,8 @@ export interface CreateEnterpriseProjectPayload {
   color: string
   members: number[]
   responsible: number | null
+  /** Opcional; si no se manda, el backend lo deja en true. */
+  backlog?: boolean
 }
 
 /** Proyecto privado (GET /api/enterprise/projects/private/): mismos campos que uno de empresa, con `is_personal: true` y `company: null`. */
@@ -43,6 +47,8 @@ export interface CreatePrivateProjectPayload {
   name: string
   /** Color nombrado o hex; opcional. */
   color?: string
+  /** Admite tareas en backlog (opcional; default true). */
+  backlog?: boolean
 }
 
 export interface PublishProjectPayload {
@@ -55,6 +61,7 @@ export interface UpdateEnterpriseProjectPayload {
   color: string
   members: number[]
   responsible: number | null
+  backlog?: boolean
 }
 
 export interface ThemeColorOption {

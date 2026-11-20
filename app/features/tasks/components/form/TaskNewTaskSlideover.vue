@@ -481,7 +481,9 @@ const wasInBacklog = computed(() =>
 const showReturnToBacklog = computed(() =>
   showProcessActions.value
   && taskDetailQuery.data.value?.status === 'pending'
-  && wasInBacklog.value,
+  && wasInBacklog.value
+  // Proyecto sin backlog: el backend respondería 400.
+  && !taskProjectDisallowsBacklog.value,
 )
 
 /** In progress: regresar a pendiente. */
@@ -663,6 +665,17 @@ const {
 } = useProjectsDropdown({
   enabled: () => open.value,
   searchTerm: projectSearchTerm,
+  // Crear/editar en backlog: solo proyectos que admiten backlog (?backlog=true). Tareas normales: sin filtro.
+  backlog: () => (isBacklogMode.value ? true : undefined),
+})
+
+/** El proyecto de la tarea no admite backlog (dato del dropdown; si no se conoce, se asume que sí). */
+const taskProjectDisallowsBacklog = computed(() => {
+  const projectId = taskDetailQuery.data.value?.project
+  if (projectId == null) {
+    return false
+  }
+  return allProjectItems.value.find(item => item.value === projectId)?.backlog === false
 })
 
 const {
@@ -762,6 +775,8 @@ const privateProjectItems = computed(() => {
   }
   const term = projectSearchTerm.value.trim().toLowerCase()
   return privateProjects.value
+    // En backlog solo los que lo admiten (sin el campo = sí).
+    .filter(project => !isBacklogMode.value || project.backlog !== false)
     .filter(project => !term || project.name.toLowerCase().includes(term))
     .map(project => ({ label: project.name, value: project.id, icon: 'i-lucide-lock' }))
 })
@@ -1469,6 +1484,20 @@ async function onSubmit(_event: FormSubmitEvent<NewTaskFormState>) {
 watch(isBacklog, (isOn) => {
   if (isOn) {
     state.type = 'manual'
+  }
+})
+
+// Al pasar a backlog, si el proyecto elegido no lo admite se quita para que elija otro (el backend respondería 400).
+watch([isBacklogMode, allProjectItems, privateProjects], ([backlogMode]) => {
+  if (!backlogMode || isDetailView.value || state.project == null) {
+    return
+  }
+  const fromPrivate = privateProjects.value.find(project => project.id === state.project)
+  const disallowed = fromPrivate
+    ? fromPrivate.backlog === false
+    : allProjectItems.value.length > 0 && !allProjectItems.value.some(item => item.value === state.project)
+  if (disallowed) {
+    state.project = undefined
   }
 })
 

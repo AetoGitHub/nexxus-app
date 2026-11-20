@@ -459,6 +459,8 @@ export interface OverdueCounts {
 export interface ProjectDropdown {
   id: number
   name: string
+  /** Admite tareas en backlog (sin el campo = true). */
+  backlog?: boolean
 }
 
 export interface GroupDropdown {
