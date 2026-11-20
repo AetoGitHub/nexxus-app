@@ -767,6 +767,17 @@
         "taskReopened": "Tarea reabierta por {username}."
       }
     },
+    "review": {
+      "label": "Revisada",
+      "mark": "Marcar como revisada (la manda al final de tus listas por 24 h)",
+      "unmark": "Quitar revisada",
+      "unmarkHint": "Clic para quitarla",
+      "movedToEnd": "Movida al final",
+      "undo": "Deshacer",
+      "tooltip": "Revisada a las {time} — vuelve a su lugar a las {time} de mañana",
+      "errorMark": "No se pudo marcar como revisada",
+      "errorUnmark": "No se pudo quitar la marca de revisada"
+    },
     "tokens": {
       "give": "Dar toque",
       "ariaLabel": "Dar toque ({n} toque) | Dar toque ({n} toques)",

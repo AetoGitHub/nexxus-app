@@ -3,7 +3,10 @@ import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssignee
 import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircle.vue'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
+import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
 import type { Task } from '~/features/tasks/types/task.types'
 import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
 import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
@@ -59,6 +62,10 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+const { isReviewed } = useTaskReviewState()
+const reviewed = computed(() => isReviewed(props.task))
+/** En backlog la marca solo se muestra (ahí no se reordena). */
+const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true)
 const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null)
 const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
 
@@ -87,7 +94,7 @@ function onApproveClick() {
     role="button"
     tabindex="0"
     class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
-    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '']"
+    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '', reviewed ? 'opacity-75' : '']"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -174,9 +181,24 @@ function onApproveClick() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <!-- Hora de la marca: chip compacto hasta 1279 px; desde 1280 px vive en el tooltip del botón. En backlog solo el chip. -->
+        <span
+          class="contents"
+          :class="reviewReadonly ? '' : 'xl:hidden'"
+        >
+          <TaskReviewChip
+            :task-id="task.id"
+            :reviewed-at="task.reviewed_at"
+          />
+        </span>
         <TaskTokenButton
           :task-id="task.id"
           :count="task.tokens_count"
+        />
+        <TaskReviewButton
+          v-if="!reviewReadonly"
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
         />
         <!-- Oculto de momento: genera confusión
         <UBadge

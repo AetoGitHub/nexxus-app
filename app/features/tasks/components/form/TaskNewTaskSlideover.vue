@@ -40,6 +40,8 @@ import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksFiel
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskArchiveRepeatModal from '~/features/tasks/components/form/TaskArchiveRepeatModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -1772,6 +1774,13 @@ const slideoverUi = computed(() => {
               />
             </div>
             <div class="ml-auto flex shrink-0 items-center gap-1">
+              <!-- Acción directa (fuera del menú ⋯ en móvil); en backlog solo se muestra la marca. -->
+              <TaskReviewButton
+                v-if="taskId != null && !isBacklogMode"
+                :task-id="taskId"
+                :reviewed-at="taskDetailQuery.data.value?.reviewed_at"
+                labeled
+              />
               <TaskTokenButton
                 v-if="taskId != null"
                 :task-id="taskId"
@@ -1882,6 +1891,15 @@ const slideoverUi = computed(() => {
               />
             </div>
           </div>
+
+          <!-- Texto completo de la marca "Revisada" (en las fichas solo va la hora). -->
+          <TaskReviewChip
+            v-if="isDetailView && taskId != null"
+            :task-id="taskId"
+            :reviewed-at="taskDetailQuery.data.value?.reviewed_at"
+            full
+            class="shrink-0 border-b border-border px-4 py-2"
+          />
 
           <UForm
             :id="formId"

@@ -4,7 +4,10 @@ import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircl
 import { QUICK_ADVANCE_KEY } from '~/features/tasks/composables/shared/useQuickAdvanceTask'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
+import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
 import type { Task } from '~/features/tasks/types/task.types'
 import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
 
@@ -44,6 +47,10 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+const { isReviewed } = useTaskReviewState()
+const reviewed = computed(() => isReviewed(props.task))
+/** En backlog la marca solo se muestra (ahí no se reordena). */
+const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true)
 
 // Solo hay círculo cuando el tablero lo provee (no en Pendientes de aprobación).
 const quickAdvance = inject(QUICK_ADVANCE_KEY, null)
@@ -70,8 +77,18 @@ function onSelect() {
   emit('select', props.task.id)
 }
 
+/**
+ * Un toque/clic que empieza en un control de la ficha (`data-no-drag`, p. ej. "Revisada") no debe arrastrarla:
+ * el dragstart lo recibe la tarjeta, así que se recuerda dónde empezó el puntero.
+ */
+const pointerOnControl = ref(false)
+
+function onPointerDownCapture(event: PointerEvent) {
+  pointerOnControl.value = event.target instanceof Element && event.target.closest('[data-no-drag]') != null
+}
+
 function onDragStart(event: DragEvent) {
-  if (!isDraggable.value) {
+  if (!isDraggable.value || pointerOnControl.value) {
     event.preventDefault()
     return
   }
@@ -94,6 +111,7 @@ function onDragEnd() {
   <div
     :draggable="isDraggable"
     :class="[isDraggable ? 'cursor-grab active:cursor-grabbing' : '', dragging ? 'opacity-40' : '']"
+    @pointerdown.capture="onPointerDownCapture"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
@@ -102,7 +120,7 @@ function onDragEnd() {
       role="button"
       tabindex="0"
       class="relative w-full cursor-pointer text-left rounded-lg border border-border bg-card p-3 shadow-sm hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 space-y-2"
-      :class="[selected ? 'ring-2 ring-aeto-teal/50' : '', mentionsMe ? 'task-mention-me' : '']"
+      :class="[selected ? 'ring-2 ring-aeto-teal/50' : '', mentionsMe ? 'task-mention-me' : '', reviewed ? 'opacity-75' : '']"
       :style="{ borderLeft: `3px solid ${barColor}` }"
       @click="onSelect"
       @keydown.enter.self.prevent="onSelect"
@@ -166,6 +184,10 @@ function onDragEnd() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <TaskReviewChip
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
+        />
         <!-- Oculto de momento: genera confusión
         <UBadge
           v-if="requiresAttention"
@@ -178,9 +200,10 @@ function onDragEnd() {
         -->
       </div>
 
-      <div class="flex items-center justify-between gap-2 pt-1">
+      <!-- min-h-6: misma altura con o sin el botón "Revisada" (backlog), para que la columna no brinque. -->
+      <div class="flex min-h-6 items-center justify-between gap-2 pt-1">
         <TaskAssigneeAvatars :assignees="assignees" />
-        <div class="ml-auto flex items-center gap-2">
+        <div class="ml-auto flex shrink-0 items-center gap-1.5">
           <TaskTokenButton
             :task-id="task.id"
             :count="task.tokens_count"
@@ -215,6 +238,12 @@ function onDragEnd() {
           >
             {{ dueLabel }}
           </span>
+          <!-- Acción rápida a la derecha; en backlog solo se muestra el chip (ahí no se reordena). -->
+          <TaskReviewButton
+            v-if="!reviewReadonly"
+            :task-id="task.id"
+            :reviewed-at="task.reviewed_at"
+          />
         </div>
       </div>
     </div>
