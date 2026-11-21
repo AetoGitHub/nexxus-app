@@ -69,13 +69,27 @@ function goToTask() {
             <span class="text-[13px] font-medium text-foreground leading-snug">
               {{ notification.message }}
             </span>
-            <UBadge
-              color="neutral"
-              variant="subtle"
-              size="sm"
-              class="shrink-0"
-              :label="keyLabel"
-            />
+            <span class="flex shrink-0 flex-wrap items-center justify-end gap-1">
+              <!-- Tipo apagado en «Preferencias de notificaciones»: no saltó como aviso, pero queda aquí. -->
+              <UTooltip
+                v-if="notification.show === false"
+                :text="t('taskSettings.notificationsPanel.mutedHint')"
+              >
+                <UBadge
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                  icon="i-lucide-bell-off"
+                  :label="t('taskSettings.notificationsPanel.muted')"
+                />
+              </UTooltip>
+              <UBadge
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                :label="keyLabel"
+              />
+            </span>
           </span>
           <span class="mt-1 block text-[12px] text-muted-foreground">
             {{ createdAt }}

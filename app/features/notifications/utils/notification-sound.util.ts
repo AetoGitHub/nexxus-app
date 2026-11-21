@@ -2,6 +2,7 @@ import type { NotificationSoundId } from '~/features/notifications/types/notific
 import chimeSrc from '~/assets/audio/soundshelfstudio-ui-app-notification-524745.mp3'
 import popSrc from '~/assets/audio/soundshelfstudio-ui-error-pop-515668.mp3'
 import toneSrc from '~/assets/audio/47313572-ui-sound-270349.mp3'
+import nexxusSrc from '~/assets/audio/nexxus-tone.mp3'
 
 export interface NotificationSoundOption {
   id: NotificationSoundId
@@ -24,6 +25,11 @@ export const NOTIFICATION_SOUNDS: NotificationSoundOption[] = [
     id: 'tone',
     src: toneSrc,
     labelKey: 'taskSettings.general.notificationSound.options.tone',
+  },
+  {
+    id: 'nexxus',
+    src: nexxusSrc,
+    labelKey: 'taskSettings.general.notificationSound.options.nexxus',
   },
 ]
 

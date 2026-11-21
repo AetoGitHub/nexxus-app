@@ -1,4 +1,4 @@
-export const NOTIFICATION_SOUND_IDS = ['chime', 'pop', 'tone'] as const
+export const NOTIFICATION_SOUND_IDS = ['chime', 'pop', 'tone', 'nexxus'] as const
 
 export type NotificationSoundId = (typeof NOTIFICATION_SOUND_IDS)[number]
 

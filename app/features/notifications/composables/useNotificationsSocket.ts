@@ -209,6 +209,8 @@ export function useNotificationsSocket() {
     // refresca el conteo.
     if (socketEvent.show === false) {
       refreshCounts()
+      // Sí entra al historial: el panel de notificaciones (Configuración) la muestra como «Silenciada» sin recargar.
+      void queryClient.invalidateQueries({ queryKey: notificationListQueryKey, type: 'active' })
       return
     }
     if (hasProcessed(notificationId) || pendingNotificationIds.has(notificationId)) {
