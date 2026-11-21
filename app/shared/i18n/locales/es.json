@@ -213,6 +213,7 @@
       "archived": "Archivados"
     },
     "backlogMine": "Asignadas a mí",
+    "backlogCreated": "Creadas por mí: tareas que creaste y delegaste",
     "groupBy": {
       "all": "Todas",
       "status": "Estado",
@@ -252,6 +253,7 @@
     "kanban": {
       "columns": {
         "backlog": "Backlog",
+        "created": "Creadas por mí",
         "pending": "Pendiente",
         "wip": "En progreso",
         "inReview": "En revisión",
@@ -262,6 +264,8 @@
       },
       "createTask": "Crear tarea",
       "dropHere": "Suelta aquí",
+      "createdEmpty": "No tienes tareas creadas por ti asignadas a otras personas.",
+      "unassigned": "Sin asignar",
       "dropHint": "Puedes soltar tareas aquí",
       "collapseColumn": "Colapsar {title}",
       "expandColumn": "Expandir {title}",

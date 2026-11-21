@@ -15,8 +15,10 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
   const { $api } = useNuxtApp()
   const { selectedCompanyId: companyId } = useAuth()
   const { adminQuery } = useTaskAdminView()
+  /** Solo los filtros de la vista (sin admin/admin_project/group): listas personales como «Creadas por mí». */
+  const filtersQuery = computed(() => toTaskListQuery(toValue(filters)))
   const query = computed(() => ({
-    ...toTaskListQuery(toValue(filters)),
+    ...filtersQuery.value,
     ...adminQuery.value,
   }))
   const hasCompany = computed(() => companyId.value != null)
@@ -35,16 +37,28 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
    * el resto de las columnas del Kanban (que comparten `filters`) se vean
    * afectadas ni se refetcheen de más.
    */
+  /** `ignoreAdmin`: la lista es siempre del usuario (p. ej. «Creadas por mí»), sin admin/admin_project/group. */
+  function baseQuery(ignoreAdmin?: boolean) {
+    return ignoreAdmin ? filtersQuery.value : query.value
+  }
+
   function countsQuery<T>(
     scope: string[],
     path: string,
-    options: { extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined> } = {},
+    options: {
+      enabled?: MaybeRefOrGetter<boolean>
+      extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined>
+      ignoreAdmin?: boolean
+    } = {},
   ) {
     const extraQuery = computed(() => toValue(options.extraQuery))
     return useQuery({
-      queryKey: computed(() => ['tasks', companyId.value, ...scope, 'counts', query.value, extraQuery.value]),
-      queryFn: () => $api<T>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
-      enabled: hasCompany,
+      queryKey: computed(() => ['tasks', companyId.value, ...scope, 'counts', baseQuery(options.ignoreAdmin), extraQuery.value]),
+      queryFn: () => $api<T>(companyPath(path), { query: { ...baseQuery(options.ignoreAdmin), ...extraQuery.value } }),
+      enabled: computed(() =>
+        hasCompany.value
+        && (options.enabled === undefined ? true : toValue(options.enabled)),
+      ),
     })
   }
 
@@ -54,18 +68,19 @@ export function createCompanyTasksApi(filters: MaybeRefOrGetter<TaskListFilters>
     options: {
       enabled?: MaybeRefOrGetter<boolean>
       extraQuery?: MaybeRefOrGetter<Record<string, string> | undefined>
+      ignoreAdmin?: boolean
     } = {},
   ) {
     const extraQuery = computed(() => toValue(options.extraQuery))
     return useInfiniteQuery({
-      queryKey: computed(() => ['tasks', companyId.value, ...scope, query.value, extraQuery.value]),
+      queryKey: computed(() => ['tasks', companyId.value, ...scope, baseQuery(options.ignoreAdmin), extraQuery.value]),
       initialPageParam: undefined as string | undefined,
       queryFn: ({ pageParam }) =>
         pageParam
           ? $api<PaginatedResponse<Task>>(pageParam)
-          : $api<PaginatedResponse<Task>>(companyPath(path), { query: { ...query.value, ...extraQuery.value } }),
+          : $api<PaginatedResponse<Task>>(companyPath(path), { query: { ...baseQuery(options.ignoreAdmin), ...extraQuery.value } }),
       getNextPageParam: getPaginatedNextPageParam,
-      select: data => (isTeamView.value ? withoutPersonalPages(data) : data),
+      select: data => (isTeamView.value && !options.ignoreAdmin ? withoutPersonalPages(data) : data),
       enabled: computed(() =>
         hasCompany.value
         && (options.enabled === undefined ? true : toValue(options.enabled)),

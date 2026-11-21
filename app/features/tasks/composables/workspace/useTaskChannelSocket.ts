@@ -222,7 +222,8 @@ export function useTaskChannelSocket() {
 
     // Estado (Lista) comparte caché con el Kanban (groupBy = all).
     if (view === 'kanban' || groupBy === 'status') {
-      return [['tasks', companyId, 'kanban']]
+      // «Creadas por mí» vive en la columna Backlog del Kanban (solo refetchea si está activa).
+      return [['tasks', companyId, 'kanban'], ['tasks', companyId, 'created']]
     }
 
     return [

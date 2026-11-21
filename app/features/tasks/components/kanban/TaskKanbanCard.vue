@@ -18,11 +18,14 @@ const props = withDefaults(
     selected?: boolean
     dragging?: boolean
     draggable?: boolean
+    /** «Creadas por mí»: sin avance rápido de fase (solo los asignados la mueven) y «Sin asignar» si no tiene asignados. */
+    delegated?: boolean
   }>(),
   {
     selected: false,
     dragging: false,
     draggable: true,
+    delegated: false,
   },
 )
 
@@ -59,10 +62,18 @@ const advanceStep = computed(() => quickAdvance?.stepOf(props.task) ?? null)
 const didDrag = ref(false)
 
 /** Mover la tarea de columna cambia su estado: solo quien participa en ella puede hacerlo. */
-const isDraggable = computed(() => props.draggable && canModifyTask(props.task, user.value?.id))
+const isDraggable = computed(() =>
+  props.draggable && (props.task.backlog === true || isTaskParticipant(props.task, user.value?.id)),
+)
 
-/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
-const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
+/**
+ * Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). En «Creadas por mí» todas son
+ * mías (la lista no trae `created_by`), así que también puedo cambiarla mientras siga viva.
+ */
+const canEditDue = computed(() =>
+  canQuickEditDueDate(props.task, user.value?.id)
+  || (props.delegated && props.task.status !== 'complete' && props.task.archived !== true && props.task.backlog !== true),
+)
 const dueModalOpen = ref(false)
 
 function openDueModal() {
@@ -128,7 +139,7 @@ function onDragEnd() {
     >
       <div class="flex items-start gap-2">
         <TaskStatusCircle
-          v-if="quickAdvance"
+          v-if="quickAdvance && !delegated"
           class="mt-px"
           :status="task.status"
           :step="advanceStep"
@@ -202,7 +213,20 @@ function onDragEnd() {
 
       <!-- min-h-6: misma altura con o sin el botón "Revisada" (backlog), para que la columna no brinque. -->
       <div class="flex min-h-6 items-center justify-between gap-2 pt-1">
-        <TaskAssigneeAvatars :assignees="assignees" />
+        <span
+          v-if="delegated && !assignees.length"
+          class="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
+        >
+          <UIcon
+            name="i-lucide-user-x"
+            class="size-3.5 shrink-0"
+          />
+          {{ t('tasks.kanban.unassigned') }}
+        </span>
+        <TaskAssigneeAvatars
+          v-else
+          :assignees="assignees"
+        />
         <div class="ml-auto flex shrink-0 items-center gap-1.5">
           <TaskTokenButton
             :task-id="task.id"

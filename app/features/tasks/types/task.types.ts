@@ -573,6 +573,13 @@ export interface KanbanColumn {
   isFetchingNextPage?: boolean
   /** Puede colapsarse a una pestaña angosta (ej. Backlog); colapsada por defecto. */
   collapsible?: boolean
+  /**
+   * «Creadas por mí»: tareas que delegué. No se arrastran ni se sueltan aquí, sin avance rápido de fase
+   * (solo los asignados cambian la fase) y la ficha dice «Sin asignar» si no tiene asignados.
+   */
+  delegated?: boolean
+  /** Clave i18n del estado vacío (por defecto `tasks.empty`). */
+  emptyKey?: string
 }
 
 /** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */
