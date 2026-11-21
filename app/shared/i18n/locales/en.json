@@ -213,6 +213,7 @@
       "archived": "Archived"
     },
     "backlogMine": "Assigned to me",
+    "backlogCreated": "Created by me: tasks you created and delegated",
     "groupBy": {
       "all": "All",
       "status": "Status",
@@ -252,6 +253,7 @@
     "kanban": {
       "columns": {
         "backlog": "Backlog",
+        "created": "Created by me",
         "pending": "Pending",
         "wip": "In progress",
         "inReview": "In review",
@@ -262,6 +264,8 @@
       },
       "createTask": "Create task",
       "dropHere": "Drop here",
+      "createdEmpty": "You have no tasks you created assigned to other people.",
+      "unassigned": "Unassigned",
       "dropHint": "You can drop tasks here",
       "collapseColumn": "Collapse {title}",
       "expandColumn": "Expand {title}",
