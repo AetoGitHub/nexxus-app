@@ -26,7 +26,8 @@ const filters = computed<NotificationListFilters>(() => ({
   key: selectedKey.value === 'all' ? undefined : selectedKey.value,
 }))
 
-const { notifications, notificationsQuery } = useNotifications(filters)
+// Aquí sí van las de tipos apagados: no saltan como aviso, pero quedan en el historial (marcadas como silenciadas).
+const { notifications, notificationsQuery } = useNotifications(filters, true, { includeHidden: true })
 
 const tabs: { id: NotificationReadTab, labelKey: string }[] = [
   { id: 'all', labelKey: 'taskSettings.notificationsPanel.tabs.all' },

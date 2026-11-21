@@ -1865,6 +1865,8 @@
       "projects": "Projects"
     },
     "notificationsPanel": {
+      "muted": "Muted",
+      "mutedHint": "This type is turned off in your preferences: it didn't alert you, but it stays in your history.",
       "title": "Notifications",
       "subtitle": "Review activity on your tasks. Opening a notification marks it as read.",
       "infoBanner": "Click a notification to mark it as read. Then you can open the related task.",
@@ -2035,7 +2037,8 @@
         "options": {
           "chime": "Classic",
           "pop": "Pop",
-          "tone": "Alert"
+          "tone": "Alert",
+          "nexxus": "Nexxus"
         },
         "disabledNotice": "Sound is off in your notification preferences: alerts arrive silently. You can turn it back on in the Notifications section."
       },

@@ -1865,6 +1865,8 @@
       "projects": "Proyectos"
     },
     "notificationsPanel": {
+      "muted": "Silenciada",
+      "mutedHint": "Este tipo está apagado en tus preferencias: no te llegó como aviso, pero queda en tu historial.",
       "title": "Notificaciones",
       "subtitle": "Revisa la actividad de tus tareas. Al abrir una notificación se marca como leída.",
       "infoBanner": "Haz clic en una notificación para marcarla como leída. Luego puedes abrir la tarea relacionada.",
@@ -2035,7 +2037,8 @@
         "options": {
           "chime": "Clásico",
           "pop": "Pop",
-          "tone": "Alerta"
+          "tone": "Alerta",
+          "nexxus": "Nexxus"
         },
         "disabledNotice": "El sonido está apagado en tus preferencias de notificaciones: los avisos llegan sin sonido. Puedes encenderlo en la sección Notificaciones."
       },
