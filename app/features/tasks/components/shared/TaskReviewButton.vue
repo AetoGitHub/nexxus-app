@@ -30,7 +30,7 @@ const current = computed(() => reviewedAtOf(props.taskId, props.reviewedAt))
 const pending = computed(() => isPending(props.taskId))
 
 const tooltip = computed(() => current.value
-  ? `${t('tasks.review.tooltip', { time: timeLabelOf(current.value) })}. ${t('tasks.review.unmarkHint')}`
+  ? t('tasks.review.activeTooltip', { time: timeLabelOf(current.value) })
   : t('tasks.review.mark'),
 )
 
