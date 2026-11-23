@@ -763,7 +763,22 @@ export type TaskHistoryEventType =
   | 'subtask_completed'
   | 'subtask_uncompleted'
   | 'subtask_updated'
+  | 'review'
   | (string & {})
+
+/** `detail` de un evento `archive`: `archived` true = se archivó, false = se desarchivó; `status` = fase en ese momento. */
+export interface TaskHistoryArchiveDetail {
+  archive: number
+  archived: boolean
+  status: string
+  comment: string
+}
+
+/** `detail` de un evento `review` (marca personal «Revisada»): `reviewed_at` null cuando se quitó. */
+export interface TaskHistoryReviewDetail {
+  reviewed: boolean
+  reviewed_at: string | null
+}
 
 /** Evento del historial de GET /api/tasks/more/info/:id/. `actor` null = acción del sistema. */
 export interface TaskHistoryEvent {

@@ -450,6 +450,9 @@
       "unknown": "Estado desconocido"
     },
     "history": {
+      "archivedIn": "Archivada en: {phase}",
+      "unarchivedIn": "Desarchivada en: {phase}",
+      "reviewedAt": "Revisada · {time}",
       "button": "Historial",
       "modalTitle": "Historial de la tarea",
       "modalDescription": "Todo lo que se le hizo a la tarea, en orden cronológico.",

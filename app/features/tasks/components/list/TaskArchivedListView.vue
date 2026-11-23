@@ -48,6 +48,7 @@ function onDeleteTask(taskId: number) {
       :selected-task-id="selectedTaskId"
       show-status
       deletable
+      archived-view
       @select="emit('select', $event)"
       @delete="onDeleteTask"
       @load-more="loadMore"

@@ -450,6 +450,9 @@
       "unknown": "Unknown status"
     },
     "history": {
+      "archivedIn": "Archived in: {phase}",
+      "unarchivedIn": "Unarchived in: {phase}",
+      "reviewedAt": "Reviewed · {time}",
       "button": "History",
       "modalTitle": "Task history",
       "modalDescription": "Everything done to the task, in chronological order.",
