@@ -131,7 +131,9 @@
       "title": "Change due date",
       "label": "New due date",
       "help": "Only today or future dates.",
-      "save": "Save date"
+      "save": "Save date",
+      "successDescription": "The due date changed to {date}.",
+      "currentWeek": "Current week"
     },
     "moduleTitle": "Tasks Module",
     "placeholder": "The tasks content will be laid out here. For now the sidebar and toolbar are ready as a reference.",

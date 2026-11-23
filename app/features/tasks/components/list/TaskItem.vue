@@ -9,7 +9,7 @@ import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMent
 import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
 import type { Task } from '~/features/tasks/types/task.types'
 import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
-import TaskQuickDueDateModal from '~/features/tasks/components/shared/TaskQuickDueDateModal.vue'
+import TaskQuickDuePopover from '~/features/tasks/components/shared/TaskQuickDuePopover.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -74,11 +74,6 @@ const canDelete = computed(() => props.deletable && canModifyTask(props.task, us
 
 /** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
 const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
-const dueModalOpen = ref(false)
-
-function openDueModal() {
-  dueModalOpen.value = true
-}
 
 function onSelect() {
   emit('select', props.task.id)
@@ -220,16 +215,18 @@ function onApproveClick() {
     />
 
     <!-- Atajo: cambiar la fecha límite sin abrir la tarea (solo quien puede editarla). -->
-    <UTooltip
+    <TaskQuickDuePopover
       v-if="dueLabel && canEditDue"
-      :text="t('tasks.quickDue.title')"
+      :task-id="task.id"
+      :current-limit-day="limitDayOf(task)"
     >
       <button
         type="button"
         class="col-start-3 row-start-1 inline-flex min-w-16 shrink-0 items-center justify-end gap-1 rounded-md px-1.5 py-0.5 text-xs font-mono tabular-nums transition-colors hover:bg-muted"
         :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+        :title="t('tasks.quickDue.title')"
         :aria-label="t('tasks.quickDue.title')"
-        @click.stop="openDueModal"
+        @click.stop
         @keydown.enter.stop
         @keydown.space.stop
       >
@@ -239,7 +236,7 @@ function onApproveClick() {
         />
         {{ dueLabel }}
       </button>
-    </UTooltip>
+    </TaskQuickDuePopover>
     <span
       v-else
       class="col-start-3 row-start-1 w-16 text-right text-xs font-mono tabular-nums shrink-0"
@@ -247,15 +244,6 @@ function onApproveClick() {
     >
       {{ dueLabel }}
     </span>
-
-    <!-- Solo montado mientras se usa: no carga un modal por cada fila. -->
-    <TaskQuickDueDateModal
-      v-if="dueModalOpen"
-      v-model:open="dueModalOpen"
-      :task-id="task.id"
-      :task-name="task.short_description"
-      :current-limit-day="limitDayOf(task)"
-    />
 
     <UTooltip
       v-if="canDelete"
