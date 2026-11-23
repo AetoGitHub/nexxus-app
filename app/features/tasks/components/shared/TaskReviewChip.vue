@@ -3,8 +3,8 @@ import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskR
 
 /**
  * Indicador "Revisada" para la fila de metadatos (junto a los chips de la ficha). No se dibuja si la tarea no está
- * revisada o la marca ya venció. En la ficha es compacto: "✓ 10:35" (y "Revisada · 10:35" desde 1280 px).
- * `full` (detalle) muestra el texto completo: "Revisada a las 10:35 — vuelve a su lugar a las 10:35 de mañana".
+ * revisada. En la ficha es compacto: "✓ 10:35" (y "Revisada · 10:35" desde 1280 px).
+ * `full` (detalle) muestra el texto completo: "Revisada a las 10:35". La marca no vence: sigue hasta que se quita.
  */
 const props = withDefaults(
   defineProps<{

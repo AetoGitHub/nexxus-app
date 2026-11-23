@@ -354,7 +354,7 @@ export interface Task {
   mentions?: TaskMention[]
   /**
    * Marca personal "Revisada" del usuario actual (ISO UTC): la tarea va al final de SUS listas hasta
-   * `reviewed_at + 24 h`. null si no está revisada o ya venció. Otros usuarios no la ven.
+   * que el propio usuario la desmarque (ya no vence por tiempo). null si no está revisada. Otros usuarios no la ven.
    */
   reviewed_at?: string | null
 }
