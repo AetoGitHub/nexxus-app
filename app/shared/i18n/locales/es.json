@@ -778,12 +778,13 @@
     },
     "review": {
       "label": "Revisada",
-      "mark": "Marcar como revisada (la manda al final de tus listas hasta que la quites)",
+      "mark": "Marcar como revisada: la manda al final de tus listas",
       "unmark": "Quitar revisada",
       "movedToEnd": "Movida al final",
       "undo": "Deshacer",
       "tooltip": "Revisada a las {time}",
-      "activeTooltip": "Revisada a las {time} · clic para quitar",
+      "activeTooltip": "Revisada a las {time} · clic para mandarla al final otra vez",
+      "removeTooltip": "Revisada a las {time} · clic para quitar la marca",
       "errorMark": "No se pudo marcar como revisada",
       "errorUnmark": "No se pudo quitar la marca de revisada"
     },

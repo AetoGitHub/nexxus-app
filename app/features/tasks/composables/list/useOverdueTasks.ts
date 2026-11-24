@@ -2,7 +2,6 @@ import type { MaybeRefOrGetter } from 'vue'
 import type { OverdueCounts, TaskBoardSection, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { extractResults } from '~/shared/utils/paginated.util'
-import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 
 const OVERDUE_SECTIONS = [
@@ -35,7 +34,6 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     no_date: noDate,
   } as const
 
-  const { sortByTokens } = useTaskTokenState()
 
   const sections = computed<TaskBoardSection[]>(() => {
     const totals = counts.data.value
@@ -47,7 +45,7 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
         labelKey: meta.labelKey,
         color: meta.color,
         count: totals?.[meta.countKey],
-        tasks: sortByTokens(extractResults(slice.data.value)),
+        tasks: extractResults(slice.data.value),
         loading: slice.isPending.value,
         error: slice.isError.value,
         hasNextPage: slice.hasNextPage.value,

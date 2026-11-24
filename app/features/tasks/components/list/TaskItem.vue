@@ -180,16 +180,12 @@ function onApproveClick() {
             total: closeApprovalsProgress.total,
           })"
         />
-        <!-- Hora de la marca: chip compacto hasta 1279 px; desde 1280 px vive en el tooltip del botón. En backlog solo el chip. -->
-        <span
-          class="contents"
-          :class="reviewReadonly ? '' : 'xl:hidden'"
-        >
-          <TaskReviewChip
-            :task-id="task.id"
-            :reviewed-at="task.reviewed_at"
-          />
-        </span>
+        <!-- Marca «Revisada»: chip con la hora; con ✕ la quita (en backlog y archivadas solo se muestra). -->
+        <TaskReviewChip
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
+          :removable="!reviewReadonly"
+        />
         <TaskTokenButton
           v-if="!isArchivedTask"
           :task-id="task.id"

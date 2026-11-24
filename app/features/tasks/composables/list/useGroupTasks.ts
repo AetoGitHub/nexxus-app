@@ -4,7 +4,6 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
-import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 import type {
@@ -69,7 +68,6 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
     }),
   })
 
-  const { sortByTokens } = useTaskTokenState()
 
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
@@ -77,7 +75,7 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
     return groupList.value.map((group, index) => {
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(group.id) ?? 0
-      const tasks = sortByTokens(total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : [])
+      const tasks = total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : []
 
       return {
         id: group.id,

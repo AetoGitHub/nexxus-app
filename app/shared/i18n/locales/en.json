@@ -778,12 +778,13 @@
     },
     "review": {
       "label": "Reviewed",
-      "mark": "Mark as reviewed (moves it to the end of your lists until you remove it)",
+      "mark": "Mark as reviewed: moves it to the end of your lists",
       "unmark": "Remove reviewed",
       "movedToEnd": "Moved to the end",
       "undo": "Undo",
       "tooltip": "Reviewed at {time}",
-      "activeTooltip": "Reviewed at {time} · click to remove",
+      "activeTooltip": "Reviewed at {time} · click to move it to the end again",
+      "removeTooltip": "Reviewed at {time} · click to remove the mark",
       "errorMark": "Couldn't mark as reviewed",
       "errorUnmark": "Couldn't remove the reviewed mark"
     },
