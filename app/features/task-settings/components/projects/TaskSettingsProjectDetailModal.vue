@@ -75,6 +75,20 @@ function onEdit() {
           <p class="text-[12px] text-muted-foreground mt-1">
             {{ t('taskSettings.projects.activeTasks', { count: project.task_count }) }}
           </p>
+          <!-- Admite tareas en backlog (sin el campo = sí). -->
+          <p class="mt-1 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <UIcon
+              name="i-lucide-inbox"
+              class="h-3 w-3 shrink-0"
+            />
+            {{ t('taskSettings.projectDetail.backlog') }}:
+            <span
+              class="font-medium"
+              :class="project.backlog === false ? 'text-muted-foreground' : 'text-foreground'"
+            >
+              {{ project.backlog === false ? t('taskSettings.projectDetail.backlogNo') : t('taskSettings.projectDetail.backlogYes') }}
+            </span>
+          </p>
         </div>
 
         <div>

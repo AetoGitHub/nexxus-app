@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { parseDate, type CalendarDate } from '@internationalized/date'
+import TaskWeekCalendar from '~/features/tasks/components/shared/TaskWeekCalendar.vue'
 
+/**
+ * Selector de fecha (YYYY-MM-DD) de los formularios y modales de tareas: botón con la fecha y, al abrirlo, el mismo
+ * calendario del atajo de la tarjeta (`TaskWeekCalendar`: semana en curso pintada, abre en el mes de hoy si la fecha
+ * ya pasó). Un clic en un día lo elige y cierra.
+ */
 const model = defineModel<string>({ default: '' })
 
-const props = defineProps<{
+defineProps<{
   min?: string
   max?: string
   disabled?: boolean
@@ -12,18 +17,13 @@ const props = defineProps<{
 const { t, locale } = useI18n()
 const popoverOpen = ref(false)
 
-const calendarDate = computed<CalendarDate | undefined>({
-  get: () => model.value ? parseDate(model.value) : undefined,
-  set: (value) => {
-    model.value = value?.toString() ?? ''
-    if (value) {
-      popoverOpen.value = false
-    }
-  },
-})
-
-const minCalendarDate = computed(() => props.min ? parseDate(props.min) : undefined)
-const maxCalendarDate = computed(() => props.max ? parseDate(props.max) : undefined)
+function onPick(day: string | null) {
+  // Volver a tocar el día ya elegido llega como null: se conserva y solo se cierra.
+  if (day) {
+    model.value = day
+  }
+  popoverOpen.value = false
+}
 
 const formattedDate = computed(() => {
   if (!model.value) {
@@ -51,11 +51,12 @@ const formattedDate = computed(() => {
     </UButton>
 
     <template #content>
-      <UCalendar
-        v-model="calendarDate"
-        :min-value="minCalendarDate"
-        :max-value="maxCalendarDate"
+      <TaskWeekCalendar
+        :model-value="model || null"
+        :min="min"
+        :max="max"
         class="p-2"
+        @pick="onPick"
       />
     </template>
   </UPopover>

@@ -25,6 +25,8 @@ const props = withDefaults(
     minimal?: boolean
     /** Botón de eliminar (hover) en cada fila, p. ej. en la vista de archivadas. */
     deletable?: boolean
+    /** Vista de archivadas: sin atajos de "Revisada" ni token en las filas. */
+    archivedView?: boolean
     /** Qué hace el círculo de cada fila: avanzar la tarea de estado con un clic (default) o autorizar directo. */
     checkAction?: 'advance' | 'approve'
     /** Ids de tareas con la autorización en curso (solo checkAction="approve"). */
@@ -42,6 +44,7 @@ const props = withDefaults(
     defaultOpen: true,
     minimal: false,
     deletable: false,
+    archivedView: false,
     checkAction: 'advance',
     approvingIds: () => new Set(),
   },
@@ -152,6 +155,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
             :selected="selectedTaskId === task.id"
             :show-status="showStatus"
             :deletable="deletable"
+            :archived-view="archivedView"
             :check-action="checkAction"
             :approve-loading="approvingIds.has(task.id)"
             :advancing="quickAdvance.isAdvancing(task.id)"
@@ -208,7 +212,7 @@ useIntersectionObserver(loadMoreSentinel, ([entry]) => {
 }
 
 .list-task-move {
-  transition: transform 250ms ease;
+  transition: transform 200ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

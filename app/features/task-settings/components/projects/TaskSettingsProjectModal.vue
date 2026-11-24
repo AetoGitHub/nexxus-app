@@ -149,6 +149,15 @@ function onSubmit() {
           />
         </div>
 
+        <!-- Admite tareas en backlog (apagado: no se pueden crear ni regresar tareas a su backlog). -->
+        <div class="rounded-lg border border-border px-3 py-2.5">
+          <USwitch
+            v-model="form.backlog"
+            :label="t('taskSettings.projectModal.backlog')"
+            :description="t('taskSettings.projectModal.backlogHelp')"
+          />
+        </div>
+
         <div class="flex items-start gap-2.5 rounded-lg bg-muted/60 border border-border px-3 py-2.5">
           <UIcon
             name="i-lucide-lock"

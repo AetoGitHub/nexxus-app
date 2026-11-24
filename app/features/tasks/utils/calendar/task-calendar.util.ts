@@ -121,6 +121,8 @@ export interface CalendarEventMeta {
   mentions: TaskMention[]
   /** Tarea de un proyecto privado: se marca con candado. */
   isPersonal: boolean
+  /** Marca personal "Revisada" (solo se muestra; el calendario no reordena). */
+  reviewedAt: string | null
 }
 
 function calendarEventMeta(task: Task): CalendarEventMeta {
@@ -131,6 +133,7 @@ function calendarEventMeta(task: Task): CalendarEventMeta {
     type: task.type,
     mentions: task.mentions ?? [],
     isPersonal: task.is_personal === true,
+    reviewedAt: task.reviewed_at ?? null,
   }
 }
 
@@ -181,7 +184,7 @@ export function taskToProcessCalendarEvent(task: Task, color?: string): EventInp
     return null
   }
 
-  const limit = toDateOnly(task.limit_date)
+  const limit = limitDayOf(task)
   const endExclusive = limit && limit >= start
     ? nextDay(limit)
     : undefined
@@ -202,7 +205,7 @@ export function taskToProcessCalendarEvent(task: Task, color?: string): EventInp
  * (fecha de cierre), sin importar el rango completo.
  */
 export function taskToCloseCalendarEvent(task: Task, color?: string): EventInput | null {
-  const closeDate = toDateOnly(task.limit_date)
+  const closeDate = limitDayOf(task)
   if (!closeDate) {
     return null
   }

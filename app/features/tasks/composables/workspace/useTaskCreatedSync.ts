@@ -27,6 +27,22 @@ export function useTaskCreatedSync() {
   const { insertCreatedListTask, moveTaskInList } = useListRealtimeTask()
   const route = useRoute()
   const queryClient = useQueryClient()
+  const { selectedCompanyId } = useAuth()
+
+  /**
+   * «Creadas por mí» (columna Backlog del Kanban) no se puede insertar por pk como las demás columnas: depende de quién
+   * creó la tarea y de quién está asignado. Se recarga (lista y contador) solo si está en pantalla; si no, queda vieja y
+   * se pide al abrirla.
+   */
+  function refreshCreatedByMe() {
+    if (selectedCompanyId.value == null) {
+      return
+    }
+    void queryClient.invalidateQueries({
+      queryKey: ['tasks', selectedCompanyId.value, 'created'],
+      type: 'active',
+    })
+  }
 
   function queryParam(key: string) {
     const value = route.query[key]
@@ -115,6 +131,7 @@ export function useTaskCreatedSync() {
    * otro groupBy) — en ese caso no hay nada visible que actualizar.
    */
   async function syncCreatedTask(taskPk: number): Promise<boolean> {
+    refreshCreatedByMe()
     const calendarSync = resolveCalendarSync(taskPk)
     if (calendarSync) {
       return calendarSync
@@ -165,6 +182,8 @@ export function useTaskCreatedSync() {
     // Mover la tarjeta no toca el detalle en caché (el del slide over): sin esto, al reabrirla muestra el status anterior
     // y sus botones (p. ej. "En revisión" otra vez) fallan en el backend.
     void queryClient.invalidateQueries({ queryKey: ['tasks', 'detail', taskPk], exact: true })
+    // Cerrar/completar una tarea delegada la saca de «Creadas por mí» (por defecto no salen las completadas).
+    refreshCreatedByMe()
 
     if (route.path === '/tasks' && queryParam('view') === 'list') {
       const groupBy = queryParam('groupBy') ?? 'all'

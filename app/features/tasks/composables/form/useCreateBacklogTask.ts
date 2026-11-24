@@ -23,6 +23,8 @@ export function useCreateBacklogTask() {
       }),
     onSuccess: async (created) => {
       await queryClient.invalidateQueries({ queryKey: ['tasks', companyId.value, 'backlog'] })
+      // Un backlog que creo sin asignarme también puede caer en «Creadas por mí».
+      void queryClient.invalidateQueries({ queryKey: ['tasks', companyId.value, 'created'], type: 'active' })
       const moreTasksCount = created?.more_tasks_ids?.length ?? 0
       toast.add({
         title: t('tasks.form.createSuccessTitle'),

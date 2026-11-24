@@ -23,12 +23,20 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
 
   const isComplete = computed(() => current.value.status === 'complete')
 
-  /** Completada: se muestra la fecha real de cierre (finish_at) en vez del vencimiento. */
-  const dueDate = computed(() =>
-    isComplete.value ? (current.value.finish_at ?? current.value.limit_date) : current.value.limit_date,
-  )
+  /**
+   * Día a mostrar (YYYY-MM-DD en CDMX): el día límite (`limit_day`) o, en una completada, el día real de cierre
+   * (`finish_at`). Nunca se corta `limit_date` (UTC): 20 nov 23:59 CDMX llega como `2026-11-21T05:59:59Z`.
+   */
+  const dueDay = computed(() => {
+    const task = current.value
+    if (isComplete.value && task.finish_at) {
+      return businessDayKey(task.finish_at)
+    }
+    return limitDayOf(task)
+  })
 
-  const dueDiff = computed(() => diffInDays(dueDate.value))
+  /** Hoy / mañana / vencida se comparan contra hoy en CDMX. */
+  const dueDiff = computed(() => (dueDay.value ? diffDayKeys(dueDay.value, businessToday()) : null))
   /** Completada nunca se marca "vencida": esa fecha ya pasó por diseño, no es un problema. */
   const isOverdue = computed(() => !isComplete.value && dueDiff.value !== null && dueDiff.value < 0)
 
@@ -49,7 +57,7 @@ export function useTaskCardPresentation(task: MaybeRefOrGetter<Task>) {
     if (diff > 1 && diff <= 30) {
       return t('tasks.due.inDays', { n: diff })
     }
-    return formatShortDate(dueDate.value, locale.value)
+    return dueDay.value ? formatShortDayKey(dueDay.value, locale.value) : ''
   })
 
   return {

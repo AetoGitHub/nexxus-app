@@ -54,7 +54,8 @@ useInfiniteScroll(
   },
 )
 
-const canDrop = computed(() => !props.column.loading && !props.column.error)
+/** «Creadas por mí» (`delegated`) no recibe tareas: es solo una consulta, no una fase. */
+const canDrop = computed(() => !props.column.loading && !props.column.error && !props.column.delegated)
 const isDropTarget = computed(() => props.dropTargetId === props.column.id)
 
 function onDragOver(event: DragEvent) {
@@ -96,14 +97,14 @@ function onDrop(event: DragEvent) {
   <!-- Colapsada también recibe drops (p. ej. Pendiente → Backlog): no hay que expandirla antes de soltar. -->
   <section
     v-if="collapsed"
-    class="flex h-full min-h-0 w-12 shrink-0 flex-col"
+    class="flex h-full min-h-0 w-12 shrink-0 flex-col items-center rounded-xl bg-kanban-column"
+    :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
     @dragover="onDragOver"
     @drop="onDrop"
   >
     <button
       type="button"
-      class="flex h-full w-12 flex-col items-center gap-3 rounded-xl bg-kanban-column py-3 text-muted-foreground transition-colors hover:text-foreground"
-      :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
+      class="flex min-h-0 w-12 flex-1 flex-col items-center gap-3 rounded-xl py-3 text-muted-foreground transition-colors hover:text-foreground"
       :aria-label="t('tasks.kanban.expandColumn', { title: columnTitle })"
       @click="toggleCollapsed"
     >
@@ -120,6 +121,13 @@ function onDrop(event: DragEvent) {
         {{ columnTitle }}
       </span>
     </button>
+    <!-- Controles que siguen a la mano con la columna colapsada (p. ej. cambiar Backlog ↔ «Creadas por mí»). -->
+    <div
+      v-if="$slots['collapsed-extra']"
+      class="flex shrink-0 flex-col items-center gap-1 pb-3"
+    >
+      <slot name="collapsed-extra" />
+    </div>
   </section>
 
   <section v-else class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
@@ -180,7 +188,7 @@ function onDrop(event: DragEvent) {
           v-else-if="!column.tasks.length"
           class="px-2 py-6 text-center text-sm text-muted-foreground"
         >
-          {{ isDropTarget ? t('tasks.kanban.dropHere') : t('tasks.empty') }}
+          {{ isDropTarget ? t('tasks.kanban.dropHere') : t(column.emptyKey ?? 'tasks.empty') }}
         </p>
 
         <TransitionGroup
@@ -196,6 +204,8 @@ function onDrop(event: DragEvent) {
             :column-id="column.id"
             :selected="selectedTaskId === task.id"
             :dragging="draggingTaskId === task.id"
+            :draggable="!column.delegated"
+            :delegated="column.delegated"
             @select="emit('select', $event)"
             @drag-start="emit('dragStart', $event)"
             @drag-end="emit('dragEnd')"
@@ -247,7 +257,7 @@ function onDrop(event: DragEvent) {
 }
 
 .kanban-task-move {
-  transition: transform 250ms ease;
+  transition: transform 200ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

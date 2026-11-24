@@ -134,6 +134,12 @@ function canCreateInColumn(columnId: string | number) {
         <template #header-extra>
           <slot name="column-header-extra" :column="column" />
         </template>
+        <template
+          v-if="$slots['column-collapsed-extra']"
+          #collapsed-extra
+        >
+          <slot name="column-collapsed-extra" :column="column" />
+        </template>
       </TaskKanbanColumn>
     </div>
   </div>

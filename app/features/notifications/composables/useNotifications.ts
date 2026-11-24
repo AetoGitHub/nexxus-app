@@ -33,6 +33,11 @@ function toQueryParams(filters: NotificationListFilters) {
 export function useNotifications(
   filters: MaybeRefOrGetter<NotificationListFilters> = {},
   enabled: MaybeRefOrGetter<boolean> = true,
+  /**
+   * El panel de notificaciones (Configuración) muestra TODAS, también las de tipos apagados: el usuario las apagó para
+   * que no le salten (aviso, sonido, push), no para perderlas. La campana sí las oculta.
+   */
+  options: { includeHidden?: boolean } = {},
 ) {
   const { $api } = useNuxtApp()
   const resolvedFilters = computed(() => toValue(filters))
@@ -46,10 +51,11 @@ export function useNotifications(
     enabled: computed(() => toValue(enabled)),
   })
 
-  /** El backend sigue mandando las notificaciones apagadas por el usuario, con `show: false`: no se pintan. */
-  const notifications = computed(() =>
-    (notificationsQuery.data.value?.results ?? []).filter(notification => notification.show !== false),
-  )
+  /** El backend sigue mandando las notificaciones apagadas por el usuario, con `show: false`: no se pintan (salvo `includeHidden`). */
+  const notifications = computed(() => {
+    const results = notificationsQuery.data.value?.results ?? []
+    return options.includeHidden ? results : results.filter(notification => notification.show !== false)
+  })
 
   const errorMessage = computed(() =>
     notificationsQuery.error.value ? parseFetchError(notificationsQuery.error.value) : '',

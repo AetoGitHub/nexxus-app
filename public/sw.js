@@ -40,6 +40,8 @@ self.addEventListener('push', (event) => {
       icon: '/icons/icon-192.png',
       badge: '/icons/badge-72.png',
       tag: data.notification_pk != null ? `notification-${data.notification_pk}` : undefined,
+      // «Sonido al recibir una notificación» apagado en la cuenta: el aviso del sistema llega sin sonido ni vibración.
+      silent: data.silent === true,
       data: {
         url: targetUrl(data),
         notification_pk: data.notification_pk,

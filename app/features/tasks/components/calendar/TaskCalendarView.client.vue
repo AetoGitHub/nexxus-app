@@ -750,6 +750,8 @@ watch(
             :type="String(arg.event.extendedProps.type ?? '')"
             :mentions="(arg.event.extendedProps.mentions as TaskMention[] | undefined) ?? []"
             :is-personal="arg.event.extendedProps.isPersonal === true"
+            :task-id="Number(arg.event.extendedProps.taskId)"
+            :reviewed-at="(arg.event.extendedProps.reviewedAt as string | null | undefined) ?? null"
             :text-color="arg.event.textColor || 'var(--foreground)'"
             :show-badges="arg.isStart"
           />

@@ -1,3 +1,4 @@
+
 /**
  * Estado de tokens por tarea, compartido por todas las vistas (lista, kanban, detalle).
  * - `confirmed`: el mayor `tokens_count` que confirmó el servidor (respuesta del POST o
@@ -31,17 +32,5 @@ export function useTaskTokenState() {
     patch(taskId, current => ({ ...current, confirmed: Math.max(current.confirmed, count) }))
   }
 
-  /**
-   * Ordena una lista por tokens, de más a menos, al instante y sin refrescar. A igualdad de
-   * tokens conserva el orden que ya traía la lista (el de la fecha que manda el backend).
-   * Solo para listas que el backend ordena primero por tokens (no backlog, archivadas ni calendario).
-   */
-  function sortByTokens<T extends { id: number, tokens_count?: number }>(tasks: T[]): T[] {
-    return tasks
-      .map((task, index) => ({ task, index, count: displayCount(task.id, task.tokens_count) }))
-      .sort((a, b) => b.count - a.count || a.index - b.index)
-      .map(entry => entry.task)
-  }
-
-  return { states, patch, displayCount, applyServerCount, sortByTokens }
+  return { states, patch, displayCount, applyServerCount }
 }

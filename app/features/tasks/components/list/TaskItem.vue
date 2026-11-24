@@ -3,9 +3,13 @@ import TaskAssigneeAvatars from '~/features/tasks/components/shared/TaskAssignee
 import TaskStatusCircle from '~/features/tasks/components/shared/TaskStatusCircle.vue'
 import TaskMentionBadge from '~/features/tasks/components/shared/TaskMentionBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import { useTaskMentions } from '~/features/tasks/composables/shared/useTaskMentions'
+import { useTaskReviewState } from '~/features/tasks/composables/shared/useTaskReviewState'
 import type { Task } from '~/features/tasks/types/task.types'
 import { isQuickAdvanceBlocked, resolveQuickAdvance } from '~/features/tasks/utils/task-quick-advance.util'
+import TaskQuickDuePopover from '~/features/tasks/components/shared/TaskQuickDuePopover.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -15,6 +19,8 @@ const props = withDefaults(
     showStatus?: boolean
     /** Botón de eliminar (hover), p. ej. en la vista de archivadas. */
     deletable?: boolean
+    /** Fila de la vista de archivadas: sin atajos de "Revisada" ni token. */
+    archivedView?: boolean
     /**
      * Qué hace el círculo: avanzar la tarea al siguiente estado con un clic, sin modal (default; si la tarea no se
      * puede avanzar es solo el indicador de su estado) o autorizarla directamente, sin modal ni slideover
@@ -30,6 +36,7 @@ const props = withDefaults(
     selected: false,
     showStatus: false,
     deletable: false,
+    archivedView: false,
     checkAction: 'advance',
     approveLoading: false,
     advancing: false,
@@ -58,6 +65,12 @@ const {
   dueLabel,
 } = useTaskCardPresentation(() => props.task)
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
+const { isReviewed } = useTaskReviewState()
+const reviewed = computed(() => isReviewed(props.task))
+/** Backlog y archivadas: sin atajos ("Revisada" ni token); de la marca solo se muestra el chip. */
+const isArchivedTask = computed(() => props.archivedView || props.task.archived === true)
+const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true || isArchivedTask.value)
+
 /** Eliminar (vista de archivadas) es una modificación: solo para quien participa en la tarea. */
 const { can } = usePermissions()
 // Sin `task.can_update` el círculo solo muestra el estatus: no avanza la tarea ni confirma el cierre.
@@ -69,6 +82,9 @@ const advanceBlocked = computed(() =>
   canMove.value && props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id),
 )
 const canDelete = computed(() => props.deletable && can('task', 'delete') && canModifyTask(props.task, user.value?.id))
+
+/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
+const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
 
 function onSelect() {
   emit('select', props.task.id)
@@ -84,7 +100,7 @@ function onApproveClick() {
     role="button"
     tabindex="0"
     class="group relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card pl-4 pr-3 py-2.5 hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] cursor-pointer md:flex md:gap-3"
-    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '']"
+    :class="[mentionsMe ? 'task-mention-me' : '', selected ? 'border-aeto-teal/50' : '', reviewed ? 'opacity-75' : '']"
     @click="onSelect"
     @keydown.enter.prevent="onSelect"
     @keydown.space.prevent="onSelect"
@@ -171,9 +187,21 @@ function onApproveClick() {
             total: closeApprovalsProgress.total,
           })"
         />
+        <!-- Marca «Revisada»: chip con la hora; con ✕ la quita (en backlog y archivadas solo se muestra). -->
+        <TaskReviewChip
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
+          :removable="!reviewReadonly"
+        />
         <TaskTokenButton
+          v-if="!isArchivedTask"
           :task-id="task.id"
           :count="task.tokens_count"
+        />
+        <TaskReviewButton
+          v-if="!reviewReadonly"
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
         />
         <!-- Oculto de momento: genera confusión
         <UBadge
@@ -194,7 +222,31 @@ function onApproveClick() {
       :assignees="assignees"
     />
 
+    <!-- Atajo: cambiar la fecha límite sin abrir la tarea (solo quien puede editarla). -->
+    <TaskQuickDuePopover
+      v-if="dueLabel && canEditDue"
+      :task-id="task.id"
+      :current-limit-day="limitDayOf(task)"
+    >
+      <button
+        type="button"
+        class="col-start-3 row-start-1 inline-flex min-w-16 shrink-0 items-center justify-end gap-1 rounded-md px-1.5 py-0.5 text-xs font-mono tabular-nums transition-colors hover:bg-muted"
+        :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+        :title="t('tasks.quickDue.title')"
+        :aria-label="t('tasks.quickDue.title')"
+        @click.stop
+        @keydown.enter.stop
+        @keydown.space.stop
+      >
+        <UIcon
+          name="i-lucide-calendar"
+          class="h-3 w-3"
+        />
+        {{ dueLabel }}
+      </button>
+    </TaskQuickDuePopover>
     <span
+      v-else
       class="col-start-3 row-start-1 w-16 text-right text-xs font-mono tabular-nums shrink-0"
       :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
     >

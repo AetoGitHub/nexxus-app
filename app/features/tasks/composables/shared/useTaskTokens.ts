@@ -14,7 +14,7 @@ export function useTaskTokens() {
   const toast = useToast()
   const { t } = useI18n()
   const { user } = useAuth()
-  const { patch, displayCount, applyServerCount, sortByTokens } = useTaskTokenState()
+  const { patch, displayCount, applyServerCount } = useTaskTokenState()
   const { tryLock, release } = useTaskTokenCooldown()
 
   /**
@@ -62,5 +62,5 @@ export function useTaskTokens() {
     return true
   }
 
-  return { displayCount, applyServerCount, sortByTokens, giveToken }
+  return { displayCount, applyServerCount, giveToken }
 }

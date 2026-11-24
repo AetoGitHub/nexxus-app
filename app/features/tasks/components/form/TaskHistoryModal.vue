@@ -13,7 +13,9 @@ import {
   historyDetailNumber,
   historyDetailString,
   historyDetailUrls,
-  historyEventIcon,
+  historyArchived,
+  historyEventIconFor,
+  historyReviewed,
   historyEventTone,
   historyPhaseIcon,
   historyValueText,
@@ -157,6 +159,27 @@ function phaseTone(event: TaskHistoryEvent | null): HistoryTone {
 
 function toneClasses(tone: HistoryTone) {
   return HISTORY_TONE_CLASSES[tone]
+}
+
+/** Chip de un evento `archive`: «Archivada en: Pendiente» / «Desarchivada en: Pendiente» (fase en ese momento). */
+function archivePhaseLabel(event: TaskHistoryEvent): string {
+  const status = historyDetailString(event, 'status')
+  if (!status) {
+    return ''
+  }
+  const phase = t(taskStatusMeta(status).labelKey)
+  return historyArchived(event) === false
+    ? t('tasks.history.unarchivedIn', { phase })
+    : t('tasks.history.archivedIn', { phase })
+}
+
+/** Hora local de la marca «Revisada» de un evento `review` (vacío si se quitó). */
+function reviewTime(event: TaskHistoryEvent): string {
+  const value = historyDetailString(event, 'reviewed_at')
+  const date = value ? new Date(value) : null
+  return date && !Number.isNaN(date.getTime())
+    ? new Intl.DateTimeFormat(locale.value, { hour: '2-digit', minute: '2-digit' }).format(date)
+    : ''
 }
 
 function mentionName(event: TaskHistoryEvent): string {
@@ -497,7 +520,7 @@ function fileName(url: string): string {
                   :class="toneClasses(historyEventTone(event)).dot"
                 >
                   <UIcon
-                    :name="historyEventIcon(event.type)"
+                    :name="historyEventIconFor(event)"
                     class="h-3.5 w-3.5"
                   />
                 </div>
@@ -681,12 +704,47 @@ function fileName(url: string): string {
                     </span>
                   </p>
 
-                  <p
-                    v-else-if="event.type === 'archive' && historyDetailString(event, 'comment')"
-                    class="mt-1.5 whitespace-pre-line rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+                  <!-- Archivar / desarchivar: fase en ese momento y comentario. -->
+                  <div
+                    v-else-if="event.type === 'archive' && (archivePhaseLabel(event) || historyDetailString(event, 'comment'))"
+                    class="mt-1.5 space-y-1.5"
                   >
-                    {{ historyDetailString(event, 'comment') }}
-                  </p>
+                    <UBadge
+                      v-if="archivePhaseLabel(event)"
+                      :icon="historyArchived(event) === false ? 'i-lucide-archive-restore' : 'i-lucide-archive'"
+                      :label="archivePhaseLabel(event)"
+                      :color="historyArchived(event) === false ? 'success' : 'neutral'"
+                      variant="subtle"
+                      size="sm"
+                    />
+                    <p
+                      v-if="historyDetailString(event, 'comment')"
+                      class="whitespace-pre-line rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+                    >
+                      {{ historyDetailString(event, 'comment') }}
+                    </p>
+                  </div>
+
+                  <!-- «Revisada»: chip con la hora de la marca; al quitarla, sin hora y en gris. -->
+                  <div
+                    v-else-if="event.type === 'review'"
+                    class="mt-1.5"
+                  >
+                    <span
+                      class="inline-flex h-5 items-center gap-1 rounded-md px-1.5 text-[11px] font-medium"
+                      :class="historyReviewed(event)
+                        ? 'bg-aeto-teal/15 text-aeto-teal ring-1 ring-inset ring-aeto-teal/30'
+                        : 'bg-muted text-muted-foreground line-through'"
+                    >
+                      <UIcon
+                        name="i-lucide-check-check"
+                        class="size-3 shrink-0"
+                      />
+                      {{ historyReviewed(event) && reviewTime(event)
+                        ? t('tasks.history.reviewedAt', { time: reviewTime(event) })
+                        : t('tasks.review.label') }}
+                    </span>
+                  </div>
                 </div>
               </li>
             </ol>

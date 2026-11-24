@@ -136,6 +136,8 @@ export type ApiTaskStatus = 'pending' | 'wip' | 'in_review' | 'complete' | 'reje
 export interface ApiDashboardTask {
   id: number
   limit_date: string | null
+  /** Día límite en CDMX (YYYY-MM-DD), si el endpoint lo manda. */
+  limit_day?: string | null
   start_date: string | null
   /** Nombre de la tarea. */
   short_description: string

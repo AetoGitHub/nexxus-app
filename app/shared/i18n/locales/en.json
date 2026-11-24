@@ -295,6 +295,14 @@
     }
   },
   "tasks": {
+    "quickDue": {
+      "title": "Change due date",
+      "label": "New due date",
+      "help": "Only today or future dates.",
+      "save": "Save date",
+      "successDescription": "The due date changed to {date}.",
+      "currentWeek": "Current week"
+    },
     "moduleTitle": "Tasks Module",
     "placeholder": "The tasks content will be laid out here. For now the sidebar and toolbar are ready as a reference.",
     "filters": "Filters",
@@ -375,6 +383,7 @@
       "archived": "Archived"
     },
     "backlogMine": "Assigned to me",
+    "backlogCreated": "Created by me: tasks you created and delegated",
     "groupBy": {
       "all": "All",
       "status": "Status",
@@ -414,6 +423,7 @@
     "kanban": {
       "columns": {
         "backlog": "Backlog",
+        "created": "Created by me",
         "pending": "Pending",
         "wip": "In progress",
         "inReview": "In review",
@@ -424,6 +434,8 @@
       },
       "createTask": "Create task",
       "dropHere": "Drop here",
+      "createdEmpty": "You have no tasks you created assigned to other people.",
+      "unassigned": "Unassigned",
       "dropHint": "You can drop tasks here",
       "collapseColumn": "Collapse {title}",
       "expandColumn": "Expand {title}",
@@ -606,6 +618,9 @@
       "unknown": "Unknown status"
     },
     "history": {
+      "archivedIn": "Archived in: {phase}",
+      "unarchivedIn": "Unarchived in: {phase}",
+      "reviewedAt": "Reviewed · {time}",
       "button": "History",
       "modalTitle": "Task history",
       "modalDescription": "Everything done to the task, in chronological order.",
@@ -660,6 +675,9 @@
       "assignedToPlaceholder": "Select one or more users...",
       "assignedToSearchPlaceholder": "Search user...",
       "assignSelfOnCreate": "Add myself",
+      "autoReviewer": {
+        "changed": "Changed to multiple close"
+      },
       "createdByLabel": "Created by",
       "createdByUnknown": "User",
       "dueDate": "Due date",
@@ -925,6 +943,18 @@
         "closeApprovedBy": "Close approved by {username}.",
         "taskReopened": "Task reopened by {username}."
       }
+    },
+    "review": {
+      "label": "Reviewed",
+      "mark": "Mark as reviewed: moves it to the end of your lists",
+      "unmark": "Remove reviewed",
+      "movedToEnd": "Moved to the end",
+      "undo": "Undo",
+      "tooltip": "Reviewed at {time}",
+      "activeTooltip": "Reviewed at {time} · click to move it to the end again",
+      "removeTooltip": "Reviewed at {time} · click to remove the mark",
+      "errorMark": "Couldn't mark as reviewed",
+      "errorUnmark": "Couldn't remove the reviewed mark"
     },
     "tokens": {
       "give": "Give touch",
@@ -2010,6 +2040,8 @@
       "projects": "Projects"
     },
     "notificationsPanel": {
+      "muted": "Muted",
+      "mutedHint": "This type is turned off in your preferences: it didn't alert you, but it stays in your history.",
       "title": "Notifications",
       "subtitle": "Review activity on your tasks. Opening a notification marks it as read.",
       "infoBanner": "Click a notification to mark it as read. Then you can open the related task.",
@@ -2082,6 +2114,8 @@
       "updateErrorTitle": "Could not update group"
     },
     "projectModal": {
+      "backlog": "Allows backlog tasks",
+      "backlogHelp": "If you turn it off, tasks can't be created in or returned to this project's backlog. Tasks already in backlog stay there.",
       "title": "New project",
       "editTitle": "Edit project",
       "name": "Project name",
@@ -2116,6 +2150,8 @@
       "activeTasks": "{count} active tasks",
       "membersCount": "{count} members",
       "soloYou": "Only you",
+      "backlogOn": "Backlog",
+      "backlogOff": "No backlog",
       "options": "Options",
       "edit": "Edit project",
       "empty": "No projects yet",
@@ -2176,7 +2212,8 @@
         "options": {
           "chime": "Classic",
           "pop": "Pop",
-          "tone": "Alert"
+          "tone": "Alert",
+          "nexxus": "Nexxus"
         },
         "disabledNotice": "Sound is off in your notification preferences: alerts arrive silently. You can turn it back on in the Notifications section."
       },
@@ -2242,6 +2279,9 @@
       }
     },
     "projectDetail": {
+      "backlog": "Backlog",
+      "backlogYes": "Allowed",
+      "backlogNo": "Not allowed",
       "title": "Project details",
       "name": "Project name",
       "responsible": "Owner",

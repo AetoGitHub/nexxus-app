@@ -104,7 +104,7 @@ export function taskDetailToFormInput(detail: TaskDetail): NewTaskFormInput {
     group: detail.group ?? undefined,
     assignedTo: (detail.assigned_to ?? []).map(assignee => assignee.id),
     taskReviewer: detail.close_approvals?.map(approval => approval.profile) ?? [],
-    dueDate: isoToDateInput(detail.limit_date),
+    dueDate: detail.limit_day ?? isoToDateInput(detail.limit_date),
     urgent,
     requiresCloseFile: detail.requires_close_file === true,
     effort: urgent ? undefined : priorityToEffort(detail.priority),
@@ -144,15 +144,15 @@ export function resolveTaskPriority(urgent: boolean, effort?: TaskEffort): ApiTa
 }
 
 /**
- * Convierte YYYY-MM-DD a ISO fin de ese día en UTC.
- * Evita el desfase +1 día de `toISOString()` sobre hora local (p. ej. UTC-4).
+ * `limit_date` que se manda al crear/editar: solo el día (YYYY-MM-DD), sin hora ni zona. El backend lo guarda a las
+ * 23:59:59 de CDMX. Nunca mandar un ISO en UTC: `2026-11-20T00:00:00Z` es el 19 nov en CDMX.
  */
-export function dateInputToLimitISO(date: string): string {
+export function dateInputToLimitDay(date: string): string {
   const [year, month, day] = date.split('-').map(Number)
   if (!year || !month || !day) {
     throw new Error('due_date_required')
   }
-  return new Date(Date.UTC(year, month - 1, day, 23, 59, 59)).toISOString()
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 /**
@@ -204,7 +204,7 @@ export function buildCreateTaskPayload(
     type: form.type,
     priority: resolveTaskPriority(form.urgent, form.effort),
     start_date: new Date().toISOString(),
-    limit_date: dateInputToLimitISO(form.dueDate),
+    limit_date: dateInputToLimitDay(form.dueDate),
     project: form.project,
     group: form.group,
     assigned_to: form.assignedTo,
@@ -329,7 +329,7 @@ export function buildPromoteBacklogTaskPayload(
     type: form.type,
     priority: resolveTaskPriority(form.urgent, form.effort),
     start_date: new Date().toISOString(),
-    limit_date: dateInputToLimitISO(form.dueDate),
+    limit_date: dateInputToLimitDay(form.dueDate),
     project: form.project,
     group: form.group ?? null,
   }
@@ -399,7 +399,7 @@ export function buildUpdateTaskPayload(
     type: form.type,
     priority: resolveTaskPriority(form.urgent, form.effort),
     start_date: startDate || new Date().toISOString(),
-    limit_date: dateInputToLimitISO(form.dueDate),
+    limit_date: dateInputToLimitDay(form.dueDate),
     project: form.project,
     group: form.group ?? null,
     assigned_to: form.assignedTo,

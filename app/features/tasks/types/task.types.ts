@@ -337,7 +337,10 @@ export interface Task {
   /** true cuando status=backlog. */
   backlog?: boolean
   start_date: string | null
+  /** Instante exacto (UTC). No usar para mostrar el día: usar `limit_day`. */
   limit_date: string | null
+  /** Día límite en CDMX (YYYY-MM-DD) o null sin fecha. Es el que se muestra y precarga. */
+  limit_day?: string | null
   /** Fecha real de cierre (status=complete). No la manda el backend en listas aún. */
   finish_at?: string | null
   created_at: string
@@ -349,6 +352,17 @@ export interface Task {
   is_personal?: boolean
   /** Una entrada por persona mencionada en la tarea (descripción o chat), sin repetir; [] si no hay. */
   mentions?: TaskMention[]
+  /**
+   * Marca personal "Revisada" del usuario actual (ISO UTC): la tarea va al final de SUS listas hasta
+   * que el propio usuario la desmarque (ya no vence por tiempo). null si no está revisada. Otros usuarios no la ven.
+   */
+  reviewed_at?: string | null
+}
+
+/** Respuesta de POST/DELETE /api/tasks/:id/review/. */
+export interface TaskReviewResponse {
+  task: number
+  reviewed_at: string | null
 }
 
 /** Respuesta de POST /api/tasks/tokens/create/: `tokens_count` es el total DESPUÉS de dar el token. */
@@ -459,6 +473,8 @@ export interface OverdueCounts {
 export interface ProjectDropdown {
   id: number
   name: string
+  /** Admite tareas en backlog (sin el campo = true). */
+  backlog?: boolean
 }
 
 export interface GroupDropdown {
@@ -557,6 +573,13 @@ export interface KanbanColumn {
   isFetchingNextPage?: boolean
   /** Puede colapsarse a una pestaña angosta (ej. Backlog); colapsada por defecto. */
   collapsible?: boolean
+  /**
+   * «Creadas por mí»: tareas que delegué. No se arrastran ni se sueltan aquí, sin avance rápido de fase
+   * (solo los asignados cambian la fase) y la ficha dice «Sin asignar» si no tiene asignados.
+   */
+  delegated?: boolean
+  /** Clave i18n del estado vacío (por defecto `tasks.empty`). */
+  emptyKey?: string
 }
 
 /** Columna desde la que se crea una tarea en Kanban (id + título para prefills). */
@@ -740,7 +763,22 @@ export type TaskHistoryEventType =
   | 'subtask_completed'
   | 'subtask_uncompleted'
   | 'subtask_updated'
+  | 'review'
   | (string & {})
+
+/** `detail` de un evento `archive`: `archived` true = se archivó, false = se desarchivó; `status` = fase en ese momento. */
+export interface TaskHistoryArchiveDetail {
+  archive: number
+  archived: boolean
+  status: string
+  comment: string
+}
+
+/** `detail` de un evento `review` (marca personal «Revisada»): `reviewed_at` null cuando se quitó. */
+export interface TaskHistoryReviewDetail {
+  reviewed: boolean
+  reviewed_at: string | null
+}
 
 /** Evento del historial de GET /api/tasks/more/info/:id/. `actor` null = acción del sistema. */
 export interface TaskHistoryEvent {

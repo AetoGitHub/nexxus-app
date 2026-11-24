@@ -5,7 +5,6 @@ import type { PaginatedResponse } from '~/shared/types/api.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
 import { extractResults } from '~/shared/utils/paginated.util'
 import { withoutPersonalTasks } from '~/features/tasks/utils/task-personal.util'
-import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { toTaskListQuery } from '~/features/tasks/utils/task-api.util'
 import { fetchTaskListNextPage, taskListInfiniteQueryOptions } from '~/features/tasks/utils/task-infinite.util'
 import { useTaskGroupByAccess } from '~/features/tasks/composables/shared/useTaskGroupByAccess'
@@ -83,7 +82,6 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     }),
   })
 
-  const { sortByTokens } = useTaskTokenState()
 
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
@@ -93,8 +91,9 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
       const total = countsMap.get(project.id) ?? 0
       const raw: Task[] = total > 0 ? extractResults<Task>(queryResult?.data as InfiniteData<PaginatedResponse<Task>>) : []
       // En la vista de sus privados las tareas personales son justo las que se muestran.
+      // El orden (tokens y "Revisada") ya viene del API.
       const loadedTasks = isPrivateScope.value ? raw : withoutPersonalTasks(raw)
-      const tasks = sortByTokens(loadedTasks)
+      const tasks = loadedTasks
 
       return {
         id: project.id,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMarkNotificationRead } from '~/features/notifications/composables/useMarkNotificationRead'
+import { useMarkAllNotificationsRead } from '~/features/notifications/composables/useMarkAllNotificationsRead'
 import { useNotifications } from '~/features/notifications/composables/useNotifications'
 import { useNotificationState } from '~/features/notifications/composables/useNotificationState'
 import type { AppNotification } from '~/features/notifications/types/notification.types'
@@ -12,6 +13,12 @@ const route = useRoute()
 const { isLoggedIn } = useAuth()
 const { unreadCount, unreadCountLabel } = useNotificationState()
 const markRead = useMarkNotificationRead()
+// Atajo «Marcar todas como leídas» (el mismo de Configuración → Notificaciones): invalida lista y contadores.
+const markAllRead = useMarkAllNotificationsRead()
+
+function onMarkAllRead() {
+  markAllRead.mutate()
+}
 
 const isOpen = ref(false)
 const markingId = ref<number | null>(null)
@@ -22,14 +29,20 @@ const notificationsAriaLabel = computed(() =>
     : t('toolbar.notifications'),
 )
 
+// Se piden más de las que se muestran: el backend también manda las que el usuario apagó (`show: false`) y esas no se
+// pintan; con solo 8 a veces quedaban menos y más viejas.
 const { notifications, notificationsQuery } = useNotifications(
-  { page_size: NOTIFICATION_PREVIEW_LIMIT },
+  { page_size: NOTIFICATION_PREVIEW_LIMIT * 4 },
   isLoggedIn,
 )
 
+/**
+ * Lo más reciente primero (hasta hoy), sin importar si está leída: antes las no leídas iban arriba y una vieja sin leer
+ * (p. ej. de octubre) tapaba los cambios de hoy. Las no leídas se distinguen por el punto y el fondo.
+ */
 const previewNotifications = computed(() =>
   [...notifications.value]
-    .sort((a, b) => Number(a.read) - Number(b.read) || Date.parse(b.created_at) - Date.parse(a.created_at))
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at) || b.id - a.id)
     .slice(0, NOTIFICATION_PREVIEW_LIMIT),
 )
 
@@ -83,8 +96,8 @@ async function onOpen(notification: AppNotification) {
 <template>
   <UPopover
     v-model:open="isOpen"
-    :content="{ align: 'end', side: 'bottom', sideOffset: 6 }"
-    :ui="{ content: 'w-80 sm:w-96 p-0 overflow-hidden' }"
+    :content="{ align: 'end', side: 'bottom', sideOffset: 6, collisionPadding: 8 }"
+    :ui="{ content: 'w-[min(24rem,calc(100vw-1rem))] p-0 overflow-hidden' }"
   >
     <UChip
       :show="unreadCount > 0"
@@ -113,11 +126,28 @@ async function onOpen(notification: AppNotification) {
           <PushDeviceSwitch />
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <UTooltip
+            v-if="unreadCount > 0"
+            :text="t('taskSettings.notificationsPanel.markAllRead')"
+          >
+            <UButton
+              icon="i-lucide-check-check"
+              color="primary"
+              variant="soft"
+              size="xs"
+              square
+              class="ring-1 ring-primary/30"
+              :aria-label="t('taskSettings.notificationsPanel.markAllRead')"
+              :loading="markAllRead.isPending.value"
+              :disabled="markAllRead.isPending.value"
+              @click="onMarkAllRead"
+            />
+          </UTooltip>
           <UButton
             color="neutral"
-            variant="link"
+            variant="outline"
             size="xs"
-            class="px-0"
+            trailing-icon="i-lucide-arrow-up-right"
             :label="t('notifications.preview.viewAll')"
             @click="goToAllNotifications"
           />
@@ -158,7 +188,7 @@ async function onOpen(notification: AppNotification) {
 
       <div
         v-else
-        class="max-h-80 overflow-y-auto p-1.5 space-y-0.5"
+        class="max-h-[min(20rem,calc(100dvh-9rem))] overflow-y-auto overscroll-contain p-1.5 space-y-0.5"
       >
         <NotificationPreviewItem
           v-for="notification in previewNotifications"

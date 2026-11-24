@@ -40,6 +40,8 @@ import TaskSubtasksField from '~/features/tasks/components/form/TaskSubtasksFiel
 import TaskSubtaskChecklist from '~/features/tasks/components/form/TaskSubtaskChecklist.vue'
 import TaskCreatedByBadge from '~/features/tasks/components/shared/TaskCreatedByBadge.vue'
 import TaskTokenButton from '~/features/tasks/components/shared/TaskTokenButton.vue'
+import TaskReviewButton from '~/features/tasks/components/shared/TaskReviewButton.vue'
+import TaskReviewChip from '~/features/tasks/components/shared/TaskReviewChip.vue'
 import TaskArchiveProcessModal from '~/features/tasks/components/form/TaskArchiveProcessModal.vue'
 import TaskArchiveRepeatModal from '~/features/tasks/components/form/TaskArchiveRepeatModal.vue'
 import TaskUnarchiveProcessModal from '~/features/tasks/components/form/TaskUnarchiveProcessModal.vue'
@@ -172,14 +174,8 @@ const isBacklog = ref(false)
  */
 const backlogAssignedTo = ref<number[]>([])
 
-/** Hoy en zona local (YYYY-MM-DD) para deshabilitar días pasados en el input date. */
-const minDueDate = computed(() => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-})
+/** Hoy en CDMX (YYYY-MM-DD) para deshabilitar días pasados: la tarea vence en ese día, no en el del navegador. */
+const minDueDate = computed(() => businessToday())
 
 const { mutateAsync: createTask, isPending } = useCreateTask()
 const { mutateAsync: createBacklogTask, isPending: isCreatingBacklog } = useCreateBacklogTask()
@@ -490,7 +486,9 @@ const wasInBacklog = computed(() =>
 const showReturnToBacklog = computed(() =>
   showProcessActions.value
   && taskDetailQuery.data.value?.status === 'pending'
-  && wasInBacklog.value,
+  && wasInBacklog.value
+  // Proyecto sin backlog: el backend respondería 400.
+  && !taskProjectDisallowsBacklog.value,
 )
 
 /** In progress: regresar a pendiente. */
@@ -680,6 +678,17 @@ const {
 } = useProjectsDropdown({
   enabled: () => open.value,
   searchTerm: projectSearchTerm,
+  // Crear/editar en backlog: solo proyectos que admiten backlog (?backlog=true). Tareas normales: sin filtro.
+  backlog: () => (isBacklogMode.value ? true : undefined),
+})
+
+/** El proyecto de la tarea no admite backlog (dato del dropdown; si no se conoce, se asume que sí). */
+const taskProjectDisallowsBacklog = computed(() => {
+  const projectId = taskDetailQuery.data.value?.project
+  if (projectId == null) {
+    return false
+  }
+  return allProjectItems.value.find(item => item.value === projectId)?.backlog === false
 })
 
 const {
@@ -742,7 +751,7 @@ const detailAssignedToFallbackItems = computed(() =>
 const userItems = computed(() =>
   withSelectedItems(
     fetchedUserItems.value,
-    [...state.assignedTo, ...backlogAssignedTo.value],
+    [...state.assignedTo, ...backlogAssignedTo.value, ...state.taskReviewer],
     [...allUserItems.value, ...currentUserFallbackItems.value, ...detailAssignedToFallbackItems.value],
   ),
 )
@@ -779,6 +788,8 @@ const privateProjectItems = computed(() => {
   }
   const term = projectSearchTerm.value.trim().toLowerCase()
   return privateProjects.value
+    // En backlog solo los que lo admiten (sin el campo = sí).
+    .filter(project => !isBacklogMode.value || project.backlog !== false)
     .filter(project => !term || project.name.toLowerCase().includes(term))
     .map(project => ({ label: project.name, value: project.id, icon: 'i-lucide-lock' }))
 })
@@ -826,6 +837,51 @@ watch(isPersonalProject, (personal) => {
     row.assignedTo = currentUserId
   }
 })
+
+/**
+ * Acceso rápido al crear: al quitarme de «Asignado a» (con el switch «Agregarme a mí» o desde el selector), la tarea
+ * pasa a cierre múltiple conmigo como revisor y se avisa 15 s. Solo desde Manual (o si ya era cierre múltiple); el tipo
+ * se puede cambiar libremente después.
+ */
+const autoReviewer = ref<'idle' | 'applied' | 'dismissed'>('idle')
+let autoReviewerTimer: ReturnType<typeof setTimeout> | undefined
+
+function dismissAutoReviewerNotice() {
+  clearTimeout(autoReviewerTimer)
+  autoReviewer.value = 'dismissed'
+}
+
+const AUTO_REVIEWER_NOTICE_MS = 15_000
+
+watch(
+  () => (user.value?.id != null && state.assignedTo.includes(user.value.id)),
+  (isAssigned, wasAssigned) => {
+    const currentUserId = user.value?.id
+    if (
+      !wasAssigned
+      || isAssigned
+      || currentUserId == null
+      || !open.value
+      || isDetailView.value
+      || isBacklogMode.value
+      || isPersonalProject.value
+      || (state.type !== 'manual' && state.type !== 'multiple_close')
+    ) {
+      return
+    }
+    state.type = 'multiple_close'
+    if (!state.taskReviewer.includes(currentUserId)) {
+      state.taskReviewer = [...state.taskReviewer, currentUserId]
+    }
+    autoReviewer.value = 'applied'
+    clearTimeout(autoReviewerTimer)
+    autoReviewerTimer = setTimeout(dismissAutoReviewerNotice, AUTO_REVIEWER_NOTICE_MS)
+  },
+)
+
+const showAutoReviewerNotice = computed(() => autoReviewer.value === 'applied' && state.type === 'multiple_close')
+
+onBeforeUnmount(() => clearTimeout(autoReviewerTimer))
 
 /** Selector de responsables del backlog: en un proyecto privado solo el dueño. */
 const backlogAssigneeItems = computed(() =>
@@ -1003,6 +1059,8 @@ function resetForm() {
   state.applyToAll = false
   isBacklog.value = false
   backlogAssignedTo.value = []
+  clearTimeout(autoReviewerTimer)
+  autoReviewer.value = 'idle'
 }
 
 function applyFormInput(input: NewTaskFormInput) {
@@ -1489,6 +1547,20 @@ watch(isBacklog, (isOn) => {
   }
 })
 
+// Al pasar a backlog, si el proyecto elegido no lo admite se quita para que elija otro (el backend respondería 400).
+watch([isBacklogMode, allProjectItems, privateProjects], ([backlogMode]) => {
+  if (!backlogMode || isDetailView.value || state.project == null) {
+    return
+  }
+  const fromPrivate = privateProjects.value.find(project => project.id === state.project)
+  const disallowed = fromPrivate
+    ? fromPrivate.backlog === false
+    : allProjectItems.value.length > 0 && !allProjectItems.value.some(item => item.value === state.project)
+  if (disallowed) {
+    state.project = undefined
+  }
+})
+
 watch(() => state.urgent, (isUrgent) => {
   if (isReadOnly.value) {
     return
@@ -1527,8 +1599,10 @@ watch(open, (isOpen) => {
 
   if (taskId.value == null) {
     applyNewTaskFormDefaults(state, props.initialDefaults)
-    if (assignSelfOnCreate.value && !state.assignedTo.length && user.value?.id != null) {
-      state.assignedTo = [user.value.id]
+    // Al abrir «Crear» siempre arranco asignado: el switch «Agregarme a mí» se reinicia encendido.
+    assignSelfOnCreate.value = true
+    if (user.value?.id != null && !state.assignedTo.includes(user.value.id)) {
+      state.assignedTo = [...state.assignedTo, user.value.id]
     }
     if (!state.dueDate) {
       state.dueDate = minDueDate.value
@@ -1711,6 +1785,12 @@ const slideoverUi = computed(() => {
               />
             </div>
             <div class="ml-auto flex shrink-0 items-center gap-1">
+              <!-- Acción directa (fuera del menú ⋯ en móvil); en backlog solo se muestra la marca. -->
+              <TaskReviewButton
+                v-if="taskId != null && !isBacklogMode"
+                :task-id="taskId"
+                :reviewed-at="taskDetailQuery.data.value?.reviewed_at"
+              />
               <TaskTokenButton
                 v-if="taskId != null"
                 :task-id="taskId"
@@ -1821,6 +1901,15 @@ const slideoverUi = computed(() => {
               />
             </div>
           </div>
+
+          <!-- Texto completo de la marca "Revisada" (en las fichas solo va la hora). -->
+          <TaskReviewChip
+            v-if="isDetailView && taskId != null"
+            :task-id="taskId"
+            :reviewed-at="taskDetailQuery.data.value?.reviewed_at"
+            full
+            class="shrink-0 border-b border-border px-4 py-2"
+          />
 
           <UForm
             :id="formId"
@@ -2243,6 +2332,16 @@ const slideoverUi = computed(() => {
                 :label="t('tasks.form.assignSelfOnCreate')"
                 class="mt-2"
                 @update:model-value="onToggleAssignSelf"
+              />
+              <UAlert
+                v-if="showAutoReviewerNotice"
+                color="info"
+                variant="subtle"
+                icon="i-lucide-users"
+                :title="t('tasks.form.autoReviewer.changed')"
+                close
+                class="mt-2"
+                @update:open="dismissAutoReviewerNotice"
               />
             </UFormField>
 

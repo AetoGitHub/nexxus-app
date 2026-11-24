@@ -3,8 +3,8 @@ import type { ArchivedCounts, KanbanColumn, KanbanCounts, TaskListFilters } from
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
 import { useKanbanCompleteDateFilter } from '~/features/tasks/composables/kanban/useKanbanCompleteDateFilter'
 import { extractResults } from '~/shared/utils/paginated.util'
-import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { useBacklogMine } from '~/features/tasks/composables/shared/useBacklogMine'
+import { useBacklogCreatedView } from '~/features/tasks/composables/shared/useBacklogCreatedView'
 import { useRepeatScopeFilter } from '~/features/tasks/composables/shared/useRepeatScopeFilter'
 import { fetchTaskListNextPage } from '~/features/tasks/utils/task-infinite.util'
 import { currentWeekRange } from '~/features/tasks/utils/kanban/kanban-complete-filter.util'
@@ -16,7 +16,11 @@ import { currentWeekRange } from '~/features/tasks/utils/kanban/kanban-complete-
  * Rechazada: skeleton mientras cargan counts; se oculta solo si count === 0.
  * Archivado vive en su propia vista independiente: ver `useArchivedTasks`.
  */
-export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
+export function useKanbanTasks(
+  filters: MaybeRefOrGetter<TaskListFilters> = {},
+  /** Solo el tablero Kanban ofrece «Creadas por mí» en la columna Backlog (la lista por estatus no). */
+  options: { allowCreatedView?: boolean } = {},
+) {
   const api = createCompanyTasksApi(filters)
   const scope = ['kanban']
 
@@ -26,9 +30,16 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   // «Asignadas a mí» solo afecta al backlog (lista y contador).
   const { extraQuery: backlogMineQuery } = useBacklogMine()
-  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/', { extraQuery: backlogMineQuery })
+  // «Creadas por mí»: la columna Backlog cambia su consulta a /created/ (sin admin/group; siempre son las mías).
+  const { created: createdView } = useBacklogCreatedView()
+  const createdMode = computed(() => options.allowCreatedView === true && createdView.value)
+  const backlogEnabled = () => !createdMode.value
+  const createdEnabled = () => createdMode.value
+  const backlogCounts = api.countsQuery<ArchivedCounts>(['backlog'], '/backlog/counts/', { extraQuery: backlogMineQuery, enabled: backlogEnabled })
   const backlogCountsReady = computed(() => backlogCounts.isFetched.value)
-  const backlog = api.listQuery(['backlog'], '/backlog/', { extraQuery: backlogMineQuery })
+  const backlog = api.listQuery(['backlog'], '/backlog/', { extraQuery: backlogMineQuery, enabled: backlogEnabled })
+  const createdCounts = api.countsQuery<ArchivedCounts>(['created'], '/created/counts/', { ignoreAdmin: true, enabled: createdEnabled })
+  const created = api.listQuery(['created'], '/created/', { ignoreAdmin: true, enabled: createdEnabled })
 
   // Repetitivas de «Pendiente»: una por serie por defecto. `limit_date_*` y `repeats` aplican a todos los estados, por eso
   // el contador de esta columna sale de su propia consulta y no del `counts/` compartido.
@@ -55,30 +66,47 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
     enabled: () => countsReady.value && rejectedCount.value > 0,
   })
 
-  const { sortByTokens } = useTaskTokenState()
 
   const columns = computed<KanbanColumn[]>(() => {
     const totals = counts.data.value
 
+    // Mismo id 'backlog' en ambos modos: la columna conserva si está colapsada al cambiar de consulta.
+    const backlogColumn: KanbanColumn = createdMode.value
+      ? {
+          id: 'backlog',
+          labelKey: 'tasks.kanban.columns.created',
+          color: '#0d9488',
+          count: createdCounts.isFetched.value ? createdCounts.data.value?.total : undefined,
+          tasks: extractResults(created.data.value),
+          loading: !createdCounts.isFetched.value || created.isPending.value,
+          error: created.isError.value,
+          hasNextPage: created.hasNextPage.value,
+          isFetchingNextPage: created.isFetchingNextPage.value,
+          collapsible: true,
+          delegated: true,
+          emptyKey: 'tasks.kanban.createdEmpty',
+        }
+      : {
+          id: 'backlog',
+          labelKey: 'tasks.kanban.columns.backlog',
+          color: '#8b5cf6',
+          count: backlogCountsReady.value ? backlogCounts.data.value?.total : undefined,
+          tasks: extractResults(backlog.data.value),
+          loading: !backlogCountsReady.value || backlog.isPending.value,
+          error: backlog.isError.value,
+          hasNextPage: backlog.hasNextPage.value,
+          isFetchingNextPage: backlog.isFetchingNextPage.value,
+          collapsible: true,
+        }
+
     const allColumns: KanbanColumn[] = [
-      {
-        id: 'backlog',
-        labelKey: 'tasks.kanban.columns.backlog',
-        color: '#8b5cf6',
-        count: backlogCountsReady.value ? backlogCounts.data.value?.total : undefined,
-        tasks: extractResults(backlog.data.value),
-        loading: !backlogCountsReady.value || backlog.isPending.value,
-        error: backlog.isError.value,
-        hasNextPage: backlog.hasNextPage.value,
-        isFetchingNextPage: backlog.isFetchingNextPage.value,
-        collapsible: true,
-      },
+      backlogColumn,
       {
         id: 'pending',
         labelKey: 'tasks.kanban.columns.pending',
         color: '#6b7280',
         count: pendingCounts.data.value?.pending ?? totals?.pending,
-        tasks: sortByTokens(extractResults(pending.data.value)),
+        tasks: extractResults(pending.data.value),
         loading: pending.isPending.value,
         error: pending.isError.value,
         hasNextPage: pending.hasNextPage.value,
@@ -89,7 +117,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.wip',
         color: '#6366f1',
         count: totals?.wip,
-        tasks: sortByTokens(extractResults(wip.data.value)),
+        tasks: extractResults(wip.data.value),
         loading: wip.isPending.value,
         error: wip.isError.value,
         hasNextPage: wip.hasNextPage.value,
@@ -100,7 +128,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.inReview',
         color: '#f97316',
         count: totals?.in_review,
-        tasks: sortByTokens(extractResults(inReview.data.value)),
+        tasks: extractResults(inReview.data.value),
         loading: inReview.isPending.value,
         error: inReview.isError.value,
         hasNextPage: inReview.hasNextPage.value,
@@ -111,7 +139,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.rejected',
         color: '#dc2626',
         count: countsReady.value ? rejectedCount.value : undefined,
-        tasks: sortByTokens(extractResults(rejected.data.value)),
+        tasks: extractResults(rejected.data.value),
         loading: !countsReady.value || rejected.isPending.value,
         error: rejected.isError.value,
         hasNextPage: rejected.hasNextPage.value,
@@ -122,7 +150,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
         labelKey: 'tasks.kanban.columns.complete',
         color: '#28ceab',
         count: totals?.complete,
-        tasks: sortByTokens(extractResults(complete.data.value)),
+        tasks: extractResults(complete.data.value),
         loading: complete.isPending.value,
         error: complete.isError.value,
         hasNextPage: complete.hasNextPage.value,
@@ -135,7 +163,7 @@ export function useKanbanTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) 
 
   function loadMore(columnId: string | number) {
     const queries = {
-      backlog,
+      backlog: createdMode.value ? created : backlog,
       pending,
       wip,
       in_review: inReview,

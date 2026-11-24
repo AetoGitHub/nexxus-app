@@ -337,7 +337,7 @@ function goToStatusList() {
 
     <div
       class="mt-3 flex-1 min-h-0 min-w-0"
-      :class="view === 'kanban' ? 'overflow-hidden' : 'overflow-y-auto pb-32 md:pb-0'"
+      :class="view === 'kanban' && !showArchivedOnly ? 'overflow-hidden' : 'overflow-y-auto overscroll-contain pb-32 md:pb-0'"
     >
       <slot
         :view="view"
