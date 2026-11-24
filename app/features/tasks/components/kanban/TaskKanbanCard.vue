@@ -193,6 +193,7 @@ function onDragEnd() {
         <TaskReviewChip
           :task-id="task.id"
           :reviewed-at="task.reviewed_at"
+          :removable="!reviewReadonly"
         />
         <!-- Oculto de momento: genera confusión
         <UBadge

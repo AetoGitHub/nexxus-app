@@ -56,11 +56,34 @@ const EVENT_ICONS: Record<string, string> = {
   subtask_completed: 'i-lucide-list-checks',
   subtask_uncompleted: 'i-lucide-list-restart',
   subtask_updated: 'i-lucide-list-todo',
+  review: 'i-lucide-check-check',
 }
 
 /** Ícono por tipo de evento; genérico para tipos que no conocemos. */
 export function historyEventIcon(type: string): string {
   return EVENT_ICONS[type] ?? 'i-lucide-circle-dot'
+}
+
+/**
+ * `detail.archived` de un evento `archive`: true = se archivó, false = se desarchivó; null si el backend no lo manda
+ * (eventos viejos: se pintan como archivar).
+ */
+export function historyArchived(event: TaskHistoryEvent): boolean | null {
+  const value = event.detail?.archived
+  return typeof value === 'boolean' ? value : null
+}
+
+/** `detail.reviewed` de un evento `review`: true = marcó (o volvió a marcar) "Revisada", false = la quitó. */
+export function historyReviewed(event: TaskHistoryEvent): boolean {
+  return event.detail?.reviewed === true
+}
+
+/** Ícono del evento según su detalle (archivar vs desarchivar); el resto por tipo. */
+export function historyEventIconFor(event: TaskHistoryEvent): string {
+  if (event.type === 'archive' && historyArchived(event) === false) {
+    return 'i-lucide-archive-restore'
+  }
+  return historyEventIcon(event.type)
 }
 
 export type HistoryTone = 'primary' | 'info' | 'success' | 'warning' | 'error' | 'secondary' | 'neutral'
@@ -74,7 +97,7 @@ const EVENT_TONES: Record<string, HistoryTone> = {
   task_updated: 'primary',
   close_approval_assigned: 'success',
   close_approval_resolved: 'success',
-  archive: 'error',
+  archive: 'neutral',
   token: 'warning',
   mention: 'warning',
   file: 'neutral',
@@ -89,6 +112,14 @@ const EVENT_TONES: Record<string, HistoryTone> = {
 export function historyEventTone(event: TaskHistoryEvent): HistoryTone {
   if (event.type === 'close_approval_resolved' && event.detail?.cancelled) {
     return 'error'
+  }
+  // Archivar en gris; desarchivar en verde (por `detail.archived`, no por el texto).
+  if (event.type === 'archive') {
+    return historyArchived(event) === false ? 'success' : 'neutral'
+  }
+  // «Revisada»: color del chip (primario) al marcar; gris al quitarla.
+  if (event.type === 'review') {
+    return historyReviewed(event) ? 'primary' : 'neutral'
   }
   return EVENT_TONES[event.type] ?? 'neutral'
 }

@@ -1773,7 +1773,6 @@ const slideoverUi = computed(() => {
                 v-if="taskId != null && !isBacklogMode"
                 :task-id="taskId"
                 :reviewed-at="taskDetailQuery.data.value?.reviewed_at"
-                labeled
               />
               <TaskTokenButton
                 v-if="taskId != null"

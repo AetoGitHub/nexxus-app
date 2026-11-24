@@ -19,6 +19,8 @@ const props = withDefaults(
     showStatus?: boolean
     /** Botón de eliminar (hover), p. ej. en la vista de archivadas. */
     deletable?: boolean
+    /** Fila de la vista de archivadas: sin atajos de "Revisada" ni token. */
+    archivedView?: boolean
     /**
      * Qué hace el círculo: avanzar la tarea al siguiente estado con un clic, sin modal (default; si la tarea no se
      * puede avanzar es solo el indicador de su estado) o autorizarla directamente, sin modal ni slideover
@@ -34,6 +36,7 @@ const props = withDefaults(
     selected: false,
     showStatus: false,
     deletable: false,
+    archivedView: false,
     checkAction: 'advance',
     approveLoading: false,
     advancing: false,
@@ -64,8 +67,9 @@ const {
 const { mentionsMe } = useTaskMentions(() => props.task.mentions)
 const { isReviewed } = useTaskReviewState()
 const reviewed = computed(() => isReviewed(props.task))
-/** En backlog la marca solo se muestra (ahí no se reordena). */
-const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true)
+/** Backlog y archivadas: sin atajos ("Revisada" ni token); de la marca solo se muestra el chip. */
+const isArchivedTask = computed(() => props.archivedView || props.task.archived === true)
+const reviewReadonly = computed(() => props.task.status === 'backlog' || props.task.backlog === true || isArchivedTask.value)
 const advanceStep = computed(() => props.checkAction === 'advance' ? resolveQuickAdvance(props.task, user.value?.id) : null)
 const advanceBlocked = computed(() => props.checkAction === 'advance' && isQuickAdvanceBlocked(props.task, user.value?.id))
 
@@ -176,17 +180,14 @@ function onApproveClick() {
             total: closeApprovalsProgress.total,
           })"
         />
-        <!-- Hora de la marca: chip compacto hasta 1279 px; desde 1280 px vive en el tooltip del botón. En backlog solo el chip. -->
-        <span
-          class="contents"
-          :class="reviewReadonly ? '' : 'xl:hidden'"
-        >
-          <TaskReviewChip
-            :task-id="task.id"
-            :reviewed-at="task.reviewed_at"
-          />
-        </span>
+        <!-- Marca «Revisada»: chip con la hora; con ✕ la quita (en backlog y archivadas solo se muestra). -->
+        <TaskReviewChip
+          :task-id="task.id"
+          :reviewed-at="task.reviewed_at"
+          :removable="!reviewReadonly"
+        />
         <TaskTokenButton
+          v-if="!isArchivedTask"
           :task-id="task.id"
           :count="task.tokens_count"
         />
