@@ -110,6 +110,10 @@ export default defineNuxtConfig({
       n8nVoiceUrl:
         process.env.NUXT_PUBLIC_N8N_VOICE_URL
         ?? "https://n8n.srv1137762.hstgr.cloud/webhook/nexxus-voz",
+      // Webhook de n8n que genera el código de «¿Olvidaste tu contraseña?» y lo manda por correo (sin sesión).
+      n8nPasswordResetUrl:
+        process.env.NUXT_PUBLIC_N8N_PASSWORD_RESET_URL
+        ?? "https://n8n.srv1137762.hstgr.cloud/webhook/password-reset",
     },
   },
 
