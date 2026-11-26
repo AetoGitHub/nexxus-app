@@ -3,6 +3,7 @@ import {
   PASSWORD_RESET_CODE_TTL_MS,
   PASSWORD_RESET_RESEND_COOLDOWN_MS,
   classifyPasswordResetError,
+  fetchErrorStatus,
   maskEmail,
   usePasswordReset,
 } from '~/features/auth/composables/usePasswordReset'
@@ -14,20 +15,111 @@ const { t } = useI18n({ useScope: 'local' })
 const route = useRoute()
 const toast = useToast()
 const session = useAuthSession()
-const { requestCode, confirmReset } = usePasswordReset()
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const { lookupUser, requestCode, confirmReset } = usePasswordReset()
 
 type Step = 'request' | 'confirm'
 const step = ref<Step>('request')
 
-// Paso 1. Usuario y correo se conservan en memoria para el paso 2 (nunca en la URL ni en localStorage).
+// Paso 1. Solo el usuario: el correo sale del perfil (el backend lo da enmascarado) y no se puede editar.
 const identity = reactive({
   username: typeof route.query.username === 'string' ? route.query.username : '',
-  email: '',
 })
-const emailValid = computed(() => EMAIL_PATTERN.test(identity.email.trim()))
-const canRequest = computed(() => identity.username.trim() !== '' && emailValid.value)
+
+/**
+ * Usuario encontrado (`GET password/reset/lookup/`). Comparte el límite de 10 llamadas por hora con el confirm:
+ * se consulta al salir del campo o 500 ms después de dejar de escribir, y cada usuario una sola vez.
+ */
+type LookupState = 'idle' | 'loading' | 'found' | 'not_found' | 'throttled' | 'error'
+const lookupState = ref<LookupState>('idle')
+const foundUsername = ref('')
+/** Correo tal como lo regresa el lookup: solo en memoria, para mandarlo a n8n. Nunca se pinta. */
+const foundEmail = ref('')
+/** Lo único que se muestra: `h***@gmail.com`. */
+const maskedEmail = computed(() => (foundEmail.value ? maskEmail(foundEmail.value) : ''))
+/** Usuario (normalizado) al que corresponde el resultado mostrado. */
+const lookedUpFor = ref('')
+const lookupCache = new Map<string, { state: LookupState, username: string, email: string }>()
+let lookupSeq = 0
+
+const normalizedUsername = computed(() => identity.username.trim().toLowerCase())
+
+function applyLookup(key: string, state: LookupState, username = '', email = '') {
+  lookedUpFor.value = key
+  lookupState.value = state
+  foundUsername.value = username
+  foundEmail.value = email
+}
+
+async function runLookup() {
+  const key = normalizedUsername.value
+  if (!key) {
+    applyLookup('', 'idle')
+    return
+  }
+  if (lookedUpFor.value === key && lookupState.value !== 'idle') {
+    return
+  }
+  const cached = lookupCache.get(key)
+  if (cached) {
+    applyLookup(key, cached.state, cached.username, cached.email)
+    return
+  }
+
+  const seq = ++lookupSeq
+  applyLookup(key, 'loading')
+  try {
+    const result = await lookupUser(identity.username)
+    if (seq !== lookupSeq) {
+      return
+    }
+    applyLookup(key, 'found', result.username, result.email)
+    lookupCache.set(key, { state: 'found', username: result.username, email: result.email })
+  }
+  catch (error) {
+    if (seq !== lookupSeq) {
+      return
+    }
+    const status = fetchErrorStatus(error)
+    applyLookup(key, status === 404 ? 'not_found' : status === 429 ? 'throttled' : 'error')
+    // Solo el 404 es definitivo para ese usuario; un 429 o un error de red se puede reintentar.
+    if (status === 404) {
+      lookupCache.set(key, { state: 'not_found', username: '', email: '' })
+    }
+  }
+}
+
+// Al cambiar el texto se borra el resultado mostrado y se vuelve a consultar con debounce.
+watch(normalizedUsername, (key) => {
+  if (key !== lookedUpFor.value) {
+    lookupSeq++
+    applyLookup('', 'idle')
+  }
+})
+watchDebounced(normalizedUsername, () => {
+  void runLookup()
+}, { debounce: 500 })
+onMounted(() => {
+  if (normalizedUsername.value) {
+    void runLookup()
+  }
+})
+
+const lookupMessage = computed(() => {
+  switch (lookupState.value) {
+    case 'not_found':
+      return t('lookup_not_found')
+    case 'throttled':
+      return t('throttled')
+    case 'error':
+      return t('lookup_error')
+    default:
+      return ''
+  }
+})
+
+const canRequest = computed(() =>
+  lookupState.value === 'found' && lookedUpFor.value === normalizedUsername.value,
+)
 const requesting = ref(false)
 const requestError = ref('')
 /** Mensaje genérico de n8n ("Si los datos son correctos…"). */
@@ -74,8 +166,6 @@ const resendDisabled = computed(() => requesting.value || resendWaitSeconds.valu
 /** Sin código válido no hay nada que enviar: se resalta «Reenviar código». */
 const needsNewCode = computed(() => codeSpent.value || expired.value)
 
-const maskedEmail = computed(() => maskEmail(identity.email))
-
 function resetConfirmErrors() {
   confirmError.value = ''
   passwordError.value = ''
@@ -91,7 +181,8 @@ async function sendCode() {
   requesting.value = true
   requestError.value = ''
   try {
-    const detail = await requestCode({ username: identity.username, email: identity.email })
+    // Al webhook de n8n van el username real y el correo del perfil (no algo que escriba el usuario).
+    const detail = await requestCode({ username: foundUsername.value || identity.username, email: foundEmail.value })
     requestInfo.value = detail ?? t('request_info_default')
     sentAt.value = Date.now()
     codeDigits.value = []
@@ -130,7 +221,6 @@ async function onConfirm() {
   try {
     const detail = await confirmReset({
       username: identity.username,
-      email: identity.email,
       code: code.value,
       new_password: passwords.next,
       new_password2: passwords.confirm,
@@ -173,7 +263,7 @@ async function onConfirm() {
   }
 }
 
-/** Volver al paso 1 para corregir usuario o correo. */
+/** Volver al paso 1 para corregir el usuario. */
 function editIdentity() {
   step.value = 'request'
   codeDigits.value = []
@@ -239,27 +329,47 @@ useSeoMeta({
               size="xl"
               class="w-full"
               :placeholder="t('placeholder_username')"
+              :loading="lookupState === 'loading'"
+              @blur="runLookup"
             />
+            <template #help>
+              <p
+                v-if="lookupMessage"
+                class="flex items-start gap-1.5 text-sm text-error"
+              >
+                <UIcon
+                  name="i-lucide-circle-alert"
+                  class="mt-0.5 size-4 shrink-0"
+                />
+                <span>{{ lookupMessage }}</span>
+              </p>
+            </template>
           </UFormField>
 
-          <UFormField
-            name="email"
-            :label="t('field_email')"
-            :error="identity.email.trim() !== '' && !emailValid ? t('validation_email') : undefined"
-            required
-          >
-            <UInput
-              v-model="identity.email"
-              type="email"
-              inputmode="email"
-              autocomplete="email"
-              autocapitalize="none"
-              spellcheck="false"
-              size="xl"
-              class="w-full"
-              :placeholder="t('placeholder_email')"
-            />
-          </UFormField>
+          <!-- Correo del usuario encontrado: solo se muestra (enmascarado), no se puede escribir ni cambiar. -->
+          <div aria-live="polite">
+            <div
+              v-if="lookupState === 'found'"
+              class="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3"
+            >
+              <UIcon
+                name="i-lucide-mail-check"
+                class="mt-0.5 size-5 shrink-0 text-primary"
+              />
+              <div class="min-w-0 grid gap-0.5">
+                <p class="text-sm text-muted">
+                  {{ t('lookup_found_user', { username: foundUsername }) }}
+                </p>
+                <p class="text-sm">
+                  {{ t('lookup_found_email') }}
+                  <strong class="break-all text-default">{{ maskedEmail }}</strong>
+                </p>
+                <p class="text-xs text-muted">
+                  {{ t('lookup_found_hint') }}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div aria-live="assertive">
             <UAlert
@@ -444,63 +554,64 @@ useSeoMeta({
 <i18n lang="yaml">
 en:
   title: Recover password
-  tagline: Enter your username and registered email. We'll send you a 6-digit code.
+  tagline: Enter your username. We'll send a 6-digit key to the email registered on your account.
   field_username: Username
-  field_email: Email
   placeholder_username: e.g. john.doe
-  placeholder_email: "name{'@'}company.com"
-  validation_email: Enter a valid email
-  send_code: Send code
-  request_error: We couldn't send the code. Please try again.
-  request_info_default: If the details are correct, you'll receive a code in your email.
-  confirm_title: Enter your code
-  confirm_tagline: "We sent a code to {email}. It expires in 5 minutes and you only get one attempt."
-  field_code: Code
+  lookup_found_user: "User found: {username}"
+  lookup_found_email: "We'll send the key to"
+  lookup_found_hint: This is the email registered on your account. It can't be changed here.
+  lookup_not_found: We couldn't find that user or it has no registered email. Contact your administrator.
+  lookup_error: We couldn't look up the user. Please try again.
+  send_code: Send key
+  request_error: We couldn't send the key. Please try again.
+  request_info_default: If the details are correct, you'll receive a key in your email.
+  confirm_title: Enter your key
+  confirm_tagline: "We sent a key to {email}. It expires in 5 minutes and you only get one attempt."
+  field_code: Key
   expires_in: "Expires in {time}"
-  code_expired: The code expired
+  code_expired: The key expired
   field_new: New password
   field_confirm: Confirm password
   show_password: Show password
   hide_password: Hide password
-  validation_code: Enter the 6-digit code.
+  validation_code: Enter the 6-digit key.
   validation_password: Enter the new password.
   validation_mismatch: The passwords do not match.
   submit: Change password
-  resend: Resend code
-  resend_wait: "Resend code ({seconds} s)"
-  edit_identity: Change username or email
-  throttled: Too many attempts. Wait a few minutes and try again.
-  back_to_login: Back to sign in
-  success_title: Password updated
-  success_description: Sign in with your new password.
+  resend: Resend key
+  resend_wait: "Resend key ({seconds} s)"
+  edit_identity: Change username
+  throttled: Too many attempts. Wait a few minutes.
 es:
   title: Recuperar contraseña
-  tagline: Escribe tu usuario y el correo registrado. Te enviaremos un código de 6 dígitos.
+  tagline: Escribe tu usuario. Te enviaremos una clave de 6 dígitos al correo registrado en tu cuenta.
   field_username: Usuario
-  field_email: Correo
   placeholder_username: ej. hector.nexxus
-  placeholder_email: "nombre{'@'}empresa.com"
-  validation_email: Escribe un correo válido
-  send_code: Enviar código
-  request_error: No pudimos enviar el código. Intenta de nuevo.
-  request_info_default: Si los datos son correctos, recibirás un código en tu correo.
-  confirm_title: Escribe tu código
-  confirm_tagline: "Enviamos un código a {email}. Vence en 5 minutos y solo tienes un intento."
-  field_code: Código
+  lookup_found_user: "Usuario encontrado: {username}"
+  lookup_found_email: "Enviaremos la clave a"
+  lookup_found_hint: Es el correo registrado en tu cuenta. No se puede cambiar aquí.
+  lookup_not_found: No encontramos ese usuario o no tiene correo registrado. Contacta a tu administrador.
+  lookup_error: No pudimos buscar el usuario. Intenta de nuevo.
+  send_code: Enviar clave
+  request_error: No pudimos enviar la clave. Intenta de nuevo.
+  request_info_default: Si los datos son correctos, recibirás una clave en tu correo.
+  confirm_title: Escribe tu clave
+  confirm_tagline: "Enviamos una clave a {email}. Vence en 5 minutos y solo tienes un intento."
+  field_code: Clave
   expires_in: "Vence en {time}"
-  code_expired: El código venció
+  code_expired: La clave venció
   field_new: Nueva contraseña
   field_confirm: Confirmar contraseña
   show_password: Mostrar contraseña
   hide_password: Ocultar contraseña
-  validation_code: Escribe el código de 6 dígitos.
+  validation_code: Escribe la clave de 6 dígitos.
   validation_password: Escribe la nueva contraseña.
   validation_mismatch: Las contraseñas no coinciden.
   submit: Cambiar contraseña
-  resend: Reenviar código
-  resend_wait: "Reenviar código ({seconds} s)"
-  edit_identity: Cambiar usuario o correo
-  throttled: Demasiados intentos. Espera unos minutos e inténtalo de nuevo.
+  resend: Reenviar clave
+  resend_wait: "Reenviar clave ({seconds} s)"
+  edit_identity: Cambiar usuario
+  throttled: Demasiados intentos. Espera unos minutos.
   back_to_login: Volver a iniciar sesión
   success_title: Contraseña actualizada
   success_description: Inicia sesión con tu nueva contraseña.
