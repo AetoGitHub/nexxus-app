@@ -47,6 +47,7 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
       { key: 'can_view_groups', labelKey: 'permissions.fields.settings.can_view_groups' },
       { key: 'can_create_groups', labelKey: 'permissions.fields.settings.can_create_groups' },
       { key: 'can_update_groups', labelKey: 'permissions.fields.settings.can_update_groups' },
+      { key: 'can_presets', labelKey: 'permissions.fields.settings.can_presets' },
     ],
   },
   {
@@ -63,10 +64,13 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
 
 const MODULE_IDS: PermissionModule[] = PERMISSION_MODULES.map(module => module.id)
 
-/** Todo negado: así arranca una plantilla nueva (el backend deja en false lo que no se manda). */
-export function denyAllBlocks(): PermissionBlocks {
+/**
+ * Todo negado: así arranca una plantilla nueva (el backend deja en false lo que no se manda). Con `modules` solo arma
+ * esos bloques (Preset App: task y settings).
+ */
+export function denyAllBlocks(modules: readonly PermissionModule[] = MODULE_IDS): PermissionBlocks {
   const blocks = {} as Record<PermissionModule, Record<string, boolean>>
-  for (const module of PERMISSION_MODULES) {
+  for (const module of PERMISSION_MODULES.filter(item => modules.includes(item.id))) {
     blocks[module.id] = { allow: false }
     for (const field of module.fields) {
       blocks[module.id][field.key] = false
@@ -75,11 +79,14 @@ export function denyAllBlocks(): PermissionBlocks {
   return blocks as unknown as PermissionBlocks
 }
 
-/** Copia solo los 5 bloques (sin id/name/profile…), para usarla como borrador editable. */
-export function pickBlocks(source: PermissionBlocks): PermissionBlocks {
+/** Copia solo los bloques (sin id/name/profile…), para usarla como borrador editable. */
+export function pickBlocks(
+  source: Partial<PermissionBlocks>,
+  modules: readonly PermissionModule[] = MODULE_IDS,
+): PermissionBlocks {
   const blocks = {} as Record<PermissionModule, Record<string, boolean>>
-  const empty = denyAllBlocks()
-  for (const id of MODULE_IDS) {
+  const empty = denyAllBlocks(modules)
+  for (const id of modules) {
     // Un bloque que el backend aún no manda (p. ej. un módulo nuevo) arranca negado en vez de romper la matriz.
     blocks[id] = {
       ...(empty[id] as unknown as Record<string, boolean>),
@@ -90,13 +97,17 @@ export function pickBlocks(source: PermissionBlocks): PermissionBlocks {
 }
 
 /** Solo los bloques y campos que cambiaron; `null` si no hay cambios. */
-export function diffBlocks(source: PermissionBlocks, draft: PermissionBlocks): PermissionBlocksPatch | null {
+export function diffBlocks(
+  source: Partial<PermissionBlocks>,
+  draft: Partial<PermissionBlocks>,
+  modules: readonly PermissionModule[] = MODULE_IDS,
+): PermissionBlocksPatch | null {
   // Normalizado igual que el borrador: un bloque ausente cuenta como «todo negado», no como cambio.
-  const original = pickBlocks(source)
+  const original = pickBlocks(source, modules)
   const patch: Record<string, Record<string, boolean>> = {}
-  for (const id of MODULE_IDS) {
+  for (const id of modules) {
     const before = original[id] as unknown as Record<string, boolean>
-    const after = draft[id] as unknown as Record<string, boolean>
+    const after = (draft[id] ?? {}) as unknown as Record<string, boolean>
     for (const [key, value] of Object.entries(after)) {
       if (before?.[key] !== value) {
         patch[id] ??= {}

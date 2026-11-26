@@ -11,6 +11,26 @@ export interface PermissionPreset extends PermissionBlocks {
   company_name: string | null
 }
 
+/** Módulos que guarda un Preset App (el backend rechaza cualquier otro bloque con 400). */
+export const PRESET_APP_MODULES = ['task', 'settings'] as const satisfies readonly PermissionModule[]
+
+export type PresetAppModule = (typeof PRESET_APP_MODULES)[number]
+
+export type PresetAppBlocks = Pick<PermissionBlocks, PresetAppModule>
+
+/**
+ * Preset App (GET /api/auth/permissions/presets_app/): plantilla de `task` y `settings` de una compañía, con dueño
+ * (`profile`, quien la creó). Solo se aplica a usuarios de esa compañía.
+ */
+export interface PresetApp extends PresetAppBlocks {
+  id: number
+  name: string
+  company: number
+  company_name: string
+  profile: number
+  profile_name: string
+}
+
 /** Lista paginada por cursor (sin `count`). */
 export interface CursorPage<T> {
   next: string | null

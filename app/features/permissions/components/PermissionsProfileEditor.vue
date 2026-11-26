@@ -7,6 +7,7 @@ import {
   useProfilePermissions,
   useUpdateProfilePermissions,
 } from '~/features/permissions/composables/usePermissionsAdmin'
+import { useApplyPresetApp, usePresetsApp } from '~/features/permissions/composables/usePresetsApp'
 import { diffBlocks, pickBlocks } from '~/features/permissions/utils/permission-fields.util'
 import { useProfileCompanyMemberships } from '~/features/company-memberships/composables/useProfileCompanyMemberships'
 import { getInitials } from '~/shared/utils/initials'
@@ -94,7 +95,10 @@ watch(hasChanges, (value) => {
 
 const updateMutation = useUpdateProfilePermissions()
 const applyMutation = useApplyPermissionPreset()
-const isBusy = computed(() => updateMutation.isPending.value || applyMutation.isPending.value)
+const applyAppMutation = useApplyPresetApp()
+const isBusy = computed(() =>
+  updateMutation.isPending.value || applyMutation.isPending.value || applyAppMutation.isPending.value,
+)
 
 function save() {
   if (!patch.value || companyId.value == null) {
@@ -107,13 +111,37 @@ function discard() {
   draft.value = permissions.value ? pickBlocks(permissions.value) : null
 }
 
-// Aplicar plantilla (con confirmación: reemplaza lo que tenga el usuario en esa compañía). Solo las generales y las de
-// la compañía elegida.
+// Aplicar plantilla o Preset App (con confirmación: reemplaza lo que tenga el usuario en esa compañía). Plantillas:
+// las generales y las de la compañía elegida; Presets App: solo los de esa compañía (copian solo Tareas y Configuración).
 const presetsQuery = usePermissionPresets(companyId)
-const presetItems = computed(() => (presetsQuery.data.value ?? []).map(preset => ({ value: preset.id, label: preset.name })))
-const presetToApply = ref<number | undefined>(undefined)
+const presetsAppQuery = usePresetsApp(() => ({ company: companyId.value }))
+
+/** Valor del select: `preset:<id>` (plantilla) o `app:<id>` (Preset App). */
+type PresetChoice = `preset:${number}` | `app:${number}`
+
+const presetOptions = computed(() => (presetsQuery.data.value ?? [])
+  .map(preset => ({ value: `preset:${preset.id}` as PresetChoice, label: preset.name, icon: 'i-lucide-layout-template' })))
+const presetAppOptions = computed(() => (presetsAppQuery.data.value ?? [])
+  .filter(preset => preset.company === companyId.value)
+  .map(preset => ({ value: `app:${preset.id}` as PresetChoice, label: preset.name, icon: 'i-lucide-app-window' })))
+const hasPresetOptions = computed(() => presetOptions.value.length > 0 || presetAppOptions.value.length > 0)
+/** Agrupado: «Plantillas» y «Presets App» (solo los grupos que tengan opciones). */
+const presetItems = computed(() => [
+  ...(presetOptions.value.length
+    ? [[{ type: 'label' as const, label: t('permissions.tabs.presets') }, ...presetOptions.value]]
+    : []),
+  ...(presetAppOptions.value.length
+    ? [[{ type: 'label' as const, label: t('permissions.tabs.presetsApp') }, ...presetAppOptions.value]]
+    : []),
+])
+const presetsLoading = computed(() => presetsQuery.isPending.value || presetsAppQuery.isPending.value)
+
+const presetToApply = ref<PresetChoice | undefined>(undefined)
 const confirmApplyOpen = ref(false)
-const presetToApplyName = computed(() => presetItems.value.find(item => item.value === presetToApply.value)?.label ?? '')
+const presetToApplyIsApp = computed(() => presetToApply.value?.startsWith('app:') === true)
+const presetToApplyName = computed(() =>
+  [...presetOptions.value, ...presetAppOptions.value].find(item => item.value === presetToApply.value)?.label ?? '',
+)
 
 function askApply() {
   if (presetToApply.value != null) {
@@ -125,10 +153,32 @@ async function confirmApply() {
   if (presetToApply.value == null || companyId.value == null) {
     return
   }
+  const id = Number(presetToApply.value.split(':')[1])
   try {
-    await applyMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetId: presetToApply.value })
+    if (presetToApplyIsApp.value) {
+      await applyAppMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetAppId: id })
+    }
+    else {
+      await applyMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetId: id })
+    }
     confirmApplyOpen.value = false
     presetToApply.value = undefined
+  }
+  catch {
+    // El toast de error lo muestra la mutación.
+  }
+}
+
+/** «Quitar Preset App»: lo desliga (`preset_app: null`); el usuario conserva sus permisos actuales. */
+const confirmUnlinkAppOpen = ref(false)
+
+async function confirmUnlinkApp() {
+  if (companyId.value == null) {
+    return
+  }
+  try {
+    await applyAppMutation.mutateAsync({ profileId: props.profileId, companyId: companyId.value, presetAppId: null })
+    confirmUnlinkAppOpen.value = false
   }
   catch {
     // El toast de error lo muestra la mutación.
@@ -294,9 +344,9 @@ async function confirmReset() {
             v-model="presetToApply"
             :items="presetItems"
             value-key="value"
-            :loading="presetsQuery.isPending.value"
-            :placeholder="presetItems.length ? t('permissions.users.presetPlaceholder') : t('permissions.users.noPresets')"
-            :disabled="!presetItems.length || isBusy"
+            :loading="presetsLoading"
+            :placeholder="hasPresetOptions ? t('permissions.users.presetPlaceholder') : t('permissions.users.noPresets')"
+            :disabled="!hasPresetOptions || isBusy"
             icon="i-lucide-layout-template"
             class="min-w-0 flex-1"
           />
@@ -365,6 +415,31 @@ async function confirmReset() {
             @click="openUnlinkConfirm"
           />
         </div>
+      </div>
+
+      <!-- Preset App asignado (solo Tareas y Configuración); convive con la plantilla. -->
+      <div
+        v-if="!isSuperuserProfile && permissions.preset_app"
+        class="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-2.5"
+      >
+        <UIcon
+          name="i-lucide-app-window"
+          class="h-4 w-4 shrink-0 text-muted-foreground"
+        />
+        <span class="text-sm">
+          {{ t('permissions.users.presetAppLabel') }}
+          <span class="font-semibold">{{ permissions.preset_app.name }}</span>
+        </span>
+        <UButton
+          :label="t('permissions.presetsApp.remove')"
+          icon="i-lucide-unlink"
+          color="error"
+          variant="ghost"
+          size="xs"
+          class="ml-auto"
+          :disabled="isBusy"
+          @click="confirmUnlinkAppOpen = true"
+        />
       </div>
 
       <UAlert
@@ -496,11 +571,14 @@ async function confirmReset() {
       </template>
     </UModal>
 
-    <!-- Confirmar aplicar plantilla -->
+    <!-- Confirmar aplicar plantilla o Preset App -->
     <UModal
       v-model:open="confirmApplyOpen"
-      :title="t('permissions.users.applyConfirmTitle')"
-      :description="t('permissions.users.applyConfirmDescription', { preset: presetToApplyName, user: name, company: companyName })"
+      :title="presetToApplyIsApp ? t('permissions.users.applyAppConfirmTitle') : t('permissions.users.applyConfirmTitle')"
+      :description="t(
+        presetToApplyIsApp ? 'permissions.users.applyAppConfirmDescription' : 'permissions.users.applyConfirmDescription',
+        { preset: presetToApplyName, user: name, company: companyName },
+      )"
       :ui="{ footer: 'justify-end' }"
     >
       <template #footer="{ close }">
@@ -508,13 +586,38 @@ async function confirmReset() {
           :label="t('permissions.actions.cancel')"
           color="neutral"
           variant="outline"
-          :disabled="applyMutation.isPending.value"
+          :disabled="isBusy"
           @click="close()"
         />
         <UButton
           :label="t('permissions.users.apply')"
-          :loading="applyMutation.isPending.value"
+          :loading="applyMutation.isPending.value || applyAppMutation.isPending.value"
           @click="confirmApply"
+        />
+      </template>
+    </UModal>
+
+    <!-- Confirmar quitar el Preset App: conserva sus permisos. -->
+    <UModal
+      v-model:open="confirmUnlinkAppOpen"
+      :title="t('permissions.users.unlinkConfirmTitle', { name: permissions?.preset_app?.name ?? '' })"
+      :description="t('permissions.users.unlinkAppConfirmDescription')"
+      :ui="{ footer: 'justify-end' }"
+    >
+      <template #footer="{ close }">
+        <UButton
+          :label="t('permissions.actions.cancel')"
+          color="neutral"
+          variant="outline"
+          :disabled="applyAppMutation.isPending.value"
+          @click="close()"
+        />
+        <UButton
+          :label="t('permissions.presetsApp.remove')"
+          color="error"
+          icon="i-lucide-unlink"
+          :loading="applyAppMutation.isPending.value"
+          @click="confirmUnlinkApp"
         />
       </template>
     </UModal>

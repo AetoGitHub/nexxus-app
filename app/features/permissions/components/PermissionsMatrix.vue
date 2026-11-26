@@ -15,9 +15,15 @@ const props = defineProps<{
   custom?: PermissionCustom
   /** Plantilla del usuario, para el tooltip «Distinto a la plantilla X». */
   presetName?: string | null
+  /** Solo estos módulos (Preset App: task y settings); por defecto, todos. */
+  modules?: readonly PermissionModule[]
 }>()
 
 const { t } = useI18n()
+
+const visibleModules = computed(() =>
+  props.modules ? PERMISSION_MODULES.filter(module => props.modules!.includes(module.id)) : PERMISSION_MODULES,
+)
 
 /** ¿Esta bandera del usuario es distinta a su plantilla? */
 function isCustom(module: PermissionModule, key: string): boolean {
@@ -67,7 +73,7 @@ function enabledCount(module: PermissionModule): number {
 <template>
   <div class="grid gap-3 lg:grid-cols-2">
     <section
-      v-for="module in PERMISSION_MODULES"
+      v-for="module in visibleModules"
       :key="module.id"
       class="rounded-xl border border-border bg-card transition-opacity"
       :class="{ 'opacity-70': !block(module.id).allow }"

@@ -18,7 +18,7 @@ function profilePath(profileId: number, companyId: number, suffix = '') {
 }
 
 /** Sigue `next` hasta el final (los listados vienen paginados). */
-async function fetchAllPages<T>(
+export async function fetchAllPages<T>(
   $api: ReturnType<typeof useNuxtApp>['$api'],
   first: string,
   query?: Record<string, unknown>,

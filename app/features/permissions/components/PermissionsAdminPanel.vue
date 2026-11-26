@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import PermissionsUsersTab from '~/features/permissions/components/PermissionsUsersTab.vue'
 import PermissionsPresetsTab from '~/features/permissions/components/PermissionsPresetsTab.vue'
+import PresetsAppPanel from '~/features/permissions/components/PresetsAppPanel.vue'
 
-/** Configuración → Permisos (solo superusers): pestañas Usuarios y Plantillas. */
+/** Configuración → Permisos (solo superusers): pestañas Usuarios, Plantillas y Presets App. */
 defineProps<{
   /** Organización del selector de la barra (filtra la lista de usuarios). */
   organizationId: number | null
@@ -10,10 +11,11 @@ defineProps<{
 
 const { t } = useI18n()
 
-const tab = ref<'users' | 'presets'>('users')
+const tab = ref<'users' | 'presets' | 'presetsApp'>('users')
 const tabs = computed(() => [
   { value: 'users', label: t('permissions.tabs.users'), icon: 'i-lucide-users' },
   { value: 'presets', label: t('permissions.tabs.presets'), icon: 'i-lucide-layout-template' },
+  { value: 'presetsApp', label: t('permissions.tabs.presetsApp'), icon: 'i-lucide-app-window' },
 ])
 </script>
 
@@ -47,6 +49,10 @@ const tabs = computed(() => [
       v-if="tab === 'users'"
       :organization-id="organizationId"
     />
-    <PermissionsPresetsTab v-else />
+    <PermissionsPresetsTab v-else-if="tab === 'presets'" />
+    <PresetsAppPanel
+      v-else
+      :show-header="false"
+    />
   </div>
 </template>

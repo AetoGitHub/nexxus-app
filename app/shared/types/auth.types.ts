@@ -144,6 +144,8 @@ export interface SettingsPermissionBlock {
   can_create_groups: boolean
   /** Editar grupo y mover personas de grupo. */
   can_update_groups: boolean
+  /** Crear, editar, borrar y aplicar Presets App (Configuración → Presets App). */
+  can_presets: boolean
 }
 
 /** Configuración master (Organización · Compañía · Usuarios). */
@@ -169,7 +171,7 @@ export interface PermissionActions {
     | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'
-  settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups'
+  settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups' | 'presets'
   master: 'organizations' | 'companies' | 'users'
 }
 
@@ -182,6 +184,8 @@ export interface UserPermissions extends PermissionBlocks {
   is_superuser: boolean
   company: { id: number, name: string } | null
   preset: { id: number, name: string } | null
+  /** Preset App aplicado (solo copia `task` y `settings`); `null` si no tiene. */
+  preset_app?: { id: number, name: string } | null
   /**
    * Ajustes manuales: banderas en las que el usuario es distinto de su plantilla, con el valor que tiene el usuario.
    * `{}` si es igual a su plantilla o si no tiene plantilla.

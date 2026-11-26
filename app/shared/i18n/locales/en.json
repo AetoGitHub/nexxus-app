@@ -50,7 +50,8 @@
         "can_projects": "Manage projects",
         "can_view_groups": "View groups",
         "can_create_groups": "Create groups",
-        "can_update_groups": "Edit groups"
+        "can_update_groups": "Edit groups",
+        "can_presets": "Manage App Presets"
       },
       "master": {
         "allow": "Access to Master settings",
@@ -69,7 +70,8 @@
     },
     "tabs": {
       "users": "Users",
-      "presets": "Templates"
+      "presets": "Templates",
+      "presetsApp": "App Presets"
     },
     "dialog": {
       "action": "Permissions",
@@ -108,6 +110,10 @@
       "unlinkTemplate": "Remove template",
       "unlinkConfirmTitle": "Remove the \"{name}\" template?",
       "unlinkConfirmDescription": "The user keeps their current permissions and becomes \"No template\": they will no longer receive changes made to this template.",
+      "unlinkAppConfirmDescription": "The user keeps their current permissions and will no longer receive changes made to this App Preset.",
+      "presetAppLabel": "App Preset:",
+      "applyAppConfirmTitle": "Apply App Preset?",
+      "applyAppConfirmDescription": "{user}'s Tasks and Settings permissions in {company} will be replaced by \"{preset}\". Their other modules don't change.",
       "resetConfirmTitle": "Reset to the \"{name}\" template?",
       "resetConfirmDescription": "This user's manual adjustments will be lost: they get every flag of the template again.",
       "custom": "Custom permissions",
@@ -147,6 +153,39 @@
       "deleteTitle": "Delete \"{name}\"?",
       "deleteDescription": "Users who have it applied keep their permissions."
     },
+    "presetsApp": {
+      "title": "App Presets",
+      "subtitle": "Templates with a company's Tasks and Settings permissions, to apply quickly to its users.",
+      "new": "New preset",
+      "create": "Create preset",
+      "createTitle": "New App Preset",
+      "editTitle": "Edit App Preset",
+      "formDescription": "Give it a name and choose its company and its Tasks and Settings permissions.",
+      "namePlaceholder": "e.g. App operator",
+      "companyHelp": "It can only be applied to users of this company.",
+      "companyPlaceholder": "Choose a company",
+      "propagateLabel": "Apply changes to the users who already use it",
+      "propagateNoChanges": "Change a permission to be able to apply it to its users.",
+      "owner": "Owner",
+      "permissions": "Permissions",
+      "actions": "Actions",
+      "allCompanies": "All companies",
+      "allOwners": "All owners",
+      "clearFilters": "Clear filters",
+      "empty": "No App Presets yet. Create the first one to assign permissions faster.",
+      "emptyFiltered": "No App Presets match these filters.",
+      "loadError": "Couldn't load the App Presets.",
+      "forbidden": "You don't have permission to manage App Presets.",
+      "deleteDescription": "Users who have it applied keep their permissions.",
+      "apply": "Apply to a user",
+      "applyTitle": "Apply \"{name}\"",
+      "applyDescription": "Choose a user from {company}.",
+      "applyInfo": "Only Tasks and Settings permissions are copied; the user's other modules don't change. \"Remove preset\" unlinks it and the user keeps their current permissions.",
+      "user": "User",
+      "userPlaceholder": "Choose a user",
+      "searchUser": "Search user…",
+      "remove": "Remove preset"
+    },
     "actions": {
       "save": "Save",
       "discard": "Discard",
@@ -164,7 +203,13 @@
       "presetUpdated": "Template updated",
       "presetSaved": "Template saved",
       "presetSavedUsers": "Template saved · {count} users updated | Template saved · 1 user updated | Template saved · {count} users updated",
-      "presetDeleted": "Template deleted"
+      "presetDeleted": "Template deleted",
+      "presetAppCreated": "App Preset created",
+      "presetAppSaved": "App Preset saved",
+      "presetAppSavedUsers": "App Preset saved · {count} users updated | App Preset saved · 1 user updated | App Preset saved · {count} users updated",
+      "presetAppDeleted": "App Preset deleted",
+      "presetAppApplied": "App Preset applied",
+      "presetAppRemoved": "App Preset removed: the user keeps their permissions"
     }
   },
   "mentions": {
@@ -2037,7 +2082,8 @@
       "videoCalls": "Video calls",
       "notifications": "Notifications",
       "general": "General",
-      "projects": "Projects"
+      "projects": "Projects",
+      "presetsApp": "App Presets"
     },
     "notificationsPanel": {
       "muted": "Muted",

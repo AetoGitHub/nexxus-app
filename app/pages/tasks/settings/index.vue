@@ -8,6 +8,7 @@ import TaskSettingsNavSidebar from '~/features/task-settings/components/shared/T
 import TaskSettingsPlaceholderPanel from '~/features/task-settings/components/shared/TaskSettingsPlaceholderPanel.vue'
 import TaskSettingsProjectModal from '~/features/task-settings/components/projects/TaskSettingsProjectModal.vue'
 import TaskSettingsProjectsPanel from '~/features/task-settings/components/projects/TaskSettingsProjectsPanel.vue'
+import PresetsAppPanel from '~/features/permissions/components/PresetsAppPanel.vue'
 import type {
   TaskSettingsNavItem,
   TaskSettingsProjectTab,
@@ -47,10 +48,10 @@ const { $api } = useNuxtApp()
 const queryClient = useQueryClient()
 const route = useRoute()
 
-const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'nexxtep', 'videoCalls', 'notifications', 'general']
+const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'presetsApp', 'nexxtep', 'videoCalls', 'notifications', 'general']
 
-// Proyectos y Grupos solo con su permiso (`settings.can_projects` / `settings.can_view_groups`); el resto son preferencias
-// personales y siempre se ven.
+// Proyectos, Grupos y Presets App solo con su permiso (`settings.can_projects` / `settings.can_view_groups` /
+// `settings.can_presets`); el resto son preferencias personales y siempre se ven.
 const { can } = usePermissions()
 
 function isSectionAllowed(section: TaskSettingsSectionId): boolean {
@@ -59,6 +60,9 @@ function isSectionAllowed(section: TaskSettingsSectionId): boolean {
   }
   if (section === 'groups') {
     return can('settings', 'view_groups')
+  }
+  if (section === 'presetsApp') {
+    return can('settings', 'presets')
   }
   return true
 }
@@ -94,6 +98,7 @@ const isEditingGroup = computed(() => editingGroupId.value != null)
 const ALL_NAV_ITEMS: TaskSettingsNavItem[] = [
   { id: 'projects', labelKey: 'taskSettings.nav.projects', icon: 'i-lucide-folder-kanban' },
   { id: 'groups', labelKey: 'taskSettings.nav.groups', icon: 'i-lucide-users' },
+  { id: 'presetsApp', labelKey: 'taskSettings.nav.presetsApp', icon: 'i-lucide-layout-template' },
   { id: 'nexxtep', labelKey: 'taskSettings.nav.nexxtep', icon: 'i-lucide-workflow' },
   { id: 'videoCalls', labelKey: 'taskSettings.nav.videoCalls', icon: 'i-lucide-video' },
   { id: 'notifications', labelKey: 'taskSettings.nav.notifications', icon: 'i-lucide-bell' },
@@ -298,6 +303,10 @@ useSeoMeta({
           :error="groupsQuery.isError.value"
           @new-group="openNewGroupModal"
           @edit="openEditGroupModal"
+        />
+
+        <PresetsAppPanel
+          v-else-if="activeSection === 'presetsApp'"
         />
 
         <TaskSettingsGeneralPanel

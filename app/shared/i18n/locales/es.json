@@ -50,7 +50,8 @@
         "can_projects": "Configurar proyectos",
         "can_view_groups": "Ver grupos",
         "can_create_groups": "Crear grupos",
-        "can_update_groups": "Editar grupos"
+        "can_update_groups": "Editar grupos",
+        "can_presets": "Gestionar Presets App"
       },
       "master": {
         "allow": "Acceso a Configuración master",
@@ -69,7 +70,8 @@
     },
     "tabs": {
       "users": "Usuarios",
-      "presets": "Plantillas"
+      "presets": "Plantillas",
+      "presetsApp": "Presets App"
     },
     "dialog": {
       "action": "Permisos",
@@ -108,6 +110,10 @@
       "unlinkTemplate": "Quitar plantilla",
       "unlinkConfirmTitle": "¿Quitar la plantilla «{name}»?",
       "unlinkConfirmDescription": "El usuario conserva sus permisos actuales y queda «Sin plantilla»: ya no recibirá los cambios que se hagan a esta plantilla.",
+      "unlinkAppConfirmDescription": "El usuario conserva sus permisos actuales y ya no recibirá los cambios que se hagan a este Preset App.",
+      "presetAppLabel": "Preset App:",
+      "applyAppConfirmTitle": "¿Aplicar Preset App?",
+      "applyAppConfirmDescription": "Los permisos de Tareas y Configuración de {user} en {company} se reemplazarán por «{preset}». Sus demás módulos no cambian.",
       "resetConfirmTitle": "¿Restablecer a la plantilla «{name}»?",
       "resetConfirmDescription": "Se perderán los ajustes manuales de este usuario: recibirá de nuevo todas las banderas de la plantilla.",
       "custom": "Permisos personalizados",
@@ -147,6 +153,39 @@
       "deleteTitle": "¿Eliminar «{name}»?",
       "deleteDescription": "Los usuarios que la tienen aplicada conservan sus permisos."
     },
+    "presetsApp": {
+      "title": "Presets App",
+      "subtitle": "Plantillas con los permisos de Tareas y Configuración de una compañía, para aplicarlas rápido a sus usuarios.",
+      "new": "Nuevo preset",
+      "create": "Crear preset",
+      "createTitle": "Nuevo Preset App",
+      "editTitle": "Editar Preset App",
+      "formDescription": "Ponle un nombre, elige su compañía y los permisos de Tareas y Configuración.",
+      "namePlaceholder": "Ej. Operador app",
+      "companyHelp": "Solo se puede aplicar a usuarios de esta compañía.",
+      "companyPlaceholder": "Elige una compañía",
+      "propagateLabel": "Aplicar cambios a los usuarios que ya lo usan",
+      "propagateNoChanges": "Cambia algún permiso para poder aplicarlo a sus usuarios.",
+      "owner": "Dueño",
+      "permissions": "Permisos",
+      "actions": "Acciones",
+      "allCompanies": "Todas las compañías",
+      "allOwners": "Todos los dueños",
+      "clearFilters": "Limpiar filtros",
+      "empty": "Aún no hay Presets App. Crea el primero para asignar permisos más rápido.",
+      "emptyFiltered": "No hay Presets App con estos filtros.",
+      "loadError": "No se pudieron cargar los Presets App.",
+      "forbidden": "No tienes permiso para gestionar Presets App.",
+      "deleteDescription": "Los usuarios que lo tienen aplicado conservan sus permisos.",
+      "apply": "Aplicar a un usuario",
+      "applyTitle": "Aplicar «{name}»",
+      "applyDescription": "Elige un usuario de {company}.",
+      "applyInfo": "Solo se copian los permisos de Tareas y Configuración; los demás módulos del usuario no cambian. «Quitar preset» lo desliga y el usuario conserva sus permisos actuales.",
+      "user": "Usuario",
+      "userPlaceholder": "Elige un usuario",
+      "searchUser": "Buscar usuario…",
+      "remove": "Quitar preset"
+    },
     "actions": {
       "save": "Guardar",
       "discard": "Descartar",
@@ -164,7 +203,13 @@
       "presetUpdated": "Plantilla actualizada",
       "presetSaved": "Plantilla guardada",
       "presetSavedUsers": "Plantilla guardada · se actualizó {count} usuario | Plantilla guardada · se actualizó 1 usuario | Plantilla guardada · se actualizaron {count} usuarios",
-      "presetDeleted": "Plantilla eliminada"
+      "presetDeleted": "Plantilla eliminada",
+      "presetAppCreated": "Preset App creado",
+      "presetAppSaved": "Preset App guardado",
+      "presetAppSavedUsers": "Preset App guardado · se actualizaron {count} usuarios | Preset App guardado · se actualizó 1 usuario | Preset App guardado · se actualizaron {count} usuarios",
+      "presetAppDeleted": "Preset App eliminado",
+      "presetAppApplied": "Preset App aplicado",
+      "presetAppRemoved": "Preset App quitado: el usuario conserva sus permisos"
     }
   },
   "mentions": {
@@ -2037,7 +2082,8 @@
       "videoCalls": "Videollamadas",
       "notifications": "Notificaciones",
       "general": "General",
-      "projects": "Proyectos"
+      "projects": "Proyectos",
+      "presetsApp": "Presets App"
     },
     "notificationsPanel": {
       "muted": "Silenciada",
