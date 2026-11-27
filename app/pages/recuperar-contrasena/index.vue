@@ -29,7 +29,8 @@ const identity = reactive({
  * Usuario encontrado (`GET password/reset/lookup/`). Comparte el límite de 10 llamadas por hora con el confirm:
  * se consulta al salir del campo o 500 ms después de dejar de escribir, y cada usuario una sola vez.
  */
-type LookupState = 'idle' | 'loading' | 'found' | 'not_found' | 'throttled' | 'error'
+/** `no_email`: el usuario existe pero no tiene un correo válido (404 con `code: "no_email"`). */
+type LookupState = 'idle' | 'loading' | 'found' | 'not_found' | 'no_email' | 'throttled' | 'error'
 const lookupState = ref<LookupState>('idle')
 const foundUsername = ref('')
 /** Correo tal como lo regresa el lookup: solo en memoria, para mandarlo a n8n. Nunca se pinta. */
@@ -80,10 +81,13 @@ async function runLookup() {
       return
     }
     const status = fetchErrorStatus(error)
-    applyLookup(key, status === 404 ? 'not_found' : status === 429 ? 'throttled' : 'error')
+    const notFound: LookupState = (error as { data?: { code?: string } })?.data?.code === 'no_email'
+      ? 'no_email'
+      : 'not_found'
+    applyLookup(key, status === 404 ? notFound : status === 429 ? 'throttled' : 'error')
     // Solo el 404 es definitivo para ese usuario; un 429 o un error de red se puede reintentar.
     if (status === 404) {
-      lookupCache.set(key, { state: 'not_found', username: '', email: '' })
+      lookupCache.set(key, { state: notFound, username: '', email: '' })
     }
   }
 }
@@ -108,6 +112,8 @@ const lookupMessage = computed(() => {
   switch (lookupState.value) {
     case 'not_found':
       return t('lookup_not_found')
+    case 'no_email':
+      return t('lookup_no_email')
     case 'throttled':
       return t('throttled')
     case 'error':
@@ -560,7 +566,8 @@ en:
   lookup_found_user: "User found: {username}"
   lookup_found_email: "We'll send the key to"
   lookup_found_hint: This is the email registered on your account. It can't be changed here.
-  lookup_not_found: We couldn't find that user or it has no registered email. Contact your administrator.
+  lookup_not_found: We couldn't find that user. Check that it's written correctly.
+  lookup_no_email: This user doesn't have a valid email address, so we can't send you the key. Ask your administrator to update it.
   lookup_error: We couldn't look up the user. Please try again.
   send_code: Send key
   request_error: We couldn't send the key. Please try again.
@@ -590,7 +597,8 @@ es:
   lookup_found_user: "Usuario encontrado: {username}"
   lookup_found_email: "Enviaremos la clave a"
   lookup_found_hint: Es el correo registrado en tu cuenta. No se puede cambiar aquí.
-  lookup_not_found: No encontramos ese usuario o no tiene correo registrado. Contacta a tu administrador.
+  lookup_not_found: No encontramos ese usuario. Revisa que esté bien escrito.
+  lookup_no_email: Este usuario no tiene un correo electrónico válido, así que no podemos enviarte la clave. Pide a tu administrador que lo actualice.
   lookup_error: No pudimos buscar el usuario. Intenta de nuevo.
   send_code: Enviar clave
   request_error: No pudimos enviar la clave. Intenta de nuevo.
