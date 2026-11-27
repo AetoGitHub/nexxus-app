@@ -12,13 +12,15 @@ export function useTaskHistory(
   enabled: MaybeRefOrGetter<boolean> = true,
 ) {
   const { $api } = useNuxtApp()
+  // Sin `task.can_view_history` no se pide: el backend respondería 403.
+  const { can } = usePermissions()
 
   return useQuery({
     queryKey: computed(() => ['tasks', 'history', toValue(taskId)]),
     queryFn: () => $api<TaskHistory>(`/api/tasks/more/info/${toValue(taskId)}/`),
     enabled: computed(() => {
       const id = toValue(taskId)
-      return toValue(enabled) && id != null && id > 0
+      return toValue(enabled) && can('task', 'view_history') && id != null && id > 0
     }),
   })
 }

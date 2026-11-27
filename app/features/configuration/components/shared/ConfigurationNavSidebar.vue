@@ -154,7 +154,6 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
                 :initials="initials"
                 :size="32"
                 :font-size="12.8"
-                fallback-color="#f59e0b"
               />
             </span>
             <div class="flex-1 min-w-0 text-left">

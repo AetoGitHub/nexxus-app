@@ -34,8 +34,13 @@ function parseFetchError(error: unknown): string {
     switch (status) {
       case 404:
         return 'El recurso solicitado no fue encontrado.';
-      case 403:
-        return 'No tienes permisos para realizar esta acción.';
+      case 403: {
+        // El backend manda el motivo ya traducido en `detail` (p. ej. "No tienes permiso para eliminar tareas.").
+        const detail = (data as { detail?: unknown } | undefined)?.detail;
+        return typeof detail === 'string' && detail.trim() && detail !== 'must_change_password'
+          ? detail
+          : 'No tienes permisos para realizar esta acción.';
+      }
       default:
         break;
     }

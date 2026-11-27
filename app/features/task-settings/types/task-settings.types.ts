@@ -1,6 +1,7 @@
 export type TaskSettingsSectionId =
   | 'projects'
   | 'groups'
+  | 'presetsApp'
   | 'nexxtep'
   | 'videoCalls'
   | 'notifications'

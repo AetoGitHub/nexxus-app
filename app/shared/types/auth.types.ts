@@ -70,14 +70,136 @@ export interface AuthLoginResponse {
   user: AuthUser
   organization: AuthOrganization
   profile_configurations: ProfileConfiguration
+  /** Acceso a cada plataforma del selector de módulos (en su compañía seleccionada). */
+  access?: ScreenAccess
 }
+
+/** A qué plataformas del hub puede entrar: decide las tarjetas sin pedir `me/`. Crece con cada plataforma nueva. */
+export type ScreenAccess = Partial<Record<PermissionScreen, boolean>>
 
 export interface AuthSession {
   token: string
   user: AuthUser
   organization: AuthOrganization
   profile_configurations: ProfileConfiguration
+  /**
+   * Permisos del usuario por pantalla (GET /api/auth/permissions/me/?screen=…): cada pantalla guarda lo suyo y se pide al
+   * entrar a ella. Ausente mientras no se piden.
+   */
+  permissions?: Partial<Record<PermissionScreen, MePermissions>>
+  /** Acceso a cada plataforma (viene en el login; se actualiza al entrar a ella). Decide las tarjetas del hub. */
+  access?: ScreenAccess
 }
+
+/**
+ * Plataformas con permisos propios: Nexxus Tasks (`me/?screen=task`: task, dashboard, report, settings) y
+ * Configuración master (`me/?screen=config_admin`: master). El hub no pide permisos: usa `access` del login.
+ */
+export type PermissionScreen = 'task' | 'config_admin'
+
+/** Módulos con permisos por perfil. */
+export type PermissionModule = 'task' | 'report' | 'dashboard' | 'settings' | 'master'
+
+export interface TaskPermissionBlock {
+  allow: boolean
+  /** Conectar o usar Claude (MCP). */
+  can_mcp: boolean
+  can_view: boolean
+  can_create: boolean
+  can_update: boolean
+  /** Atajo de la lista/kanban para cambiar la fecha límite (clic en la fecha → calendario). */
+  can_update_date: boolean
+  can_delete: boolean
+  can_view_all: boolean
+  /** Vista de tareas por proyecto («Ver por: Proyecto»). */
+  can_view_by_project: boolean
+  /** Vista de tareas por grupo («Ver por: Grupo»). */
+  can_view_by_group: boolean
+  can_view_approvals: boolean
+  /** Micrófono / dictado al crear una tarea o un backlog. */
+  can_voice: boolean
+  /** Historial de la tarea (more/info, report y la edición de sus eventos). */
+  can_view_history: boolean
+}
+
+export interface ReportPermissionBlock {
+  allow: boolean
+  can_view: boolean
+  can_generate: boolean
+  can_update: boolean
+}
+
+export interface DashboardPermissionBlock {
+  allow: boolean
+  can_view: boolean
+  can_create: boolean
+  can_update: boolean
+  can_delete: boolean
+}
+
+export interface SettingsPermissionBlock {
+  allow: boolean
+  can_projects: boolean
+  /** Pestaña Grupos (lista y detalle). */
+  can_view_groups: boolean
+  /** Botón «Nuevo grupo». */
+  can_create_groups: boolean
+  /** Editar grupo y mover personas de grupo. */
+  can_update_groups: boolean
+  /** Crear, editar, borrar y aplicar Presets App (Configuración → Presets App). */
+  can_presets: boolean
+}
+
+/** Configuración master (Organización · Compañía · Usuarios). */
+export interface MasterPermissionBlock {
+  allow: boolean
+  can_organizations: boolean
+  can_companies: boolean
+  can_users: boolean
+}
+
+/** Los 5 bloques: lo que se edita de un perfil o de una plantilla. */
+export interface PermissionBlocks {
+  task: TaskPermissionBlock
+  report: ReportPermissionBlock
+  dashboard: DashboardPermissionBlock
+  settings: SettingsPermissionBlock
+  master: MasterPermissionBlock
+}
+
+/** Acciones de cada módulo (el campo es `can_<acción>`). */
+export interface PermissionActions {
+  task: 'mcp' | 'view' | 'create' | 'update' | 'update_date' | 'delete' | 'view_all' | 'view_by_project' | 'view_by_group'
+    | 'view_approvals' | 'voice' | 'view_history'
+  report: 'view' | 'generate' | 'update'
+  dashboard: 'view' | 'create' | 'update' | 'delete'
+  settings: 'projects' | 'view_groups' | 'create_groups' | 'update_groups' | 'presets'
+  master: 'organizations' | 'companies' | 'users'
+}
+
+/**
+ * Respuesta de me/ y de profile/:id/company/:company_id/ (+ update/ y apply_preset/). Los permisos son por compañía:
+ * `company` es aquella a la que aplican (en me/, la compañía seleccionada del usuario).
+ */
+export interface UserPermissions extends PermissionBlocks {
+  profile: number
+  is_superuser: boolean
+  company: { id: number, name: string } | null
+  preset: { id: number, name: string } | null
+  /** Preset App aplicado (solo copia `task` y `settings`); `null` si no tiene. */
+  preset_app?: { id: number, name: string } | null
+  /**
+   * Ajustes manuales: banderas en las que el usuario es distinto de su plantilla, con el valor que tiene el usuario.
+   * `{}` si es igual a su plantilla o si no tiene plantilla.
+   */
+  custom?: PermissionCustom
+}
+
+/** `{ task: { can_delete: true } }`: banderas distintas a la plantilla, por módulo. */
+export type PermissionCustom = Partial<Record<PermissionModule, Record<string, boolean>>>
+
+/** Respuesta de me/?screen=…: los datos de siempre y solo los bloques de esa pantalla (lo que no vino = sin permiso). */
+export type MePermissions = Omit<UserPermissions, PermissionModule> & Partial<PermissionBlocks>
 
 export interface AuthLoginRequest {
   username: string

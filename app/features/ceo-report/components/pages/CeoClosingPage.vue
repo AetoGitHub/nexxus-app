@@ -11,6 +11,8 @@ defineProps<{
 const emit = defineEmits<{ createTask: [decision: CeoDecision] }>()
 
 const { t } = useI18n()
+const { can } = usePermissions()
+const canCreateTask = computed(() => can('task', 'create'))
 </script>
 
 <template>
@@ -90,6 +92,7 @@ const { t } = useI18n()
               <span>{{ decision.date }}</span>
             </div>
             <button
+              v-if="canCreateTask"
               type="button"
               class="cr-decision__btn cr-no-print"
               @click="emit('createTask', decision)"

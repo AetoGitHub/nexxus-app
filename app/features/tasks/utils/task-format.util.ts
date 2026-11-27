@@ -1,32 +1,10 @@
-import type { Task, TaskAssignee, TaskCloseApproval } from '~/features/tasks/types/task.types'
+import type { Task, TaskCloseApproval } from '~/features/tasks/types/task.types'
 import { resolveThemeColor } from '~/features/projects/utils/project-color.util'
-
-export const ASSIGNEE_AVATAR_COLORS = [
-  '#f59e0b',
-  '#28ceab',
-  '#4c6ef5',
-  '#7c3aed',
-  '#dc2626',
-  '#0891b2',
-  '#db2777',
-  '#65a30d',
-] as const
 
 /** Dos primeras letras del username (no nombre+apellido). */
 export function taskAssigneeInitial(username: string): string {
   const source = username.trim()
   return source ? source.slice(0, 2).toUpperCase() : '?'
-}
-
-/**
- * Color del avatar: prioriza group_color del asignado; si no, paleta por id.
- */
-export function taskAssigneeColor(assignee: TaskAssignee): string {
-  const fromGroup = assignee.group_color?.trim()
-  if (fromGroup) {
-    return resolveThemeColor(fromGroup)
-  }
-  return ASSIGNEE_AVATAR_COLORS[Math.abs(assignee.id) % ASSIGNEE_AVATAR_COLORS.length]!
 }
 
 type BadgeColor =

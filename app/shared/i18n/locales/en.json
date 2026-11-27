@@ -1,4 +1,222 @@
 {
+  "permissions": {
+    "title": "Permissions",
+    "subtitle": "Set what each user can see and do. The backend enforces it too.",
+    "noModules": "Your user has no access to any module. Ask an administrator to grant you permissions.",
+    "masterEmpty": "You have access to Master settings, but to none of its sections. Ask an administrator for access.",
+    "empty": {
+      "title": "You don't have permissions in this company yet",
+      "description": "Ask an administrator for access. As soon as they assign you permissions or a template, your modules will show up here.",
+      "company": "Company: {company}",
+      "recheck": "Check again"
+    },
+    "denied": {
+      "title": "Access restricted",
+      "description": "You don't have permission for {module}."
+    },
+    "modules": {
+      "task": "Tasks",
+      "report": "Reports",
+      "dashboard": "Dashboard",
+      "settings": "Settings",
+      "master": "Master settings"
+    },
+    "fields": {
+      "task": {
+        "can_view": "View tasks",
+        "can_create": "Create tasks",
+        "can_update": "Edit tasks and subtasks",
+        "can_update_date": "Change date from the list (shortcut)",
+        "can_delete": "Delete tasks",
+        "can_view_all": "Full view (everyone's tasks)",
+        "can_view_by_project": "View by project",
+        "can_view_by_group": "View by group",
+        "can_view_approvals": "Pending approvals",
+        "can_voice": "Create tasks by voice",
+        "can_view_history": "View task history",
+        "can_mcp": "Use the MCP (Claude)"
+      },
+      "report": {
+        "can_view": "View reports",
+        "can_generate": "Generate reports",
+        "can_update": "Edit reports"
+      },
+      "dashboard": {
+        "can_view": "View dashboard",
+        "can_create": "Create dashboards",
+        "can_update": "Edit dashboards",
+        "can_delete": "Delete dashboards"
+      },
+      "settings": {
+        "can_projects": "Manage projects",
+        "can_view_groups": "View groups",
+        "can_create_groups": "Create groups",
+        "can_update_groups": "Edit groups",
+        "can_presets": "Manage App Presets"
+      },
+      "master": {
+        "allow": "Access to Master settings",
+        "can_organizations": "Organizations",
+        "can_companies": "Companies",
+        "can_users": "Users and memberships"
+      }
+    },
+    "matrix": {
+      "allow": "Module access",
+      "moduleOff": "No access to the module",
+      "enabledCount": "{count} of {total} permissions",
+      "comingSoon": "Coming soon",
+      "selectAll": "Select all",
+      "clearAll": "Clear all",
+      "activeModules": "{count} of {total} modules active",
+      "groups": {
+        "tasks": "Nexxus Tasks"
+      }
+    },
+    "tabs": {
+      "users": "Users",
+      "presets": "Templates",
+      "presetsApp": "App Presets"
+    },
+    "dialog": {
+      "action": "Permissions",
+      "title": "User permissions"
+    },
+    "users": {
+      "select": "User",
+      "selectPlaceholder": "Choose a user",
+      "company": "Company",
+      "companyPlaceholder": "Choose a company",
+      "headerFor": "{user}'s permissions in {company}",
+      "membershipsError": "Couldn't load the user's companies.",
+      "noMembershipsTitle": "This user doesn't belong to any company",
+      "noMembershipsDescription": "Permissions are per company. Add a company membership to be able to grant permissions.",
+      "noUsers": "No users in this organization",
+      "noOrganizationTitle": "Select an organization",
+      "noOrganizationDescription": "Choose an organization in the selector above to see its users and edit their permissions.",
+      "search": "Search user…",
+      "empty": "Choose a user to view and edit their permissions.",
+      "loadError": "Couldn't load the user's permissions.",
+      "applyPreset": "Apply template",
+      "presetPlaceholder": "Choose a template",
+      "noPresets": "No templates",
+      "apply": "Apply",
+      "applyConfirmTitle": "Apply template?",
+      "applyConfirmDescription": "{user}'s permissions in {company} will be replaced by \"{preset}\". You can fine-tune them afterwards.",
+      "basedOn": "Based on: {name}",
+      "manualOverPreset": "These changes will be manual adjustments over the \"{name}\" template. If the template is later edited and applied to its users, only the flags changed in the template are updated.",
+      "templateLabel": "Template:",
+      "noTemplate": "No template",
+      "customized": "Customized ({count})",
+      "customHint": "Flags in which this user differs from the {name} template.",
+      "customTooltip": "Different from the {name} template",
+      "adjusted": "Adjusted",
+      "resetToTemplate": "Reset to template",
+      "unlinkTemplate": "Remove template",
+      "unlinkConfirmTitle": "Remove the \"{name}\" template?",
+      "unlinkConfirmDescription": "The user keeps their current permissions and becomes \"No template\": they will no longer receive changes made to this template.",
+      "unlinkAppConfirmDescription": "The user keeps their current permissions and will no longer receive changes made to this App Preset.",
+      "presetAppLabel": "App Preset:",
+      "applyAppConfirmTitle": "Apply App Preset?",
+      "applyAppConfirmDescription": "{user}'s Tasks and Settings permissions in {company} will be replaced by \"{preset}\". Their other modules don't change.",
+      "resetConfirmTitle": "Reset to the \"{name}\" template?",
+      "resetConfirmDescription": "This user's manual adjustments will be lost: they get every flag of the template again.",
+      "custom": "Custom permissions",
+      "you": "You",
+      "superuserTitle": "Superuser: has every permission",
+      "superuserDescription": "A superuser's permissions can't be limited.",
+      "unsaved": "Unsaved changes",
+      "saved": "No changes",
+      "switchConfirmTitle": "Discard changes?",
+      "switchConfirmDescription": "You have unsaved changes to this user's permissions."
+    },
+    "presets": {
+      "subtitle": "Templates let you give the same set of permissions to several users.",
+      "new": "New template",
+      "create": "Create template",
+      "createTitle": "New template",
+      "createDescription": "Give it a name and choose its permissions.",
+      "editTitle": "Edit template",
+      "editDescription": "Change the template's name or permissions.",
+      "editWarning": "If you change permissions you can choose whether they also apply to the users with this template.",
+      "propagateLabel": "Also apply these changes to the users with this template",
+      "propagateTitle": "Also apply these changes to the users with this template?",
+      "propagateDescription": "Only the modified permissions are added or removed; their other permissions are kept.",
+      "onlyTemplate": "Template only",
+      "templateAndUsers": "Template and users",
+      "name": "Name",
+      "namePlaceholder": "e.g. Operator",
+      "company": "Company",
+      "companyHelp": "A general template can be applied in any company; a company template, only in that one.",
+      "general": "General (all companies)",
+      "generalBadge": "General",
+      "empty": "No templates yet. Create the first one to assign permissions faster.",
+      "loadError": "Couldn't load the templates.",
+      "off": "No access",
+      "full": "Full",
+      "partial": "{count} of {total}",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteDescription": "Users who have it applied keep their permissions."
+    },
+    "presetsApp": {
+      "title": "App Presets",
+      "subtitle": "Templates with a company's Tasks and Settings permissions, to apply quickly to its users.",
+      "new": "New preset",
+      "create": "Create preset",
+      "createTitle": "New App Preset",
+      "editTitle": "Edit App Preset",
+      "formDescription": "Give it a name and choose its company and its Tasks and Settings permissions.",
+      "namePlaceholder": "e.g. App operator",
+      "companyHelp": "It can only be applied to users of this company.",
+      "companyPlaceholder": "Choose a company",
+      "propagateLabel": "Apply changes to the users who already use it",
+      "propagateNoChanges": "Change a permission to be able to apply it to its users.",
+      "owner": "Owner",
+      "permissions": "Permissions",
+      "actions": "Actions",
+      "allCompanies": "All companies",
+      "allOwners": "All owners",
+      "clearFilters": "Clear filters",
+      "empty": "No App Presets yet. Create the first one to assign permissions faster.",
+      "emptyFiltered": "No App Presets match these filters.",
+      "loadError": "Couldn't load the App Presets.",
+      "forbidden": "You don't have permission to manage App Presets.",
+      "deleteDescription": "Users who have it applied keep their permissions.",
+      "apply": "Apply to a user",
+      "applyTitle": "Apply \"{name}\"",
+      "applyDescription": "Choose a user from {company}.",
+      "applyInfo": "Only Tasks and Settings permissions are copied; the user's other modules don't change. \"Remove preset\" unlinks it and the user keeps their current permissions.",
+      "user": "User",
+      "userPlaceholder": "Choose a user",
+      "searchUser": "Search user…",
+      "remove": "Remove preset"
+    },
+    "actions": {
+      "save": "Save",
+      "discard": "Discard",
+      "discardAndContinue": "Discard and continue",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "toasts": {
+      "error": "Couldn't complete the action",
+      "profileSaved": "Permissions updated",
+      "presetApplied": "Template applied",
+      "presetRemoved": "Template removed: the user keeps their permissions",
+      "presetCreated": "Template created",
+      "presetUpdated": "Template updated",
+      "presetSaved": "Template saved",
+      "presetSavedUsers": "Template saved · {count} users updated | Template saved · 1 user updated | Template saved · {count} users updated",
+      "presetDeleted": "Template deleted",
+      "presetAppCreated": "App Preset created",
+      "presetAppSaved": "App Preset saved",
+      "presetAppSavedUsers": "App Preset saved · {count} users updated | App Preset saved · 1 user updated | App Preset saved · {count} users updated",
+      "presetAppDeleted": "App Preset deleted",
+      "presetAppApplied": "App Preset applied",
+      "presetAppRemoved": "App Preset removed: the user keeps their permissions"
+    }
+  },
   "mentions": {
     "listLabel": "Users to mention",
     "loading": "Loading…",
@@ -229,6 +447,7 @@
       "tomorrow": "Tomorrow",
       "week": "This week",
       "month": "This month",
+      "others": "Other dates",
       "noDate": "No date"
     },
     "views": {
@@ -291,6 +510,7 @@
         "confirm": "Confirm",
         "noDateBlockedTitle": "Move unavailable",
         "noDateBlockedDescription": "Tasks cannot be moved to No date for now.",
+        "othersBlockedDescription": "Other dates mixes overdue tasks and later months: change the date from the task or with the date shortcut.",
         "moveNotAllowedDescription": "That due-date move is not available.",
         "successTitle": "Due date updated",
         "successDescription": "The task due date was updated successfully.",
@@ -992,7 +1212,8 @@
     "nav": {
       "organization": "Organization",
       "company": "Company",
-      "user": "Users"
+      "user": "Users",
+      "permissions": "Permissions"
     },
     "organization": {
       "title": "Organization",
@@ -1172,7 +1393,8 @@
         "lastName": "Last name",
         "email": "Personal email",
         "corporateEmail": "Corporate email",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "preset": "Permissions template"
       },
       "placeholders": {
         "username": "E.g. tuco_salamanca",
@@ -1183,8 +1405,12 @@
         "lastName": "E.g. Smith",
         "email": "E.g. john{'@'}personal.com",
         "corporateEmail": "E.g. john{'@'}company.com",
-        "whatsapp": "E.g. +521234567890"
+        "whatsapp": "E.g. +521234567890",
+        "preset": "No template (no permissions)",
+        "presetNoCompany": "Choose a company first"
       },
+      "presetHelp": "Optional. When the user is created, this template's permissions are applied in the chosen company.",
+      "clearPreset": "Remove template",
       "appearance": {
         "label": "Photo and color",
         "photo": "Photo",
@@ -1868,7 +2094,8 @@
       "videoCalls": "Video calls",
       "notifications": "Notifications",
       "general": "General",
-      "projects": "Projects"
+      "projects": "Projects",
+      "presetsApp": "App Presets"
     },
     "notificationsPanel": {
       "muted": "Muted",

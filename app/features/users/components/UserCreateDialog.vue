@@ -7,6 +7,13 @@ import UserPasswordStrengthField from '~/features/users/components/UserPasswordS
 import type { CreateUserSchema } from '~/features/users/schemas/user.schema'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
 import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
+import { useApplyPermissionPreset, usePermissionPresets } from '~/features/permissions/composables/usePermissionsAdmin'
+import { fetchErrorStatus, useApplyPresetApp, usePresetsApp } from '~/features/permissions/composables/usePresetsApp'
+
+const props = defineProps<{
+  /** Organización elegida en el selector de la barra: se preselecciona al abrir. */
+  organizationId?: number | null
+}>()
 
 const { t } = useI18n()
 const createUser = useCreateUser()
@@ -87,15 +94,64 @@ watch(() => state.organization, () => {
   }
 })
 
+/**
+ * Atajo: elegir una plantilla o un Preset App de la compañía; al crear el usuario se le aplica en esa compañía.
+ * Plantillas solo para superusers (su API es solo de superuser); Presets App si la API los deja ver (`settings.can_presets`,
+ * un 403 simplemente no muestra el grupo).
+ */
+const { isSuperuser } = usePermissions()
+const presetsQuery = usePermissionPresets(() => (isSuperuser.value ? state.company ?? null : null))
+const presetsAppQuery = usePresetsApp(() => ({ company: state.company }), () => state.company != null)
+const applyPreset = useApplyPermissionPreset()
+const applyPresetApp = useApplyPresetApp()
+
+/** `preset:<id>` (plantilla) o `app:<id>` (Preset App). */
+type PresetChoice = `preset:${number}` | `app:${number}`
+const presetChoice = ref<PresetChoice | undefined>(undefined)
+
+const presetOptions = computed(() => (isSuperuser.value ? presetsQuery.data.value ?? [] : [])
+  .map(preset => ({ value: `preset:${preset.id}` as PresetChoice, label: preset.name, icon: 'i-lucide-layout-template' })))
+const presetAppOptions = computed(() => (presetsAppQuery.data.value ?? [])
+  .filter(preset => preset.company === state.company)
+  .map(preset => ({ value: `app:${preset.id}` as PresetChoice, label: preset.name, icon: 'i-lucide-app-window' })))
+const presetItems = computed(() => [
+  ...(presetOptions.value.length
+    ? [[{ type: 'label' as const, label: t('permissions.tabs.presets') }, ...presetOptions.value]]
+    : []),
+  ...(presetAppOptions.value.length
+    ? [[{ type: 'label' as const, label: t('permissions.tabs.presetsApp') }, ...presetAppOptions.value]]
+    : []),
+])
+const hasPresetOptions = computed(() => presetOptions.value.length > 0 || presetAppOptions.value.length > 0)
+const presetsLoading = computed(() =>
+  (isSuperuser.value && presetsQuery.isFetching.value)
+  || (presetsAppQuery.isFetching.value && fetchErrorStatus(presetsAppQuery.error.value) !== 403),
+)
+/** Sin permiso para ninguna de las dos (no superuser y 403 en Presets App): el campo no se muestra. */
+const showPresetField = computed(() =>
+  isSuperuser.value || fetchErrorStatus(presetsAppQuery.error.value) !== 403,
+)
+
+// Las plantillas dependen de la compañía: al cambiarla, la elección ya no aplica.
+watch(() => state.company, () => {
+  presetChoice.value = undefined
+})
+
 function resetForm() {
   Object.assign(state, createInitialState())
   pendingImage.value = null
+  presetChoice.value = undefined
   form.value?.clear()
 }
 
 watch(open, (isOpen) => {
   if (!isOpen) {
     nextTick(resetForm)
+    return
+  }
+  // Al abrir: la organización del selector de la barra (se puede cambiar en el formulario).
+  if (state.organization == null && props.organizationId != null) {
+    state.organization = props.organizationId
   }
 })
 
@@ -109,13 +165,32 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
     payload.background_image = url
   }
 
+  let created: { id: number }
   try {
-    await createUser.mutateAsync(payload)
-    open.value = false
+    created = await createUser.mutateAsync(payload)
   }
   catch {
     // El composable presenta el error ya interpretado.
+    return
   }
+
+  // El usuario ya existe: si falla aplicar la plantilla, el toast lo dice y se puede aplicar luego desde Permisos.
+  const choice = presetChoice.value
+  if (choice && created?.id != null) {
+    const id = Number(choice.split(':')[1])
+    try {
+      if (choice.startsWith('app:')) {
+        await applyPresetApp.mutateAsync({ profileId: created.id, companyId: payload.company, presetAppId: id })
+      }
+      else {
+        await applyPreset.mutateAsync({ profileId: created.id, companyId: payload.company, presetId: id })
+      }
+    }
+    catch {
+      // Toast de error de la mutación.
+    }
+  }
+  open.value = false
 }
 </script>
 
@@ -193,6 +268,40 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
             />
           </UFormField>
         </div>
+
+        <!-- Atajo: plantilla de permisos que se aplica al crear el usuario (en la compañía elegida). -->
+        <UFormField
+          v-if="showPresetField"
+          :label="t('configuration.user.fields.preset')"
+          :help="t('configuration.user.presetHelp')"
+        >
+          <USelectMenu
+            v-model="presetChoice"
+            :items="presetItems"
+            value-key="value"
+            :loading="presetsLoading"
+            :disabled="state.company == null || !hasPresetOptions"
+            :placeholder="state.company == null
+              ? t('configuration.user.placeholders.presetNoCompany')
+              : hasPresetOptions ? t('configuration.user.placeholders.preset') : t('permissions.users.noPresets')"
+            icon="i-lucide-layout-template"
+            class="w-full"
+          >
+            <template
+              v-if="presetChoice"
+              #trailing
+            >
+              <UButton
+                icon="i-lucide-x"
+                color="neutral"
+                variant="link"
+                size="xs"
+                :aria-label="t('configuration.user.clearPreset')"
+                @click.stop="presetChoice = undefined"
+              />
+            </template>
+          </USelectMenu>
+        </UFormField>
 
         <div class="grid gap-4 sm:grid-cols-2">
           <UFormField
@@ -277,7 +386,7 @@ async function onSubmit(event: FormSubmitEvent<CreateUserSchema>) {
             type="submit"
             color="primary"
             :label="t('configuration.user.create.submit')"
-            :loading="createUser.isPending.value || isUploading"
+            :loading="createUser.isPending.value || isUploading || applyPreset.isPending.value || applyPresetApp.isPending.value"
           />
         </div>
       </UForm>

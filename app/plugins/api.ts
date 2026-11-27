@@ -58,6 +58,21 @@ export default defineNuxtPlugin((nuxtApp) => {
     })
   }
 
+  /** Endpoints de las vistas por proyecto / por grupo (`/project/…`, `/group/…`). */
+  const GROUP_VIEW_ENDPOINT = /\/api\/tasks\/company\/\d+\/(?:project|group)\//
+  /** Último aviso de 403 mostrado: varias consultas que fallan juntas muestran un solo toast. */
+  let lastForbiddenToast = { text: '', at: 0 }
+
+  function notifyForbidden(detail: unknown) {
+    const text = typeof detail === 'string' && detail.trim() ? detail : 'No tienes permisos para realizar esta acción.'
+    const now = Date.now()
+    if (lastForbiddenToast.text === text && now - lastForbiddenToast.at < 3000) {
+      return
+    }
+    lastForbiddenToast = { text, at: now }
+    useToast().add({ title: text, color: 'error', icon: 'i-lucide-lock' })
+  }
+
   const api = $fetch.create({
     baseURL: apiBaseUrl as string,
     onRequest({ options }) {
@@ -73,9 +88,20 @@ export default defineNuxtPlugin((nuxtApp) => {
         options.headers.set('Accept-Language', String(locale))
       }
     },
-    onResponseError({ response, options }) {
+    onResponseError({ request, response, options }) {
       if (response.status === 403 && (response._data as { detail?: unknown } | undefined)?.detail === 'must_change_password') {
         void requirePasswordChange()
+        return
+      }
+      // Un 403 de permisos: los del front pudieron quedar viejos (los cambió un admin). Se vuelven a pedir para que la UI
+      // oculte lo que ya no puede hacer; el toast con el `detail` lo pone quien hizo la llamada (parseFetchError).
+      if (response.status === 403 && !String(request).includes('/api/auth/permissions/me/')) {
+        // Vistas «por proyecto / por grupo» (consultas, sin toast propio): se avisa con el `detail` del backend. Al
+        // refrescar los permisos, el workspace cae solo a la vista por defecto (useTaskGroupByAccess).
+        if (GROUP_VIEW_ENDPOINT.test(String(request))) {
+          notifyForbidden((response._data as { detail?: unknown } | undefined)?.detail)
+        }
+        void usePermissions().refreshPermissions(undefined, { force: true })
         return
       }
       if (response.status !== 401) {

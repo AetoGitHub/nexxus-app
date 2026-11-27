@@ -210,7 +210,8 @@ export interface UpdateTaskProjectPayload {
 }
 
 /** Columnas del Kanban agrupado por vencimiento. */
-export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'no_date'
+/** `others`: con fecha pero fuera de Hoy…Este mes (vencidas de días anteriores y meses siguientes). */
+export type OverdueColumnId = 'today' | 'tomorrow' | 'week' | 'month' | 'others' | 'no_date'
 
 export type TaskView = 'list' | 'kanban' | 'calendar'
 
@@ -468,6 +469,8 @@ export interface OverdueCounts {
   week: number
   month: number
   no_date: number
+  /** Vencidas de días anteriores y las de meses siguientes. */
+  others: number
 }
 
 export interface ProjectDropdown {

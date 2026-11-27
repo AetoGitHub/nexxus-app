@@ -8,6 +8,7 @@ import TaskSettingsNavSidebar from '~/features/task-settings/components/shared/T
 import TaskSettingsPlaceholderPanel from '~/features/task-settings/components/shared/TaskSettingsPlaceholderPanel.vue'
 import TaskSettingsProjectModal from '~/features/task-settings/components/projects/TaskSettingsProjectModal.vue'
 import TaskSettingsProjectsPanel from '~/features/task-settings/components/projects/TaskSettingsProjectsPanel.vue'
+import PresetsAppPanel from '~/features/permissions/components/PresetsAppPanel.vue'
 import type {
   TaskSettingsNavItem,
   TaskSettingsProjectTab,
@@ -47,13 +48,35 @@ const { $api } = useNuxtApp()
 const queryClient = useQueryClient()
 const route = useRoute()
 
-const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'nexxtep', 'videoCalls', 'notifications', 'general']
+const VALID_SECTIONS: TaskSettingsSectionId[] = ['projects', 'groups', 'presetsApp', 'nexxtep', 'videoCalls', 'notifications', 'general']
+
+// Proyectos, Grupos y Presets App solo con su permiso (`settings.can_projects` / `settings.can_view_groups` /
+// `settings.can_presets`); el resto son preferencias personales y siempre se ven.
+const { can } = usePermissions()
+
+function isSectionAllowed(section: TaskSettingsSectionId): boolean {
+  if (section === 'projects') {
+    return can('settings', 'projects')
+  }
+  if (section === 'groups') {
+    return can('settings', 'view_groups')
+  }
+  if (section === 'presetsApp') {
+    return can('settings', 'presets')
+  }
+  return true
+}
+
+/** Primera sección permitida (si no hay permiso de proyectos ni grupos, abre en Nexxtep). */
+function firstAllowedSection(): TaskSettingsSectionId {
+  return VALID_SECTIONS.find(isSectionAllowed) ?? 'notifications'
+}
 
 function initialSection(): TaskSettingsSectionId {
-  const section = route.query.section
-  return VALID_SECTIONS.includes(section as TaskSettingsSectionId)
-    ? (section as TaskSettingsSectionId)
-    : 'projects'
+  const section = route.query.section as TaskSettingsSectionId
+  return VALID_SECTIONS.includes(section) && isSectionAllowed(section)
+    ? section
+    : firstAllowedSection()
 }
 
 /** Permite deep-link (p. ej. desde "Ver todas" en el preview de notificaciones) vía ?section=. */
@@ -72,14 +95,24 @@ const assignedGroupUsers = ref<CatalogueGroupMember[]>([])
 const isEditingProject = computed(() => editingProjectId.value != null)
 const isEditingGroup = computed(() => editingGroupId.value != null)
 
-const navItems: TaskSettingsNavItem[] = [
+const ALL_NAV_ITEMS: TaskSettingsNavItem[] = [
   { id: 'projects', labelKey: 'taskSettings.nav.projects', icon: 'i-lucide-folder-kanban' },
   { id: 'groups', labelKey: 'taskSettings.nav.groups', icon: 'i-lucide-users' },
+  { id: 'presetsApp', labelKey: 'taskSettings.nav.presetsApp', icon: 'i-lucide-layout-template' },
   { id: 'nexxtep', labelKey: 'taskSettings.nav.nexxtep', icon: 'i-lucide-workflow' },
   { id: 'videoCalls', labelKey: 'taskSettings.nav.videoCalls', icon: 'i-lucide-video' },
   { id: 'notifications', labelKey: 'taskSettings.nav.notifications', icon: 'i-lucide-bell' },
   { id: 'general', labelKey: 'taskSettings.nav.general', icon: 'i-lucide-settings' },
 ]
+
+const navItems = computed(() => ALL_NAV_ITEMS.filter(item => isSectionAllowed(item.id)))
+
+// Si le quitan el permiso con la pantalla abierta (llegan permisos nuevos), sale de la sección.
+watch(navItems, () => {
+  if (!isSectionAllowed(activeSection.value)) {
+    activeSection.value = firstAllowedSection()
+  }
+})
 
 const { projects, projectsQuery, createProject, companyId } = useEnterpriseProjects(
   () => projectsTab.value === 'mine',
@@ -270,6 +303,10 @@ useSeoMeta({
           :error="groupsQuery.isError.value"
           @new-group="openNewGroupModal"
           @edit="openEditGroupModal"
+        />
+
+        <PresetsAppPanel
+          v-else-if="activeSection === 'presetsApp'"
         />
 
         <TaskSettingsGeneralPanel

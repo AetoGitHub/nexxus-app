@@ -8,7 +8,7 @@ const ToUpdateKanbanView = defineAsyncComponent(
   () => import('~/features/to-update/components/ToUpdateKanbanView.vue'),
 )
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['task', 'view_approvals'] })
 
 const { t } = useI18n()
 

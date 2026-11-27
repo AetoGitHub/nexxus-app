@@ -4,6 +4,7 @@ import TaskBacklogMineToggle from '~/features/tasks/components/shared/TaskBacklo
 import TaskRepeatScopeFilter from '~/features/tasks/components/shared/TaskRepeatScopeFilter.vue'
 import type { KanbanCreateColumn, TaskListFilters, TaskSectionKey } from '~/features/tasks/types/task.types'
 import { extractResults } from '~/shared/utils/paginated.util'
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 
 const props = withDefaults(
   defineProps<{
@@ -22,6 +23,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { counts, upcomingCounts, upcomingScope, backlogCounts, backlog, urgent, today, upcoming, loadMore } = useTasks(() => props.filters)
+const { sortByTokens } = useTaskTokenState()
 
 function onCreate(sectionId: TaskSectionKey) {
   emit('create', { id: sectionId })
@@ -55,7 +57,7 @@ function onCreate(sectionId: TaskSectionKey) {
         :title="t('tasks.sections.urgent')"
         dot-color="#dc2626"
         :count="counts.data.value?.urgent"
-        :tasks="extractResults(urgent.data.value)"
+        :tasks="sortByTokens(extractResults(urgent.data.value))"
         :loading="urgent.isPending.value"
         :error="urgent.isError.value"
         :has-next-page="urgent.hasNextPage.value"
@@ -72,7 +74,7 @@ function onCreate(sectionId: TaskSectionKey) {
         :title="t('tasks.sections.today')"
         dot-color="#28ceab"
         :count="counts.data.value?.due_today"
-        :tasks="extractResults(today.data.value)"
+        :tasks="sortByTokens(extractResults(today.data.value))"
         :loading="today.isPending.value"
         :error="today.isError.value"
         :has-next-page="today.hasNextPage.value"
@@ -89,7 +91,7 @@ function onCreate(sectionId: TaskSectionKey) {
         :title="t('tasks.sections.upcoming')"
         dot-color="#6366f1"
         :count="upcomingCounts.data.value?.tasks ?? counts.data.value?.tasks"
-        :tasks="extractResults(upcoming.data.value)"
+        :tasks="sortByTokens(extractResults(upcoming.data.value))"
         :loading="upcoming.isPending.value"
         :error="upcoming.isError.value"
         :has-next-page="upcoming.hasNextPage.value"

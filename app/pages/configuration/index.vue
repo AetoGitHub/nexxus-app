@@ -11,13 +11,14 @@ import UserContextUpdateDialog from '~/features/user-context/components/UserCont
 import UserChangePasswordDialog from '~/features/users/components/UserChangePasswordDialog.vue'
 import UserCreateDialog from '~/features/users/components/UserCreateDialog.vue'
 import UserListTable from '~/features/users/components/UserListTable.vue'
+import PermissionsAdminPanel from '~/features/permissions/components/PermissionsAdminPanel.vue'
 import ConfigurationNavSidebar from '~/features/configuration/components/shared/ConfigurationNavSidebar.vue'
 import ConfigurationSelectOrganizationPrompt from '~/features/configuration/components/shared/ConfigurationSelectOrganizationPrompt.vue'
 import { useOrganizationsDropdown } from '~/features/organizations/composables/useOrganizationsDropdown'
 import { useCompaniesDropdown } from '~/features/companies/composables/useCompaniesDropdown'
 import type { ConfigurationNavItem, ConfigurationSectionId } from '~/features/configuration/types/configuration.types'
 
-definePageMeta({ middleware: 'auth', layout: false })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['master'], layout: false })
 
 const { t } = useI18n()
 const route = useRoute()
@@ -90,14 +91,54 @@ const bulkCreateTo = computed(() => {
   return { path: '/configuration/user/bulk-create', query }
 })
 
-function parseSection(value: unknown): ConfigurationSectionId {
-  return value === 'company' || value === 'user' ? value : 'organization'
+/**
+ * Cada pestaña solo con su permiso de Configuración master (`master.can_organizations / can_companies / can_users`);
+ * Permisos solo para superusers. Sin permiso la pestaña no se muestra (ni en solo lectura) y se abre la primera visible.
+ */
+const { can, isSuperuser } = usePermissions()
+
+const ALL_NAV_ITEMS: ConfigurationNavItem[] = [
+  { id: 'organization', labelKey: 'configuration.nav.organization', icon: 'i-lucide-building-2' },
+  { id: 'company', labelKey: 'configuration.nav.company', icon: 'i-lucide-briefcase' },
+  { id: 'user', labelKey: 'configuration.nav.user', icon: 'i-lucide-user' },
+  { id: 'permissions', labelKey: 'configuration.nav.permissions', icon: 'i-lucide-shield-check' },
+]
+
+function isSectionAllowed(id: ConfigurationSectionId): boolean {
+  switch (id) {
+    case 'organization':
+      return can('master', 'organizations')
+    case 'company':
+      return can('master', 'companies')
+    case 'user':
+      return can('master', 'users')
+    case 'permissions':
+      return isSuperuser.value
+  }
 }
 
-const activeSection = ref<ConfigurationSectionId>(parseSection(route.query.section))
+const navItems = computed(() => ALL_NAV_ITEMS.filter(item => isSectionAllowed(item.id)))
+
+function firstAllowedSection(): ConfigurationSectionId | null {
+  return navItems.value[0]?.id ?? null
+}
+
+function parseSection(value: unknown): ConfigurationSectionId | null {
+  const id = value as ConfigurationSectionId
+  return ALL_NAV_ITEMS.some(item => item.id === id) && isSectionAllowed(id) ? id : firstAllowedSection()
+}
+
+const activeSection = ref<ConfigurationSectionId | null>(parseSection(route.query.section))
 
 watch(() => route.query.section, (value) => {
   activeSection.value = parseSection(value)
+})
+
+// Si cambian los permisos con la pantalla abierta, no se queda en una pestaña que ya no tiene.
+watch(navItems, () => {
+  if (!activeSection.value || !isSectionAllowed(activeSection.value)) {
+    activeSection.value = firstAllowedSection()
+  }
 })
 
 function onSelectSection(id: ConfigurationSectionId) {
@@ -105,14 +146,15 @@ function onSelectSection(id: ConfigurationSectionId) {
   void router.replace({ query: { ...route.query, section: id } })
 }
 
-const navItems: ConfigurationNavItem[] = [
-  { id: 'organization', labelKey: 'configuration.nav.organization', icon: 'i-lucide-building-2' },
-  { id: 'company', labelKey: 'configuration.nav.company', icon: 'i-lucide-briefcase' },
-  { id: 'user', labelKey: 'configuration.nav.user', icon: 'i-lucide-user' },
-]
-
 useSeoMeta({
-  title: () => t(`configuration.${activeSection.value}.list.title`),
+  title: () => {
+    if (!activeSection.value) {
+      return t('configuration.title')
+    }
+    return activeSection.value === 'permissions'
+      ? t('permissions.title')
+      : t(`configuration.${activeSection.value}.list.title`)
+  },
 })
 </script>
 
@@ -123,7 +165,7 @@ useSeoMeta({
     <div class="flex min-h-0 flex-1 flex-col md:flex-row md:overflow-hidden">
       <ConfigurationNavSidebar
         :items="navItems"
-        :active-id="activeSection"
+        :active-id="activeSection ?? 'organization'"
         @select="onSelectSection"
       />
 
@@ -217,7 +259,31 @@ useSeoMeta({
           </main>
         </template>
 
-        <template v-else>
+        <template v-else-if="activeSection === 'permissions'">
+          <!-- Mismo selector de organización que Organización/Compañía/Usuarios: filtra la lista de usuarios. -->
+          <UDashboardToolbar
+            :ui="{
+              left: 'flex min-w-0 flex-1 items-center gap-2',
+              right: 'flex min-w-0 flex-1 items-center justify-end gap-2',
+            }"
+          >
+            <template #left>
+              <USelectMenu
+                v-model="organizationFilterId"
+                :items="organizationFilterItems"
+                value-key="value"
+                :placeholder="t('configuration.user.filters.organizationPlaceholder')"
+                icon="i-lucide-building-2"
+                clear
+                class="w-full sm:w-56"
+              />
+            </template>
+          </UDashboardToolbar>
+
+          <PermissionsAdminPanel :organization-id="organizationFilterId" />
+        </template>
+
+        <template v-else-if="activeSection === 'user'">
           <UDashboardToolbar
             :ui="{
               left: 'flex min-w-0 flex-1 items-center gap-2',
@@ -243,7 +309,7 @@ useSeoMeta({
                 icon="i-lucide-users"
                 :label="t('configuration.user.bulkCreate.action')"
               />
-              <UserCreateDialog />
+              <UserCreateDialog :organization-id="organizationFilterId" />
             </template>
           </UDashboardToolbar>
 
@@ -263,6 +329,22 @@ useSeoMeta({
             <UserContextUpdateDialog />
           </main>
         </template>
+
+        <!-- Acceso a Configuración master pero sin ninguna pestaña permitida. -->
+        <div
+          v-else
+          class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-12 text-center"
+        >
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <UIcon
+              name="i-lucide-lock"
+              class="h-6 w-6"
+            />
+          </div>
+          <p class="max-w-sm text-sm text-muted-foreground">
+            {{ t('permissions.masterEmpty') }}
+          </p>
+        </div>
       </div>
     </div>
   </div>

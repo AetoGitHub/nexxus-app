@@ -1,4 +1,222 @@
 {
+  "permissions": {
+    "title": "Permisos",
+    "subtitle": "Define qué puede ver y hacer cada usuario. El backend también lo valida.",
+    "noModules": "Tu usuario no tiene acceso a ningún módulo. Pide a un administrador que te asigne permisos.",
+    "masterEmpty": "Tienes acceso a Configuración master, pero a ninguna de sus secciones. Pide acceso a un administrador.",
+    "empty": {
+      "title": "Aún no tienes permisos en esta empresa",
+      "description": "Pide acceso a un administrador. En cuanto te asigne permisos o una plantilla, verás aquí tus módulos.",
+      "company": "Empresa: {company}",
+      "recheck": "Volver a revisar"
+    },
+    "denied": {
+      "title": "Acceso restringido",
+      "description": "No tienes permiso para {module}."
+    },
+    "modules": {
+      "task": "Tareas",
+      "report": "Reportes",
+      "dashboard": "Dashboard",
+      "settings": "Configuración",
+      "master": "Configuración master"
+    },
+    "fields": {
+      "task": {
+        "can_view": "Ver tareas",
+        "can_create": "Crear tareas",
+        "can_update": "Editar tareas y subtareas",
+        "can_update_date": "Cambiar fecha desde la lista (atajo)",
+        "can_delete": "Eliminar tareas",
+        "can_view_all": "Vista total (tareas de todos)",
+        "can_view_by_project": "Vista por proyecto",
+        "can_view_by_group": "Vista por grupo",
+        "can_view_approvals": "Pendientes de aprobación",
+        "can_voice": "Crear tareas por voz",
+        "can_view_history": "Ver historial de la tarea",
+        "can_mcp": "Usar el MCP (Claude)"
+      },
+      "report": {
+        "can_view": "Ver reportes",
+        "can_generate": "Generar reportes",
+        "can_update": "Editar reportes"
+      },
+      "dashboard": {
+        "can_view": "Ver dashboard",
+        "can_create": "Crear dashboards",
+        "can_update": "Editar dashboards",
+        "can_delete": "Eliminar dashboards"
+      },
+      "settings": {
+        "can_projects": "Configurar proyectos",
+        "can_view_groups": "Ver grupos",
+        "can_create_groups": "Crear grupos",
+        "can_update_groups": "Editar grupos",
+        "can_presets": "Gestionar Presets App"
+      },
+      "master": {
+        "allow": "Acceso a Configuración master",
+        "can_organizations": "Organizaciones",
+        "can_companies": "Compañías",
+        "can_users": "Usuarios y membresías"
+      }
+    },
+    "matrix": {
+      "allow": "Acceso al módulo",
+      "moduleOff": "Sin acceso al módulo",
+      "enabledCount": "{count} de {total} permisos",
+      "comingSoon": "Próximamente",
+      "selectAll": "Seleccionar todo",
+      "clearAll": "Quitar todo",
+      "activeModules": "{count} de {total} módulos activos",
+      "groups": {
+        "tasks": "Nexxus Tasks"
+      }
+    },
+    "tabs": {
+      "users": "Usuarios",
+      "presets": "Plantillas",
+      "presetsApp": "Presets App"
+    },
+    "dialog": {
+      "action": "Permisos",
+      "title": "Permisos del usuario"
+    },
+    "users": {
+      "select": "Usuario",
+      "selectPlaceholder": "Elige un usuario",
+      "company": "Compañía",
+      "companyPlaceholder": "Elige una compañía",
+      "headerFor": "Permisos de {user} en {company}",
+      "membershipsError": "No se pudieron cargar las compañías del usuario.",
+      "noMembershipsTitle": "Este usuario no pertenece a ninguna compañía",
+      "noMembershipsDescription": "Los permisos son por compañía. Agrégale una membresía a una compañía para poder asignarle permisos.",
+      "noUsers": "No hay usuarios en esta organización",
+      "noOrganizationTitle": "Selecciona una organización",
+      "noOrganizationDescription": "Elige una organización en el selector de arriba para ver sus usuarios y editar sus permisos.",
+      "search": "Buscar usuario…",
+      "empty": "Elige un usuario para ver y editar sus permisos.",
+      "loadError": "No se pudieron cargar los permisos del usuario.",
+      "applyPreset": "Aplicar plantilla",
+      "presetPlaceholder": "Elige una plantilla",
+      "noPresets": "No hay plantillas",
+      "apply": "Aplicar",
+      "applyConfirmTitle": "¿Aplicar plantilla?",
+      "applyConfirmDescription": "Los permisos de {user} en {company} se reemplazarán por los de «{preset}». Después podrás ajustarlos a mano.",
+      "basedOn": "Basado en: {name}",
+      "manualOverPreset": "Estos cambios quedarán como ajustes manuales sobre la plantilla «{name}». Si después se edita la plantilla y se aplica a sus usuarios, solo cambian las banderas modificadas en la plantilla.",
+      "templateLabel": "Plantilla:",
+      "noTemplate": "Sin plantilla",
+      "customized": "Personalizado ({count})",
+      "customHint": "Banderas en las que este usuario es distinto a la plantilla {name}.",
+      "customTooltip": "Distinto a la plantilla {name}",
+      "adjusted": "Ajustado",
+      "resetToTemplate": "Restablecer a la plantilla",
+      "unlinkTemplate": "Quitar plantilla",
+      "unlinkConfirmTitle": "¿Quitar la plantilla «{name}»?",
+      "unlinkConfirmDescription": "El usuario conserva sus permisos actuales y queda «Sin plantilla»: ya no recibirá los cambios que se hagan a esta plantilla.",
+      "unlinkAppConfirmDescription": "El usuario conserva sus permisos actuales y ya no recibirá los cambios que se hagan a este Preset App.",
+      "presetAppLabel": "Preset App:",
+      "applyAppConfirmTitle": "¿Aplicar Preset App?",
+      "applyAppConfirmDescription": "Los permisos de Tareas y Configuración de {user} en {company} se reemplazarán por «{preset}». Sus demás módulos no cambian.",
+      "resetConfirmTitle": "¿Restablecer a la plantilla «{name}»?",
+      "resetConfirmDescription": "Se perderán los ajustes manuales de este usuario: recibirá de nuevo todas las banderas de la plantilla.",
+      "custom": "Permisos personalizados",
+      "you": "Tú",
+      "superuserTitle": "Superusuario: tiene todos los permisos",
+      "superuserDescription": "Los permisos de un superusuario no se pueden limitar.",
+      "unsaved": "Cambios sin guardar",
+      "saved": "Sin cambios",
+      "switchConfirmTitle": "¿Descartar cambios?",
+      "switchConfirmDescription": "Tienes cambios sin guardar en los permisos de este usuario."
+    },
+    "presets": {
+      "subtitle": "Las plantillas sirven para asignar el mismo conjunto de permisos a varios usuarios.",
+      "new": "Nueva plantilla",
+      "create": "Crear plantilla",
+      "createTitle": "Nueva plantilla",
+      "createDescription": "Ponle un nombre y elige sus permisos.",
+      "editTitle": "Editar plantilla",
+      "editDescription": "Cambia el nombre o los permisos de la plantilla.",
+      "editWarning": "Si cambias permisos podrás elegir si se aplican también a los usuarios que tienen esta plantilla.",
+      "propagateLabel": "Aplicar también estos cambios a los usuarios que tienen esta plantilla",
+      "propagateTitle": "¿Aplicar también estos cambios a los usuarios que tienen esta plantilla?",
+      "propagateDescription": "Solo se agregarán o quitarán los permisos modificados; sus otros permisos se conservan.",
+      "onlyTemplate": "Solo la plantilla",
+      "templateAndUsers": "Plantilla y usuarios",
+      "name": "Nombre",
+      "namePlaceholder": "Ej. Operador",
+      "company": "Compañía",
+      "companyHelp": "Una plantilla general se puede aplicar en cualquier compañía; una de compañía, solo en esa.",
+      "general": "General (todas las compañías)",
+      "generalBadge": "General",
+      "empty": "Aún no hay plantillas. Crea la primera para asignar permisos más rápido.",
+      "loadError": "No se pudieron cargar las plantillas.",
+      "off": "Sin acceso",
+      "full": "Completo",
+      "partial": "{count} de {total}",
+      "deleteTitle": "¿Eliminar «{name}»?",
+      "deleteDescription": "Los usuarios que la tienen aplicada conservan sus permisos."
+    },
+    "presetsApp": {
+      "title": "Presets App",
+      "subtitle": "Plantillas con los permisos de Tareas y Configuración de una compañía, para aplicarlas rápido a sus usuarios.",
+      "new": "Nuevo preset",
+      "create": "Crear preset",
+      "createTitle": "Nuevo Preset App",
+      "editTitle": "Editar Preset App",
+      "formDescription": "Ponle un nombre, elige su compañía y los permisos de Tareas y Configuración.",
+      "namePlaceholder": "Ej. Operador app",
+      "companyHelp": "Solo se puede aplicar a usuarios de esta compañía.",
+      "companyPlaceholder": "Elige una compañía",
+      "propagateLabel": "Aplicar cambios a los usuarios que ya lo usan",
+      "propagateNoChanges": "Cambia algún permiso para poder aplicarlo a sus usuarios.",
+      "owner": "Dueño",
+      "permissions": "Permisos",
+      "actions": "Acciones",
+      "allCompanies": "Todas las compañías",
+      "allOwners": "Todos los dueños",
+      "clearFilters": "Limpiar filtros",
+      "empty": "Aún no hay Presets App. Crea el primero para asignar permisos más rápido.",
+      "emptyFiltered": "No hay Presets App con estos filtros.",
+      "loadError": "No se pudieron cargar los Presets App.",
+      "forbidden": "No tienes permiso para gestionar Presets App.",
+      "deleteDescription": "Los usuarios que lo tienen aplicado conservan sus permisos.",
+      "apply": "Aplicar a un usuario",
+      "applyTitle": "Aplicar «{name}»",
+      "applyDescription": "Elige un usuario de {company}.",
+      "applyInfo": "Solo se copian los permisos de Tareas y Configuración; los demás módulos del usuario no cambian. «Quitar preset» lo desliga y el usuario conserva sus permisos actuales.",
+      "user": "Usuario",
+      "userPlaceholder": "Elige un usuario",
+      "searchUser": "Buscar usuario…",
+      "remove": "Quitar preset"
+    },
+    "actions": {
+      "save": "Guardar",
+      "discard": "Descartar",
+      "discardAndContinue": "Descartar y continuar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "toasts": {
+      "error": "No se pudo completar la acción",
+      "profileSaved": "Permisos actualizados",
+      "presetApplied": "Plantilla aplicada",
+      "presetRemoved": "Plantilla quitada: el usuario conserva sus permisos",
+      "presetCreated": "Plantilla creada",
+      "presetUpdated": "Plantilla actualizada",
+      "presetSaved": "Plantilla guardada",
+      "presetSavedUsers": "Plantilla guardada · se actualizó {count} usuario | Plantilla guardada · se actualizó 1 usuario | Plantilla guardada · se actualizaron {count} usuarios",
+      "presetDeleted": "Plantilla eliminada",
+      "presetAppCreated": "Preset App creado",
+      "presetAppSaved": "Preset App guardado",
+      "presetAppSavedUsers": "Preset App guardado · se actualizaron {count} usuarios | Preset App guardado · se actualizó 1 usuario | Preset App guardado · se actualizaron {count} usuarios",
+      "presetAppDeleted": "Preset App eliminado",
+      "presetAppApplied": "Preset App aplicado",
+      "presetAppRemoved": "Preset App quitado: el usuario conserva sus permisos"
+    }
+  },
   "mentions": {
     "listLabel": "Usuarios para mencionar",
     "loading": "Cargando…",
@@ -229,6 +447,7 @@
       "tomorrow": "Mañana",
       "week": "Esta semana",
       "month": "Este mes",
+      "others": "Otras fechas",
       "noDate": "Sin fecha"
     },
     "views": {
@@ -291,6 +510,7 @@
         "confirm": "Confirmar",
         "noDateBlockedTitle": "Movimiento no disponible",
         "noDateBlockedDescription": "Por ahora no se pueden mover tareas a Sin fecha.",
+        "othersBlockedDescription": "Otras fechas junta vencidas y meses siguientes: cambia la fecha desde la tarea o con el atajo de la fecha.",
         "moveNotAllowedDescription": "Ese movimiento de vencimiento no está disponible.",
         "successTitle": "Vencimiento actualizado",
         "successDescription": "La fecha de vencimiento de la tarea se actualizó correctamente.",
@@ -992,7 +1212,8 @@
     "nav": {
       "organization": "Organización",
       "company": "Compañía",
-      "user": "Usuarios"
+      "user": "Usuarios",
+      "permissions": "Permisos"
     },
     "organization": {
       "title": "Organización",
@@ -1172,7 +1393,8 @@
         "lastName": "Apellidos",
         "email": "Correo personal",
         "corporateEmail": "Correo corporativo",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "preset": "Plantilla de permisos"
       },
       "placeholders": {
         "username": "Ej. tuco_salamanca",
@@ -1183,8 +1405,12 @@
         "lastName": "Ej. Pérez",
         "email": "Ej. juan{'@'}personal.com",
         "corporateEmail": "Ej. juan{'@'}empresa.com",
-        "whatsapp": "Ej. +521234567890"
+        "whatsapp": "Ej. +521234567890",
+        "preset": "Sin plantilla (permisos en cero)",
+        "presetNoCompany": "Primero elige una compañía"
       },
+      "presetHelp": "Opcional. Al crear el usuario se le aplican los permisos de esta plantilla en la compañía elegida.",
+      "clearPreset": "Quitar plantilla",
       "appearance": {
         "label": "Foto y color",
         "photo": "Foto",
@@ -1868,7 +2094,8 @@
       "videoCalls": "Videollamadas",
       "notifications": "Notificaciones",
       "general": "General",
-      "projects": "Proyectos"
+      "projects": "Proyectos",
+      "presetsApp": "Presets App"
     },
     "notificationsPanel": {
       "muted": "Silenciada",

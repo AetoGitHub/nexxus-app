@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { TaskCreatedBy } from '~/features/tasks/types/task.types'
-import { ASSIGNEE_AVATAR_COLORS } from '~/features/tasks/utils/task-format.util'
 
 const props = defineProps<{
   createdBy: TaskCreatedBy
@@ -22,10 +21,6 @@ const initials = computed(() => {
   const combined = `${first}${last}`.toUpperCase()
   return combined || '?'
 })
-
-const color = computed(() =>
-  ASSIGNEE_AVATAR_COLORS[Math.abs(props.createdBy.id) % ASSIGNEE_AVATAR_COLORS.length]!,
-)
 </script>
 
 <template>
@@ -41,7 +36,6 @@ const color = computed(() =>
         :initials="initials"
         :size="24"
         :font-size="11"
-        :fallback-color="color"
         :name="realName"
       />
     </button>

@@ -13,11 +13,12 @@ import type { VoiceTaskResponse } from '~/features/tasks/types/voice-task.types'
 import { formatReportOption } from '~/features/ceo-report/utils/ceo-report-adapter.util'
 
 // Protected route: redirects to /login when not authenticated.
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: ['auth', 'permission'], permission: ['report', 'view'] })
 
 const { t, locale } = useI18n()
 const toast = useToast()
 const { selectedCompanyId } = useAuth()
+const { can } = usePermissions()
 
 useSeoMeta({
   title: () => t('ceoReport.title'),
@@ -214,6 +215,7 @@ function onCreateTask(decision: CeoDecision) {
           {{ t('ceoReport.states.emptyDescription') }}
         </p>
         <UButton
+          v-if="can('report', 'generate')"
           :label="t('ceoReport.toolbar.generate')"
           icon="i-lucide-plus"
           @click="isGenerateOpen = true"
