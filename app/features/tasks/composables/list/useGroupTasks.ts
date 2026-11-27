@@ -1,3 +1,4 @@
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { useQueries, useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
@@ -69,13 +70,15 @@ export function useGroupTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}) {
   })
 
 
+  const { sortByTokens } = useTaskTokenState()
+
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
     return groupList.value.map((group, index) => {
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(group.id) ?? 0
-      const tasks = total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : []
+      const tasks = sortByTokens(total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : [])
 
       return {
         id: group.id,

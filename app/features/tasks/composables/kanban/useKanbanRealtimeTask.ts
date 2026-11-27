@@ -26,6 +26,7 @@ const REALTIME_DUE_COLUMNS = [
   { id: 'tomorrow', path: '/overdue/tomorrow/' },
   { id: 'week', path: '/overdue/week/' },
   { id: 'month', path: '/overdue/month/' },
+  { id: 'others', path: '/overdue/others/' },
 ] as const
 
 type RealtimeKanbanColumnId = typeof REALTIME_KANBAN_COLUMNS[number]['id']

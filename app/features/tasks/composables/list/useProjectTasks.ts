@@ -1,3 +1,4 @@
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { useQueries, useQuery } from '@tanstack/vue-query'
 import type { InfiniteData } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
@@ -83,6 +84,8 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
   })
 
 
+  const { sortByTokens } = useTaskTokenState()
+
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
@@ -93,7 +96,7 @@ export function useProjectTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
       // En la vista de sus privados las tareas personales son justo las que se muestran.
       // El orden (tokens y "Revisada") ya viene del API.
       const loadedTasks = isPrivateScope.value ? raw : withoutPersonalTasks(raw)
-      const tasks = loadedTasks
+      const tasks = sortByTokens(loadedTasks)
 
       return {
         id: project.id,

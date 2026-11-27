@@ -1,3 +1,4 @@
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import type { MaybeRefOrGetter } from 'vue'
 import type { OverdueCounts, TaskBoardSection, TaskListFilters } from '~/features/tasks/types/task.types'
 import { createCompanyTasksApi } from '~/features/tasks/composables/shared/createCompanyTasksApi'
@@ -9,6 +10,8 @@ const OVERDUE_SECTIONS = [
   { id: 'tomorrow', path: '/overdue/tomorrow/', labelKey: 'tasks.overdueSections.tomorrow', color: '#f97316', countKey: 'tomorrow' as const },
   { id: 'week', path: '/overdue/week/', labelKey: 'tasks.overdueSections.week', color: '#6366f1', countKey: 'week' as const },
   { id: 'month', path: '/overdue/month/', labelKey: 'tasks.overdueSections.month', color: '#8b5cf6', countKey: 'month' as const },
+  // Con fecha fuera de las columnas anteriores: vencidas de días anteriores y las de meses siguientes.
+  { id: 'others', path: '/overdue/others/', labelKey: 'tasks.overdueSections.others', color: '#0ea5e9', countKey: 'others' as const },
   { id: 'no_date', path: '/overdue/no_date/', labelKey: 'tasks.overdueSections.noDate', color: '#6b7280', countKey: 'no_date' as const },
 ] as const
 
@@ -24,6 +27,7 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
   const tomorrow = api.listQuery([...scope, 'tomorrow'], '/overdue/tomorrow/')
   const week = api.listQuery([...scope, 'week'], '/overdue/week/')
   const month = api.listQuery([...scope, 'month'], '/overdue/month/')
+  const others = api.listQuery([...scope, 'others'], '/overdue/others/')
   const noDate = api.listQuery([...scope, 'no_date'], '/overdue/no_date/')
 
   const sliceQueries = {
@@ -31,9 +35,11 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     tomorrow,
     week,
     month,
+    others,
     no_date: noDate,
   } as const
 
+  const { sortByTokens } = useTaskTokenState()
 
   const sections = computed<TaskBoardSection[]>(() => {
     const totals = counts.data.value
@@ -45,7 +51,7 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
         labelKey: meta.labelKey,
         color: meta.color,
         count: totals?.[meta.countKey],
-        tasks: extractResults(slice.data.value),
+        tasks: sortByTokens(extractResults(slice.data.value)),
         loading: slice.isPending.value,
         error: slice.isError.value,
         hasNextPage: slice.hasNextPage.value,
@@ -61,5 +67,5 @@ export function useOverdueTasks(filters: MaybeRefOrGetter<TaskListFilters> = {})
     }
   }
 
-  return { counts, today, tomorrow, week, month, noDate, sections, loadMore }
+  return { counts, today, tomorrow, week, month, others, noDate, sections, loadMore }
 }

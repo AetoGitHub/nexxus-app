@@ -5,13 +5,14 @@ import { dateInputToLimitDay } from '~/features/tasks/utils/form/task-form.util'
 export type KanbanDueMove =
   | { kind: 'confirm', columnId: 'today' | 'tomorrow', limitDateInput: string }
   | { kind: 'pick_date', columnId: 'week' | 'month', minDate: string, maxDate: string }
-  | { kind: 'blocked', reason: 'no_date' }
+  | { kind: 'blocked', reason: 'no_date' | 'others' }
 
 const OVERDUE_COLUMNS = new Set<string>([
   'today',
   'tomorrow',
   'week',
   'month',
+  'others',
   'no_date',
 ])
 
@@ -48,6 +49,10 @@ export function resolveKanbanDueMove(
 
   if (toColumnId === 'no_date') {
     return { kind: 'blocked', reason: 'no_date' }
+  }
+  // Otras fechas junta vencidas y meses siguientes: no hay una fecha que deducir del drop.
+  if (toColumnId === 'others') {
+    return { kind: 'blocked', reason: 'others' }
   }
 
   // "Hoy" es el día en CDMX (donde vence la tarea), no el del navegador.

@@ -447,6 +447,7 @@
       "tomorrow": "Tomorrow",
       "week": "This week",
       "month": "This month",
+      "others": "Other dates",
       "noDate": "No date"
     },
     "views": {
@@ -509,6 +510,7 @@
         "confirm": "Confirm",
         "noDateBlockedTitle": "Move unavailable",
         "noDateBlockedDescription": "Tasks cannot be moved to No date for now.",
+        "othersBlockedDescription": "Other dates mixes overdue tasks and later months: change the date from the task or with the date shortcut.",
         "moveNotAllowedDescription": "That due-date move is not available.",
         "successTitle": "Due date updated",
         "successDescription": "The task due date was updated successfully.",

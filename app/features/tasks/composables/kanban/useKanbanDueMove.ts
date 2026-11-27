@@ -41,7 +41,9 @@ export function useKanbanDueMove() {
     if (transition.kind === 'blocked') {
       toast.add({
         title: t('tasks.kanban.dueMove.noDateBlockedTitle'),
-        description: t('tasks.kanban.dueMove.noDateBlockedDescription'),
+        description: transition.reason === 'others'
+          ? t('tasks.kanban.dueMove.othersBlockedDescription')
+          : t('tasks.kanban.dueMove.noDateBlockedDescription'),
         color: 'warning',
       })
       return false

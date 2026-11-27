@@ -1,3 +1,4 @@
+import { useTaskTokenState } from '~/features/tasks/composables/shared/useTaskTokenState'
 import { useQueries, useQuery } from '@tanstack/vue-query'
 import type { MaybeRefOrGetter } from 'vue'
 import type { PaginatedResponse } from '~/shared/types/api.types'
@@ -64,6 +65,8 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
   })
 
 
+  const { sortByTokens } = useTaskTokenState()
+
   const sections = computed<ProjectTaskSection[]>(() => {
     const countsMap = new Map((counts.data.value ?? []).map(c => [c.id, c.total]))
 
@@ -71,7 +74,7 @@ export function useAssignedTasks(filters: MaybeRefOrGetter<TaskListFilters> = {}
       const queryResult = taskQueries.value[index]
       const total = countsMap.get(user.id) ?? 0
       const loadedTasks = total > 0 ? withoutPersonalTasks(extractResults(queryResult?.data)) : []
-      const tasks = loadedTasks
+      const tasks = sortByTokens(loadedTasks)
       const fallbackColor = GROUP_SECTION_COLORS[index % GROUP_SECTION_COLORS.length] ?? '#6b7280'
 
       return {

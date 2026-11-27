@@ -447,6 +447,7 @@
       "tomorrow": "Mañana",
       "week": "Esta semana",
       "month": "Este mes",
+      "others": "Otras fechas",
       "noDate": "Sin fecha"
     },
     "views": {
@@ -509,6 +510,7 @@
         "confirm": "Confirmar",
         "noDateBlockedTitle": "Movimiento no disponible",
         "noDateBlockedDescription": "Por ahora no se pueden mover tareas a Sin fecha.",
+        "othersBlockedDescription": "Otras fechas junta vencidas y meses siguientes: cambia la fecha desde la tarea o con el atajo de la fecha.",
         "moveNotAllowedDescription": "Ese movimiento de vencimiento no está disponible.",
         "successTitle": "Vencimiento actualizado",
         "successDescription": "La fecha de vencimiento de la tarea se actualizó correctamente.",
