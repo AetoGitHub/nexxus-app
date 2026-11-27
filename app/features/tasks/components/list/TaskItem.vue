@@ -83,8 +83,11 @@ const advanceBlocked = computed(() =>
 )
 const canDelete = computed(() => props.deletable && can('task', 'delete') && canModifyTask(props.task, user.value?.id))
 
-/** Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). */
-const canEditDue = computed(() => canQuickEditDueDate(props.task, user.value?.id))
+/**
+ * Atajo: clic en la fecha para cambiarla sin abrir la tarea (misma regla que editar). Además pide `task.can_update_date`:
+ * sin él la fecha solo se muestra y no abre el calendario.
+ */
+const canEditDue = computed(() => can('task', 'update_date') && canQuickEditDueDate(props.task, user.value?.id))
 
 function onSelect() {
   emit('select', props.task.id)

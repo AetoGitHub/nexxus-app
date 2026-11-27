@@ -10,6 +10,7 @@ export const PERMISSION_MODULES: PermissionModuleDef[] = [
       { key: 'can_view', labelKey: 'permissions.fields.task.can_view' },
       { key: 'can_create', labelKey: 'permissions.fields.task.can_create' },
       { key: 'can_update', labelKey: 'permissions.fields.task.can_update' },
+      { key: 'can_update_date', labelKey: 'permissions.fields.task.can_update_date' },
       { key: 'can_delete', labelKey: 'permissions.fields.task.can_delete' },
       { key: 'can_view_all', labelKey: 'permissions.fields.task.can_view_all' },
       { key: 'can_view_by_project', labelKey: 'permissions.fields.task.can_view_by_project' },

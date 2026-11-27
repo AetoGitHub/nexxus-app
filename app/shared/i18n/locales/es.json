@@ -26,6 +26,7 @@
         "can_view": "Ver tareas",
         "can_create": "Crear tareas",
         "can_update": "Editar tareas y subtareas",
+        "can_update_date": "Cambiar fecha desde la lista (atajo)",
         "can_delete": "Eliminar tareas",
         "can_view_all": "Vista total (tareas de todos)",
         "can_view_by_project": "Vista por proyecto",
@@ -66,7 +67,11 @@
       "enabledCount": "{count} de {total} permisos",
       "comingSoon": "Próximamente",
       "selectAll": "Seleccionar todo",
-      "clearAll": "Quitar todo"
+      "clearAll": "Quitar todo",
+      "activeModules": "{count} de {total} módulos activos",
+      "groups": {
+        "tasks": "Nexxus Tasks"
+      }
     },
     "tabs": {
       "users": "Usuarios",
@@ -1386,7 +1391,8 @@
         "lastName": "Apellidos",
         "email": "Correo personal",
         "corporateEmail": "Correo corporativo",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "preset": "Plantilla de permisos"
       },
       "placeholders": {
         "username": "Ej. tuco_salamanca",
@@ -1397,8 +1403,12 @@
         "lastName": "Ej. Pérez",
         "email": "Ej. juan{'@'}personal.com",
         "corporateEmail": "Ej. juan{'@'}empresa.com",
-        "whatsapp": "Ej. +521234567890"
+        "whatsapp": "Ej. +521234567890",
+        "preset": "Sin plantilla (permisos en cero)",
+        "presetNoCompany": "Primero elige una compañía"
       },
+      "presetHelp": "Opcional. Al crear el usuario se le aplican los permisos de esta plantilla en la compañía elegida.",
+      "clearPreset": "Quitar plantilla",
       "appearance": {
         "label": "Foto y color",
         "photo": "Foto",

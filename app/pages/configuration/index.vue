@@ -309,7 +309,7 @@ useSeoMeta({
                 icon="i-lucide-users"
                 :label="t('configuration.user.bulkCreate.action')"
               />
-              <UserCreateDialog />
+              <UserCreateDialog :organization-id="organizationFilterId" />
             </template>
           </UDashboardToolbar>
 

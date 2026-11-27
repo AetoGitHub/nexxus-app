@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Read(//c/eam-web/**)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(node -e \"for \\(const f of ['es','en']\\) {const j=JSON.parse\\(require\\('fs'\\).readFileSync\\('app/shared/i18n/locales/'+f+'.json','utf8'\\)\\);const u=j.configuration.user;console.log\\(f,u.fields.preset,'|',u.placeholders.preset,'|',u.presetHelp\\)}\")"
     ],
     "additionalDirectories": [
       "C:\\eam-web\\app\\features\\panel-admin\\types",

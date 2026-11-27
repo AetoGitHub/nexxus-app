@@ -107,6 +107,8 @@ export interface TaskPermissionBlock {
   can_view: boolean
   can_create: boolean
   can_update: boolean
+  /** Atajo de la lista/kanban para cambiar la fecha límite (clic en la fecha → calendario). */
+  can_update_date: boolean
   can_delete: boolean
   can_view_all: boolean
   /** Vista de tareas por proyecto («Ver por: Proyecto»). */
@@ -167,7 +169,7 @@ export interface PermissionBlocks {
 
 /** Acciones de cada módulo (el campo es `can_<acción>`). */
 export interface PermissionActions {
-  task: 'mcp' | 'view' | 'create' | 'update' | 'delete' | 'view_all' | 'view_by_project' | 'view_by_group'
+  task: 'mcp' | 'view' | 'create' | 'update' | 'update_date' | 'delete' | 'view_all' | 'view_by_project' | 'view_by_group'
     | 'view_approvals' | 'voice' | 'view_history'
   report: 'view' | 'generate' | 'update'
   dashboard: 'view' | 'create' | 'update' | 'delete'

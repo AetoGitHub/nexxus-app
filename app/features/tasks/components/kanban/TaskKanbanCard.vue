@@ -75,8 +75,12 @@ const isDraggable = computed(() =>
  * mías (la lista no trae `created_by`), así que también puedo cambiarla mientras siga viva.
  */
 const canEditDue = computed(() =>
-  canQuickEditDueDate(props.task, user.value?.id)
-  || (props.delegated && props.task.status !== 'complete' && props.task.archived !== true && props.task.backlog !== true),
+  // `task.can_update_date`: sin él la fecha solo se muestra y no abre el calendario.
+  can('task', 'update_date')
+  && (
+    canQuickEditDueDate(props.task, user.value?.id)
+    || (props.delegated && props.task.status !== 'complete' && props.task.archived !== true && props.task.backlog !== true)
+  ),
 )
 
 function onSelect() {

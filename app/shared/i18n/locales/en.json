@@ -26,6 +26,7 @@
         "can_view": "View tasks",
         "can_create": "Create tasks",
         "can_update": "Edit tasks and subtasks",
+        "can_update_date": "Change date from the list (shortcut)",
         "can_delete": "Delete tasks",
         "can_view_all": "Full view (everyone's tasks)",
         "can_view_by_project": "View by project",
@@ -66,7 +67,11 @@
       "enabledCount": "{count} of {total} permissions",
       "comingSoon": "Coming soon",
       "selectAll": "Select all",
-      "clearAll": "Clear all"
+      "clearAll": "Clear all",
+      "activeModules": "{count} of {total} modules active",
+      "groups": {
+        "tasks": "Nexxus Tasks"
+      }
     },
     "tabs": {
       "users": "Users",
@@ -1386,7 +1391,8 @@
         "lastName": "Last name",
         "email": "Personal email",
         "corporateEmail": "Corporate email",
-        "whatsapp": "WhatsApp"
+        "whatsapp": "WhatsApp",
+        "preset": "Permissions template"
       },
       "placeholders": {
         "username": "E.g. tuco_salamanca",
@@ -1397,8 +1403,12 @@
         "lastName": "E.g. Smith",
         "email": "E.g. john{'@'}personal.com",
         "corporateEmail": "E.g. john{'@'}company.com",
-        "whatsapp": "E.g. +521234567890"
+        "whatsapp": "E.g. +521234567890",
+        "preset": "No template (no permissions)",
+        "presetNoCompany": "Choose a company first"
       },
+      "presetHelp": "Optional. When the user is created, this template's permissions are applied in the chosen company.",
+      "clearPreset": "Remove template",
       "appearance": {
         "label": "Photo and color",
         "photo": "Photo",

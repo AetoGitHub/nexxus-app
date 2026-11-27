@@ -32,7 +32,11 @@ export function fieldError(error: unknown, field: string): string | null {
 }
 
 /** Presets App visibles (las de compañías donde tengo membresía, o todas si soy superuser). Filtros opcionales. */
-export function usePresetsApp(filters: MaybeRefOrGetter<{ company?: number | null, profile?: number | null }> = {}) {
+export function usePresetsApp(
+  filters: MaybeRefOrGetter<{ company?: number | null, profile?: number | null }> = {},
+  /** false = no se pide (p. ej. mientras no hay compañía elegida). */
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
   const { $api } = useNuxtApp()
   const query = computed(() => {
     const { company, profile } = toValue(filters)
@@ -44,6 +48,7 @@ export function usePresetsApp(filters: MaybeRefOrGetter<{ company?: number | nul
   return useQuery({
     queryKey: computed(() => [...PRESETS_APP_KEY, query.value]),
     queryFn: () => fetchAllPages<PresetApp>($api, `${BASE}/presets_app/`, query.value),
+    enabled: computed(() => toValue(enabled)),
     // Un 403 no se reintenta: significa que ya no tiene el permiso.
     retry: (count, error) => fetchErrorStatus(error) !== 403 && count < 2,
   })
