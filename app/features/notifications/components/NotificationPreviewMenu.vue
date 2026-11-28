@@ -111,7 +111,7 @@ async function onOpen(notification: AppNotification) {
         color="neutral"
         variant="ghost"
         square
-        class="h-9 w-9 text-muted-foreground hover:text-foreground"
+        class="h-9 w-9 rounded-[10px] text-muted-foreground hover:text-foreground"
         :aria-label="notificationsAriaLabel"
         :title="notificationsAriaLabel"
       />

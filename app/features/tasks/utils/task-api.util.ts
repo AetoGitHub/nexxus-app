@@ -15,6 +15,10 @@ export function toTaskListQuery(
   if (filters.type?.length) {
     query.type = JSON.stringify(filters.type)
   }
+  // Estado: "pending,wip" (el Kanban nunca lo recibe; ver `withoutStatusFilter`).
+  if (filters.status?.length) {
+    query.status = filters.status.join(',')
+  }
   if (filters.project?.length) {
     query.project = filters.project.join(',')
   }

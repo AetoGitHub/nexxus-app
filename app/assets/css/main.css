@@ -6,21 +6,35 @@
  * Se definen como variables CSS que cambian con el color mode (.dark)
  * y se exponen como utilidades Tailwind vía `@theme inline`.
  */
+/*
+ * Paleta del rediseño UX-04 (Nexxus Task). Modo oscuro = valores exactos de la maqueta; modo claro = equivalente con la
+ * misma jerarquía: fondo de página < columna del tablero < tarjeta, borde normal y borde fuerte (controles).
+ */
 :root {
-  --background: #F5F5F5;
-  --foreground: #1c1c1c;
+  --background: #f3f4f8;
+  --foreground: #15171c;
   --card: #ffffff;
-  --border: #e6e8eb;
-  --muted: #f4f5f7;
-  --muted-foreground: #6b7280;
+  --border: #e0e3eb;
+  /* Borde de controles (botones de filtro, segmentados, inputs). */
+  --border-strong: #b9bfcc;
+  /* Relleno de campos y avatares sin foto. */
+  --input: #f0f2f6;
+  --muted: #f0f2f6;
+  --muted-foreground: #5a606d;
   --sidebar: #ffffff;
-  --sidebar-border: #e6e8eb;
-  --sidebar-foreground: #3f434b;
-  --kanban-column: #ededed;
-  --ring: #28ceab;
-  --aeto-teal: #28ceab;
-  --aeto-teal-light: rgba(40, 206, 171, 0.12);
-  --aeto-teal-dark: #0d7a66;
+  --sidebar-border: #e0e3eb;
+  --sidebar-foreground: #15171c;
+  --kanban-column: #e9ebf1;
+  --ring: #28cda8;
+  --aeto-teal: #28cda8;
+  --aeto-teal-light: rgba(40, 205, 168, 0.14);
+  --aeto-teal-dark: #0b7a63;
+  /* Texto sobre el teal sólido (botón primario «Crear tarea»). */
+  --on-teal: #06241d;
+  /* Rojo de «vencida» / «Urgente» y ámbar de «En revisión», legibles sobre la tarjeta. */
+  --danger: #c42433;
+  --danger-soft: rgba(214, 47, 61, 0.12);
+  --warning: #8a5200;
   /* Menciones al usuario logueado: ámbar (distinto del gris neutro de «hay menciones» y del teal de marca). Con el
      texto oscuro `--mention-me-foreground` pasa AA sobre el ámbar en ambos modos. */
   --mention-me: #d97706;
@@ -30,23 +44,62 @@
 }
 
 .dark {
-  --background: #1A1A1A;
-  --foreground: #f3f4f6;
-  --card: #242424;
-  --border: #262a31;
-  --muted: #1e2127;
-  --muted-foreground: #9aa1ac;
-  --sidebar: #1F1F1F;
-  --sidebar-border: #21252c;
-  --sidebar-foreground: #c7ccd4;
-  --kanban-column: #2e2e2e;
-  --ring: #28ceab;
-  --aeto-teal: #28ceab;
-  --aeto-teal-light: rgba(40, 206, 171, 0.15);
-  --aeto-teal-dark: #34d6b3;
+  --background: #131316;
+  --foreground: #f4f5f7;
+  --card: #1b1b20;
+  --border: #30303a;
+  --border-strong: #4a4a56;
+  --input: #24242b;
+  --muted: #24242b;
+  --muted-foreground: #a3a6b1;
+  --sidebar: #0e0e11;
+  --sidebar-border: #30303a;
+  --sidebar-foreground: #f4f5f7;
+  --kanban-column: #17171c;
+  --ring: #28cda8;
+  --aeto-teal: #28cda8;
+  --aeto-teal-light: rgba(40, 205, 168, 0.14);
+  --aeto-teal-dark: #28cda8;
+  --on-teal: #06241d;
+  --danger: #ff6b7a;
+  --danger-soft: rgba(255, 107, 122, 0.15);
+  --warning: #ffb020;
   --mention-me: #fbbf24;
   --mention-me-fill: #fbbf24;
   --mention-me-foreground: #1c1917;
+}
+
+/*
+ * Variables semánticas de Nuxt UI (vienen en @layer theme; estas, sin capa, ganan) alineadas a la paleta: así los
+ * UButton/UInput/USelect/menús usan los mismos fondos y bordes que la maqueta.
+ */
+:root {
+  --ui-bg: #ffffff;
+  --ui-bg-muted: #f0f2f6;
+  --ui-bg-elevated: #f0f2f6;
+  --ui-bg-accented: #e0e3eb;
+  --ui-border: #e0e3eb;
+  --ui-border-muted: #e0e3eb;
+  --ui-border-accented: #b9bfcc;
+  --ui-text-dimmed: #7c7f8b;
+  --ui-text-muted: #5a606d;
+  --ui-text: #2a2e36;
+  --ui-text-highlighted: #15171c;
+}
+
+.dark {
+  --ui-bg: #1b1b20;
+  --ui-bg-muted: #24242b;
+  --ui-bg-elevated: #24242b;
+  --ui-bg-accented: #30303a;
+  --ui-border: #30303a;
+  --ui-border-muted: #30303a;
+  --ui-border-accented: #4a4a56;
+  --ui-text-dimmed: #7c7f8b;
+  --ui-text-muted: #a3a6b1;
+  --ui-text: #e6e7eb;
+  --ui-text-highlighted: #f4f5f7;
+  --ui-text-inverted: #06241d;
 }
 
 @theme inline {
@@ -66,6 +119,33 @@
   --color-aeto-teal-dark: var(--aeto-teal-dark);
   --color-mention-me: var(--mention-me);
   --color-mention-me-foreground: var(--mention-me-foreground);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-on-teal: var(--on-teal);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning-text: var(--warning);
+
+  /* Tipografía de la maqueta: DM Sans para todo y DM Mono para cifras (contadores, fechas). @nuxt/fonts (incluido
+     por Nuxt UI) las descarga y sirve localmente al detectarlas aquí. */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Paleta de marca para Nuxt UI (`primary: 'aeto'` en app.config): el 400 es el teal exacto de la maqueta, que es el
+   tono que usa Nuxt UI en modo oscuro; el 700 es el teal de texto sobre fondo claro. */
+@theme static {
+  --color-aeto-50: #eafcf7;
+  --color-aeto-100: #cbf7ea;
+  --color-aeto-200: #9cefd9;
+  --color-aeto-300: #63e1c4;
+  --color-aeto-400: #28cda8;
+  --color-aeto-500: #12b391;
+  --color-aeto-600: #0c947a;
+  --color-aeto-700: #0b7a63;
+  --color-aeto-800: #0e5f4f;
+  --color-aeto-900: #0f4f43;
+  --color-aeto-950: #06241d;
 }
 
 /* Tarjeta o fila de una tarea donde mencionan al usuario: contorno de acento (borde + línea exterior, sin tocar el
@@ -109,4 +189,14 @@
 /* Con el teclado en pantalla abierto (ver useKeyboardOpen) se esconde lo fijo al fondo de la pantalla. */
 html[data-keyboard-open] [data-hide-on-keyboard] {
   display: none !important;
+}
+
+/* Scroll sin barra visible (rueda, trackpad y touch siguen funcionando): lista y columnas del tablero. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

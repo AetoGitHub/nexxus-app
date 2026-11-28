@@ -107,7 +107,7 @@ export function useKanbanTasks(
       {
         id: 'pending',
         labelKey: 'tasks.kanban.columns.pending',
-        color: '#6b7280',
+        color: '#a3a6b1',
         count: pendingCounts.data.value?.pending ?? totals?.pending,
         tasks: sortByTokens(extractResults(pending.data.value)),
         loading: pending.isPending.value,
@@ -118,7 +118,7 @@ export function useKanbanTasks(
       {
         id: 'wip',
         labelKey: 'tasks.kanban.columns.wip',
-        color: '#6366f1',
+        color: '#28cda8',
         count: totals?.wip,
         tasks: sortByTokens(extractResults(wip.data.value)),
         loading: wip.isPending.value,
@@ -129,7 +129,7 @@ export function useKanbanTasks(
       {
         id: 'in_review',
         labelKey: 'tasks.kanban.columns.inReview',
-        color: '#f97316',
+        color: '#ffb020',
         count: totals?.in_review,
         tasks: sortByTokens(extractResults(inReview.data.value)),
         loading: inReview.isPending.value,
@@ -140,7 +140,7 @@ export function useKanbanTasks(
       {
         id: 'rejected',
         labelKey: 'tasks.kanban.columns.rejected',
-        color: '#dc2626',
+        color: '#ff6b7a',
         count: countsReady.value ? rejectedCount.value : undefined,
         tasks: sortByTokens(extractResults(rejected.data.value)),
         loading: !countsReady.value || rejected.isPending.value,
@@ -151,7 +151,7 @@ export function useKanbanTasks(
       {
         id: 'complete',
         labelKey: 'tasks.kanban.columns.complete',
-        color: '#28ceab',
+        color: '#4c6ef5',
         count: totals?.complete,
         tasks: sortByTokens(extractResults(complete.data.value)),
         loading: complete.isPending.value,

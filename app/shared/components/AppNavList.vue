@@ -23,7 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { tasksItems, isActive, navigate, isChildActive, navigateToChild } = useAppNav()
+const { navSections, isActive, navigate, isChildActive, navigateToChild } = useAppNav()
 
 /** Sin override explícito, un ítem con hijos arranca expandido si ya está activo. */
 const expandedOverrides = ref<Record<string, boolean>>({})
@@ -51,12 +51,31 @@ function onChildClick(child: AppNavChild) {
 </script>
 
 <template>
-  <div class="space-y-0.5">
+  <!-- Menú agrupado como en la maqueta UX-04: TRABAJO · EQUIPO · ANÁLISIS · Ajustes. -->
+  <div class="flex flex-col">
+    <div
+      v-for="(section, sectionIndex) in navSections"
+      :key="section.id"
+      class="flex flex-col gap-0.5"
+      :class="sectionIndex > 0 ? 'pt-3' : ''"
+    >
+      <span
+        v-if="!collapsed"
+        class="px-2 pb-1 text-[11px] leading-[14px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80"
+      >
+        {{ t(section.labelKey) }}
+      </span>
+      <span
+        v-else-if="sectionIndex > 0"
+        class="mx-3 mb-1 border-t border-sidebar-border"
+        aria-hidden="true"
+      />
+
     <template
-      v-for="item in tasksItems"
+      v-for="item in section.items"
       :key="item.labelKey"
     >
-      <!-- «Tareas por proyecto»: bloque propio (privados primero y luego los de la empresa), en su lugar del menú. -->
+      <!-- «Proyectos»: bloque propio (privados primero y luego los de la empresa), en su lugar del menú. -->
       <AppPrivateProjects
         v-if="item.projectsBlock"
         embedded
@@ -71,21 +90,18 @@ function onChildClick(child: AppNavChild) {
         <button
           type="button"
           :aria-label="t(item.labelKey)"
-          class="w-full flex items-center py-2 text-sm rounded-md transition-colors relative"
+          :aria-current="isActive(item) ? 'page' : undefined"
+          class="w-full h-9 flex items-center text-[13px] rounded-[10px] transition-colors relative"
           :class="[
-            collapsed ? 'justify-center px-0' : 'gap-3 px-3',
+            collapsed ? 'justify-center px-0' : 'gap-2.5 px-2',
             isActive(item)
-              ? 'bg-aeto-teal-light text-aeto-teal-dark font-medium'
-              : 'text-sidebar-foreground hover:bg-muted',
+              ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold'
+              : 'text-muted-foreground font-medium hover:bg-muted hover:text-foreground',
           ]"
           @click="onItemClick(item)"
         >
-          <span
-            v-if="isActive(item)"
-            class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-aeto-teal"
-          />
           <span class="relative">
-            <UIcon :name="item.icon" class="h-4 w-4 shrink-0" />
+            <UIcon :name="item.icon" class="size-[18px] shrink-0" />
             <span
               v-if="collapsed && item.badge"
               class="absolute -top-1 -right-1 h-2 w-2 rounded-full"
@@ -120,20 +136,18 @@ function onChildClick(child: AppNavChild) {
           :key="child.to"
           type="button"
           :aria-label="child.label"
-          class="w-full flex items-center gap-3 py-2 pl-9 pr-3 text-sm rounded-md transition-colors relative"
+          :aria-current="isChildActive(child) ? 'page' : undefined"
+          class="w-full h-8 flex items-center gap-3 pl-9 pr-2 text-[13px] rounded-[10px] transition-colors relative"
           :class="isChildActive(child)
-            ? 'bg-aeto-teal-light text-aeto-teal-dark font-medium'
-            : 'text-sidebar-foreground hover:bg-muted'"
+            ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold'
+            : 'text-muted-foreground font-medium hover:bg-muted hover:text-foreground'"
           @click="onChildClick(child)"
         >
-          <span
-            v-if="isChildActive(child)"
-            class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-aeto-teal"
-          />
           <span class="flex-1 text-left truncate">{{ child.label }}</span>
         </button>
       </div>
       </template>
     </template>
+    </div>
   </div>
 </template>

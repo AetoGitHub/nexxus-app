@@ -40,8 +40,6 @@ const { user } = useAuth()
 const {
   typeMeta,
   priorityMeta,
-  statusMeta,
-  barColor,
   // requiresAttention, // oculto de momento: genera confusión
   closeApprovalsProgress,
   assignees,
@@ -129,17 +127,18 @@ function onDragEnd() {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <!-- div en vez de button: dentro va el botón de token y un button no puede anidar otro. -->
+    <!-- Tarjeta de la maqueta UX-04: título · 📁 proyecto · [pills] ··· fecha · avatar.
+         div en vez de button: dentro van botones (token, fecha, revisada) y un button no puede anidar otro. -->
     <div
       role="button"
       tabindex="0"
-      class="relative w-full cursor-pointer text-left rounded-lg border border-border bg-card p-3 shadow-sm hover:border-muted-foreground/50 hover:brightness-110 transition-[filter,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 space-y-2"
+      class="relative w-full cursor-pointer text-left rounded-[10px] border border-border bg-card p-3 flex flex-col gap-2.5 text-foreground hover:border-border-strong transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       :class="[selected ? 'ring-2 ring-aeto-teal/50' : '', mentionsMe ? 'task-mention-me' : '', reviewed ? 'opacity-75' : '']"
-      :style="{ borderLeft: `3px solid ${barColor}` }"
       @click="onSelect"
       @keydown.enter.self.prevent="onSelect"
       @keydown.space.self.prevent="onSelect"
     >
+      <!-- 1. Título (con el círculo de avance rápido cuando el tablero lo ofrece). -->
       <div class="flex items-start gap-2">
         <TaskStatusCircle
           v-if="quickAdvance && !delegated"
@@ -150,88 +149,68 @@ function onDragEnd() {
           :loading="quickAdvance.isAdvancing(task.id)"
           @advance="quickAdvance.advance(task)"
         />
-        <p class="min-w-0 flex-1 text-sm font-medium text-foreground leading-snug line-clamp-2">
+        <p class="min-w-0 flex-1 text-[13px] sm:text-sm font-medium leading-[18px] line-clamp-3">
           <MentionText :text="task.short_description" />
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-1.5">
-        <TaskMentionBadge :mentions="task.mentions" />
-        <UBadge
-          v-if="projectName"
-          :icon="task.is_personal ? 'i-lucide-lock' : 'i-lucide-folder-kanban'"
-          :label="projectName"
-          color="primary"
-          variant="soft"
-          size="sm"
-          :title="task.is_personal ? t('privateProjects.lockTooltip') : undefined"
-          :aria-label="task.is_personal ? `${t('tasks.projectName', { name: projectName })} · ${t('privateProjects.lockAria')}` : t('tasks.projectName', { name: projectName })"
+      <!-- 2. Proyecto: carpeta (o candado si es privado) + nombre, en texto tenue. -->
+      <span
+        v-if="projectName"
+        class="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground"
+        :title="task.is_personal ? t('privateProjects.lockTooltip') : undefined"
+        :aria-label="task.is_personal ? `${t('tasks.projectName', { name: projectName })} · ${t('privateProjects.lockAria')}` : t('tasks.projectName', { name: projectName })"
+      >
+        <UIcon
+          :name="task.is_personal ? 'i-lucide-lock' : 'i-lucide-folder'"
+          class="size-3.5 shrink-0"
         />
-        <UBadge
-          :label="t(statusMeta.labelKey)"
-          :color="statusMeta.color"
-          variant="soft"
-          size="sm"
-        />
-        <UBadge
-          :icon="typeMeta.icon"
-          :label="t(typeMeta.labelKey)"
-          :color="typeMeta.color"
-          variant="soft"
-          size="sm"
-        />
-        <UBadge
-          v-if="priorityMeta"
-          :label="t(priorityMeta.labelKey)"
-          :color="priorityMeta.color"
-          variant="soft"
-          size="sm"
-        />
-        <UBadge
-          v-if="closeApprovalsProgress"
-          :label="`${closeApprovalsProgress.closed}/${closeApprovalsProgress.total}`"
-          color="warning"
-          variant="soft"
-          size="sm"
-          :aria-label="t('tasks.toUpdate.closeApprovalsProgress', {
-            closed: closeApprovalsProgress.closed,
-            total: closeApprovalsProgress.total,
-          })"
-        />
-        <TaskReviewChip
-          :task-id="task.id"
-          :reviewed-at="task.reviewed_at"
-          :removable="!reviewReadonly"
-        />
-        <!-- Oculto de momento: genera confusión
-        <UBadge
-          v-if="requiresAttention"
-          icon="i-lucide-triangle-alert"
-          :label="t('tasks.requiresAttention')"
-          color="error"
-          variant="soft"
-          size="sm"
-        />
-        -->
-      </div>
+        <span class="truncate">{{ projectName }}</span>
+      </span>
 
-      <!-- min-h-6: misma altura con o sin el botón "Revisada" (backlog), para que la columna no brinque. -->
-      <div class="flex min-h-6 items-center justify-between gap-2 pt-1">
-        <span
-          v-if="delegated && !assignees.length"
-          class="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
-        >
-          <UIcon
-            name="i-lucide-user-x"
-            class="size-3.5 shrink-0"
+      <!-- 3. Uno tras otro: renglón de pills (si hay) y abajo el renglón de token · fecha · revisar · responsables.
+           El estado no va: lo dice la columna. Las pills nunca se parten en dos líneas. -->
+      <div class="flex flex-col gap-2 text-xs">
+        <div class="flex flex-wrap items-center gap-1 empty:hidden [&>*]:shrink-0 [&>*]:whitespace-nowrap">
+          <span
+            v-if="priorityMeta"
+            class="inline-flex h-[22px] items-center gap-1 rounded-full px-2 font-medium"
+            :class="task.priority === 'urgent'
+              ? 'bg-danger-soft text-danger'
+              : 'bg-warning/15 text-warning-text'"
+          >
+            <UIcon name="i-lucide-flag" class="size-3 shrink-0" />
+            {{ t(priorityMeta.labelKey) }}
+          </span>
+          <!-- Tipo solo si no es el de siempre (manual). -->
+          <span
+            v-if="task.type !== 'manual'"
+            class="inline-flex h-[22px] items-center gap-1 rounded-full bg-muted px-2 font-medium text-muted-foreground"
+            :title="t(typeMeta.labelKey)"
+          >
+            <UIcon :name="typeMeta.icon" class="size-3 shrink-0" />
+            <span class="max-sm:sr-only">{{ t(typeMeta.labelKey) }}</span>
+          </span>
+          <span
+            v-if="closeApprovalsProgress"
+            class="inline-flex h-[22px] items-center gap-1 rounded-full bg-warning/15 px-2 font-mono font-medium text-warning-text"
+            :aria-label="t('tasks.toUpdate.closeApprovalsProgress', {
+              closed: closeApprovalsProgress.closed,
+              total: closeApprovalsProgress.total,
+            })"
+          >
+            <UIcon name="i-lucide-check-check" class="size-3 shrink-0" />
+            {{ closeApprovalsProgress.closed }}/{{ closeApprovalsProgress.total }}
+          </span>
+          <TaskMentionBadge :mentions="task.mentions" />
+          <TaskReviewChip
+            :task-id="task.id"
+            :reviewed-at="task.reviewed_at"
+            :removable="!reviewReadonly"
           />
-          {{ t('tasks.kanban.unassigned') }}
-        </span>
-        <TaskAssigneeAvatars
-          v-else
-          :assignees="assignees"
-        />
-        <div class="ml-auto flex shrink-0 items-center gap-1.5">
+        </div>
+
+        <div class="flex min-h-6 items-center gap-1.5">
           <TaskTokenButton
             :task-id="task.id"
             :count="task.tokens_count"
@@ -246,34 +225,44 @@ function onDragEnd() {
               type="button"
               draggable="false"
               data-no-drag
-              class="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-mono tabular-nums transition-colors hover:bg-muted"
-              :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground hover:text-foreground'"
+              class="touch-target rounded-md px-1 py-0.5 font-mono tabular-nums transition-colors hover:bg-muted"
+              :class="isOverdue ? 'text-danger' : 'text-muted-foreground hover:text-foreground'"
               :title="t('tasks.quickDue.title')"
-              :aria-label="t('tasks.quickDue.title')"
+              :aria-label="`${t('tasks.quickDue.title')}: ${dueLabel}`"
               @click.stop
               @keydown.enter.stop
               @keydown.space.stop
               @mousedown.stop
             >
-              <UIcon
-                name="i-lucide-calendar"
-                class="h-3 w-3"
-              />
               {{ dueLabel }}
             </button>
           </TaskQuickDuePopover>
           <span
             v-else-if="dueLabel"
-            class="text-[11px] font-mono tabular-nums"
-            :class="isOverdue ? 'text-error font-medium' : 'text-muted-foreground'"
+            class="px-1 font-mono tabular-nums"
+            :class="isOverdue ? 'text-danger' : 'text-muted-foreground'"
           >
             {{ dueLabel }}
           </span>
-          <!-- Acción rápida a la derecha; en backlog solo se muestra el chip (ahí no se reordena). -->
+          <!-- En backlog solo se muestra el chip «Revisada» (ahí no se reordena). -->
           <TaskReviewButton
             v-if="!reviewReadonly"
             :task-id="task.id"
             :reviewed-at="task.reviewed_at"
+          />
+          <span class="flex-1" aria-hidden="true" />
+          <span
+            v-if="delegated && !assignees.length"
+            class="inline-flex size-6 items-center justify-center rounded-full bg-input text-muted-foreground"
+            :title="t('tasks.kanban.unassigned')"
+            :aria-label="t('tasks.kanban.unassigned')"
+          >
+            <UIcon name="i-lucide-user-x" class="size-3.5" />
+          </span>
+          <TaskAssigneeAvatars
+            v-else
+            :assignees="assignees"
+            :max="2"
           />
         </div>
       </div>

@@ -25,6 +25,8 @@ const props = withDefaults(
      * conviene dictar (en la barra de escritorio no hay espacio para esa indicación y va como tooltip).
      */
     fab?: boolean
+    /** Botón secundario de la barra de Mis tareas (maqueta UX-04): borde, micrófono y «Dictar». */
+    toolbar?: boolean
   }>(),
   {
     defaultProjectId: null,
@@ -33,6 +35,7 @@ const props = withDefaults(
     size: 'xs',
     fill: false,
     fab: false,
+    toolbar: false,
   },
 )
 
@@ -274,18 +277,24 @@ const startTitle = computed(() => `${t('tasks.form.voice.start')}. ${t('tasks.fo
     v-else-if="isSupported"
     type="button"
     :size="fab ? 'xl' : size"
-    :square="iconOnly || fab"
-    :class="fab ? 'size-14 shrink-0 rounded-full p-0! shadow-lg' : (iconOnly ? 'h-8 shrink-0' : '')"
+    :square="(iconOnly && !toolbar) || fab"
+    :class="fab
+      ? 'size-14 shrink-0 rounded-full p-0! shadow-lg'
+      : toolbar
+        ? 'h-9 shrink-0 gap-1.5 rounded-[10px] border border-border-strong bg-card px-3 text-[13px] font-medium text-foreground hover:bg-muted'
+        : (iconOnly ? 'h-8 shrink-0' : '')"
     :title="startTitle"
     color="neutral"
     :variant="fab ? 'subtle' : 'ghost'"
     icon="i-lucide-mic"
-    :ui="fab ? { base: 'justify-center gap-0', leadingIcon: 'size-6 text-primary' } : undefined"
+    :ui="fab
+      ? { base: 'justify-center gap-0', leadingIcon: 'size-6 text-primary' }
+      : toolbar ? { leadingIcon: 'size-[18px]' } : undefined"
     :disabled="disabled || userId == null"
     :aria-label="t('tasks.form.voice.start')"
     @click="onClick"
   >
-    <template v-if="!iconOnly && !fab">
+    <template v-if="toolbar || (!iconOnly && !fab)">
       {{ t('tasks.form.voice.label') }}
     </template>
   </UButton>

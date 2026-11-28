@@ -245,6 +245,7 @@
     "logout": "Cerrar sesión",
     "back": "Volver",
     "noData": "Sin datos",
+    "loading": "Cargando…",
     "wip": {
       "label": "Trabajo en proceso",
       "short": "WIP",
@@ -282,14 +283,21 @@
   },
   "sidebar": {
     "sectionTasks": "Tasks",
+    "sections": {
+      "work": "Trabajo",
+      "team": "Equipo",
+      "analysis": "Análisis",
+      "system": "Ajustes"
+    },
     "reporteCeo": "Reporte CEO",
     "dashboard": "Dashboard",
     "myTasks": "Mis tareas",
-    "adminTasks": "Vista Total",
-    "groupTasks": "Tareas por grupo",
-    "projectTasks": "Tareas por proyecto",
+    "calendar": "Calendario",
+    "adminTasks": "Vista total",
+    "groupTasks": "Grupos",
+    "projectTasks": "Proyectos",
     "toAccept": "Por aceptar",
-    "toUpdate": "Pendiente de aprobación",
+    "toUpdate": "Por aprobar",
     "settings": "Configuración",
     "backToHub": "Volver al hub",
     "bottomNav": "Navegación principal",
@@ -300,7 +308,9 @@
     "moduleName": "Tareas",
     "groupModuleName": "Grupo {name}",
     "projectModuleName": "Proyecto {name}",
-    "searchPlaceholder": "Buscar tareas...",
+    "searchPlaceholder": "Buscar tareas, proyectos o personas",
+    "searchAria": "Buscar en Nexxus Task",
+    "companyAria": "Empresa: {name}",
     "showMenu": "Mostrar menú",
     "hideMenu": "Ocultar menú",
     "nexxa": "Nexxa en acción",
@@ -370,6 +380,27 @@
     "filterOverdue": "Vencidas",
     "filterCompleted": "Completadas",
     "filterMultipleClose": "Cierre múltiple",
+    "filterStatus": "Estado",
+    "filterResponsible": "Responsable",
+    "responsibleMe": "Yo",
+    "responsibleLabel": "Responsable: {name}",
+    "responsibleMore": "{name} +{n}",
+    "responsibleHintMine": "Ya ves solo las tareas asignadas a ti. Elige personas para ver las que compartes con ellas.",
+    "moreFilters": "Más filtros",
+    "groupByShort": "Agrupar",
+    "groupByLabel": "Agrupar: {name}",
+    "clearFilter": "Limpiar",
+    "kanbanStatusHint": "Estado se apaga: el tablero ya agrupa por estado",
+    "header": {
+      "active": "activas",
+      "overdue": "vencidas"
+    },
+    "statusFilter": {
+      "pending": "Pendiente",
+      "wip": "En progreso",
+      "in_review": "En revisión",
+      "rejected": "Rechazada"
+    },
     "filterScope": {
       "label": "Mostrar",
       "all": "Todas",
@@ -382,6 +413,7 @@
       "all": "Todas"
     },
     "newTask": "Nueva tarea",
+    "createTask": "Crear tarea",
     "refresh": "Actualizar",
     "refreshSuccessTitle": "Datos actualizados",
     "refreshSuccessDescription": "Las listas visibles se actualizaron correctamente.",
@@ -451,8 +483,9 @@
       "noDate": "Sin fecha"
     },
     "views": {
+      "label": "Vistas",
       "list": "Lista",
-      "kanban": "Kanban",
+      "kanban": "Tablero",
       "calendar": "Calendario"
     },
     "calendarPhases": {
@@ -1061,8 +1094,9 @@
       "fields": {
         "short_description": "Descripción contiene",
         "type": "Tipo",
+        "status": "Estado",
         "project": "Proyecto",
-        "users": "Usuarios",
+        "users": "Responsable",
         "created_by": "Creada por",
         "overdue": "Vencidas",
         "completed": "Completadas",

@@ -95,29 +95,29 @@ function onDrop(event: DragEvent) {
 
 <template>
   <!-- Colapsada también recibe drops (p. ej. Pendiente → Backlog): no hay que expandirla antes de soltar. -->
+  <!-- Colapsada (maqueta UX-04): tira de 48 px con flecha, contador y el nombre en vertical. -->
   <section
     v-if="collapsed"
-    class="flex h-full min-h-0 w-12 shrink-0 flex-col items-center rounded-xl bg-kanban-column"
+    class="flex h-full min-h-0 w-12 shrink-0 flex-col items-center rounded-[14px] border border-border bg-card"
     :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
     @dragover="onDragOver"
     @drop="onDrop"
   >
     <button
       type="button"
-      class="flex min-h-0 w-12 flex-1 flex-col items-center gap-3 rounded-xl py-3 text-muted-foreground transition-colors hover:text-foreground"
+      class="flex min-h-0 w-12 flex-1 flex-col items-center gap-2.5 rounded-[14px] py-3 text-muted-foreground transition-colors hover:text-foreground"
       :aria-label="t('tasks.kanban.expandColumn', { title: columnTitle })"
       @click="toggleCollapsed"
     >
-      <UIcon name="i-lucide-chevron-right" class="h-4 w-4 shrink-0" />
-      <UBadge
+      <UIcon name="i-lucide-chevron-right" class="size-4 shrink-0" />
+      <span
         v-if="column.count !== undefined"
-        :label="column.count.toString()"
-        size="sm"
-        class="text-white ring-0 shrink-0"
-        :style="{ backgroundColor: column.color }"
-      />
+        class="shrink-0 font-mono text-xs font-medium text-foreground"
+      >
+        {{ column.count }}
+      </span>
       <TaskSectionBadgeFallback v-else />
-      <span class="min-h-0 flex-1 truncate text-xs font-semibold text-foreground [writing-mode:vertical-rl]">
+      <span class="min-h-0 flex-1 truncate text-xs font-semibold uppercase tracking-[0.08em] [writing-mode:vertical-rl]">
         {{ columnTitle }}
       </span>
     </button>
@@ -130,8 +130,16 @@ function onDrop(event: DragEvent) {
     </div>
   </section>
 
-  <section v-else class="flex h-full min-h-0 w-[min(280px,78vw)] sm:w-[280px] shrink-0 flex-col">
-    <header class="flex items-center gap-2 mb-3 px-1 shrink-0">
+  <!-- Expandida (maqueta UX-04): panel con borde a todo el alto del tablero (todas al mismo nivel); las tarjetas
+       bajan con scroll infinito y sin barra visible. -->
+  <section
+    v-else
+    class="flex h-full min-h-0 w-[min(280px,82vw)] sm:w-[280px] shrink-0 snap-start flex-col rounded-[14px] border border-border bg-kanban-column p-2 transition-colors"
+    :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
+    @dragover="onDragOver"
+    @drop="onDrop"
+  >
+    <header class="flex h-8 shrink-0 items-center gap-2 px-1.5">
       <UButton
         v-if="column.collapsible"
         icon="i-lucide-chevron-left"
@@ -139,33 +147,32 @@ function onDrop(event: DragEvent) {
         color="neutral"
         size="xs"
         square
-        class="shrink-0"
+        class="-ml-1 shrink-0"
         :aria-label="t('tasks.kanban.collapseColumn', { title: columnTitle })"
         @click="toggleCollapsed"
       />
-      <UBadge
-        v-if="column.count !== undefined"
-        :label="column.count.toString()"
-        size="md"
-        class="text-white ring-0 shrink-0"
+      <span
+        class="size-2 shrink-0 rounded-full"
         :style="{ backgroundColor: column.color }"
+        aria-hidden="true"
       />
-      <TaskSectionBadgeFallback v-else />
-      <h3 class="text-sm font-semibold text-foreground flex-1 min-w-0 truncate">
+      <h3 class="min-w-0 flex-1 truncate text-[13px] font-semibold text-foreground">
         {{ columnTitle }}
       </h3>
       <slot name="header-extra" />
+      <span
+        v-if="column.count !== undefined"
+        class="shrink-0 font-mono text-[13px] font-medium text-muted-foreground"
+      >
+        {{ column.count }}
+      </span>
+      <TaskSectionBadgeFallback v-else />
     </header>
 
-    <div
-      class="flex flex-1 min-h-0 flex-col rounded-xl bg-kanban-column transition-colors"
-      :class="isDropTarget ? 'ring-2 ring-aeto-teal/40' : ''"
-      @dragover="onDragOver"
-      @drop="onDrop"
-    >
+    <div class="mt-2 flex min-h-0 flex-1 flex-col">
       <div
         ref="columnScroller"
-        class="flex-1 min-h-0 overflow-y-auto p-2 space-y-2"
+        class="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none space-y-2"
       >
         <div v-if="column.loading" class="space-y-2">
           <USkeleton v-for="n in 3" :key="n" class="h-20 w-full rounded-lg" />
@@ -227,7 +234,7 @@ function onDrop(event: DragEvent) {
 
       <div
         v-if="canShowCreate && !column.loading && !column.error"
-        class="shrink-0 border-t border-black/5 p-1.5 dark:border-white/5"
+        class="mt-2 shrink-0"
       >
         <UButton
           icon="i-lucide-plus"

@@ -5,6 +5,7 @@ import { profileFullName } from '~/features/auth/utils/profile-appearance.util'
 import { usePrivateProjects } from '~/features/projects/composables/usePrivateProjects'
 import { useSavedTaskFilters } from '~/features/tasks/composables/filters/useSavedTaskFilters'
 import {
+  TASK_FILTER_STATUSES,
   hasTaskFilters,
   normalizeTaskFilters,
   paramsToTaskFilters,
@@ -16,6 +17,7 @@ import { parseFetchError } from '~/shared/utils/error-message.util'
 type FilterFieldId
   = | 'short_description'
     | 'type'
+    | 'status'
     | 'project'
     | 'users'
     | 'created_by'
@@ -28,7 +30,7 @@ type FilterFieldId
     | 'wip_date'
     | 'final_date'
 
-type ListKey = 'type' | 'project' | 'users' | 'created_by'
+type ListKey = 'type' | 'status' | 'project' | 'users' | 'created_by'
 type BooleanKey = 'overdue' | 'completed' | 'multiple_close' | 'not_started' | 'private'
 type RangeId = 'start_date' | 'wip_date' | 'final_date'
 type Step = 'saved' | 'builder' | 'name'
@@ -43,6 +45,7 @@ interface FieldDefinition {
 const FIELDS: FieldDefinition[] = [
   { id: 'short_description', icon: 'i-lucide-text-search', kind: 'text' },
   { id: 'type', icon: 'i-lucide-shapes', kind: 'list' },
+  { id: 'status', icon: 'i-lucide-circle-dot', kind: 'list' },
   { id: 'project', icon: 'i-lucide-folder-kanban', kind: 'list' },
   { id: 'users', icon: 'i-lucide-users', kind: 'list' },
   { id: 'created_by', icon: 'i-lucide-user-pen', kind: 'list' },
@@ -64,6 +67,9 @@ const search = defineModel<string>('search', { required: true })
 defineProps<{
   /** Barra compacta: solo el ícono y el nombre del filtro en uso, sin etiqueta fija. */
   compact?: boolean
+  /** Botón «Más filtros» de la barra (maqueta UX-04); `activeCount` = filtros aplicados, en un contador. */
+  toolbar?: boolean
+  activeCount?: number
 }>()
 
 const { t } = useI18n()
@@ -71,9 +77,6 @@ const toast = useToast()
 const { projects, items: projectItems } = useProjectsDropdown()
 const { projects: privateProjects } = usePrivateProjects()
 const { organization } = useAuth()
-const { isAdminActive, isGroupActive, isProjectActive } = useTaskAdminView()
-
-const showUserFilter = computed(() => isAdminActive.value || isGroupActive.value || isProjectActive.value)
 
 const open = ref(false)
 // «Atrás» en el celular cierra el modal en vez de salir de la pantalla.
@@ -95,11 +98,12 @@ const {
 /** «Tareas privadas» solo se ofrece con proyectos privados (o si el filtro ya viene aplicado, para poder quitarlo). */
 const showPrivateField = computed(() => privateProjects.value.length > 0 || filters.value.private !== undefined)
 
+/**
+ * «Responsable» (`users`) se ofrece en todas las vistas: en las de equipo elige de quién ver tareas; en Mis tareas acota
+ * mis tareas a las que comparto con esas personas (asignadas o revisoras del cierre).
+ */
 const availableFields = computed(() =>
-  FIELDS.filter(field =>
-    (field.id !== 'users' || showUserFilter.value)
-    && (field.id !== 'private' || showPrivateField.value),
-  ),
+  FIELDS.filter(field => field.id !== 'private' || showPrivateField.value),
 )
 
 // ───────────────────────── Constructor ─────────────────────────
@@ -256,9 +260,16 @@ const profileItems = computed(() =>
   ),
 )
 
+const statusItems = computed(() =>
+  TASK_FILTER_STATUSES.map(status => ({ label: t(`tasks.statusFilter.${status}`), value: status })),
+)
+
 function listItems(key: ListKey) {
   if (key === 'type') {
     return typeItems.value
+  }
+  if (key === 'status') {
+    return statusItems.value
   }
   return key === 'project' ? projectSelectItems.value : profileItems.value
 }
@@ -519,7 +530,31 @@ const modalDescription = computed(() => {
 </script>
 
 <template>
+  <!-- «Más filtros» de la maqueta UX-04: botón de la fila de filtros con contador de filtros aplicados. -->
+  <button
+    v-if="toolbar"
+    type="button"
+    class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] border px-3 text-[13px] font-medium transition-colors pointer-coarse:h-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+    :class="activeSaved || activeCount
+      ? 'border-primary bg-aeto-teal-light text-aeto-teal-dark'
+      : 'border-border-strong bg-card text-foreground hover:bg-muted'"
+    :aria-label="t('tasks.advancedFilters.button')"
+    @click="openModal()"
+  >
+    <UIcon
+      :name="activeSaved ? 'i-lucide-bookmark-check' : 'i-lucide-list-filter'"
+      class="size-[18px] shrink-0"
+    />
+    <span class="max-w-40 truncate">{{ activeSaved?.name ?? t('tasks.moreFilters') }}</span>
+    <span
+      v-if="activeCount"
+      class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 font-mono text-[11px] font-semibold text-on-teal"
+    >
+      {{ activeCount }}
+    </span>
+  </button>
   <UButton
+    v-else
     color="neutral"
     :variant="activeSaved ? 'subtle' : 'outline'"
     size="sm"
@@ -611,13 +646,13 @@ const modalDescription = computed(() => {
               />
 
               <USelectMenu
-                v-else-if="fieldId === 'type' || fieldId === 'project' || fieldId === 'users' || fieldId === 'created_by'"
+                v-else-if="fieldId === 'type' || fieldId === 'status' || fieldId === 'project' || fieldId === 'users' || fieldId === 'created_by'"
                 :model-value="listValue(fieldId)"
                 multiple
                 value-key="value"
                 :items="listItems(fieldId)"
                 :placeholder="t('tasks.advancedFilters.listPlaceholder')"
-                :search-input="fieldId === 'type' ? false : { placeholder: t('tasks.filterSelectSearch') }"
+                :search-input="fieldId === 'type' || fieldId === 'status' ? false : { placeholder: t('tasks.filterSelectSearch') }"
                 size="sm"
                 class="w-full"
                 @update:model-value="setListValue(fieldId, $event as (number | string)[])"

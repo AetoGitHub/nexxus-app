@@ -139,11 +139,11 @@ function onCreated(projectId: number) {
         <button
           type="button"
           :aria-label="t('sidebar.projectTasks')"
-          class="flex w-full items-center justify-center rounded-md py-2 text-sidebar-foreground transition-colors hover:bg-muted"
+          class="flex h-9 w-full items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <UIcon
-            name="i-lucide-folder-kanban"
-            class="h-4 w-4"
+            name="i-lucide-folder"
+            class="size-[18px]"
           />
         </button>
       </UTooltip>
@@ -156,13 +156,13 @@ function onCreated(projectId: number) {
       <div class="flex items-center gap-1">
         <button
           type="button"
-          class="flex min-w-0 flex-1 items-center gap-3 rounded-md px-3 py-2 text-left text-sm text-sidebar-foreground transition-colors hover:bg-muted"
+          class="flex h-9 min-w-0 flex-1 items-center gap-2.5 rounded-[10px] px-2 text-left text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           :aria-expanded="expanded"
           @click="expanded = !expanded"
         >
           <UIcon
-            name="i-lucide-folder-kanban"
-            class="h-4 w-4 shrink-0"
+            name="i-lucide-folder"
+            class="size-[18px] shrink-0"
           />
           <span class="flex-1 truncate">{{ t('sidebar.projectTasks') }}</span>
           <UIcon

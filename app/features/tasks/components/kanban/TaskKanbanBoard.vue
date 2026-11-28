@@ -100,10 +100,10 @@ function canCreateInColumn(columnId: string | number) {
     scroll X en el board (touch-pan-x en mobile), scroll Y independiente por columna.
   -->
   <div
-    class="h-full min-h-0 w-full overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x"
+    class="h-full min-h-0 w-full overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-3"
   >
-    <div v-if="loading && !localColumns.length" class="flex h-full items-stretch gap-3 sm:gap-4 px-0.5">
-      <USkeleton v-for="n in 3" :key="n" class="h-full w-[min(280px,78vw)] sm:w-72 shrink-0 rounded-xl" />
+    <div v-if="loading && !localColumns.length" class="flex h-full items-stretch gap-3 px-0.5 pb-1.5">
+      <USkeleton v-for="n in 3" :key="n" class="h-full w-[min(280px,82vw)] sm:w-[280px] shrink-0 rounded-[14px]" />
     </div>
 
     <p v-else-if="error" class="px-2 py-6 text-sm text-error">
@@ -114,7 +114,9 @@ function canCreateInColumn(columnId: string | number) {
       {{ t('tasks.empty') }}
     </p>
 
-    <div v-else class="flex h-full min-h-0 items-stretch gap-3 sm:gap-4 min-w-max pb-1 px-0.5">
+    <!-- Todas las columnas al mismo nivel (alto completo del tablero); cada una baja con scroll infinito y sin
+         barra visible. En el teléfono se acomodan una por una al deslizar (snap). -->
+    <div v-else class="flex h-full min-h-0 items-stretch gap-3 min-w-max pb-1.5 px-0.5">
       <TaskKanbanColumn
         v-for="column in localColumns"
         :key="column.id"

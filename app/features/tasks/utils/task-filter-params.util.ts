@@ -1,5 +1,8 @@
 import type { LocationQuery } from 'vue-router'
-import type { TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
+import type { TaskFilterStatus, TaskListFilters, TaskType } from '~/features/tasks/types/task.types'
+
+/** Valores válidos del filtro «Estado» (en el orden de las columnas del tablero). */
+export const TASK_FILTER_STATUSES: TaskFilterStatus[] = ['pending', 'wip', 'in_review', 'rejected']
 
 /** Rangos de fecha que acepta el backend (YYYY-MM-DD, extremos opcionales). */
 export const TASK_FILTER_DATE_KEYS = [
@@ -26,6 +29,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 export const TASK_FILTER_PARAM_KEYS: string[] = [
   'short_description',
   'type',
+  'status',
   ...LIST_KEYS,
   ...BOOLEAN_KEYS,
   ...TASK_FILTER_DATE_KEYS,
@@ -49,6 +53,10 @@ export function normalizeTaskFilters(filters: TaskListFilters = {}): TaskListFil
   }
   if (filters.type?.length) {
     next.type = [...filters.type]
+  }
+  const status = filters.status?.filter(value => TASK_FILTER_STATUSES.includes(value))
+  if (status?.length) {
+    next.status = [...status]
   }
   for (const key of LIST_KEYS) {
     const value = filters[key]
@@ -85,6 +93,9 @@ export function taskFiltersToParams(filters: TaskListFilters): Record<string, st
   }
   if (normalized.type) {
     params.type = normalized.type.join(',')
+  }
+  if (normalized.status) {
+    params.status = normalized.status.join(',')
   }
   for (const key of LIST_KEYS) {
     const value = normalized[key]
@@ -128,6 +139,10 @@ export function paramsToTaskFilters(params: Record<string, unknown>): TaskListFi
   if (type) {
     filters.type = splitList(type.replace(/[[\]"']/g, '')) as TaskType[]
   }
+  const status = text('status')
+  if (status) {
+    filters.status = splitList(status.replace(/[[\]"']/g, '')) as TaskFilterStatus[]
+  }
   for (const key of LIST_KEYS) {
     const value = text(key)
     if (value) {
@@ -163,10 +178,20 @@ export function taskFiltersFromQuery(query: LocationQuery): TaskListFilters {
   return paramsToTaskFilters(params)
 }
 
+/** Filtros para el Kanban: sin «Estado» (cada columna ya es un estado; filtrarlo vaciaría columnas). */
+export function withoutStatusFilter(filters: TaskListFilters): TaskListFilters {
+  if (!filters.status) {
+    return filters
+  }
+  const { status: _status, ...rest } = filters
+  return rest
+}
+
 /** Clave estable para comparar dos conjuntos de filtros sin importar el orden de las listas. */
 export function taskFiltersKey(filters: TaskListFilters): string {
   const params = taskFiltersToParams(filters)
   return JSON.stringify(
+    // `status` y `type` también son listas: se comparan sin importar el orden.
     Object.keys(params).sort().map((key) => {
       const value = params[key]!
       return [key, key === 'short_description' ? value : splitList(value).sort().join(',')]

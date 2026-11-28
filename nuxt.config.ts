@@ -71,8 +71,8 @@ export default defineNuxtConfig({
       style: [
         {
           innerHTML:
-            "html{background-color:#F5F5F5;color-scheme:light}"
-            + "html.dark{background-color:#1A1A1A;color-scheme:dark}",
+            "html{background-color:#f3f4f8;color-scheme:light}"
+            + "html.dark{background-color:#131316;color-scheme:dark}",
         },
       ],
     },

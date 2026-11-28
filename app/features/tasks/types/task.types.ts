@@ -238,10 +238,15 @@ export interface ArchivedCounts {
   total: number
 }
 
+/** Estados que se pueden filtrar (`?status=`): las fases activas del tablero. */
+export type TaskFilterStatus = 'pending' | 'wip' | 'in_review' | 'rejected'
+
 /** Filtros de query compartidos por listas y Kanban. */
 export interface TaskListFilters {
   short_description?: string
   type?: TaskType[]
+  /** Filtro «Estado». El Kanban no lo usa (ya agrupa por estado). */
+  status?: TaskFilterStatus[]
   project?: number[]
   users?: number[]
   overdue?: boolean

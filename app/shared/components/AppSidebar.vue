@@ -81,10 +81,10 @@ function backToHub() {
 <template>
   <aside
     class="hidden md:flex shrink-0 flex-col bg-sidebar border-r border-sidebar-border transition-[width] duration-200"
-    :class="collapsed ? 'w-16' : 'w-60'"
+    :class="collapsed ? 'w-16' : 'w-56'"
   >
     <div
-      class="h-16 flex items-center border-b border-sidebar-border"
+      class="h-16 shrink-0 flex items-center"
       :class="collapsed ? 'justify-center px-0' : 'px-5'"
     >
       <UTooltip
@@ -102,14 +102,8 @@ function backToHub() {
       </UTooltip>
     </div>
 
-    <div v-if="!collapsed" class="px-5 pt-4 pb-2">
-      <div class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {{ t('sidebar.sectionTasks') }}
-      </div>
-    </div>
-    <div v-else class="pt-4" />
-
-    <nav class="flex-1 overflow-y-auto px-3">
+    <!-- Cada grupo (Trabajo, Equipo, Análisis, Ajustes) trae su propio rótulo en AppNavList. -->
+    <nav class="flex-1 overflow-y-auto px-3 pt-3 pb-3">
       <AppNavList :collapsed="collapsed" />
     </nav>
 

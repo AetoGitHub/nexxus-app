@@ -5,10 +5,22 @@ export interface AppNavChild {
   to: string
 }
 
+/** Grupos del menú (maqueta UX-04): TRABAJO · EQUIPO · ANÁLISIS, y al final Configuración. */
+export type AppNavSectionId = 'work' | 'team' | 'analysis' | 'system'
+
+export interface AppNavSection {
+  id: AppNavSectionId
+  labelKey: string
+  items: AppNavItem[]
+}
+
 export interface AppNavItem {
   labelKey: string
   icon: string
+  section: AppNavSectionId
   to?: string
+  /** Query que distingue al ítem dentro de la misma ruta (ej. Calendario = /tasks?view=calendar). */
+  query?: Record<string, string>
   badge?: number
   /** Si es false, no aparece en la bottom nav mobile. Default true. */
   bottomNav?: boolean
@@ -32,33 +44,52 @@ export function useAppNav() {
     const canViewAll = canViewTasks && can('task', 'view_all')
     const items: AppNavItem[] = []
 
-    // En mobile viven en la hoja "Más": la barra inferior solo lleva Mis tareas, Pendiente de aprobación y Más.
-    if (can('report', 'view')) {
-      items.push({ labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-chart-column', to: '/reporte-ceo', bottomNav: false })
+    // Orden e iconos de la maqueta UX-04. En mobile la barra inferior lleva lo de TRABAJO (Mis tareas, Por aprobar,
+    // Calendario) y «Más»; EQUIPO, ANÁLISIS y Configuración viven en la hoja «Más».
+
+    // ── TRABAJO ──
+    if (canViewTasks) {
+      items.push({ labelKey: 'sidebar.myTasks', icon: 'i-lucide-list-checks', section: 'work', to: '/tasks' })
     }
-    if (can('dashboard', 'view')) {
-      items.push({ labelKey: 'sidebar.dashboard', icon: 'i-lucide-layout-dashboard', to: '/dashboard', bottomNav: false })
+    // Oculto de momento: aún no funciona
+    // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', badge: 1 },
+    if (can('task', 'view_approvals')) {
+      items.push({
+        labelKey: 'sidebar.toUpdate',
+        icon: 'i-lucide-inbox',
+        section: 'work',
+        to: '/tasks/pending-approval',
+        badge: actionableCount.value,
+      })
     }
     if (canViewTasks) {
-      items.push({ labelKey: 'sidebar.myTasks', icon: 'i-lucide-square-check-big', to: '/tasks' })
-    }
-
-    if (canViewAll) {
+      // Atajo a la vista Calendario de Mis tareas (misma pantalla, `?view=calendar`).
       items.push({
-        labelKey: 'sidebar.adminTasks',
-        icon: 'i-lucide-shield',
-        to: '/tasks/admin',
-        // Vive en la hoja "Más" mobile, junto con Tareas por grupo/proyecto.
-        bottomNav: false,
+        labelKey: 'sidebar.calendar',
+        icon: 'i-lucide-calendar',
+        section: 'work',
+        to: '/tasks',
+        query: { view: 'calendar' },
       })
     }
 
+    // ── EQUIPO ──
+    if (canViewAll) {
+      items.push({
+        labelKey: 'sidebar.adminTasks',
+        icon: 'i-lucide-layers',
+        section: 'team',
+        to: '/tasks/admin',
+        bottomNav: false,
+      })
+    }
     // «Tareas por grupo»: permiso `task.can_view_by_group` (y los grupos que dirige, que son los que lista).
     if (canViewTasks && can('task', 'view_by_group') && isGroupManager.value) {
       items.push({
         labelKey: 'sidebar.groupTasks',
         icon: 'i-lucide-users',
-        // Sin bottom nav: es un desplegable, no un link directo (aún no hay UI para esto en mobile).
+        section: 'team',
+        // Sin bottom nav: es un desplegable, no un link directo.
         bottomNav: false,
         children: managedGroups.value.map(group => ({
           label: group.name,
@@ -66,38 +97,51 @@ export function useAppNav() {
         })),
       })
     }
-
     // «Tareas por proyecto»: en este lugar AppNavList dibuja el bloque AppPrivateProjects (privados primero y luego los de
     // la empresa, estos solo con `task.can_view_by_project`).
     if (canViewTasks) {
       items.push({
         labelKey: 'sidebar.projectTasks',
-        icon: 'i-lucide-folder-kanban',
+        icon: 'i-lucide-folder',
+        section: 'team',
         bottomNav: false,
         projectsBlock: true,
       })
     }
 
-    // Oculto de momento: aún no funciona
-    // { labelKey: 'sidebar.toAccept', icon: 'i-lucide-inbox', badge: 1 },
-    if (can('task', 'view_approvals')) {
-      items.push({
-        labelKey: 'sidebar.toUpdate',
-        icon: 'i-lucide-refresh-cw',
-        to: '/tasks/pending-approval',
-        badge: actionableCount.value,
-      })
+    // ── ANÁLISIS ──
+    if (can('dashboard', 'view')) {
+      items.push({ labelKey: 'sidebar.dashboard', icon: 'i-lucide-chart-column', section: 'analysis', to: '/dashboard', bottomNav: false })
     }
-    // Siempre: además de proyectos/grupos tiene secciones personales (notificaciones, general…).
+    if (can('report', 'view')) {
+      items.push({ labelKey: 'sidebar.reporteCeo', icon: 'i-lucide-file-text', section: 'analysis', to: '/reporte-ceo', bottomNav: false })
+    }
+
+    // ── Configuración ── (siempre: además de proyectos/grupos tiene secciones personales: notificaciones, general…)
     items.push({
       labelKey: 'sidebar.settings',
       icon: 'i-lucide-settings',
+      section: 'system',
       to: '/tasks/settings',
       bottomNav: false,
     })
 
     return items
   })
+
+  const SECTION_ORDER: { id: AppNavSectionId, labelKey: string }[] = [
+    { id: 'work', labelKey: 'sidebar.sections.work' },
+    { id: 'team', labelKey: 'sidebar.sections.team' },
+    { id: 'analysis', labelKey: 'sidebar.sections.analysis' },
+    { id: 'system', labelKey: 'sidebar.sections.system' },
+  ]
+
+  /** Ítems agrupados por sección (sin secciones vacías por permisos). */
+  const navSections = computed<AppNavSection[]>(() =>
+    SECTION_ORDER
+      .map(section => ({ ...section, items: tasksItems.value.filter(item => item.section === section.id) }))
+      .filter(section => section.items.length > 0),
+  )
 
   /** Ítems planos para la bottom nav (sin indentación; máx. ~6 para que quepan). */
   const bottomNavItems = computed<AppNavItem[]>(() =>
@@ -120,14 +164,19 @@ export function useAppNav() {
       return false
     }
     if (item.to === '/tasks') {
-      return route.path === '/tasks'
+      if (route.path !== '/tasks') {
+        return false
+      }
+      // Mis tareas y Calendario comparten ruta: los distingue `?view=calendar`.
+      const onCalendar = route.query.view === 'calendar'
+      return item.query?.view === 'calendar' ? onCalendar : !onCalendar
     }
     return route.path === item.to || route.path.startsWith(`${item.to}/`)
   }
 
   function navigate(item: AppNavItem) {
     if (item.to) {
-      void navigateTo(item.to)
+      void navigateTo({ path: item.to, query: item.query })
     }
   }
 
@@ -137,6 +186,7 @@ export function useAppNav() {
 
   return {
     tasksItems,
+    navSections,
     bottomNavItems,
     isActive,
     navigate,

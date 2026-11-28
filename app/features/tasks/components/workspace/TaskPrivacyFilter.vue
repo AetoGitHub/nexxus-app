@@ -7,34 +7,32 @@ const model = defineModel<boolean | undefined>({ default: undefined })
 
 const { t } = useI18n()
 
-const options: { value: boolean | undefined, labelKey: string, icon?: string }[] = [
+const options: { value: boolean | undefined, labelKey: string }[] = [
   { value: undefined, labelKey: 'tasks.filterScope.all' },
-  { value: false, labelKey: 'tasks.filterScope.company', icon: 'i-lucide-building-2' },
-  { value: true, labelKey: 'tasks.filterScope.private', icon: 'i-lucide-lock' },
+  { value: false, labelKey: 'tasks.filterScope.company' },
+  { value: true, labelKey: 'tasks.filterScope.private' },
 ]
 </script>
 
 <template>
+  <!-- Segmentado de la maqueta UX-04: la opción activa en teal suave dentro de un marco de 36 px. -->
   <div
-    class="inline-flex max-w-full p-0.5 rounded-md border border-border bg-background"
+    class="inline-flex h-9 max-w-full shrink-0 rounded-[10px] border border-border-strong bg-card p-[3px] pointer-coarse:h-10"
     role="group"
     :aria-label="t('tasks.filterScope.label')"
   >
-    <UButton
+    <button
       v-for="option in options"
       :key="String(option.value)"
-      color="neutral"
-      variant="ghost"
-      size="sm"
-      class="flex-1 sm:flex-none px-2.5 py-1 h-7 pointer-coarse:h-9 text-xs rounded justify-center"
+      type="button"
+      class="flex flex-1 items-center justify-center rounded-[7px] px-3 text-[13px] whitespace-nowrap transition-colors sm:flex-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       :class="model === option.value
-        ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
-        : 'text-muted-foreground'"
-      :icon="option.icon"
+        ? 'bg-aeto-teal-light font-semibold text-aeto-teal-dark'
+        : 'font-medium text-muted-foreground hover:text-foreground'"
       :aria-pressed="model === option.value"
       @click="model = option.value"
     >
       {{ t(option.labelKey) }}
-    </UButton>
+    </button>
   </div>
 </template>

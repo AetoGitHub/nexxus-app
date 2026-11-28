@@ -15,9 +15,10 @@ const props = withDefaults(
 
 const { t } = useI18n()
 
+// Iconos de la maqueta UX-04 (lista con palomitas, capas, calendario).
 const allViews: { value: TaskView, icon: string, labelKey: string }[] = [
-  { value: 'list', icon: 'i-lucide-list', labelKey: 'tasks.views.list' },
-  { value: 'kanban', icon: 'i-lucide-columns-3', labelKey: 'tasks.views.kanban' },
+  { value: 'list', icon: 'i-lucide-list-checks', labelKey: 'tasks.views.list' },
+  { value: 'kanban', icon: 'i-lucide-layers', labelKey: 'tasks.views.kanban' },
   { value: 'calendar', icon: 'i-lucide-calendar', labelKey: 'tasks.views.calendar' },
 ]
 
@@ -37,26 +38,24 @@ watch(
 </script>
 
 <template>
-  <div class="inline-flex w-full max-w-full sm:w-auto p-0.5 rounded-md border border-border bg-background">
-    <UButton
+  <!-- Pestañas subrayadas de la maqueta UX-04: la activa en blanco/negro con línea teal abajo. -->
+  <nav
+    class="flex h-10 items-stretch gap-1"
+    :aria-label="t('tasks.views.label')"
+  >
+    <button
       v-for="viewOption in views"
       :key="viewOption.value"
-      color="neutral"
-      variant="ghost"
-      size="sm"
-      class="flex-1 sm:flex-none px-2.5 py-1 pointer-coarse:py-2.5 h-auto text-xs rounded justify-center"
+      type="button"
+      class="-mb-px flex items-center gap-1.5 border-b-2 px-3 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-inset"
       :class="model === viewOption.value
-        ? 'bg-aeto-teal-light text-aeto-teal-dark font-semibold hover:bg-aeto-teal-light'
-        : 'text-muted-foreground'"
-      :icon="viewOption.icon"
-      :title="t(viewOption.labelKey)"
-      :aria-label="t(viewOption.labelKey)"
+        ? 'border-primary font-semibold text-foreground'
+        : 'border-transparent font-medium text-muted-foreground hover:text-foreground'"
+      :aria-current="model === viewOption.value ? 'page' : undefined"
       @click="model = viewOption.value"
     >
-      <!-- En pantallas angostas solo la vista activa muestra su nombre: así la fila deja espacio al micrófono. -->
-      <span :class="model === viewOption.value ? '' : 'hidden min-[480px]:inline'">
-        {{ t(viewOption.labelKey) }}
-      </span>
-    </UButton>
-  </div>
+      <UIcon :name="viewOption.icon" class="size-4 shrink-0" />
+      {{ t(viewOption.labelKey) }}
+    </button>
+  </nav>
 </template>

@@ -245,6 +245,7 @@
     "logout": "Sign out",
     "back": "Back",
     "noData": "No data",
+    "loading": "Loading…",
     "wip": {
       "label": "Work in progress",
       "short": "WIP",
@@ -282,14 +283,21 @@
   },
   "sidebar": {
     "sectionTasks": "Tasks",
+    "sections": {
+      "work": "Work",
+      "team": "Team",
+      "analysis": "Analytics",
+      "system": "Settings"
+    },
     "reporteCeo": "CEO Report",
     "dashboard": "Dashboard",
     "myTasks": "My tasks",
-    "adminTasks": "Total View",
-    "groupTasks": "Group tasks",
-    "projectTasks": "Project tasks",
+    "calendar": "Calendar",
+    "adminTasks": "Total view",
+    "groupTasks": "Groups",
+    "projectTasks": "Projects",
     "toAccept": "To accept",
-    "toUpdate": "Pending approval",
+    "toUpdate": "To approve",
     "settings": "Settings",
     "backToHub": "Back to hub",
     "bottomNav": "Main navigation",
@@ -300,7 +308,9 @@
     "moduleName": "Tasks",
     "groupModuleName": "Group {name}",
     "projectModuleName": "Project {name}",
-    "searchPlaceholder": "Search tasks...",
+    "searchPlaceholder": "Search tasks, projects or people",
+    "searchAria": "Search Nexxus Task",
+    "companyAria": "Company: {name}",
     "showMenu": "Show menu",
     "hideMenu": "Hide menu",
     "nexxa": "Nexxa in action",
@@ -370,6 +380,27 @@
     "filterOverdue": "Overdue",
     "filterCompleted": "Completed",
     "filterMultipleClose": "Multiple close",
+    "filterStatus": "Status",
+    "filterResponsible": "Assignee",
+    "responsibleMe": "Me",
+    "responsibleLabel": "Assignee: {name}",
+    "responsibleMore": "{name} +{n}",
+    "responsibleHintMine": "You already see only tasks assigned to you. Pick people to see the ones you share with them.",
+    "moreFilters": "More filters",
+    "groupByShort": "Group",
+    "groupByLabel": "Group: {name}",
+    "clearFilter": "Clear",
+    "kanbanStatusHint": "Status is off: the board already groups by status",
+    "header": {
+      "active": "active",
+      "overdue": "overdue"
+    },
+    "statusFilter": {
+      "pending": "Pending",
+      "wip": "In progress",
+      "in_review": "In review",
+      "rejected": "Rejected"
+    },
     "filterScope": {
       "label": "Show",
       "all": "All",
@@ -382,6 +413,7 @@
       "all": "All"
     },
     "newTask": "New task",
+    "createTask": "Create task",
     "refresh": "Refresh",
     "refreshSuccessTitle": "Data updated",
     "refreshSuccessDescription": "The visible lists were refreshed successfully.",
@@ -451,8 +483,9 @@
       "noDate": "No date"
     },
     "views": {
+      "label": "Views",
       "list": "List",
-      "kanban": "Kanban",
+      "kanban": "Board",
       "calendar": "Calendar"
     },
     "calendarPhases": {
@@ -1061,8 +1094,9 @@
       "fields": {
         "short_description": "Description contains",
         "type": "Type",
+        "status": "Status",
         "project": "Project",
-        "users": "Users",
+        "users": "Assignee",
         "created_by": "Created by",
         "overdue": "Overdue",
         "completed": "Completed",

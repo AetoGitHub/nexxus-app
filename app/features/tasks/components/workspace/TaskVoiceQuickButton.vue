@@ -19,6 +19,8 @@ defineProps<{
   fill?: boolean
   /** Botón flotante redondo y grande del celular, con la indicación de qué dictar mientras graba. */
   fab?: boolean
+  /** Botón «Dictar» de la barra de escritorio (maqueta UX-04). */
+  toolbar?: boolean
 }>()
 
 defineEmits<{
@@ -43,6 +45,7 @@ const projects = computed(() => toVoiceProjects(projectItems.value))
     size="sm"
     :fill="fill"
     :fab="fab"
+    :toolbar="toolbar"
     :user-id="user?.id"
     :users="users"
     :projects="projects"

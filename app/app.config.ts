@@ -1,7 +1,8 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'teal',
+      // Paleta propia (main.css, @theme static): el teal exacto de la maqueta UX-04.
+      primary: 'aeto',
       neutral: 'neutral',
     },
     card: {
